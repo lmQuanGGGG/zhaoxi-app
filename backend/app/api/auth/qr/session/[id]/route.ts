@@ -1,0 +1,1 @@
+import {NextResponse} from "next/server";import {qrPairingService} from "@/lib/services/qr-pairing-service";export async function GET(_:Request,{params}:{params:Promise<{id:string}>}){const {id}=await params;const data=await qrPairingService.get(id);return data?NextResponse.json({ok:true,data}):NextResponse.json({ok:false,error:{code:"QR_NOT_FOUND"}},{status:404})}

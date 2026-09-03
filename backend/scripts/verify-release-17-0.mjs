@@ -1,0 +1,12 @@
+import fs from"node:fs";
+const req=["RELEASE_17_0.md","SPRINT_16_71.md","scripts/migrate-17-0.mjs","lib/services/admin-support-desk-service.ts","lib/services/customer-support-satisfaction-service.ts","lib/services/customer-unified-unread-service.ts","app/api/admin-support-desk/route.ts","app/api/admin-support-desk/[threadId]/route.ts","app/api/admin-support-desk/policies/route.ts","app/api/admin-support-desk/performance/route.ts","app/api/customer-support-satisfaction/[threadId]/route.ts","app/api/customer-unread-summary/route.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="17.0.0")throw new Error("Backend version must be 17.0.0");
+for(const x of["verify:17.0","db:apply:17.0","typecheck","build"])if(!p.scripts?.[x])throw new Error(`Missing script ${x}`);
+const schema=fs.readFileSync("db/schema.ts","utf8");
+for(const m of["priority","supervisorAdminUserId","escalationLevel","resolutionDueAt","supportSlaPolicies","supportThreadEvents","supportSatisfaction"])if(!schema.includes(m))throw new Error(`Missing schema marker ${m}`);
+const s=fs.readFileSync("lib/services/admin-support-desk-service.ts","utf8");if(!s.includes("averageMinutes"))throw new Error("Type-safe support performance average helper missing");
+for(const m of["normal","urgent","critical","priority(","escalate(","clearEscalation","updatePolicy","performance","recommendedAgent","automaticAssignment:false","supportThreadEvents","noFinancialAuthority:true","noPartnerWorkflowChange:true"])if(!s.includes(m))throw new Error(`Missing support marker ${m}`);
+const sat=fs.readFileSync("lib/services/customer-support-satisfaction-service.ts","utf8");for(const m of["rating<1","rating>5","SUPPORT_RATING_NOT_READY","supportSatisfaction"])if(!sat.includes(m))throw new Error(`Missing satisfaction ${m}`);
+const unread=fs.readFileSync("lib/services/customer-unified-unread-service.ts","utf8");for(const m of["messages","notifications","total"])if(!unread.includes(m))throw new Error(`Missing unread ${m}`);
+console.log("ZhaoXi 17.0 Backend Major Cumulative Release structure is valid.");

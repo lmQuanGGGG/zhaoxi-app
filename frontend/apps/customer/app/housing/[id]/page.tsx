@@ -1,0 +1,1 @@
+import HousingListingDetail from "./HousingListingDetail";export default async function HousingPage({params}:{params:Promise<{id:string}>}){const{id}=await params;return <HousingListingDetail id={id}/>}

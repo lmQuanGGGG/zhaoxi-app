@@ -1,0 +1,10 @@
+import fs from"node:fs";
+const req=["SPRINT_16_69.md","SPRINT_16_70.md","scripts/migrate-16-70.mjs","lib/services/customer-message-center-service.ts","app/api/customer-messages/route.ts","app/api/customer-messages/[threadId]/route.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="16.70.0")throw new Error("Backend version");
+for(const x of["verify:16.70","db:apply:16.70","typecheck","build"])if(!p.scripts?.[x])throw new Error(`Missing ${x}`);
+const schema=fs.readFileSync("db/schema.ts","utf8");
+for(const m of["customerSupportThreads","customerSupportMessages","customer_support_threads","customer_support_messages"])if(!schema.includes(m))throw new Error(`Missing schema ${m}`);
+const s=fs.readFileSync("lib/services/customer-message-center-service.ts","utf8");
+for(const m of["housingMessagingService","travelMessagingService","paymentSupportService",'kind:"support"',"unreadCount","createSupport","markRead","customerId"])if(!s.includes(m))throw new Error(`Missing message center ${m}`);
+console.log("Sprint 16.70 Backend Customer Message Center, Conversation Threads & Unified Support Inbox structure is valid.");

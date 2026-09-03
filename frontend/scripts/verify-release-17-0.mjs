@@ -1,0 +1,10 @@
+import fs from"node:fs";
+const req=["RELEASE_17_0.md","SPRINT_16_71.md","apps/admin/app/AdminSupportDesk.tsx","apps/admin/app/SupportSlaPolicyPanel.tsx","apps/admin/app/SupportPerformancePanel.tsx","apps/admin/app/api/admin-support-desk/policies/route.ts","apps/admin/app/api/admin-support-desk/performance/route.ts","apps/customer/app/messages/CustomerSupportRating.tsx","apps/customer/app/_components/MiniTabBar.tsx","apps/customer/app/api/customer-support-satisfaction/[threadId]/route.ts","apps/customer/app/api/customer-unread-summary/route.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="17.0.0")throw new Error("Platform version must be 17.0.0");
+for(const x of["verify:17.0","typecheck:all","build:all"])if(!p.scripts?.[x])throw new Error(`Missing script ${x}`);
+const desk=fs.readFileSync("apps/admin/app/AdminSupportDesk.tsx","utf8");
+for(const m of["SupportSlaPolicyPanel","SupportPerformancePanel",'action:"priority"','action:"escalate"','action:"clear_escalation"',"recommendedAgent","detail.events"])if(!desk.includes(m))throw new Error(`Missing Admin 17.0 marker ${m}`);
+const msg=fs.readFileSync("apps/customer/app/messages/page.tsx","utf8");if(!msg.includes("CustomerSupportRating"))throw new Error("Customer rating not mounted");
+const tab=fs.readFileSync("apps/customer/app/_components/MiniTabBar.tsx","utf8");for(const m of["customer-unread-summary","unread.messages"])if(!tab.includes(m))throw new Error(`Missing unread marker ${m}`);
+console.log("ZhaoXi 17.0 Platform Major Cumulative Release structure is valid.");

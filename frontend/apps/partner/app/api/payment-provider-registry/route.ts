@@ -1,0 +1,1 @@
+export const dynamic="force-dynamic";const b=()=>process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"https://zhaoxi-backend.vercel.app";export async function GET(){const u=await fetch(`${b()}/api/payment-provider-registry`,{cache:"no-store"});return Response.json(await u.json(),{status:u.status})}

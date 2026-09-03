@@ -1,0 +1,10 @@
+import fs from"node:fs";
+const req=["SPRINT_16_67.md","SPRINT_16_68.md","scripts/migrate-16-68.mjs","lib/services/saved-search-watch-service.ts","app/api/customer-intents/[id]/watch/route.ts","app/api/customer-intents/alerts/route.ts","app/api/customer-intents/alerts/[eventId]/read/route.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="16.68.0")throw new Error("Backend version");
+for(const x of["verify:16.68","db:apply:16.68","typecheck","build"])if(!p.scripts?.[x])throw new Error(`Missing ${x}`);
+const schema=fs.readFileSync("db/schema.ts","utf8");
+for(const m of["watchEnabled","watchEnabledAt","lastWatchCheckedAt","lastAlertAt","customerSavedSearchAlertEvents","matchFingerprint"])if(!schema.includes(m))throw new Error(`Missing schema marker ${m}`);
+const s=fs.readFileSync("lib/services/saved-search-watch-service.ts","utf8");
+for(const m of["eventType:\"baseline\"","eventType:\"new_match\"","eventType:\"availability_changed\"","fingerprint","onConflictDoNothing","watchEnabled","isBaseline:false",".filter(x=>x.watchEnabled)"])if(!s.includes(m))throw new Error(`Missing watch marker ${m}`);
+console.log("Sprint 16.68 Backend Saved Search Alerts, Availability Watch & Smart Return Notifications structure is valid.");

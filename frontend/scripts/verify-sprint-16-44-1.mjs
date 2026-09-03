@@ -1,0 +1,10 @@
+import fs from"node:fs";
+const req=["SPRINT_16_44.md","SPRINT_16_44_1.md","apps/customer/app/du-lich/TravelBrowser.tsx"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
+if(pkg.version!=="16.44.1")throw new Error("Platform version must be 16.44.1");
+for(const x of["verify:16.44.1","typecheck:all","build:all"])if(!pkg.scripts?.[x])throw new Error(`Missing ${x}`);
+const browser=fs.readFileSync("apps/customer/app/du-lich/TravelBrowser.tsx","utf8");
+if(browser.includes("{m.maxGuests&&<small"))throw new Error("Unsafe maxGuests JSX condition remains");
+if(!browser.includes("{Boolean(m.maxGuests)&&<small"))throw new Error("Boolean maxGuests narrowing hotfix missing");
+console.log("Sprint 16.44.1 Platform TravelBrowser ReactNode TypeScript hotfix structure is valid.");

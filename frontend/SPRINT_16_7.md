@@ -1,0 +1,3 @@
+# Sprint 16.7 — Automatic Rollout Guard & Health-Based Pause
+
+Admin Release Center now exposes rollout guard policies for Customer, Partner and Driver. Unsafe rollout increases are rejected by Backend. While Release Center is monitoring health, guard evaluation runs alongside the 30-second health refresh and can reduce exposure automatically. A protected cron-ready Backend endpoint is available for optional background scheduling.\n

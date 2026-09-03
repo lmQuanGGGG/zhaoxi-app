@@ -1,0 +1,56 @@
+{
+  "name": "zhaoxi-partner",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.2",
+    "next": "16.2.6",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "@zhaoxi/branding": "1.0.0",
+    "@zhaoxi/ui": "1.0.0",
+    "@zhaoxi/i18n": "1.0.0",
+    "@zhaoxi/sdk": "1.0.0",
+    "@zhaoxi/auth": "1.0.0",
+    "@vercel/blob": "2.6.1",
+    "@zhaoxi/media": "*",
+    "@zhaoxi/platform": "14.0.0",
+    "@zhaoxi/theme": "14.0.0",
+    "@zhaoxi/order": "14.0.0",
+    "@zhaoxi/notification": "14.0.0",
+    "@zhaoxi/config": "14.0.0",
+    "@zhaoxi/driver": "14.6.0",
+    "@zhaoxi/payment": "14.5.0",
+    "@zhaoxi/support": "*",
+    "@zhaoxi/analytics": "*",
+    "@zhaoxi/observability": "*",
+    "@zhaoxi/feedback": "1.0.0",
+    "@zhaoxi/beta-access": "15.3.0",
+    "@zhaoxi/onboarding": "*",
+    "@zhaoxi/account": "15.6.0",
+    "@zhaoxi/feature-flags": "15.8.0",
+    "@zhaoxi/runtime-control": "15.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "drizzle-kit": "0.31.10",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.6",
+    "typescript": "5.9.3"
+  },
+  "type": "module",
+  "description": "赵喜 合作伙伴中心"
+}

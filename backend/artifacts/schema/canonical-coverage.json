@@ -1,0 +1,75 @@
+{
+  "generatedAt": "2026-08-17T03:00:25.383Z",
+  "pass": true,
+  "assertions": [
+    {
+      "name": "declared tables",
+      "actual": 90,
+      "expected": 90,
+      "pass": true
+    },
+    {
+      "name": "canonical files",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "legacy files",
+      "actual": 51,
+      "expected": 51,
+      "pass": true
+    },
+    {
+      "name": "canonical tables",
+      "actual": 24,
+      "expected": 24,
+      "pass": true
+    },
+    {
+      "name": "legacy tables",
+      "actual": 72,
+      "expected": 72,
+      "pass": true
+    },
+    {
+      "name": "union tables",
+      "actual": 90,
+      "expected": 90,
+      "pass": true
+    },
+    {
+      "name": "overlap tables",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "missing from canonical",
+      "actual": 66,
+      "expected": 66,
+      "pass": true
+    },
+    {
+      "name": "missing from all",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "extra in all",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    }
+  ],
+  "overlap": [
+    "delivery_job_events",
+    "driver_location_history",
+    "payment_events",
+    "payment_transactions",
+    "support_conversations",
+    "support_messages"
+  ],
+  "failures": []
+}

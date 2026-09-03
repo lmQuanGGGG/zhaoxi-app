@@ -1,0 +1,10 @@
+import fs from"node:fs";
+const req=["apps/admin/app/page.tsx","apps/admin/app/adminGlass.module.css","packages/auth/src/index.tsx","apps/admin/app/auth/admin-qr/page.tsx"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));if(pkg.version!=="17.7.3")throw new Error("Platform version must be 17.7.3");
+const page=fs.readFileSync("apps/admin/app/page.tsx","utf8"),css=fs.readFileSync("apps/admin/app/adminGlass.module.css","utf8"),auth=fs.readFileSync("packages/auth/src/index.tsx","utf8"),qr=fs.readFileSync("apps/admin/app/auth/admin-qr/page.tsx","utf8");
+for(const x of["phoneBottomNav","mobileNav","Customer · Partner · Admin","PartnerPaymentGatewayOversight","DeliveryPricingPanel"])if(!page.includes(x))throw new Error(`Missing device UI/business wiring: ${x}`);
+for(const x of["@media(max-width:767px)","@media(min-width:768px) and (max-width:1199px)","scroll-snap-type","position:fixed","grid-template-columns:minmax(0,1fr)!important"])if(!css.includes(x))throw new Error(`Missing responsive behavior: ${x}`);
+for(const x of["zx-topbar-collapse","zx-topbar-compact","setCompact"])if(!auth.includes(x))throw new Error(`Missing collapsible topbar: ${x}`);
+if(!qr.includes("useState<string>(t.checking)"))throw new Error("17.7.2 Admin QR typefix must remain preserved");
+console.log("ZhaoXi 17.7.3 Phone + Tablet adaptive Glass UI structure is valid; business/auth wiring preserved.");

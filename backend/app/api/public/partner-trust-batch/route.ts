@@ -1,0 +1,1 @@
+import{success}from"@/lib/core/api-response";import{publicPartnerTrustService as s}from"@/lib/services/public-partner-trust-service";export async function POST(r:Request){const b=await r.json().catch(()=>({}));return success(await s.batch(Array.isArray(b.organizationIds)?b.organizationIds.map(String):[]))}

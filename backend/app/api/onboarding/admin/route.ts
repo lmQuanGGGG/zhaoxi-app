@@ -1,0 +1,1 @@
+import {failure,success} from "@/lib/core/api-response";import {authenticatedSession} from "@/lib/auth-request";import {onboardingService} from "@/lib/services/onboarding-service";export async function GET(r:Request){const s=await authenticatedSession(r);return s?.role==="admin"?success(await onboardingService.list()):failure("Admin access required.",403)}

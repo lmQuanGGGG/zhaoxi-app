@@ -1,0 +1,11 @@
+import fs from"node:fs";
+const req=["SPRINT_16_64.md","SPRINT_16_65.md","apps/customer/app/discover/page.tsx","apps/customer/app/discover/PersonalizedDiscoveryHub.tsx","apps/customer/app/_components/FavoriteServiceButton.tsx","apps/customer/app/api/customer-discovery/hub/route.ts","apps/customer/app/api/customer-discovery/favorites/[serviceId]/route.ts","apps/customer/app/api/customer-discovery/views/[serviceId]/route.ts","apps/customer/app/api/customer-discovery/history/route.ts","apps/customer/app/search/UnifiedServiceDiscovery.tsx","apps/customer/app/partners/[organizationId]/PublicPartnerTrustProfile.tsx","apps/customer/app/housing/[id]/HousingListingDetail.tsx","apps/customer/app/travel/[id]/TravelExperienceDetail.tsx"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="16.65.0")throw new Error("Platform version must be 16.65.0");
+for(const x of["verify:16.65","typecheck:all","build:all"])if(!p.scripts?.[x])throw new Error(`Missing ${x}`);
+const hub=fs.readFileSync("apps/customer/app/discover/PersonalizedDiscoveryHub.tsx","utf8");
+for(const m of["customer-discovery/hub","favorites","recentlyViewed","continueViewing","forYou","customer-discovery/history","FavoriteServiceButton"])if(!hub.includes(m))throw new Error(`Missing hub marker ${m}`);
+const fav=fs.readFileSync("apps/customer/app/_components/FavoriteServiceButton.tsx","utf8");for(const m of["customer-discovery/favorites","method:\"PUT\"","method:\"GET\""])if(!fav.includes(m))throw new Error(`Missing favorite marker ${m}`);
+if(!fs.readFileSync("apps/customer/app/search/UnifiedServiceDiscovery.tsx","utf8").includes('href="/discover"'))throw new Error("Search -> personalized hub link missing");
+for(const f of["apps/customer/app/housing/[id]/HousingListingDetail.tsx","apps/customer/app/travel/[id]/TravelExperienceDetail.tsx"])for(const m of["FavoriteServiceButton","customer-discovery/views"])if(!fs.readFileSync(f,"utf8").includes(m))throw new Error(`Missing ${m} in ${f}`);
+console.log("Sprint 16.65 Platform Personalized Discovery, Customer Favorites & Recently Viewed Hub structure is valid.");

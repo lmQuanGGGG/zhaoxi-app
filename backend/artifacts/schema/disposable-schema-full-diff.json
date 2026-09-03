@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-08-18T14:02:07.576Z",
+  "scope": "FULL_CONTRACT_B2B3_DISPOSABLE",
+  "counts": {
+    "declaredTables": 90,
+    "productionPublicTables": 90,
+    "matchedTables": 90,
+    "missingTables": 0,
+    "extraTables": 0,
+    "structuralIssues": 0,
+    "informationalDifferences": 0
+  },
+  "byKind": {},
+  "informationalByKind": {},
+  "missingTables": [],
+  "extraTables": [],
+  "issues": [],
+  "informational": []
+}

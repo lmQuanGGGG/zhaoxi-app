@@ -1,0 +1,32 @@
+{
+  "release": "19.0.0",
+  "architecture": "canonical-baseline-convergence",
+  "baseline": {
+    "file": "0000_full_schema.sql",
+    "sha256": "013a35fdeb234dd035e323551e1032cbca128566dfce531c3397ba3103c79819",
+    "tables": 90,
+    "columns": 917,
+    "enums": 4
+  },
+  "requiredBootstrap": {
+    "file": "0001_required_bootstrap.sql",
+    "sha256": "9d70c318b63da3ea7021160d20768cd85a521568e649389f1b75f3e04a4c6090"
+  },
+  "optionalSeed": {
+    "file": "optional_seed.sql",
+    "sha256": "ba3b0e312630951d8b184041b4a51f9efd2d384193df6fa17cd0aec59b3f2975",
+    "required": false
+  },
+  "futureMigrationStart": "0002",
+  "legacyScriptsRetired": 51,
+  "drizzleLegacyLedgerBootstrapped": false,
+  "forwardMigrations": [
+    {
+      "sequence": "0002",
+      "file": "0002_payment_provider_event_registry.sql",
+      "sha256": "7d140dfeeab4856dbccd44fec3d507a9a0496900d6931effc2ad797f36b220de",
+      "description": "Payment provider webhook event registry and replay-claim foundation",
+      "requiresProductionAttestation": true
+    }
+  ]
+}

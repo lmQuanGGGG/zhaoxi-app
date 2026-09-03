@@ -1,0 +1,3 @@
+import{customerMessageCenterService}from"@/lib/services/customer-message-center-service";import{customerNotificationCenterService}from"@/lib/services/customer-notification-center-service";
+export class CustomerUnifiedUnreadService{async summary(userId:string,locale="vi-VN"){const[messages,notifications]=await Promise.all([customerMessageCenterService.inbox(userId,locale),customerNotificationCenterService.inbox(userId,locale,"all")]);return{messages:Number(messages.summary?.unread||0),notifications:Number(notifications.summary?.unread||0),total:Number(messages.summary?.unread||0)+Number(notifications.summary?.unread||0)}}}
+export const customerUnifiedUnreadService=new CustomerUnifiedUnreadService();

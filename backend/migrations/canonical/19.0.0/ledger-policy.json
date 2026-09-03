@@ -1,0 +1,19 @@
+{
+  "release": "19.0.0",
+  "ledger": "zhaoxi_canonical_migration_ledger",
+  "drizzleLegacyLedgerBootstrapped": false,
+  "fresh": {
+    "baseline": "0000_full_schema.sql",
+    "requiredBootstrap": "0001_required_bootstrap.sql",
+    "futureMigrationStart": "0002"
+  },
+  "production": {
+    "replayBaseline": false,
+    "reason": "Production was reconciled in Sprint B2A and must be attested, never replayed from the fresh baseline.",
+    "attestationRequiredBeforeFutureCanonicalMigrations": true
+  },
+  "legacy": {
+    "dbApplyScriptsRetiredForFreshBuilds": true,
+    "preserveForHistoricalAudit": true
+  }
+}

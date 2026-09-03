@@ -1,0 +1,17 @@
+{
+  "release": "19.0.0",
+  "phase": "Sprint B2A production gap closure",
+  "migration": "migrations/0005_release_19_production_gap_closure.sql",
+  "sha256": "286fe153fbf0f84d967ec03cdd1ed2cc7c32a7f4119caa92d2e064dd160c5a3c",
+  "targets": [
+    "payment_transactions",
+    "payment_events",
+    "support_conversations",
+    "support_messages",
+    "driver_location_history",
+    "delivery_job_events"
+  ],
+  "baselinePublicTables": 84,
+  "expectedPublicTablesAfter": 90,
+  "drizzleLedgerExpectedBefore": false
+}

@@ -1,0 +1,10 @@
+import fs from "node:fs";
+const files=["lib/services/release-readiness-service.ts","lib/services/release-approval-service.ts","SPRINT_16_5.md"];
+for(const f of files)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const readiness=fs.readFileSync("lib/services/release-readiness-service.ts","utf8");
+const approval=fs.readFileSync("lib/services/release-approval-service.ts","utf8");
+if(!readiness.includes("publicReady")||!readiness.includes("uiCriticalReady")||!readiness.includes("ui-acceptance"))throw new Error("QA release gate missing");
+if(!approval.includes("UI_ACCEPTANCE_NOT_READY"))throw new Error("Public release freeze guard missing");
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));
+if(p.version!=="16.5.0")throw new Error("Backend version must be 16.5.0");
+console.log("Sprint 16.5 Backend QA Gate Integration & Release Freeze structure is valid.");

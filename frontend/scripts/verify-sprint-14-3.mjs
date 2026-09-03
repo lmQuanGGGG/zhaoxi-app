@@ -1,0 +1,1 @@
+import {access} from "node:fs/promises";const files=["packages/driver/src/index.ts","apps/driver/app/DriverDashboard.tsx","apps/driver/app/api/driver/[...path]/route.ts","apps/customer/app/api/delivery/[requestId]/route.ts"];for(const file of files)await access(new URL(`../${file}`,import.meta.url));console.log("Sprint 14.3 Platform Driver & Delivery Core structure is valid.");

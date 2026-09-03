@@ -1,0 +1,10 @@
+import fs from"node:fs";
+const req=["SPRINT_16_26.md","SPRINT_16_27.md","lib/services/partner-kitchen-service.ts","app/api/partner-kitchen/route.ts","app/api/partner-food-availability/[id]/route.ts","app/api/service-requests/route.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="16.27.0")throw new Error("Backend version must be 16.27.0");
+for(const x of["verify:16.27","typecheck","build"])if(!p.scripts?.[x])throw new Error(x);
+const q=fs.readFileSync("lib/services/partner-kitchen-service.ts","utf8");
+for(const m of["overdueMinutes","kitchenPriority","estimatedReadyAt","ready_for_pickup","sortScore","organizationMembers"])if(!q.includes(m))throw new Error(m);
+const avail=fs.readFileSync("app/api/partner-food-availability/[id]/route.ts","utf8");for(const m of["PARTNER_REQUIRED","organizationMembers","isAvailable","availabilityUpdatedAt"])if(!avail.includes(m))throw new Error(m);
+const order=fs.readFileSync("app/api/service-requests/route.ts","utf8");for(const m of["serviceMetadata","FOOD_ITEM_SOLD_OUT","isAvailable===false"])if(!order.includes(m))throw new Error(m);
+console.log("Sprint 16.27 Backend Restaurant Order Management, Kitchen Queue & Partner Operations structure is valid.");

@@ -1,0 +1,11 @@
+import fs from"node:fs";
+const req=["SPRINT_16_49.md","SPRINT_16_50.md","apps/partner/app/PartnerPaymentGatewaySettings.tsx","apps/partner/app/OperationsBoard.tsx","apps/partner/app/api/partner-payment-gateway/route.ts","apps/customer/app/travel/requests/TravelPartnerPayment.tsx","apps/customer/app/travel/requests/TravelBookingTracker.tsx","apps/customer/app/api/customer-travel-inquiries/[id]/payment/route.ts","apps/admin/app/PartnerPaymentGatewayOversight.tsx","apps/admin/app/TravelOversightPanel.tsx","apps/admin/app/api/admin-partner-payment-gateways/route.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));if(pkg.version!=="16.50.0")throw new Error("Platform version must be 16.50.0");
+for(const x of["verify:16.50","typecheck:all","build:all"])if(!pkg.scripts?.[x])throw new Error(`Missing ${x}`);
+const partner=fs.readFileSync("apps/partner/app/PartnerPaymentGatewaySettings.tsx","utf8");for(const m of["partner_checkout_link","partner_qr","custom_api","merchantId","credentialRef","webhookSecretRef","Partner"])if(!partner.includes(m))throw new Error(`Missing Partner gateway UI ${m}`);
+const customer=fs.readFileSync("apps/customer/app/travel/requests/TravelPartnerPayment.tsx","utf8");for(const m of["customer-travel-inquiries","checkoutUrl","qrPayload","direct","refresh"])if(!customer.includes(m))throw new Error(`Missing Customer Partner-payment UI ${m}`);
+const tracker=fs.readFileSync("apps/customer/app/travel/requests/TravelBookingTracker.tsx","utf8");if(!tracker.includes("<TravelPartnerPayment"))throw new Error("Customer Travel payment UI not mounted");
+const admin=fs.readFileSync("apps/admin/app/PartnerPaymentGatewayOversight.tsx","utf8");if(!admin.includes("admin-partner-payment-gateways")||!admin.includes("readiness"))throw new Error("Admin gateway readiness oversight missing");
+const travel=fs.readFileSync("apps/admin/app/TravelOversightPanel.tsx","utf8");if(!travel.includes("<PartnerPaymentGatewayOversight/>"))throw new Error("Admin gateway oversight not mounted");
+console.log("Sprint 16.50 Platform Partner-owned Payment Gateway Integration Foundation structure is valid.");

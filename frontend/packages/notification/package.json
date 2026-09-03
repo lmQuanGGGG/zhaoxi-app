@@ -1,0 +1,1 @@
+{"name":"@zhaoxi/notification","version":"14.0.0","private":true,"type":"module","exports":{".":"./src/index.ts"},"types":"./src/index.ts"}

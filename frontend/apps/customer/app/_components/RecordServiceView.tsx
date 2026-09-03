@@ -1,0 +1,1 @@
+"use client";import{useEffect}from"react";export default function RecordServiceView({serviceId}:{serviceId:string}){useEffect(()=>{if(!serviceId)return;fetch(`/api/customer-discovery/views/${serviceId}`,{method:"POST"}).catch(()=>{})},[serviceId]);return null}

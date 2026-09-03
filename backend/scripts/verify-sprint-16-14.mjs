@@ -1,0 +1,3 @@
+import fs from "node:fs";
+for(const f of ["SPRINT_16_13_2.md","SPRINT_16_14.md","app/api/auth/guest/bootstrap/route.ts","app/api/support/route.ts","app/api/services/route.ts"])if(!fs.existsSync(f))throw new Error(`Missing Sprint 16.14 cumulative file: ${f}`);
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));if(pkg.version!=="16.14.0")throw new Error("Backend version must be 16.14.0");for(const x of ["verify:16.14","typecheck","build"])if(!pkg.scripts?.[x])throw new Error(`Missing ${x}`);console.log("Sprint 16.14 Backend Customer UI System compatibility structure is valid.");

@@ -1,0 +1,12 @@
+"use client";
+import Link from "next/link";
+import {useZhaoXiLocale} from "@zhaoxi/i18n";
+import {CustomerPageHeader,CustomerShell} from "../_components/CustomerShell";
+import {CustomerIcon,type CustomerIconName} from "../_components/CustomerIcon";
+import styles from "./emergency.module.css";
+const data={
+"zh-CN":{title:"紧急帮助",hint:"选择需要的帮助，赵喜助手会先提供基础指引。如需在线人工一对一服务，可在助手中申请付费支持。",items:[["medical","医疗急救","医院、急救与医疗沟通","medical"],["police","报警与证件遗失","报警、证件遗失与语言协助","police"],["road","道路救援与事故","车辆救援、事故沟通与定位","road"],["passport","领事协助","官方联系方式与沟通准备","consular"]]},
+"zh-TW":{title:"緊急幫助",hint:"選擇需要的幫助，趙喜助手會先提供基礎指引。如需線上人工一對一服務，可在助手中申請付費支援。",items:[["medical","醫療急救","醫院、急救與醫療溝通","medical"],["police","報警與證件遺失","報警、證件遺失與語言協助","police"],["road","道路救援與事故","車輛救援、事故溝通與定位","road"],["passport","領事協助","官方聯絡方式與溝通準備","consular"]]},
+"vi-VN":{title:"Hỗ trợ khẩn cấp",hint:"Chọn nội dung cần hỗ trợ. Trợ lý ZhaoXi sẽ cung cấp hướng dẫn cơ bản trước; hỗ trợ nhân viên Online 1-1 có thể được yêu cầu trong trợ lý và là dịch vụ có phí.",items:[["medical","Cấp cứu y tế","Bệnh viện, cấp cứu và hỗ trợ giao tiếp y tế","medical"],["police","Công an & mất giấy tờ","Trình báo, thất lạc giấy tờ và hỗ trợ ngôn ngữ","police"],["road","Cứu hộ xe & tai nạn","Cứu hộ phương tiện, tai nạn và xác định vị trí","road"],["passport","Hỗ trợ lãnh sự","Thông tin liên hệ chính thức và chuẩn bị trao đổi","consular"]]},
+"en-US":{title:"Emergency help",hint:"Choose the help you need. ZhaoXi Assistant provides basic guidance first; paid 1-to-1 online staff support can be requested inside the assistant.",items:[["medical","Medical emergency","Hospital, emergency and medical communication","medical"],["police","Police & lost documents","Police reports, lost documents and language help","police"],["road","Roadside rescue & accidents","Vehicle rescue, accident communication and location","road"],["passport","Consular assistance","Official contacts and communication preparation","consular"]]}} as const;
+export default function Emergency(){const{locale}=useZhaoXiLocale();const t=data[locale];return <CustomerShell><CustomerPageHeader title={t.title} subtitle={t.hint}/><section className={styles.list}>{t.items.map(([icon,title,desc,topic])=><Link href={`/support?topic=${topic}`} key={topic} className={styles.choice}><span><CustomerIcon name={icon as CustomerIconName}/></span><div><b>{title}</b><small>{desc}</small></div><CustomerIcon name="chevron"/></Link>)}</section></CustomerShell>}

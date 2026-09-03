@@ -1,0 +1,1 @@
+import CustomerNotificationCenter from"./CustomerNotificationCenter";export default function Page(){return <CustomerNotificationCenter/>}

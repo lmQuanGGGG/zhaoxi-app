@@ -1,0 +1,2 @@
+import {json} from "@/lib/api";import {foodCommercialService} from "@/lib/services/food-commercial-service";export const dynamic="force-dynamic";
+export async function GET(request:Request){const u=new URL(request.url),ids=(u.searchParams.get("ids")||"").split(",").filter(Boolean).slice(0,100),q:Record<string,number>={};for(const id of ids)q[id]=Math.max(1,Number(u.searchParams.get(`q_${id}`)||1));const data=await foodCommercialService.price(ids,q);return json({ok:true,data:Object.fromEntries(data.map(x=>[x.id,x]))},{headers:{"cache-control":"no-store"}})}

@@ -1,0 +1,2 @@
+import { failure, success } from "@/lib/core/api-response"; import { sessionService } from "@/lib/services/session-service"; export const dynamic="force-dynamic";
+export async function POST(request:Request){const body=await request.json().catch(()=>({}));if(!body?.refreshToken)return failure("Refresh token required.",401,undefined,"REFRESH_REQUIRED");const result=await sessionService.refresh(String(body.refreshToken));return result?success(result):failure("Refresh session expired.",401,undefined,"REFRESH_EXPIRED");}

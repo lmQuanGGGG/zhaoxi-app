@@ -1,0 +1,34 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
+const read=(p)=>readFile(path.join(root,p),"utf8");
+const [auth,account,i18n,services,presentation,messages,emergency,support,compat]=await Promise.all([
+  "packages/auth/src/index.tsx","packages/account/index.tsx","packages/i18n/src/index.tsx","apps/customer/app/services/page.tsx","apps/customer/app/_components/customer-service-presentation.ts","apps/customer/app/messages/page.tsx","apps/customer/app/khan-cap/page.tsx","packages/support/src/index.tsx","scripts/verify-release-19-0-0-security-compatibility.mjs"
+].map(read));
+assert.match(auth,/qrGenerating/);
+assert.match(auth,/export function WeChatLoginPanel/);
+assert.match(account,/WeChatLoginPanel/);
+assert.match(account,/upgradeWechat/);
+assert.doesNotMatch(account,/const labels:Record<Role,string>/);
+assert.doesNotMatch(auth,/正在生成二维码…<\/div>/);
+assert.doesNotMatch(auth,/sessionMode:"legacy"/);
+assert.match(auth,/session\/exchange/);
+assert.match(i18n,/localizeServiceModuleName/);
+assert.match(i18n,/"en-US":"Food delivery"/);
+assert.match(i18n,/"zh-TW":"外賣訂餐"/);
+assert.match(services,/localizeServiceModuleName\(locale/);
+assert.doesNotMatch(services,/locale === "vi-VN" \? .*\.vi : .*\.zh/);
+assert.match(services,/getCustomerServiceHref/);
+for (const route of ["/services/food","/thue-nha","/ho-chieu-thi-thuc","/thue-xe","/phien-dich","/du-lich","/thanh-toan","/cong-dong","/cho-trung-quoc","/khan-cap"]) assert.ok(presentation.includes(route), `missing canonical customer service route ${route}`);
+assert.match(auth,/assistantDescription/);
+assert.match(auth,/copy\.support/);
+assert.match(auth,/copy\.close/);
+assert.match(messages,/href="\/notifications"/);
+assert.match(messages,/href="\/support"/);
+assert.match(emergency,/href=\{`\/support\?topic=\$\{topic\}`\}/);
+assert.match(support,/paidHumanEnabled/);
+assert.match(support,/action:forceHuman\?'escalate':'message'/);
+assert.match(compat,/27 active BFF routes/);
+console.log("ZhaoXi 19.0.0 Sprint C Platform verified: server-session auth, locale-pure service routing, Messages/Notification/Assistant, and Emergency paid-human support contracts PASS.");

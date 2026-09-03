@@ -1,0 +1,10 @@
+import fs from"node:fs";
+const req=["SPRINT_16_38.md","SPRINT_16_38_1.md","apps/customer/app/_components/HousingBrowser.tsx"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
+if(pkg.version!=="16.38.1")throw new Error("Platform version must be 16.38.1");
+for(const x of["verify:16.38.1","typecheck:all","build:all"])if(!pkg.scripts?.[x])throw new Error(`Missing ${x}`);
+const browser=fs.readFileSync("apps/customer/app/_components/HousingBrowser.tsx","utf8");
+if(browser.includes("{m.availableFrom&&<small"))throw new Error("Unsafe unknown JSX condition remains");
+if(!browser.includes("{Boolean(m.availableFrom)&&<small"))throw new Error("availableFrom boolean narrowing hotfix missing");
+console.log("Sprint 16.38.1 Platform HousingBrowser TypeScript hotfix structure is valid.");

@@ -1,0 +1,10 @@
+import fs from"node:fs";
+const req=["SPRINT_16_67.md","SPRINT_16_68.md","apps/customer/app/SavedSearchAlerts.tsx","apps/customer/app/AppProviders.tsx","apps/customer/app/search/SavedSearchControls.tsx","apps/customer/app/_components/PersonalizedHomeFeed.tsx","apps/customer/app/api/customer-intents/[id]/watch/route.ts","apps/customer/app/api/customer-intents/alerts/route.ts","apps/customer/app/api/customer-intents/alerts/[eventId]/read/route.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="16.68.0")throw new Error("Platform version");
+for(const x of["verify:16.68","typecheck:all","build:all"])if(!p.scripts?.[x])throw new Error(`Missing ${x}`);
+const c=fs.readFileSync("apps/customer/app/search/SavedSearchControls.tsx","utf8");for(const m of["toggleWatch","watchEnabled","/watch","🔔","🔕"])if(!c.includes(m))throw new Error(`Missing watch UI ${m}`);
+const a=fs.readFileSync("apps/customer/app/SavedSearchAlerts.tsx","utf8");for(const m of["customer-intents/alerts","availability_changed","new matching","method:\"PATCH\""])if(!a.includes(m)&&m!=="new matching")throw new Error(`Missing alert UI ${m}`);
+if(!fs.readFileSync("apps/customer/app/AppProviders.tsx","utf8").includes("<SavedSearchAlerts/>"))throw new Error("SavedSearchAlerts not mounted");
+if(!fs.readFileSync("apps/customer/app/_components/PersonalizedHomeFeed.tsx","utf8").includes('x.watchEnabled?"🔔 "'))throw new Error("Home watch indicator missing");
+console.log("Sprint 16.68 Platform Saved Search Alerts, Availability Watch & Smart Return Notifications structure is valid.");

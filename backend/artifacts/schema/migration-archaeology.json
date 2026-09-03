@@ -1,0 +1,1301 @@
+{
+  "generatedAt": "2026-08-17T02:59:55.579Z",
+  "counts": {
+    "declaredTables": 90,
+    "declaredEnums": 4,
+    "canonicalFiles": 6,
+    "legacyFiles": 51,
+    "canonicalTables": 24,
+    "legacyTables": 72,
+    "unionTables": 90,
+    "overlapTables": 6,
+    "missingFromCanonical": 66,
+    "missingFromAll": 0,
+    "extraInAll": 0
+  },
+  "declaredTables": [
+    "auth_sessions",
+    "beta_access",
+    "beta_feedback",
+    "beta_invite_redemptions",
+    "beta_invites",
+    "cities",
+    "coupon_redemptions",
+    "customer_browsing_history",
+    "customer_coupon_claims",
+    "customer_coupons",
+    "customer_favorites",
+    "customer_notification_preferences",
+    "customer_notification_receipts",
+    "customer_notification_states",
+    "customer_operation_events",
+    "customer_operation_tasks",
+    "customer_profiles",
+    "customer_relationship_events",
+    "customer_relationship_profiles",
+    "customer_saved_addresses",
+    "customer_saved_search_alert_events",
+    "customer_saved_searches",
+    "customer_segment_members",
+    "customer_segments",
+    "customer_service_recovery_cases",
+    "customer_support_messages",
+    "customer_support_settings",
+    "customer_support_threads",
+    "customer_ui_settings",
+    "delivery_job_events",
+    "delivery_jobs",
+    "delivery_pricing_policies",
+    "driver_location_history",
+    "driver_locations",
+    "driver_profiles",
+    "feature_flags",
+    "languages",
+    "media_assets",
+    "module_translations",
+    "modules",
+    "onboarding_applications",
+    "operations_agent_capacity",
+    "operations_approval_requests",
+    "operations_audit_logs",
+    "operations_playbooks",
+    "operations_routing_decisions",
+    "operations_routing_policies",
+    "operations_workflow_events",
+    "operations_workflow_runs",
+    "organization_members",
+    "organizations",
+    "partner_payment_transactions",
+    "payment_events",
+    "payment_transactions",
+    "qr_pairing_sessions",
+    "release_alert_policies",
+    "release_approvals",
+    "release_audit_events",
+    "release_incidents",
+    "restaurant_commission_policies",
+    "restaurant_coupons",
+    "restaurant_settlement_adjustments",
+    "restaurant_settlements",
+    "role_switch_handoffs",
+    "rollout_guard_events",
+    "rollout_guard_policies",
+    "runtime_controls",
+    "runtime_events",
+    "service_request_status_history",
+    "service_requests",
+    "service_translations",
+    "services",
+    "support_automation_rules",
+    "support_conversations",
+    "support_internal_notes",
+    "support_knowledge_articles",
+    "support_knowledge_feedback",
+    "support_knowledge_views",
+    "support_macros",
+    "support_messages",
+    "support_satisfaction",
+    "support_sla_policies",
+    "support_tags",
+    "support_thread_events",
+    "support_thread_tags",
+    "trusted_device_identities",
+    "ui_acceptance_items",
+    "user_roles",
+    "users",
+    "wechat_login_sessions"
+  ],
+  "canonicalTables": [
+    "auth_sessions",
+    "cities",
+    "delivery_job_events",
+    "delivery_jobs",
+    "driver_location_history",
+    "driver_locations",
+    "driver_profiles",
+    "languages",
+    "media_assets",
+    "module_translations",
+    "modules",
+    "organization_members",
+    "organizations",
+    "payment_events",
+    "payment_transactions",
+    "service_request_status_history",
+    "service_requests",
+    "service_translations",
+    "services",
+    "support_conversations",
+    "support_messages",
+    "user_roles",
+    "users",
+    "wechat_login_sessions"
+  ],
+  "legacyTables": [
+    "beta_access",
+    "beta_feedback",
+    "beta_invite_redemptions",
+    "beta_invites",
+    "coupon_redemptions",
+    "customer_browsing_history",
+    "customer_coupon_claims",
+    "customer_coupons",
+    "customer_favorites",
+    "customer_notification_preferences",
+    "customer_notification_receipts",
+    "customer_notification_states",
+    "customer_operation_events",
+    "customer_operation_tasks",
+    "customer_profiles",
+    "customer_relationship_events",
+    "customer_relationship_profiles",
+    "customer_saved_addresses",
+    "customer_saved_search_alert_events",
+    "customer_saved_searches",
+    "customer_segment_members",
+    "customer_segments",
+    "customer_service_recovery_cases",
+    "customer_support_messages",
+    "customer_support_settings",
+    "customer_support_threads",
+    "customer_ui_settings",
+    "delivery_job_events",
+    "delivery_pricing_policies",
+    "driver_location_history",
+    "feature_flags",
+    "onboarding_applications",
+    "operations_agent_capacity",
+    "operations_approval_requests",
+    "operations_audit_logs",
+    "operations_playbooks",
+    "operations_routing_decisions",
+    "operations_routing_policies",
+    "operations_workflow_events",
+    "operations_workflow_runs",
+    "partner_payment_transactions",
+    "payment_events",
+    "payment_transactions",
+    "qr_pairing_sessions",
+    "release_alert_policies",
+    "release_approvals",
+    "release_audit_events",
+    "release_incidents",
+    "restaurant_commission_policies",
+    "restaurant_coupons",
+    "restaurant_settlement_adjustments",
+    "restaurant_settlements",
+    "role_switch_handoffs",
+    "rollout_guard_events",
+    "rollout_guard_policies",
+    "runtime_controls",
+    "runtime_events",
+    "support_automation_rules",
+    "support_conversations",
+    "support_internal_notes",
+    "support_knowledge_articles",
+    "support_knowledge_feedback",
+    "support_knowledge_views",
+    "support_macros",
+    "support_messages",
+    "support_satisfaction",
+    "support_sla_policies",
+    "support_tags",
+    "support_thread_events",
+    "support_thread_tags",
+    "trusted_device_identities",
+    "ui_acceptance_items"
+  ],
+  "overlap": [
+    "delivery_job_events",
+    "driver_location_history",
+    "payment_events",
+    "payment_transactions",
+    "support_conversations",
+    "support_messages"
+  ],
+  "missingFromCanonical": [
+    "beta_access",
+    "beta_feedback",
+    "beta_invite_redemptions",
+    "beta_invites",
+    "coupon_redemptions",
+    "customer_browsing_history",
+    "customer_coupon_claims",
+    "customer_coupons",
+    "customer_favorites",
+    "customer_notification_preferences",
+    "customer_notification_receipts",
+    "customer_notification_states",
+    "customer_operation_events",
+    "customer_operation_tasks",
+    "customer_profiles",
+    "customer_relationship_events",
+    "customer_relationship_profiles",
+    "customer_saved_addresses",
+    "customer_saved_search_alert_events",
+    "customer_saved_searches",
+    "customer_segment_members",
+    "customer_segments",
+    "customer_service_recovery_cases",
+    "customer_support_messages",
+    "customer_support_settings",
+    "customer_support_threads",
+    "customer_ui_settings",
+    "delivery_pricing_policies",
+    "feature_flags",
+    "onboarding_applications",
+    "operations_agent_capacity",
+    "operations_approval_requests",
+    "operations_audit_logs",
+    "operations_playbooks",
+    "operations_routing_decisions",
+    "operations_routing_policies",
+    "operations_workflow_events",
+    "operations_workflow_runs",
+    "partner_payment_transactions",
+    "qr_pairing_sessions",
+    "release_alert_policies",
+    "release_approvals",
+    "release_audit_events",
+    "release_incidents",
+    "restaurant_commission_policies",
+    "restaurant_coupons",
+    "restaurant_settlement_adjustments",
+    "restaurant_settlements",
+    "role_switch_handoffs",
+    "rollout_guard_events",
+    "rollout_guard_policies",
+    "runtime_controls",
+    "runtime_events",
+    "support_automation_rules",
+    "support_internal_notes",
+    "support_knowledge_articles",
+    "support_knowledge_feedback",
+    "support_knowledge_views",
+    "support_macros",
+    "support_satisfaction",
+    "support_sla_policies",
+    "support_tags",
+    "support_thread_events",
+    "support_thread_tags",
+    "trusted_device_identities",
+    "ui_acceptance_items"
+  ],
+  "missingFromAll": [],
+  "extraInAll": [],
+  "legacyOperationTotals": {
+    "createTable": 73,
+    "alterTable": 20,
+    "createIndex": 121,
+    "createType": 0,
+    "alterType": 0,
+    "dropSchemaObject": 1,
+    "insert": 14,
+    "update": 3,
+    "delete": 0
+  },
+  "canonical": [
+    {
+      "file": "0000_zhaoxi_platform_core.sql",
+      "tables": [
+        "cities",
+        "languages",
+        "module_translations",
+        "modules",
+        "organization_members",
+        "organizations",
+        "service_request_status_history",
+        "service_requests",
+        "service_translations",
+        "services",
+        "users"
+      ],
+      "ops": {
+        "createTable": 11,
+        "alterTable": 0,
+        "createIndex": 12,
+        "createType": 4,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "0001_marketplace_media.sql",
+      "tables": [
+        "media_assets"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 3,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "0002_wechat_login.sql",
+      "tables": [
+        "user_roles",
+        "wechat_login_sessions"
+      ],
+      "ops": {
+        "createTable": 2,
+        "alterTable": 0,
+        "createIndex": 4,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "0003_unified_auth_sessions.sql",
+      "tables": [
+        "auth_sessions"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 3,
+        "createIndex": 4,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "0004_driver_delivery_core.sql",
+      "tables": [
+        "delivery_jobs",
+        "driver_locations",
+        "driver_profiles"
+      ],
+      "ops": {
+        "createTable": 3,
+        "alterTable": 0,
+        "createIndex": 5,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "0005_release_19_production_gap_closure.sql",
+      "tables": [
+        "delivery_job_events",
+        "driver_location_history",
+        "payment_events",
+        "payment_transactions",
+        "support_conversations",
+        "support_messages"
+      ],
+      "ops": {
+        "createTable": 6,
+        "alterTable": 0,
+        "createIndex": 16,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    }
+  ],
+  "legacy": [
+    {
+      "file": "migrate-13-1.mjs",
+      "tables": [],
+      "ops": {
+        "createTable": 0,
+        "alterTable": 0,
+        "createIndex": 0,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-14-1.mjs",
+      "tables": [],
+      "ops": {
+        "createTable": 0,
+        "alterTable": 0,
+        "createIndex": 0,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-14-2.mjs",
+      "tables": [],
+      "ops": {
+        "createTable": 0,
+        "alterTable": 0,
+        "createIndex": 0,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-14-3.mjs",
+      "tables": [],
+      "ops": {
+        "createTable": 0,
+        "alterTable": 0,
+        "createIndex": 0,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-14-4.mjs",
+      "tables": [
+        "payment_events",
+        "payment_transactions"
+      ],
+      "ops": {
+        "createTable": 2,
+        "alterTable": 0,
+        "createIndex": 5,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-14-6.mjs",
+      "tables": [
+        "driver_location_history"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 3,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-14-7.mjs",
+      "tables": [
+        "support_conversations",
+        "support_messages"
+      ],
+      "ops": {
+        "createTable": 2,
+        "alterTable": 0,
+        "createIndex": 5,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-15-1.mjs",
+      "tables": [
+        "runtime_events"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 4,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-15-2.mjs",
+      "tables": [
+        "beta_feedback"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 4,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-15-3.mjs",
+      "tables": [
+        "beta_access",
+        "beta_invite_redemptions",
+        "beta_invites"
+      ],
+      "ops": {
+        "createTable": 3,
+        "alterTable": 0,
+        "createIndex": 5,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-15-4.mjs",
+      "tables": [
+        "onboarding_applications"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 2,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-15-6.mjs",
+      "tables": [
+        "role_switch_handoffs"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 2,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-15-8.mjs",
+      "tables": [
+        "feature_flags"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 2,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 1,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-15-9.mjs",
+      "tables": [
+        "runtime_controls"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 1,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 1,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-1.mjs",
+      "tables": [
+        "release_approvals"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 2,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-3.mjs",
+      "tables": [
+        "release_alert_policies",
+        "release_incidents"
+      ],
+      "ops": {
+        "createTable": 2,
+        "alterTable": 0,
+        "createIndex": 3,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 1,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-4.mjs",
+      "tables": [
+        "ui_acceptance_items"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 3,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 1,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-6.mjs",
+      "tables": [],
+      "ops": {
+        "createTable": 0,
+        "alterTable": 1,
+        "createIndex": 0,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 1,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-7.mjs",
+      "tables": [
+        "rollout_guard_events",
+        "rollout_guard_policies"
+      ],
+      "ops": {
+        "createTable": 2,
+        "alterTable": 0,
+        "createIndex": 3,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 1,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-8.mjs",
+      "tables": [
+        "release_audit_events"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 3,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-9.mjs",
+      "tables": [
+        "operations_audit_logs",
+        "release_audit_events"
+      ],
+      "ops": {
+        "createTable": 2,
+        "alterTable": 0,
+        "createIndex": 6,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-10.mjs",
+      "tables": [],
+      "ops": {
+        "createTable": 0,
+        "alterTable": 0,
+        "createIndex": 2,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-11.mjs",
+      "tables": [],
+      "ops": {
+        "createTable": 0,
+        "alterTable": 0,
+        "createIndex": 0,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-12-1.mjs",
+      "tables": [
+        "qr_pairing_sessions"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 2,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-12-2.mjs",
+      "tables": [
+        "trusted_device_identities"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 3,
+        "createIndex": 2,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-12.mjs",
+      "tables": [],
+      "ops": {
+        "createTable": 0,
+        "alterTable": 0,
+        "createIndex": 0,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-15.mjs",
+      "tables": [
+        "customer_ui_settings"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 0,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 1,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-16.mjs",
+      "tables": [
+        "customer_support_settings"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 0,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 1,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-18.mjs",
+      "tables": [
+        "customer_profiles",
+        "customer_saved_addresses"
+      ],
+      "ops": {
+        "createTable": 2,
+        "alterTable": 0,
+        "createIndex": 3,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-19.mjs",
+      "tables": [
+        "customer_browsing_history",
+        "customer_coupon_claims",
+        "customer_coupons",
+        "customer_favorites"
+      ],
+      "ops": {
+        "createTable": 4,
+        "alterTable": 0,
+        "createIndex": 3,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 1,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-22.mjs",
+      "tables": [
+        "customer_notification_states"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 1,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-25-1.mjs",
+      "tables": [
+        "delivery_pricing_policies"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 0,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 1,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-25.mjs",
+      "tables": [
+        "delivery_job_events"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 3,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-30.mjs",
+      "tables": [
+        "coupon_redemptions",
+        "restaurant_coupons"
+      ],
+      "ops": {
+        "createTable": 2,
+        "alterTable": 0,
+        "createIndex": 5,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-33.mjs",
+      "tables": [
+        "restaurant_settlements"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 2,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-34.mjs",
+      "tables": [
+        "restaurant_settlement_adjustments"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 1,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-35.mjs",
+      "tables": [
+        "restaurant_commission_policies"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 3,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-51.mjs",
+      "tables": [
+        "partner_payment_transactions"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 5,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-67.mjs",
+      "tables": [
+        "customer_saved_searches"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 2,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-68.mjs",
+      "tables": [
+        "customer_saved_search_alert_events"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 5,
+        "createIndex": 3,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 1,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-69.mjs",
+      "tables": [
+        "customer_notification_preferences",
+        "customer_notification_receipts"
+      ],
+      "ops": {
+        "createTable": 2,
+        "alterTable": 0,
+        "createIndex": 2,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-70.mjs",
+      "tables": [
+        "customer_support_messages",
+        "customer_support_threads"
+      ],
+      "ops": {
+        "createTable": 2,
+        "alterTable": 0,
+        "createIndex": 2,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-16-71.mjs",
+      "tables": [],
+      "ops": {
+        "createTable": 0,
+        "alterTable": 5,
+        "createIndex": 1,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-17-0.mjs",
+      "tables": [
+        "support_satisfaction",
+        "support_sla_policies",
+        "support_thread_events"
+      ],
+      "ops": {
+        "createTable": 3,
+        "alterTable": 6,
+        "createIndex": 5,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 1,
+        "update": 2,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-17-1.mjs",
+      "tables": [
+        "support_automation_rules",
+        "support_internal_notes",
+        "support_macros",
+        "support_tags",
+        "support_thread_tags"
+      ],
+      "ops": {
+        "createTable": 5,
+        "alterTable": 0,
+        "createIndex": 4,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 1,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-17-2.mjs",
+      "tables": [
+        "support_knowledge_articles",
+        "support_knowledge_feedback",
+        "support_knowledge_views"
+      ],
+      "ops": {
+        "createTable": 3,
+        "alterTable": 0,
+        "createIndex": 4,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-17-3.mjs",
+      "tables": [
+        "customer_relationship_events",
+        "customer_relationship_profiles"
+      ],
+      "ops": {
+        "createTable": 2,
+        "alterTable": 0,
+        "createIndex": 1,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-17-4.mjs",
+      "tables": [
+        "customer_operation_events",
+        "customer_operation_tasks",
+        "customer_segment_members",
+        "customer_segments",
+        "customer_service_recovery_cases"
+      ],
+      "ops": {
+        "createTable": 5,
+        "alterTable": 0,
+        "createIndex": 6,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 1,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-17-5.mjs",
+      "tables": [
+        "operations_agent_capacity"
+      ],
+      "ops": {
+        "createTable": 1,
+        "alterTable": 0,
+        "createIndex": 0,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 0,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-17-6.mjs",
+      "tables": [
+        "operations_routing_decisions",
+        "operations_routing_policies"
+      ],
+      "ops": {
+        "createTable": 2,
+        "alterTable": 0,
+        "createIndex": 2,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 1,
+        "update": 0,
+        "delete": 0
+      }
+    },
+    {
+      "file": "migrate-17-7.mjs",
+      "tables": [
+        "operations_approval_requests",
+        "operations_playbooks",
+        "operations_workflow_events",
+        "operations_workflow_runs"
+      ],
+      "ops": {
+        "createTable": 4,
+        "alterTable": 0,
+        "createIndex": 4,
+        "createType": 0,
+        "alterType": 0,
+        "dropSchemaObject": 0,
+        "insert": 1,
+        "update": 0,
+        "delete": 0
+      }
+    }
+  ]
+}

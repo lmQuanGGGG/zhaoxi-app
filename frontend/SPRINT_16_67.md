@@ -1,0 +1,11 @@
+# Sprint 16.67 — Customer Intent Memory, Saved Searches & Smart Discovery Shortcuts
+- Saved searches.
+- Customer-defined labels.
+- Pin / unpin.
+- Delete / edit support.
+- Search shortcut URLs.
+- Home smart shortcuts.
+- Customer-managed intent memory only.
+- No automatic sensitive inference.
+- Backend migration required.
+- Single-language mandatory.

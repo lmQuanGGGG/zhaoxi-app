@@ -1,0 +1,12 @@
+import fs from"node:fs";
+const req=["SPRINT_16_25_1.md","SPRINT_16_26.md","lib/services/partner-food-fulfillment-service.ts","app/api/partner-fulfillment/[id]/route.ts","app/api/service-requests/route.ts","lib/order-timers.ts","lib/services/customer-notification-feed-service.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="16.26.0")throw new Error("Backend version must be 16.26.0");
+for(const x of["verify:16.26","typecheck","build"])if(!p.scripts?.[x])throw new Error(x);
+const s=fs.readFileSync("lib/services/partner-food-fulfillment-service.ts","utf8");
+for(const m of["organizationMembers","ready_for_pickup","courier_booked","handed_off","deliveryFulfillmentMode","EXTERNAL_DELIVERY_DELIVERED"])if(!s.includes(m))throw new Error(m);
+const timer=fs.readFileSync("lib/order-timers.ts","utf8");
+for(const m of["AUTO_READY_FOR_EXTERNAL_PICKUP",'status:"in_progress"','fulfillmentStage:"ready_for_pickup"'])if(!timer.includes(m))throw new Error(m);
+const list=fs.readFileSync("app/api/service-requests/route.ts","utf8");
+for(const m of["Operations authentication required","Partner organization access denied","organizationMembers"])if(!list.includes(m))throw new Error(m);
+console.log("Sprint 16.26 Backend Partner Restaurant Fulfillment & External Courier Handoff structure is valid.");

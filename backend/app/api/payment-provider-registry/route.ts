@@ -1,0 +1,1 @@
+import {success} from "@/lib/core/api-response";import {paymentProviderRegistryService} from "@/lib/services/payment-provider-registry-service";export const dynamic="force-dynamic";export async function GET(){return success({providers:paymentProviderRegistryService.list(),health:paymentProviderRegistryService.health()})}

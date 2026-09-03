@@ -1,0 +1,5 @@
+import { access, readFile } from "node:fs/promises";
+const files=["packages/auth/src/index.tsx","apps/customer/app/api/auth/unified/[...path]/route.ts","apps/partner/app/api/auth/unified/[...path]/route.ts","apps/admin/app/api/auth/unified/[...path]/route.ts"];for(const f of files)await access(new URL(`../${f}`,import.meta.url));
+const auth=await readFile(new URL("../packages/auth/src/index.tsx",import.meta.url),"utf8");for(const t of ["sessionMode","refreshServerSession","logoutZhaoXiSession","logoutAllZhaoXiSessions","listZhaoXiDevices","exchangeCode","SESSION_EXCHANGE_FAILED"])if(!auth.includes(t))throw new Error(`Missing ${t}`);
+const proxy=await readFile(new URL("../apps/customer/app/api/auth/unified/[...path]/route.ts",import.meta.url),"utf8");for(const t of ["zx_access_v2","zx_refresh_v2","httpOnly","session/refresh","session/logout-all"])if(!proxy.includes(t))throw new Error(`Missing ${t}`);
+console.log("Sprint 14.2 platform authentication and session layer is locked and valid.");

@@ -1,0 +1,10 @@
+import fs from"node:fs";
+const req=["SPRINT_16_68.md","SPRINT_16_69.md","scripts/migrate-16-69.mjs","lib/services/customer-notification-center-service.ts","app/api/customer-notifications/route.ts","app/api/customer-notifications/preferences/route.ts","app/api/customer-notifications/receipt/route.ts","app/api/customer-notifications/read-all/route.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="16.69.0")throw new Error("Backend version");
+for(const x of["verify:16.69","db:apply:16.69","typecheck","build"])if(!p.scripts?.[x])throw new Error(`Missing ${x}`);
+const schema=fs.readFileSync("db/schema.ts","utf8");
+for(const m of["customerNotificationPreferences","customerNotificationReceipts","orderEnabled","housingEnabled","travelEnabled","paymentEnabled","savedSearchEnabled"])if(!schema.includes(m))throw new Error(`Missing schema ${m}`);
+const s=fs.readFileSync("lib/services/customer-notification-center-service.ts","utf8");
+for(const m of['"order"','"housing"','"travel"','"payment"','"saved_search"',"serviceRequests.customerId","customerSavedSearchAlertEvents","markAllRead","dismissedAt","preferencesOnlyAffectCustomerAlerts:true","noPartnerWorkflowChange:true"])if(!s.includes(m))throw new Error(`Missing inbox ${m}`);
+console.log("Sprint 16.69 Backend Customer Notification Center, Alert Preferences & Unified Inbox structure is valid.");

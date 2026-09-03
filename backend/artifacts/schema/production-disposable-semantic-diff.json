@@ -1,0 +1,25 @@
+{
+  "production": {
+    "tables": 90,
+    "columns": 917,
+    "constraints": 281,
+    "indexes": 268,
+    "enumValues": 18,
+    "extensions": 1,
+    "sequences": 0
+  },
+  "disposable": {
+    "tables": 90,
+    "columns": 917,
+    "constraints": 274,
+    "indexes": 268,
+    "enumValues": 18,
+    "extensions": 1,
+    "sequences": 0
+  },
+  "productionOnlyChecks": [],
+  "disposableOnlyChecks": [],
+  "productionOnlyIndexes": [],
+  "disposableOnlyIndexes": [],
+  "informationalHistoricalUniqueConstraints": 7
+}

@@ -1,0 +1,11 @@
+import fs from"node:fs";
+const req=["SPRINT_16_43.md","SPRINT_16_44.md","apps/customer/app/du-lich/TravelBrowser.tsx","apps/customer/app/du-lich/page.tsx","apps/customer/app/travel/[id]/TravelExperienceDetail.tsx","apps/customer/app/travel/[id]/page.tsx","apps/customer/app/services/[module]/page.tsx","apps/customer/app/api/travel-inquiries/route.ts","apps/partner/app/StoreManager.tsx"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));if(pkg.version!=="16.44.0")throw new Error("Platform version must be 16.44.0");
+for(const x of["verify:16.44","typecheck:all","build:all"])if(!pkg.scripts?.[x])throw new Error(`Missing ${x}`);
+const browser=fs.readFileSync("apps/customer/app/du-lich/TravelBrowser.tsx","utf8");for(const m of["experienceType","destination","/travel/${x.id}","customer-nearby-services"])if(!browser.includes(m))throw new Error(`Missing Travel browser marker ${m}`);
+const detail=fs.readFileSync("apps/customer/app/travel/[id]/TravelExperienceDetail.tsx","utf8");for(const m of["galleryUrls","departurePoint","maxGuests","serviceLanguage","includes","excludes","/api/travel-inquiries","visitDate","preferredContact"])if(!detail.includes(m))throw new Error(`Missing Travel detail marker ${m}`);
+const route=fs.readFileSync("apps/customer/app/services/[module]/page.tsx","utf8");if(!route.includes('module==="travel"?<TravelBrowser/>'))throw new Error("Travel module route not dedicated");
+const store=fs.readFileSync("apps/partner/app/StoreManager.tsx","utf8");for(const m of["experienceType","destination","serviceLanguage","availableDays","bookingNoticeHours","includes","excludes"])if(!store.includes(m))throw new Error(`Missing Partner Travel marker ${m}`);
+for(const f of["apps/customer/app/du-lich/TravelBrowser.tsx","apps/customer/app/travel/[id]/TravelExperienceDetail.tsx"]){const x=fs.readFileSync(f,"utf8");for(const bad of["Du lịch · Travel","旅游 · Travel","Tour · 旅游"])if(x.includes(bad))throw new Error(`Single-language violation ${f}: ${bad}`)}
+console.log("Sprint 16.44 Platform Tour & Local Experience Marketplace Foundation structure is valid.");

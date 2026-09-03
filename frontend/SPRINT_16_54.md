@@ -1,0 +1,12 @@
+# Sprint 16.54 — Payment Operations, Refund Workflow & Exception Management
+- Partner close-payment workflow.
+- Partner refund workflow.
+- Mandatory operation reason.
+- Runtime guard before operations.
+- Transaction/audit trail.
+- Failed-operation exception creation.
+- Admin exception oversight/resolution.
+- Admin never moves Customer funds.
+- Refund remains Partner merchant -> Customer.
+- No database migration.
+- Single-language mandatory.

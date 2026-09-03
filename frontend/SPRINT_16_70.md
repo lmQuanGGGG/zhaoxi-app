@@ -1,0 +1,11 @@
+# Sprint 16.70 — Customer Message Center, Conversation Threads & Unified Support Inbox
+- `/messages` becomes the unified conversation inbox.
+- Housing / Travel / Payment Support threads.
+- ZhaoXi Support conversations.
+- ZhaoXi Assistant entry point.
+- Unread thread counts.
+- Conversation filters.
+- Thread detail + reply.
+- Notification Center remains separate at `/notifications`.
+- Backend migration required.
+- Single-language mandatory.

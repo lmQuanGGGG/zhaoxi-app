@@ -1,0 +1,9 @@
+import fs from"node:fs";
+const req=["RELEASE_17_2.md","RELEASE_17_1.md","scripts/migrate-17-2.mjs","lib/services/support-knowledge-service.ts","lib/services/support-case-intelligence-service.ts","app/api/public-support-knowledge/route.ts","app/api/public-support-knowledge/[idOrSlug]/route.ts","app/api/public-support-knowledge/[idOrSlug]/feedback/route.ts","app/api/admin-support-knowledge/route.ts","app/api/admin-support-knowledge/analytics/route.ts","app/api/admin-support-intelligence/[threadId]/route.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="17.2.0")throw new Error("Backend version must be 17.2.0");
+for(const x of["verify:17.2","db:apply:17.2","typecheck","build"])if(!p.scripts?.[x])throw new Error(`Missing script ${x}`);
+const schema=fs.readFileSync("db/schema.ts","utf8");for(const m of["supportKnowledgeArticles","supportKnowledgeFeedback","supportKnowledgeViews"])if(!schema.includes(m))throw new Error(`Missing schema ${m}`);
+const k=fs.readFileSync("lib/services/support-knowledge-service.ts","utf8");for(const m of["publicList(","getPublic(","feedback(","analytics(","recommend(","published"])if(!k.includes(m))throw new Error(`Missing knowledge ${m}`);
+const i=fs.readFileSync("lib/services/support-case-intelligence-service.ts","utf8");for(const m of["priorityRecommendation","knowledgeRecommendations","automationRecommendations",'executionMode:"recommendation_only"',"automaticAssignment:false","automaticStatusChange:false","automaticFinancialActions:false"])if(!i.includes(m))throw new Error(`Missing intelligence ${m}`);
+console.log("ZhaoXi 17.2 Backend Major Cumulative Support Knowledge, Self-Service & Case Intelligence structure is valid.");

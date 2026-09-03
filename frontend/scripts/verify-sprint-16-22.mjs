@@ -1,0 +1,9 @@
+import fs from"node:fs";
+for(const f of["SPRINT_16_21.md","SPRINT_16_22.md","apps/customer/app/messages/page.tsx","apps/customer/app/api/customer-notifications/route.ts","apps/customer/app/_components/MiniTabBar.tsx","apps/customer/app/_components/MiniTabBar.module.css","packages/support/src/index.tsx","apps/customer/app/support/page.tsx"])if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="16.22.0")throw new Error("Platform version must be 16.22.0");
+for(const x of["verify:16.22","typecheck:all","build:all"])if(!p.scripts?.[x])throw new Error(x);
+const m=fs.readFileSync("apps/customer/app/messages/page.tsx","utf8");for(const x of["/api/customer-notifications","deepLink","setInterval(()=>void load(),5000)","unreadCount","router.push"])if(!m.includes(x))throw new Error(x);
+const n=fs.readFileSync("apps/customer/app/_components/MiniTabBar.tsx","utf8");for(const x of["unreadCount","iconWrap","Math.min(99"])if(!n.includes(x))throw new Error(x);
+const s=fs.readFileSync("packages/support/src/index.tsx","utf8");if(!s.includes("initialConversationId")||!s.includes("conversationId=${encodeURIComponent(initialConversationId)}"))throw new Error("Assistant deep-link restoration missing");
+const sp=fs.readFileSync("apps/customer/app/support/page.tsx","utf8");if(!sp.includes('q.get("conversation")')||!sp.includes("initialConversationId={conversationId||undefined}"))throw new Error("Support page conversation deep-link missing");
+console.log("Sprint 16.22 Platform Notification Center, Real-time Updates & Deep Linking structure is valid.");

@@ -1,0 +1,12 @@
+{
+  "name": "@zhaoxi/account",
+  "version": "15.6.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.tsx"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}

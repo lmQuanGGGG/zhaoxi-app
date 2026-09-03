@@ -1,0 +1,3 @@
+# Sprint 16.7 — Automatic Rollout Guard & Health-Based Pause
+
+Rollout increases are blocked when live release health exceeds configured warning/critical guardrails. Release Center evaluation can automatically reduce Public rollout to a configured safe percentage. A protected `/api/rollout-guard/cron` endpoint is also included for optional scheduled enforcement using `CRON_SECRET`, without forcing a Vercel-plan-specific cron schedule into the repository. Code rollback remains a manual Admin decision.\n

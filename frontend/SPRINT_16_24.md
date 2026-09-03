@@ -1,0 +1,3 @@
+# Sprint 16.24 — Delivery Intelligence, Distance Pricing & Order Fulfillment
+
+Customer checkout now asks Backend for the authoritative delivery quote before order submission. Quote contains eligibility, partner service radius, distance, fee and ETA. The submit button is blocked outside the service zone. Backend recalculates the same quote during order creation, so browser values cannot override pricing. Order Detail and existing Partner/Driver fulfillment surfaces reuse the authoritative delivery metadata. Single-language remains mandatory for all new customer messages. No Platform database migration.

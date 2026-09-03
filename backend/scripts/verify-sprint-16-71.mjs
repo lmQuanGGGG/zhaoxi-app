@@ -1,0 +1,8 @@
+import fs from"node:fs";
+for(const f of["SPRINT_16_70.md","SPRINT_16_71.md","scripts/migrate-16-71.mjs","lib/services/admin-support-desk-service.ts","app/api/admin-support-desk/route.ts","app/api/admin-support-desk/[threadId]/route.ts","lib/services/customer-message-center-service.ts"])if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="16.71.0")throw new Error("Backend version");
+for(const x of["verify:16.71","db:apply:16.71","typecheck","build"])if(!p.scripts?.[x])throw new Error(`Missing ${x}`);
+const schema=fs.readFileSync("db/schema.ts","utf8");for(const m of["assignedAdminUserId","firstResponseDueAt","firstRespondedAt","resolvedAt","adminReadAt"])if(!schema.includes(m))throw new Error(`Missing schema ${m}`);
+const s=fs.readFileSync("lib/services/admin-support-desk-service.ts","utf8");for(const m of["agents()","unreadCount","slaOverdue","assign(","status(","reply(","markRead(","supportOperationsOnly:true","noFinancialAuthority:true"])if(!s.includes(m))throw new Error(`Missing desk ${m}`);
+if(!fs.readFileSync("lib/services/customer-message-center-service.ts","utf8").includes("firstResponseDueAt:new Date(now.getTime()+4*3600*1000)"))throw new Error("Support SLA start missing");
+console.log("Sprint 16.71 Backend Admin Support Desk, Agent Assignment & Customer Conversation Operations structure is valid.");

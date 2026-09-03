@@ -1,0 +1,6 @@
+import postgres from"postgres";import dotenv from"dotenv";dotenv.config({path:".env.local"});dotenv.config();const url=process.env.DATABASE_URL||process.env.POSTGRES_URL;if(!url)throw new Error("DATABASE_URL/POSTGRES_URL missing");const sql=postgres(url,{ssl:"require"});try{
+await sql`create table if not exists customer_relationship_profiles(customer_id uuid primary key references users(id) on delete cascade,relationship_stage varchar(32) not null default 'active',admin_tags jsonb not null default '[]'::jsonb,operational_note text,updated_by_admin_user_id uuid references users(id) on delete set null,updated_at timestamptz not null default now())`;
+await sql`create table if not exists customer_relationship_events(id uuid primary key default gen_random_uuid(),customer_id uuid not null references users(id) on delete cascade,actor_admin_user_id uuid references users(id) on delete set null,event_type varchar(60) not null,summary text not null,metadata jsonb not null default '{}'::jsonb,created_at timestamptz not null default now())`;
+await sql`create index if not exists customer_relationship_events_customer_idx on customer_relationship_events(customer_id,created_at)`;
+console.log("ZhaoXi 17.3 Unified Customer Identity & Relationship Hub migration applied.");
+}finally{await sql.end()}

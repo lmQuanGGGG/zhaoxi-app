@@ -1,0 +1,3 @@
+import{authenticatedSession}from"@/lib/auth-request";import{failure,success}from"@/lib/core/api-response";import{workspaceContract,workspaceInteractionContract,type WorkspaceRole}from"@/lib/core/mobile-workspace-contract";
+export const dynamic="force-dynamic";
+export async function GET(r:Request){const s=await authenticatedSession(r);if(!s)return failure("Authentication required.",401,undefined,"AUTH_REQUIRED");const role=s.role as WorkspaceRole;if(!["customer","partner","admin"].includes(role))return failure("Unsupported role.",403,undefined,"ROLE_UNSUPPORTED");return success({...workspaceContract(role),interaction:workspaceInteractionContract()})}

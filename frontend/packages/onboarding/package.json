@@ -1,0 +1,12 @@
+{
+  "name": "@zhaoxi/onboarding",
+  "version": "15.4.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.tsx"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}

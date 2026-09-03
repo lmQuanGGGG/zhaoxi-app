@@ -1,0 +1,9 @@
+import fs from"node:fs";
+const req=["RELEASE_17_4.md","RELEASE_17_3.md","apps/admin/app/CustomerOperationsHub.tsx","apps/admin/app/page.tsx","apps/admin/app/api/admin-customer-operations/queue/route.ts","apps/admin/app/api/admin-customer-operations/customer/[customerId]/route.ts","apps/admin/app/api/admin-customer-operations/customer/[customerId]/tasks/route.ts","apps/admin/app/api/admin-customer-operations/tasks/[taskId]/route.ts","apps/admin/app/api/admin-customer-operations/segments/route.ts","apps/admin/app/api/admin-customer-operations/customer/[customerId]/segments/[segmentId]/route.ts","apps/admin/app/api/admin-customer-operations/customer/[customerId]/recovery/route.ts","apps/admin/app/api/admin-customer-operations/recovery/[recoveryId]/route.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="17.4.0")throw new Error("Platform version must be 17.4.0");
+for(const x of["verify:17.4","typecheck:all","build:all"])if(!p.scripts?.[x])throw new Error(`Missing script ${x}`);
+const page=fs.readFileSync("apps/admin/app/page.tsx","utf8");for(const m of["CustomerOperationsHub",'customerOps'])if(!page.includes(m))throw new Error(`Missing Customer Ops tab ${m}`);
+const hub=fs.readFileSync("apps/admin/app/CustomerOperationsHub.tsx","utf8");
+for(const m of["Follow-up Queue","customer-operation","service_recovery","segments","assignedAdminUserId","critical","overdue"])if(!hub.includes(m))throw new Error(`Missing Customer Ops UI ${m}`);
+console.log("ZhaoXi 17.4 Platform Unified Customer Operations, Tasks, Follow-up Queue, Segments & Service Recovery structure is valid.");

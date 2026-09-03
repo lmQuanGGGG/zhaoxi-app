@@ -1,0 +1,2 @@
+import {NextRequest} from "next/server";export const dynamic="force-dynamic";const backend=()=>process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"https://zhaoxi-backend.vercel.app";
+export async function GET(_:NextRequest,{params}:{params:Promise<{id:string}>}){const{id}=await params;try{const u=await fetch(`${backend()}/api/restaurant-status/${encodeURIComponent(id)}`,{cache:"no-store"});return Response.json(await u.json(),{status:u.status,headers:{"cache-control":"no-store"}})}catch{return Response.json({ok:false},{status:503})}}

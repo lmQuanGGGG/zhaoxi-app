@@ -1,0 +1,1 @@
+import SettlementDashboard from "../SettlementDashboard";export default function Page(){return <SettlementDashboard/>}

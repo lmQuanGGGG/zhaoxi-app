@@ -1,0 +1,10 @@
+import fs from"node:fs";
+const req=["SPRINT_16_42.md","SPRINT_16_42_1.md","apps/partner/app/housing-inventory/HousingInventoryManager.tsx","apps/partner/app/PartnerWorkspaceNav.tsx"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
+if(pkg.version!=="16.42.1")throw new Error("Platform version must be 16.42.1");
+for(const x of["verify:16.42.1","typecheck:all","build:all"])if(!pkg.scripts?.[x])throw new Error(`Missing ${x}`);
+const ui=fs.readFileSync("apps/partner/app/housing-inventory/HousingInventoryManager.tsx","utf8");
+if(ui.includes('from"../../PartnerWorkspaceNav"'))throw new Error("Broken PartnerWorkspaceNav import remains");
+if(!ui.includes('from"../PartnerWorkspaceNav"'))throw new Error("Correct PartnerWorkspaceNav import missing");
+console.log("Sprint 16.42.1 Platform Housing Inventory import-path hotfix structure is valid.");

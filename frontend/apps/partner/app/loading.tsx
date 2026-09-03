@@ -1,0 +1,1 @@
+export default function Loading(){return <main style={{minHeight:"100dvh",display:"grid",placeItems:"center",background:"#f7faf8"}}><div style={{width:"min(100%,430px)",padding:24,textAlign:"center"}}><div style={{fontSize:34}}>⏳</div><p style={{color:"#64748b",fontWeight:700}}>ZhaoXi đang tải…</p></div></main>}

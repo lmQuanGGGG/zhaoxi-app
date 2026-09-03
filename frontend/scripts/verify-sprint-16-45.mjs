@@ -1,0 +1,13 @@
+import fs from"node:fs";
+const req=["SPRINT_16_44.md","SPRINT_16_45.md","apps/customer/app/travel/[id]/TravelExperienceDetail.tsx","apps/customer/app/travel/requests/TravelBookingTracker.tsx","apps/customer/app/travel/requests/page.tsx","apps/customer/app/du-lich/TravelBrowser.tsx","apps/customer/app/api/travel-availability/route.ts","apps/customer/app/api/customer-travel-inquiries/route.ts","apps/customer/app/api/customer-travel-inquiries/[id]/route.ts","apps/partner/app/TravelLeadPipeline.tsx","apps/partner/app/OperationsBoard.tsx","apps/partner/app/api/partner-travel-leads/route.ts","apps/partner/app/api/partner-travel-leads/[id]/route.ts","apps/partner/app/StoreManager.tsx"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));if(pkg.version!=="16.45.0")throw new Error("Platform version must be 16.45.0");
+for(const x of["verify:16.45","typecheck:all","build:all"])if(!pkg.scripts?.[x])throw new Error(`Missing ${x}`);
+const detail=fs.readFileSync("apps/customer/app/travel/[id]/TravelExperienceDetail.tsx","utf8");
+for(const m of["travel-availability","remainingGuests","visitTime","daySlots","/api/travel-inquiries"])if(!detail.includes(m))throw new Error(`Missing Travel availability UI marker ${m}`);
+const tracker=fs.readFileSync("apps/customer/app/travel/requests/TravelBookingTracker.tsx","utf8");for(const m of["travelBookingStage","customer-travel-inquiries",'action:"cancel"'])if(!tracker.includes(m))throw new Error(`Missing Customer Travel tracker marker ${m}`);
+const partner=fs.readFileSync("apps/partner/app/TravelLeadPipeline.tsx","utf8");for(const m of["travelBookingStage","partner-travel-leads",'act(r,"confirm")','act(r,"reject")','act(r,"complete")'])if(!partner.includes(m))throw new Error(`Missing Partner Travel pipeline marker ${m}`);
+const ops=fs.readFileSync("apps/partner/app/OperationsBoard.tsx","utf8");if(!ops.includes("<TravelLeadPipeline organizationId={orgId}/>"))throw new Error("Travel pipeline not mounted");
+const store=fs.readFileSync("apps/partner/app/StoreManager.tsx","utf8");for(const m of["startTimes","travelAvailabilityStatus"])if(!store.includes(m))throw new Error(`Travel schedule editor marker missing ${m}`);
+for(const f of["apps/customer/app/travel/[id]/TravelExperienceDetail.tsx","apps/customer/app/travel/requests/TravelBookingTracker.tsx","apps/partner/app/TravelLeadPipeline.tsx"]){const x=fs.readFileSync(f,"utf8");for(const bad of["Booking · 预约","Du lịch · Travel","Chờ xác nhận · Requested"])if(x.includes(bad))throw new Error(`Single-language violation ${f}: ${bad}`)}
+console.log("Sprint 16.45 Platform Travel Availability, Schedule & Booking Lead Management structure is valid.");

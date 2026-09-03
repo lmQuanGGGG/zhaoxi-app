@@ -1,0 +1,12 @@
+{
+  "name": "@zhaoxi/runtime-control",
+  "version": "15.9.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.tsx"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}

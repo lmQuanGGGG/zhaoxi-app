@@ -1,0 +1,28 @@
+MA NGUON UNG DUNG KUAi DAO - 3 PHIEN BAN
+
+1. 00-Kuai-Dao-Day-Du-3-Phien-Ban.zip
+   - Goi ma nguon day du, co ca Khach hang, Nha hang va Quan ly nen tang.
+   - Day la goi nen dung khi can cai dat, chay thu hoac tiep tuc phat trien toan bo ung dung.
+
+2. 01-Kuai-Dao-Khach-Hang.zip
+   - Ma nguon giao dien va chuc nang tai duong dan /khach-hang.
+
+3. 02-Kuai-Dao-Nha-Hang.zip
+   - Ma nguon giao dien va chuc nang tai duong dan /nha-hang.
+
+4. 03-Kuai-Dao-Nen-Tang.zip
+   - Ma nguon giao dien va chuc nang tai duong dan /nen-tang.
+
+CAC GOI KHONG CHUA:
+- node_modules va thu vien da cai dat.
+- ban build tam thoi.
+- thong tin dang nhap, mat khau hoac API key rieng tu.
+
+CHAY BAN DAY DU:
+1. Giai nen 00-Kuai-Dao-Day-Du-3-Phien-Ban.zip.
+2. Mo Terminal tai thu muc vua giai nen.
+3. Chay: npm install
+4. Chay: npm run dev
+5. Mo cac duong dan /khach-hang, /nha-hang hoac /nen-tang.
+
+Ngay xuat ma nguon: 04/08/2026.

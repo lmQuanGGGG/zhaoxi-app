@@ -1,0 +1,11 @@
+import fs from"node:fs";
+const req=["SPRINT_16_68.md","SPRINT_16_69.md","apps/customer/app/notifications/page.tsx","apps/customer/app/notifications/CustomerNotificationCenter.tsx","apps/customer/app/api/customer-notifications/route.ts","apps/customer/app/api/customer-notifications/preferences/route.ts","apps/customer/app/api/customer-notifications/receipt/route.ts","apps/customer/app/api/customer-notifications/read-all/route.ts","apps/customer/app/CustomerOrderAlerts.tsx","apps/customer/app/SavedSearchAlerts.tsx","apps/customer/app/_components/CustomerHome.tsx"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="16.69.0")throw new Error("Platform version");
+for(const x of["verify:16.69","typecheck:all","build:all"])if(!p.scripts?.[x])throw new Error(`Missing ${x}`);
+const c=fs.readFileSync("apps/customer/app/notifications/CustomerNotificationCenter.tsx","utf8");
+for(const m of["customer-notifications","read-all","preferences","saved_search","housing","travel","payment","dismissed:true"])if(!c.includes(m))throw new Error(`Missing center ${m}`);
+if(!fs.readFileSync("apps/customer/app/_components/CustomerHome.tsx","utf8").includes('href="/notifications"'))throw new Error("Home notification link missing");
+if(!fs.readFileSync("apps/customer/app/CustomerOrderAlerts.tsx","utf8").includes("allowedByPref"))throw new Error("Order popup preferences missing");
+if(!fs.readFileSync("apps/customer/app/SavedSearchAlerts.tsx","utf8").includes("savedSearchEnabled"))throw new Error("Saved Search popup preferences missing");
+console.log("Sprint 16.69 Platform Customer Notification Center, Alert Preferences & Unified Inbox structure is valid.");

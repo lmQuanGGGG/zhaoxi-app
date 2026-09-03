@@ -1,0 +1,10 @@
+import fs from "node:fs";
+for(const f of ["SPRINT_16_16.md","SPRINT_16_17.md","app/api/service-requests/route.ts","app/api/service-requests/[id]/route.ts"])if(!fs.existsSync(f))throw new Error(`Missing Sprint 16.17 file: ${f}`);
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
+if(pkg.version!=="16.17.0")throw new Error("Backend version must be 16.17.0");
+for(const x of ["verify:16.17","typecheck","build"])if(!pkg.scripts?.[x])throw new Error(`Missing script ${x}`);
+const list=fs.readFileSync("app/api/service-requests/route.ts","utf8");
+for(const m of ["authenticatedSession","mine","serviceRequests.customerId","session.userId"])if(!list.includes(m))throw new Error(`Missing identity-bound order marker ${m}`);
+const detail=fs.readFileSync("app/api/service-requests/[id]/route.ts","utf8");
+for(const m of ["customerId: serviceRequests.customerId","Order access denied.","authenticatedSession"])if(!detail.includes(m))throw new Error(`Missing order access marker ${m}`);
+console.log("Sprint 16.17 Backend Customer Orders, Cart & Transaction Experience structure is valid.");

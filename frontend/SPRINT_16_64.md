@@ -1,0 +1,11 @@
+# Sprint 16.64 — Unified Service Discovery, Partner Storefront Search & Cross-Module Recommendations
+- Unified Customer search at /search.
+- Search services and Partner storefronts.
+- Food / Housing / Travel / other enabled modules.
+- Cross-module recommendation component.
+- Same-Partner recommendations.
+- Public verification context only.
+- No internal Trust/Risk/Compliance exposure.
+- No paid placement or Trust Score ranking boost.
+- No database migration.
+- Single-language mandatory.

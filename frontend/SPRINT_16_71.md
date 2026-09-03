@@ -1,0 +1,13 @@
+# Sprint 16.71 — Admin Support Desk, Agent Assignment & Customer Conversation Operations
+- Admin Support Desk.
+- Support queue.
+- Unread queue.
+- Agent assignment.
+- Open / Pending / Resolved.
+- First-response SLA and overdue queue.
+- Admin thread detail and reply.
+- Customer/Admin independent read state.
+- Audit trail.
+- Existing Housing/Travel/Payment message ownership preserved.
+- Backend migration required.
+- Single-language mandatory.

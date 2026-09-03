@@ -1,0 +1,3 @@
+import fs from "node:fs";
+const files=["lib/core/domain.ts","lib/core/api-response.ts","lib/core/service.ts","lib/services/order-service.ts","lib/services/notification-service.ts","lib/services/wechat-auth-service.ts","lib/services/marketplace-service.ts","lib/services/media-service.ts","docs/ARCHITECTURE_14_0_BACKEND.md","SPRINT_14_0_FOUNDATION.md"];
+const missing=files.filter((file)=>!fs.existsSync(file));if(missing.length){console.error("Missing backend Foundation files:\n"+missing.join("\n"));process.exit(1);}const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));if(pkg.version!=="14.0.0"){console.error("Backend version is not 14.0.0");process.exit(1);}console.log("Foundation 14.0 backend service architecture is valid.");

@@ -1,0 +1,10 @@
+import fs from "node:fs";
+const req=["SPRINT_16_13_2.md","SPRINT_16_14.md","apps/customer/app/_components/CustomerHome.tsx","apps/customer/app/_components/ServiceBrowser.tsx","apps/customer/app/messages/page.tsx","apps/customer/app/khan-cap/page.tsx","packages/auth/src/index.tsx","packages/support/src/index.tsx"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing Sprint 16.14 file: ${f}`);
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));if(pkg.version!=="16.14.0")throw new Error("Platform version must be 16.14.0");
+for(const x of ["verify:16.14","typecheck:all","build:all"])if(!pkg.scripts?.[x])throw new Error(`Missing ${x}`);
+const auth=fs.readFileSync("packages/auth/src/index.tsx","utf8");if(auth.includes("合作伙伴中心 · Trung tâm đối tác")||auth.includes("游客模式 · Chế độ Guest"))throw new Error("Guest loader still contains forced bilingual copy");
+const browser=fs.readFileSync("apps/customer/app/_components/ServiceBrowser.tsx","utf8");for(const m of ["const isFood=moduleCode===\"food\"","genericServiceList","moduleMeta"])if(!browser.includes(m))throw new Error(`Missing service routing marker ${m}`);
+const home=fs.readFileSync("apps/customer/app/_components/CustomerHome.tsx","utf8");if(!home.includes("60000")||!home.includes("recommendCarousel"))throw new Error("Recommendation carousel cadence missing");
+const emergency=fs.readFileSync("apps/customer/app/khan-cap/page.tsx","utf8");if(!emergency.includes("/support?topic="))throw new Error("Emergency assistant routing missing");
+console.log("Sprint 16.14 Platform Customer UI System & Single-Language Navigation structure is valid.");

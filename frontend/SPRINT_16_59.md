@@ -1,0 +1,12 @@
+# Sprint 16.59 — Partner Compliance Case, Corrective Action Plan & Quality Recovery
+- Admin compliance case review.
+- Corrective action plan.
+- Root cause and action items.
+- Partner evidence submission.
+- Deadlines and case timeline.
+- Admin approve / changes required / monitor / recover / close.
+- Quality/risk recovery snapshot.
+- Audit trail.
+- No database migration.
+- No automatic fee change or fund control.
+- Single-language mandatory.

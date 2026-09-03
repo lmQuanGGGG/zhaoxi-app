@@ -1,0 +1,12 @@
+{
+  "name": "@zhaoxi/feature-flags",
+  "version": "15.8.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.tsx"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}

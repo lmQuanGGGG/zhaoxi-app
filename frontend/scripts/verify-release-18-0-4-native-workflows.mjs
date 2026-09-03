@@ -1,0 +1,4 @@
+import fs from"node:fs";const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="18.0.4")throw new Error("Platform version");
+const u=fs.readFileSync("packages/ui/src/mobile-workspace.tsx","utf8");for(const x of["NativeDetailSection","NativeTransactionSummary","NativeStatusPill","NativeWorkflowActions","NativeFullScreenSheet"])if(!u.includes(x))throw new Error("Missing "+x);
+for(const app of["admin","customer","partner"]){const c=fs.readFileSync(`apps/${app}/app/globals.css`,"utf8");if(!c.includes("18.0.4 — Native Mobile Detail"))throw new Error(app+" css");}
+console.log("ZhaoXi 18.0.4 Native Mobile Detail & Transaction Workflows is valid.");

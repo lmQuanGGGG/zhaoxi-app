@@ -1,0 +1,15 @@
+import postgres from"postgres";import dotenv from"dotenv";dotenv.config({path:".env.local"});dotenv.config();
+const url=process.env.DATABASE_URL||process.env.POSTGRES_URL;if(!url)throw new Error("DATABASE_URL/POSTGRES_URL missing");const sql=postgres(url,{ssl:"require"});
+try{
+await sql`create table if not exists support_tags(id uuid primary key default gen_random_uuid(),name varchar(80) not null unique,color varchar(24) not null default 'neutral',is_active boolean not null default true,created_at timestamptz not null default now())`;
+await sql`create table if not exists support_thread_tags(thread_id uuid not null references customer_support_threads(id) on delete cascade,tag_id uuid not null references support_tags(id) on delete cascade,created_by_user_id uuid references users(id) on delete set null,created_at timestamptz not null default now(),unique(thread_id,tag_id))`;
+await sql`create index if not exists support_thread_tags_thread_idx on support_thread_tags(thread_id)`;
+await sql`create table if not exists support_internal_notes(id uuid primary key default gen_random_uuid(),thread_id uuid not null references customer_support_threads(id) on delete cascade,author_admin_user_id uuid not null references users(id) on delete cascade,body text not null,created_at timestamptz not null default now())`;
+await sql`create index if not exists support_internal_notes_thread_idx on support_internal_notes(thread_id)`;
+await sql`create table if not exists support_macros(id uuid primary key default gen_random_uuid(),title varchar(120) not null,body text not null,locale varchar(16) not null default 'vi-VN',category varchar(60) not null default 'general',is_active boolean not null default true,created_by_user_id uuid references users(id) on delete set null,created_at timestamptz not null default now(),updated_at timestamptz not null default now())`;
+await sql`create index if not exists support_macros_locale_idx on support_macros(locale)`;
+await sql`create table if not exists support_automation_rules(id uuid primary key default gen_random_uuid(),name varchar(120) not null,trigger varchar(60) not null,conditions jsonb not null default '{}'::jsonb,actions jsonb not null default '{}'::jsonb,is_enabled boolean not null default true,created_by_user_id uuid references users(id) on delete set null,created_at timestamptz not null default now(),updated_at timestamptz not null default now())`;
+await sql`create index if not exists support_automation_rules_trigger_idx on support_automation_rules(trigger)`;
+await sql`insert into support_tags(name,color) values ('Payment','amber'),('Partner','green'),('Technical','blue'),('Urgent','red'),('Housing','violet'),('Travel','cyan') on conflict(name) do nothing`;
+console.log("ZhaoXi 17.1 cumulative Support CRM & Automation migration applied.");
+}finally{await sql.end()}

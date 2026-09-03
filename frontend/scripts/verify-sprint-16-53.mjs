@@ -1,0 +1,10 @@
+import fs from"node:fs";
+const req=["SPRINT_16_52.md","SPRINT_16_53.md","apps/admin/app/PaymentProviderRuntimePanel.tsx","apps/admin/app/TravelOversightPanel.tsx","apps/admin/app/api/admin-payment-provider-runtime/route.ts","apps/partner/app/PartnerPaymentFailoverSettings.tsx","apps/partner/app/OperationsBoard.tsx","apps/partner/app/api/partner-payment-provider-runtime/route.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));if(pkg.version!=="16.53.0")throw new Error("Platform version must be 16.53.0");
+for(const x of["verify:16.53","typecheck:all","build:all"])if(!pkg.scripts?.[x])throw new Error(`Missing ${x}`);
+const admin=fs.readFileSync("apps/admin/app/PaymentProviderRuntimePanel.tsx","utf8");for(const m of["admin-payment-provider-runtime","consecutiveFailures","openUntil","primary","fallback"])if(!admin.includes(m))throw new Error(`Missing Admin runtime UI ${m}`);
+const fail=fs.readFileSync("apps/partner/app/PartnerPaymentFailoverSettings.tsx","utf8");for(const m of["fallbackGateway","partner-payment-provider-runtime","organizationId","merchantId","webhookSecretRef"])if(!fail.includes(m))throw new Error(`Missing Partner failover UI ${m}`);
+const travel=fs.readFileSync("apps/admin/app/TravelOversightPanel.tsx","utf8");if(!travel.includes("<PaymentProviderRuntimePanel/>"))throw new Error("Runtime panel not mounted");
+const ops=fs.readFileSync("apps/partner/app/OperationsBoard.tsx","utf8");if(!ops.includes("<PartnerPaymentFailoverSettings organizationId={orgId}/>"))throw new Error("Partner failover settings not mounted");
+console.log("Sprint 16.53 Platform Payment Provider Adapter Runtime, Health Check & Failover Guard structure is valid.");

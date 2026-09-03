@@ -1,0 +1,1 @@
+import{success}from"@/lib/core/api-response";import{supportKnowledgeService as s}from"@/lib/services/support-knowledge-service";export const dynamic="force-dynamic";export async function GET(r:Request){const u=new URL(r.url);return success(await s.publicList(u.searchParams.get("locale")||"vi-VN",u.searchParams.get("q")||"",u.searchParams.get("category")||""))}

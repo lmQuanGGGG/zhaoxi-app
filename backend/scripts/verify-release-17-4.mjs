@@ -1,0 +1,12 @@
+import fs from"node:fs";
+const req=["RELEASE_17_4.md","RELEASE_17_3.md","scripts/migrate-17-4.mjs","lib/services/admin-customer-operations-service.ts","lib/services/admin-customer-relationship-service.ts","app/api/admin-customer-operations/queue/route.ts","app/api/admin-customer-operations/customer/[customerId]/route.ts","app/api/admin-customer-operations/customer/[customerId]/tasks/route.ts","app/api/admin-customer-operations/tasks/[taskId]/route.ts","app/api/admin-customer-operations/segments/route.ts","app/api/admin-customer-operations/customer/[customerId]/segments/[segmentId]/route.ts","app/api/admin-customer-operations/customer/[customerId]/recovery/route.ts","app/api/admin-customer-operations/recovery/[recoveryId]/route.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="17.4.0")throw new Error("Backend version must be 17.4.0");
+for(const x of["verify:17.4","db:apply:17.4","typecheck","build"])if(!p.scripts?.[x])throw new Error(`Missing script ${x}`);
+const schema=fs.readFileSync("db/schema.ts","utf8");
+for(const m of["customerOperationTasks","customerSegments","customerSegmentMembers","customerServiceRecoveryCases","customerOperationEvents"])if(!schema.includes(m))throw new Error(`Missing schema ${m}`);
+const svc=fs.readFileSync("lib/services/admin-customer-operations-service.ts","utf8");
+for(const m of["followUpsDueToday","overdueTasks","createTask(","updateTask(","createSegment(","setSegment(","createRecovery(","updateRecovery(","automaticCustomerContact:false","automaticCompensation:false","automaticFinancialActions:false","partnerFundsAuthority:false"])if(!svc.includes(m))throw new Error(`Missing Customer Ops ${m}`);
+const rel=fs.readFileSync("lib/services/admin-customer-relationship-service.ts","utf8");
+for(const m of["customerOperationTasks","customerServiceRecoveryCases",'type:"operation_task"','type:"service_recovery"',"openTasks","openRecovery"])if(!rel.includes(m))throw new Error(`Relationship Hub not enriched: ${m}`);
+console.log("ZhaoXi 17.4 Backend Unified Customer Operations, Tasks, Follow-up Queue, Segments & Service Recovery structure is valid.");

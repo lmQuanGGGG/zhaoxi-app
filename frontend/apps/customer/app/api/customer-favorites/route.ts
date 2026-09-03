@@ -1,0 +1,5 @@
+import {NextRequest} from "next/server";export const dynamic="force-dynamic";
+const backend=()=>process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"https://zhaoxi-backend.vercel.app";
+function h(r:NextRequest,json=false):Record<string,string>{const x:Record<string,string>={};const t=r.cookies.get("zx_access_v2")?.value;if(t)x.authorization=`Bearer ${t}`;if(json)x["content-type"]="application/json";return x}
+export async function GET(r:NextRequest){const q=r.nextUrl.search;try{const u=await fetch(`${backend()}/api/customer-favorites${q}`,{headers:h(r),cache:"no-store"});return Response.json(await u.json(),{status:u.status})}catch{return Response.json({ok:false,error:{code:"PERSONAL_DATA_UNAVAILABLE"}},{status:503})}}
+export async function POST(r:NextRequest){try{const u=await fetch(`${backend()}/api/customer-favorites`,{method:"POST",headers:h(r,true),body:await r.text(),cache:"no-store"});return Response.json(await u.json(),{status:u.status})}catch{return Response.json({ok:false,error:{code:"PERSONAL_DATA_UNAVAILABLE"}},{status:503})}}

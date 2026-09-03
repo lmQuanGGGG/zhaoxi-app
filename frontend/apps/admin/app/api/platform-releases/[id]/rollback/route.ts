@@ -1,0 +1,4 @@
+import {NextRequest} from "next/server";
+const backend=()=>process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"https://zhaoxi-backend.vercel.app";
+function h(r:NextRequest):Record<string,string>{const x:Record<string,string>={"content-type":"application/json"};const a=r.cookies.get("zx_access_v2")?.value;if(a)x.authorization=`Bearer ${a}`;return x}
+export async function POST(r:NextRequest,{params}:{params:Promise<{id:string}>}){const{id}=await params;const u=await fetch(`${backend()}/api/releases/admin/${id}/rollback`,{method:"POST",headers:h(r),body:"{}"});return Response.json(await u.json(),{status:u.status})}

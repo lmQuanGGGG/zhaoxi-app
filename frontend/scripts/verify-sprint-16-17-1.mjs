@@ -1,0 +1,11 @@
+import fs from "node:fs";
+const req=["SPRINT_16_17.md","SPRINT_16_17_1.md","apps/customer/app/api/platform-requests/route.ts","apps/customer/app/api/platform-requests/[id]/route.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing Sprint 16.17.1 file: ${f}`);
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
+if(pkg.version!=="16.17.1")throw new Error("Platform version must be 16.17.1");
+for(const x of ["verify:16.17.1","typecheck:all","build:all"])if(!pkg.scripts?.[x])throw new Error(`Missing script ${x}`);
+const list=fs.readFileSync("apps/customer/app/api/platform-requests/route.ts","utf8");
+for(const m of ["function authHeaders(request:NextRequest):Record<string,string>","const headers:Record<string,string>","headers:authHeaders(request)"])if(!list.includes(m))throw new Error(`Missing typed proxy marker ${m}`);
+const detail=fs.readFileSync("apps/customer/app/api/platform-requests/[id]/route.ts","utf8");
+if(!detail.includes("const headers:Record<string,string>"))throw new Error("Detail proxy headers must be explicitly typed");
+console.log("Sprint 16.17.1 Platform Request Proxy Type Safety structure is valid.");

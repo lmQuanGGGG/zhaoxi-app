@@ -1,0 +1,14 @@
+{
+  "name": "@zhaoxi/support",
+  "version": "14.7.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.tsx",
+  "peerDependencies": {
+    "react": ">=19",
+    "react-dom": ">=19"
+  },
+  "dependencies": {
+    "@zhaoxi/i18n": "1.0.0"
+  }
+}

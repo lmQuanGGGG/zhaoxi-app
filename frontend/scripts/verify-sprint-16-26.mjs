@@ -1,0 +1,10 @@
+import fs from"node:fs";
+const req=["SPRINT_16_25_1.md","SPRINT_16_26.md","apps/partner/app/OperationsBoard.tsx","apps/partner/app/PartnerOrderAlerts.tsx","apps/partner/app/api/partner-fulfillment/[id]/route.ts","apps/partner/app/api/platform-requests/route.ts","apps/customer/app/order/[id]/page.tsx","packages/sdk/src/index.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const p=JSON.parse(fs.readFileSync("package.json","utf8"));if(p.version!=="16.26.0")throw new Error("Platform version must be 16.26.0");
+for(const x of["verify:16.26","typecheck:all","build:all"])if(!p.scripts?.[x])throw new Error(x);
+const o=fs.readFileSync("apps/partner/app/OperationsBoard.tsx","utf8");for(const m of["ready_for_pickup","courier_booked","handed_off","deliveryGrossFee","deliverySubsidy","genericUpdate"])if(!o.includes(m))throw new Error(m);
+const a=fs.readFileSync("apps/partner/app/PartnerOrderAlerts.tsx","utf8");if(!a.includes("/api/partner-fulfillment/")||!a.includes('deliveryFulfillmentMode==="external_manual"'))throw new Error("External food alert contract missing");
+const proxy=fs.readFileSync("apps/partner/app/api/platform-requests/route.ts","utf8");if(!proxy.includes('request.cookies.get("zx_access_v2")'))throw new Error("Partner operations auth forwarding missing");
+const d=fs.readFileSync("apps/customer/app/order/[id]/page.tsx","utf8");for(const m of["readyPickup","courierBooked","handedOff","fulfillmentStage"])if(!d.includes(m))throw new Error(m);
+console.log("Sprint 16.26 Platform Partner Restaurant Fulfillment & External Courier Handoff structure is valid.");

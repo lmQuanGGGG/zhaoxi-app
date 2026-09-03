@@ -1,0 +1,20 @@
+{
+  "name": "@zhaoxi/platform",
+  "version": "14.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.tsx",
+  "types": "./src/index.tsx",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./sync": "./src/sync.ts"
+  },
+  "peerDependencies": {
+    "react": ">=19"
+  },
+  "dependencies": {
+    "@zhaoxi/auth": "1.0.0",
+    "@zhaoxi/i18n": "1.0.0",
+    "@zhaoxi/theme": "14.0.0"
+  }
+}

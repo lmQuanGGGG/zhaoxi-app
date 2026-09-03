@@ -1,0 +1,120 @@
+{
+  "generatedAt": "2026-08-17T01:34:55.405Z",
+  "scope": "FULL_CONTRACT_B1_2_SEMANTIC",
+  "counts": {
+    "declaredTables": 90,
+    "productionPublicTables": 90,
+    "matchedTables": 90,
+    "missingTables": 0,
+    "extraTables": 0,
+    "structuralIssues": 0,
+    "informationalDifferences": 7
+  },
+  "byKind": {},
+  "informationalByKind": {
+    "INDEX_NAME_DIFFERENCE": 7
+  },
+  "missingTables": [],
+  "extraTables": [],
+  "issues": [],
+  "informational": [
+    {
+      "kind": "INDEX_NAME_DIFFERENCE",
+      "table": "beta_access",
+      "index": "beta_access_user_role_unique",
+      "productionIndex": "beta_access_user_id_role_key",
+      "declared": {
+        "name": "beta_access_user_role_unique",
+        "unique": true,
+        "columns": [
+          "user_id",
+          "role"
+        ]
+      }
+    },
+    {
+      "kind": "INDEX_NAME_DIFFERENCE",
+      "table": "onboarding_applications",
+      "index": "onboarding_user_role_unique",
+      "productionIndex": "onboarding_applications_user_id_role_key",
+      "declared": {
+        "name": "onboarding_user_role_unique",
+        "unique": true,
+        "columns": [
+          "user_id",
+          "role"
+        ]
+      }
+    },
+    {
+      "kind": "INDEX_NAME_DIFFERENCE",
+      "table": "restaurant_coupons",
+      "index": "restaurant_coupons_org_code_unique",
+      "productionIndex": "restaurant_coupons_organization_id_code_key",
+      "declared": {
+        "name": "restaurant_coupons_org_code_unique",
+        "unique": true,
+        "columns": [
+          "organization_id",
+          "code"
+        ]
+      }
+    },
+    {
+      "kind": "INDEX_NAME_DIFFERENCE",
+      "table": "restaurant_settlements",
+      "index": "restaurant_settlements_org_period_unique",
+      "productionIndex": "restaurant_settlements_organization_id_period_start_period__key",
+      "declared": {
+        "name": "restaurant_settlements_org_period_unique",
+        "unique": true,
+        "columns": [
+          "organization_id",
+          "period_start",
+          "period_end"
+        ]
+      }
+    },
+    {
+      "kind": "INDEX_NAME_DIFFERENCE",
+      "table": "support_knowledge_articles",
+      "index": "support_knowledge_articles_slug_locale_unique",
+      "productionIndex": "support_knowledge_articles_slug_locale_key",
+      "declared": {
+        "name": "support_knowledge_articles_slug_locale_unique",
+        "unique": true,
+        "columns": [
+          "slug",
+          "locale"
+        ]
+      }
+    },
+    {
+      "kind": "INDEX_NAME_DIFFERENCE",
+      "table": "support_tags",
+      "index": "support_tags_name_unique",
+      "productionIndex": "support_tags_name_key",
+      "declared": {
+        "name": "support_tags_name_unique",
+        "unique": true,
+        "columns": [
+          "name"
+        ]
+      }
+    },
+    {
+      "kind": "INDEX_NAME_DIFFERENCE",
+      "table": "support_thread_tags",
+      "index": "support_thread_tags_unique",
+      "productionIndex": "support_thread_tags_thread_id_tag_id_key",
+      "declared": {
+        "name": "support_thread_tags_unique",
+        "unique": true,
+        "columns": [
+          "thread_id",
+          "tag_id"
+        ]
+      }
+    }
+  ]
+}

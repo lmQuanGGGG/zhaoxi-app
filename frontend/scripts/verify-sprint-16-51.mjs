@@ -1,0 +1,10 @@
+import fs from"node:fs";
+const req=["SPRINT_16_50.md","SPRINT_16_51.md","apps/admin/app/PaymentReconciliationPanel.tsx","apps/admin/app/TravelOversightPanel.tsx","apps/admin/app/api/admin-payment-reconciliation/route.ts","apps/admin/app/api/admin-payment-reconciliation/[requestId]/route.ts","apps/partner/app/PartnerPaymentTransactionPanel.tsx","apps/partner/app/OperationsBoard.tsx","apps/partner/app/api/partner-payment-transactions/route.ts","apps/partner/app/api/partner-payment-reconciliation/[requestId]/route.ts"];
+for(const f of req)if(!fs.existsSync(f))throw new Error(`Missing ${f}`);
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));if(pkg.version!=="16.51.0")throw new Error("Platform version must be 16.51.0");
+for(const x of["verify:16.51","typecheck:all","build:all"])if(!pkg.scripts?.[x])throw new Error(`Missing ${x}`);
+const admin=fs.readFileSync("apps/admin/app/PaymentReconciliationPanel.tsx","utf8");for(const m of["admin-payment-reconciliation","mismatches","providerStatus","currentStatus","repair"])if(!admin.includes(m))throw new Error(`Missing Admin reconciliation UI ${m}`);
+const travel=fs.readFileSync("apps/admin/app/TravelOversightPanel.tsx","utf8");if(!travel.includes("<PaymentReconciliationPanel/>"))throw new Error("Admin reconciliation panel not mounted");
+const partner=fs.readFileSync("apps/partner/app/PartnerPaymentTransactionPanel.tsx","utf8");for(const m of["partner-payment-transactions","providerReference","intentId"])if(!partner.includes(m))throw new Error(`Missing Partner transaction UI ${m}`);
+const ops=fs.readFileSync("apps/partner/app/OperationsBoard.tsx","utf8");if(!ops.includes("<PartnerPaymentTransactionPanel organizationId={orgId}/>"))throw new Error("Partner transaction panel not mounted");
+console.log("Sprint 16.51 Platform Payment Provider Adapter & Transaction Reconciliation structure is valid.");

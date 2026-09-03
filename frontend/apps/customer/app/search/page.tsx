@@ -1,0 +1,1 @@
+import UnifiedServiceDiscovery from"./UnifiedServiceDiscovery";export default function Page(){return <UnifiedServiceDiscovery/>}

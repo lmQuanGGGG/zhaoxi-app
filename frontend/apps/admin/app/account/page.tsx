@@ -1,0 +1,1 @@
+"use client";import Link from "next/link";import {AccountCenter} from "@zhaoxi/account";export default function AccountPage(){return <main style={{width:"min(100%,430px)",margin:"0 auto",minHeight:"100dvh",padding:18,background:"#f6faf7"}}><Link href="/" style={{display:"inline-block",marginBottom:14,textDecoration:"none",color:"#64748b"}}>← ZhaoXi</Link><AccountCenter/></main>}

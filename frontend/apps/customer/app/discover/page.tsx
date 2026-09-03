@@ -1,0 +1,1 @@
+import PersonalizedDiscoveryHub from"./PersonalizedDiscoveryHub";export default function Page(){return <PersonalizedDiscoveryHub/>}

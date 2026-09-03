@@ -1,0 +1,1 @@
+import {Suspense} from "react";import ServiceRequestForm from "../../_components/ServiceRequestForm";type Props={params:Promise<{serviceId:string}>};export default async function Page({params}:Props){const {serviceId}=await params;return <Suspense fallback={<main style={{padding:24}}>Đang tải…</main>}><ServiceRequestForm serviceId={serviceId}/></Suspense>}
