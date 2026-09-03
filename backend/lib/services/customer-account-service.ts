@@ -47,10 +47,15 @@ export class CustomerAccountService {
       throw new CustomerAccountError("PASSWORD_TOO_SHORT", 422, "Mật khẩu phải có ít nhất 6 ký tự.");
     }
 
+    const mode = input.mode === "register" ? "register" : input.mode === "login" ? "login" : "auto";
     const db = getDb();
     const [existing] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
     if (existing) {
+      if (mode === "register" && existing.passwordHash) {
+        throw new CustomerAccountError("EMAIL_EXISTS", 409, "Email này đã được đăng ký tài khoản. Vui lòng chuyển sang Đăng nhập.");
+      }
+
       if (existing.status !== "active") {
         throw new CustomerAccountError("ACCOUNT_DISABLED", 403, "Tài khoản hiện đang bị khóa.");
       }
@@ -94,7 +99,11 @@ export class CustomerAccountService {
       };
     }
 
-    // Account does not exist -> Auto-create immediately without verification!
+    if (mode === "login") {
+      throw new CustomerAccountError("ACCOUNT_NOT_FOUND", 404, "Tài khoản không tồn tại. Vui lòng chuyển sang Đăng ký.");
+    }
+
+    // Account does not exist -> Auto-create immediately!
     const [created] = await db
       .insert(users)
       .values({

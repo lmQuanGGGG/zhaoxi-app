@@ -392,6 +392,20 @@ function PhoneEntryStep({role,locale,onDone}:{role:"customer"|"partner";locale:Z
 
 function LoginStep({role,locale,onDone}:{role:ZhaoXiRole;locale:ZhaoXiLocale;onDone:()=>void}){const t=gateCopy[locale];const title=role==="customer"?t.customerTitle:role==="partner"?t.partnerTitle:role==="driver"?t.driverTitle:t.adminTitle;const internalCopy={"zh-CN":"配送员账号由平台内部发放。","zh-TW":"配送員帳號由平台內部發放。","vi-VN":"Tài khoản tài xế được nền tảng cấp nội bộ.","en-US":"Driver accounts are issued internally by the platform."}[locale];if(role==="admin")return <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}><section style={{width:"min(440px,100%)",padding:24,border:0,borderRadius:24,background:uiTokens.colors.glassStrong,boxShadow:"0 20px 60px -10px rgba(15,23,42,.18)",backdropFilter:uiTokens.blur,WebkitBackdropFilter:uiTokens.blur}}><div style={{display:"flex",alignItems:"center",gap:12,marginBottom:21}}><div style={{width:50,height:50,borderRadius:16,overflow:"hidden",display:"grid",placeItems:"center",boxShadow:"0 4px 14px rgba(15,23,42,.08)",background:"#FFFFFF",flexShrink:0}}><img src="/brand-logo.png" alt="ZhaoXi" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} /></div><div><small style={{color:"#07884c",fontWeight:900,letterSpacing:".08em"}}>ZHAOXI</small><h1 style={{margin:"3px 0 0",fontSize:23,color:"#10203a"}}>{title}</h1></div></div><AdminCardLogin locale={locale} onDone={onDone}/></section></main>;return <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}><Surface style={{width:"min(460px,100%)",padding:28}}><small style={{color:uiTokens.colors.primary,fontWeight:800}}>ZHAOXI</small><h1>{title}</h1>{(role==="customer"||role==="partner")?<ZhaoXiQrLogin role={role} locale={locale} onDone={onDone}/>:<p>{internalCopy}</p>}</Surface></main>}
 
+function EyeToggleIcon({ visible }: { visible: boolean }) {
+  return visible ? (
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ) : (
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  );
+}
+
 export function IdentityUpgradeSheet({
   role,
   open,
@@ -409,8 +423,13 @@ export function IdentityUpgradeSheet({
   const [caps, setCaps] = useState<any>(null);
   const [channel, setChannel] = useState<"sms" | "whatsapp" | null>("sms");
   const [authTab, setAuthTab] = useState<"email" | "pin">("email");
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [usePinLogin, setUsePinLogin] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [dialCode, setDialCode] = useState("+84");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -435,6 +454,11 @@ export function IdentityUpgradeSheet({
     setNameValue("");
     setEmail("");
     setPassword("");
+    setConfirmPassword("");
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setAuthMode("login");
+    setUsePinLogin(false);
     setPinStage("none");
     const current = readSession();
     const saved = String(current?.phone || "").replace(/[\s()-]/g, "");
@@ -466,42 +490,82 @@ export function IdentityUpgradeSheet({
     "zh-CN": {
       tabEmail: "账号密码",
       tabPin: "6 位密码登录",
+      tabSignIn: "登录",
+      tabSignUp: "注册新账号",
       email: "电子邮箱",
       emailPlaceholder: "例如 yourname@email.com",
       password: "密码",
       passwordPlaceholder: "输入至少 6 位密码",
-      submit: "登录 / 快速注册",
-      autoHint: "未注册邮箱将自动创建账号并立即登录。",
+      confirmPassword: "确认密码",
+      confirmPasswordPlaceholder: "再次输入密码以防遗忘",
+      mismatch: "两次输入的密码不一致，请重新检查。",
+      submitLogin: "立即登录",
+      submitRegister: "注册账号并继续",
+      forgotPasswordPin: "忘记密码？使用 6 位 PIN 码快速登录",
+      backToPassword: "← 返回密码登录",
+      pinLoginTitle: "6 位安全码登录",
+      pinLoginHint: "输入注册邮箱与 6 位安全 PIN 码即可快速登录。",
+      autoHint: "密码已加密。注册后可设置 6 位安全码以防遗忘。",
     },
     "zh-TW": {
       tabEmail: "帳號密碼",
       tabPin: "6 位密碼登入",
+      tabSignIn: "登入",
+      tabSignUp: "註冊新帳號",
       email: "電子郵件",
       emailPlaceholder: "例如 yourname@email.com",
       password: "密碼",
       passwordPlaceholder: "輸入至少 6 位密碼",
-      submit: "登入 / 快速註冊",
-      autoHint: "未註冊信箱將自動建立帳號並立即登入。",
+      confirmPassword: "確認密碼",
+      confirmPasswordPlaceholder: "再次輸入密碼以防遺忘",
+      mismatch: "兩次輸入的密碼不一致，請重新檢查。",
+      submitLogin: "立即登入",
+      submitRegister: "註冊帳號並繼續",
+      forgotPasswordPin: "忘記密碼？使用 6 位 PIN 碼快速登入",
+      backToPassword: "← 返回密碼登入",
+      pinLoginTitle: "6 位安全碼登入",
+      pinLoginHint: "輸入註冊信箱與 6 位安全 PIN 碼即可快速登入。",
+      autoHint: "密碼已加密。註冊後可設定 6 位安全碼以防遺忘。",
     },
     "vi-VN": {
       tabEmail: "Email & Mật khẩu",
       tabPin: "Mã PIN 6 số",
+      tabSignIn: "Đăng nhập",
+      tabSignUp: "Đăng ký mới",
       email: "Địa chỉ Email",
       emailPlaceholder: "Ví dụ: yourname@email.com",
       password: "Mật khẩu",
       passwordPlaceholder: "Nhập tối thiểu 6 ký tự",
-      submit: "Đăng nhập / Đăng ký nhanh",
-      autoHint: "Chưa có tài khoản sẽ tự động tạo mới ngay không cần xác thực OTP.",
+      confirmPassword: "Nhập lại mật khẩu",
+      confirmPasswordPlaceholder: "Nhập lại mật khẩu để ghi nhớ",
+      mismatch: "Mật khẩu nhập lại không khớp, vui lòng kiểm tra lại.",
+      submitLogin: "Đăng nhập",
+      submitRegister: "Tạo tài khoản & Tiếp tục",
+      forgotPasswordPin: "Quên mật khẩu? Đăng nhập bằng mã PIN 6 số",
+      backToPassword: "← Quay lại đăng nhập bằng mật khẩu",
+      pinLoginTitle: "Đăng nhập bằng mã PIN 6 số",
+      pinLoginHint: "Nhập email và mã PIN 6 số bạn đã tạo để đăng nhập ngay.",
+      autoHint: "Mật khẩu được bảo mật. Bạn sẽ được tạo mã PIN 6 số để phòng quên.",
     },
     "en-US": {
       tabEmail: "Email & Password",
       tabPin: "6-digit PIN",
+      tabSignIn: "Sign In",
+      tabSignUp: "Sign Up",
       email: "Email address",
       emailPlaceholder: "e.g. yourname@email.com",
       password: "Password",
       passwordPlaceholder: "At least 6 characters",
-      submit: "Sign in / Quick register",
-      autoHint: "New accounts are automatically created and logged in.",
+      confirmPassword: "Confirm Password",
+      confirmPasswordPlaceholder: "Re-enter password to confirm",
+      mismatch: "Passwords do not match. Please check again.",
+      submitLogin: "Sign In",
+      submitRegister: "Create Account & Continue",
+      forgotPasswordPin: "Forgot password? Sign in with 6-digit PIN",
+      backToPassword: "← Back to password sign in",
+      pinLoginTitle: "Sign in with 6-digit PIN",
+      pinLoginHint: "Enter your email and 6-digit PIN to sign in quickly.",
+      autoHint: "Passwords are secured. You will create a 6-digit PIN as a backup.",
     },
   }[locale];
 
@@ -562,10 +626,10 @@ export function IdentityUpgradeSheet({
     "en-US": { title: "Set your display name", hint: "So partners and drivers know how to address you.", label: "Full name / Display name", placeholder: "e.g. Alex, John...", save: "Save and continue", skip: "Skip for now" },
   }[locale];
   const pinCopy = {
-    "zh-CN": { setup: "设置 6 位安全密码", setupHint: "下次在新设备登录时使用，无需再等待短信验证码。", confirm: "再次输入密码", save: "保存并继续", login: "用 6 位密码登录", loginHint: "输入手机号码和设置过的 6 位密码快速登录。", signIn: "登录", pin: "6 位密码", mismatch: "两次输入的密码不一致。" },
-    "zh-TW": { setup: "設定 6 位安全密碼", setupHint: "下次在新裝置登入時使用，無需再等待簡訊驗證碼。", confirm: "再次輸入密碼", save: "儲存並繼續", login: "使用 6 位密碼登入", loginHint: "輸入手機號碼與設定過的 6 位密碼快速登入。", signIn: "登入", pin: "6 位密碼", mismatch: "兩次輸入的密碼不一致。" },
-    "vi-VN": { setup: "Tạo mã PIN 6 số", setupHint: "Dùng để đăng nhập nhanh máy mới mà không cần chờ SMS.", confirm: "Nhập lại mã PIN", save: "Lưu mã PIN & Tiếp tục", login: "Đăng nhập bằng PIN 6 số", loginHint: "Nhập số điện thoại và mã PIN bạn đã tạo.", signIn: "Đăng nhập", pin: "Mã PIN 6 số", mismatch: "Hai mã PIN chưa khớp." },
-    "en-US": { setup: "Create a 6-digit PIN", setupHint: "Use it to sign in on a new device without waiting for SMS.", confirm: "Confirm PIN", save: "Save and continue", login: "Sign in with 6-digit PIN", loginHint: "Enter your phone number and existing PIN.", signIn: "Sign in", pin: "6-digit PIN", mismatch: "PINs do not match." },
+    "zh-CN": { setup: "设置 6 位安全码", setupHint: "设置 6 位安全 PIN 码，若以后忘记密码，可直接输入该 6 位码快速登录。", confirm: "再次输入 6 位密码", save: "保存安全码并继续", login: "用 6 位密码登录", loginHint: "输入注册邮箱或手机号以及 6 位安全码快速登录。", signIn: "登录", pin: "6 位密码", mismatch: "两次输入的 6 位密码不一致。" },
+    "zh-TW": { setup: "設定 6 位安全碼", setupHint: "設定 6 位安全 PIN 碼，若以後忘記密碼，可直接輸入該 6 位碼快速登入。", confirm: "再次輸入 6 位密碼", save: "儲存安全碼並繼續", login: "使用 6 位密碼登入", loginHint: "輸入註冊信箱或手機號碼以及 6 位安全碼快速登入。", signIn: "登入", pin: "6 位密碼", mismatch: "兩次輸入的 6 位密碼不一致。" },
+    "vi-VN": { setup: "Tạo mã PIN 6 số bảo mật", setupHint: "Tạo mã PIN 6 số để sau này nếu lỡ quên mật khẩu, bạn có thể dùng mã PIN này để đăng nhập ngay.", confirm: "Nhập lại mã PIN 6 số", save: "Lưu mã PIN & Tiếp tục", login: "Đăng nhập bằng PIN 6 số", loginHint: "Nhập email hoặc số điện thoại và mã PIN 6 số của bạn.", signIn: "Đăng nhập", pin: "Mã PIN 6 số", mismatch: "Hai mã PIN 6 số chưa khớp." },
+    "en-US": { setup: "Create a 6-digit PIN", setupHint: "Create a 6-digit PIN so you can sign in anytime if you forget your password.", confirm: "Confirm 6-digit PIN", save: "Save PIN & Continue", login: "Sign in with 6-digit PIN", loginHint: "Enter your email or phone and your 6-digit PIN.", signIn: "Sign in", pin: "6-digit PIN", mismatch: "6-digit PINs do not match." },
   }[locale];
 
   async function startOtp() {
@@ -641,6 +705,10 @@ export function IdentityUpgradeSheet({
   }
 
   async function savePin() {
+    if (pinValue.length !== 6 || pinConfirm.length !== 6) {
+      setError(locale === "vi-VN" ? "Vui lòng nhập đủ 6 chữ số cho cả 2 ô." : "Please enter all 6 digits in both fields.");
+      return;
+    }
     if (pinValue !== pinConfirm) {
       setError(pinCopy.mismatch);
       return;
@@ -654,10 +722,11 @@ export function IdentityUpgradeSheet({
         body: JSON.stringify({ pin: pinValue }),
       });
       const j = await r.json();
-      if (!r.ok || !j?.ok) throw new Error(j?.error?.code || "PIN_SET_FAILED");
-      setPinStage("name");
-    } catch {
-      setError(c.invalid);
+      if (!r.ok || !j?.ok) throw new Error(j?.error?.message || j?.error?.code || "PIN_SET_FAILED");
+      setPinStage("none");
+      onVerified?.();
+    } catch (err: any) {
+      setError(err?.message || c.invalid);
     } finally {
       setBusy(false);
     }
@@ -697,6 +766,12 @@ export function IdentityUpgradeSheet({
       setError(locale === "vi-VN" ? "Mật khẩu phải có ít nhất 6 ký tự." : "Password must be at least 6 characters.");
       return;
     }
+    if (authMode === "register") {
+      if (confirmPassword !== password) {
+        setError(emailCopy.mismatch);
+        return;
+      }
+    }
     setBusy(true);
     setError("");
     try {
@@ -707,6 +782,7 @@ export function IdentityUpgradeSheet({
           role,
           email: trimmedEmail,
           password,
+          mode: authMode,
           locale,
           deviceId: getDeviceId(),
           deviceName: deviceName(),
@@ -717,8 +793,10 @@ export function IdentityUpgradeSheet({
         throw new Error(j?.error?.message || j?.error?.code || "ACCOUNT_LOGIN_FAILED");
       }
       saveServerSession(j.data);
-      if (j.data?.needsProfileCompletion || j.data?.isNewUser || !j.data?.phone) {
-        setPinStage("complete_profile");
+      if (authMode === "register" || j.data?.isNewUser) {
+        setPinValue("");
+        setPinConfirm("");
+        setPinStage("setup");
       } else {
         onVerified?.();
       }
@@ -763,25 +841,41 @@ export function IdentityUpgradeSheet({
   }
 
   async function loginWithPin() {
+    if (pinValue.length !== 6) {
+      setError(locale === "vi-VN" ? "Vui lòng nhập đủ 6 chữ số mã PIN." : "PIN must be 6 digits.");
+      return;
+    }
+    const trimmedEmail = email.trim().toLowerCase();
+    const isEmailLogin = usePinLogin || (!normalizedPhone && trimmedEmail);
+    if (isEmailLogin && (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail))) {
+      setError(locale === "vi-VN" ? "Vui lòng nhập email đã đăng ký tài khoản." : "Please enter a valid email address.");
+      return;
+    }
+    if (!isEmailLogin && !/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) {
+      setError(locale === "vi-VN" ? "Vui lòng nhập số điện thoại hợp lệ." : "Please enter a valid phone number.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
       const r = await fetch("/api/auth/unified/identity/pin/login", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ role, phone: normalizedPhone, pin: pinValue, deviceId: getDeviceId(), deviceName: deviceName() }),
+        body: JSON.stringify({
+          role,
+          email: isEmailLogin ? trimmedEmail : undefined,
+          phone: !isEmailLogin ? normalizedPhone : undefined,
+          pin: pinValue,
+          deviceId: getDeviceId(),
+          deviceName: deviceName(),
+        }),
       });
       const j = await r.json();
-      if (!r.ok || !j?.ok) throw new Error(j?.error?.code || "PIN_LOGIN_FAILED");
+      if (!r.ok || !j?.ok) throw new Error(j?.error?.message || j?.error?.code || "PIN_LOGIN_FAILED");
       saveServerSession(j.data);
-      const isDefaultName = !j.data?.displayName || j.data.displayName === "ZhaoXi Guest" || j.data.displayName === "Người dùng ZhaoXi" || j.data.displayName.includes("Guest");
-      if (isDefaultName) {
-        setPinStage("name");
-      } else {
-        onVerified?.();
-      }
-    } catch {
-      setError(c.invalid);
+      onVerified?.();
+    } catch (err: any) {
+      setError(err?.message || c.invalid);
     } finally {
       setBusy(false);
     }
@@ -875,7 +969,19 @@ export function IdentityUpgradeSheet({
           <div>
             <div style={{ fontSize: 11, fontWeight: 800, color: "#059669", letterSpacing: "0.08em", textTransform: "uppercase" }}>ZHAOXI ACCOUNT</div>
             <h2 style={{ margin: "2px 0 0", fontSize: 18, fontWeight: 800, color: "#0F172A" }}>
-              {pinStage === "complete_profile" ? completeCopy.title : pinStage === "name" ? nameCopy.title : pinStage === "setup" ? pinCopy.setup : (role === "partner" && authTab === "pin") ? pinCopy.login : c.title}
+              {pinStage === "setup"
+                ? pinCopy.setup
+                : pinStage === "complete_profile"
+                ? completeCopy.title
+                : pinStage === "name"
+                ? nameCopy.title
+                : usePinLogin
+                ? emailCopy.pinLoginTitle
+                : authMode === "register"
+                ? emailCopy.tabSignUp
+                : (role === "partner" && authTab === "pin")
+                ? pinCopy.login
+                : emailCopy.tabSignIn}
             </h2>
           </div>
         </div>
@@ -907,7 +1013,19 @@ export function IdentityUpgradeSheet({
       </div>
 
       <p style={{ margin: 0, fontSize: 13, color: "#64748B", lineHeight: 1.45 }}>
-        {pinStage === "complete_profile" ? completeCopy.hint : pinStage === "name" ? nameCopy.hint : pinStage === "setup" ? pinCopy.setupHint : (role === "partner" && authTab === "pin") ? pinCopy.loginHint : c.body}
+        {pinStage === "setup"
+          ? pinCopy.setupHint
+          : pinStage === "complete_profile"
+          ? completeCopy.hint
+          : pinStage === "name"
+          ? nameCopy.hint
+          : usePinLogin
+          ? emailCopy.pinLoginHint
+          : authMode === "register"
+          ? (locale === "vi-VN" ? "Tạo tài khoản với email và mật khẩu an toàn." : "Create an account with email and password.")
+          : (role === "partner" && authTab === "pin")
+          ? pinCopy.loginHint
+          : c.body}
       </p>
 
       {error && (
@@ -1105,7 +1223,7 @@ export function IdentityUpgradeSheet({
           </button>
         </div>
       ) : pinStage === "setup" ? (
-        <div style={{ display: "grid", gap: 12 }}>
+        <div style={{ display: "grid", gap: 14 }}>
           <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
             {pinCopy.pin}
             <input
@@ -1114,13 +1232,15 @@ export function IdentityUpgradeSheet({
               inputMode="numeric"
               type="password"
               placeholder="••••••"
+              autoFocus
               style={{
                 width: "100%",
                 boxSizing: "border-box",
-                height: 48,
-                padding: "0 14px",
+                height: 50,
+                padding: "0 16px",
                 borderRadius: 14,
                 border: 0,
+                outline: "none",
                 background: "#F8FAFC",
                 boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
                 textAlign: "center",
@@ -1128,7 +1248,6 @@ export function IdentityUpgradeSheet({
                 fontSize: 22,
                 fontWeight: 800,
                 color: "#0F172A",
-                outline: "none",
               }}
             />
           </label>
@@ -1140,13 +1259,15 @@ export function IdentityUpgradeSheet({
               inputMode="numeric"
               type="password"
               placeholder="••••••"
+              onKeyDown={e => { if (e.key === "Enter") void savePin(); }}
               style={{
                 width: "100%",
                 boxSizing: "border-box",
-                height: 48,
-                padding: "0 14px",
+                height: 50,
+                padding: "0 16px",
                 borderRadius: 14,
                 border: 0,
+                outline: "none",
                 background: "#F8FAFC",
                 boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
                 textAlign: "center",
@@ -1154,7 +1275,6 @@ export function IdentityUpgradeSheet({
                 fontSize: 22,
                 fontWeight: 800,
                 color: "#0F172A",
-                outline: "none",
               }}
             />
           </label>
@@ -1164,7 +1284,7 @@ export function IdentityUpgradeSheet({
             onClick={() => void savePin()}
             style={{
               width: "100%",
-              height: 48,
+              height: 50,
               borderRadius: 14,
               background: "#059669",
               color: "#FFFFFF",
@@ -1177,6 +1297,24 @@ export function IdentityUpgradeSheet({
             }}
           >
             {busy ? c.verifying : pinCopy.save}
+          </button>
+          <button
+            type="button"
+            onClick={onVerified}
+            style={{
+              width: "100%",
+              height: 38,
+              borderRadius: 12,
+              background: "transparent",
+              color: "#64748B",
+              border: 0,
+              fontWeight: 700,
+              fontSize: 13,
+              cursor: "pointer",
+              boxShadow: "none",
+            }}
+          >
+            {locale === "vi-VN" ? "Để sau / Bỏ qua" : "Skip for now"}
           </button>
         </div>
       ) : (
@@ -1191,7 +1329,7 @@ export function IdentityUpgradeSheet({
             }}>
               <button
                 type="button"
-                onClick={() => { setAuthTab("email"); setError(""); }}
+                onClick={() => { setAuthTab("email"); setError(""); setUsePinLogin(false); }}
                 style={{
                   flex: 1,
                   border: 0,
@@ -1232,79 +1370,319 @@ export function IdentityUpgradeSheet({
 
           {role === "customer" || authTab === "email" ? (
             <div style={{ display: "grid", gap: 12 }}>
-              <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
-                {emailCopy.email}
-                <input
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  type="email"
-                  autoComplete="email"
-                  placeholder={emailCopy.emailPlaceholder}
+              {/* Segmented control: Đăng nhập vs Đăng ký */}
+              <div style={{
+                display: "flex",
+                background: "#F1F5F9",
+                padding: 4,
+                borderRadius: 14,
+                gap: 4,
+              }}>
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode("login"); setError(""); setUsePinLogin(false); }}
                   style={{
-                    width: "100%",
-                    boxSizing: "border-box",
-                    height: 50,
-                    padding: "0 16px",
-                    borderRadius: 14,
+                    flex: 1,
                     border: 0,
-                    outline: "none",
-                    background: "#F8FAFC",
-                    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
-                    fontSize: 15,
-                    fontWeight: 600,
-                    color: "#0F172A",
+                    borderRadius: 10,
+                    padding: "9px 12px",
+                    fontSize: 13,
+                    fontWeight: 750,
+                    background: authMode === "login" && !usePinLogin ? "#FFFFFF" : "transparent",
+                    color: authMode === "login" && !usePinLogin ? "#0F172A" : "#64748B",
+                    boxShadow: authMode === "login" && !usePinLogin ? "0 2px 8px rgba(15, 23, 42, 0.08)" : "none",
+                    cursor: "pointer",
+                    transition: "all 0.18s ease",
                   }}
-                />
-              </label>
-              <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
-                {emailCopy.password}
-                <input
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder={emailCopy.passwordPlaceholder}
-                  onKeyDown={e => { if (e.key === "Enter") void loginWithEmail(); }}
+                >
+                  {emailCopy.tabSignIn}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode("register"); setError(""); setUsePinLogin(false); }}
                   style={{
-                    width: "100%",
-                    boxSizing: "border-box",
-                    height: 50,
-                    padding: "0 16px",
-                    borderRadius: 14,
+                    flex: 1,
                     border: 0,
-                    outline: "none",
-                    background: "#F8FAFC",
-                    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
-                    fontSize: 15,
-                    fontWeight: 600,
-                    color: "#0F172A",
+                    borderRadius: 10,
+                    padding: "9px 12px",
+                    fontSize: 13,
+                    fontWeight: 750,
+                    background: authMode === "register" ? "#FFFFFF" : "transparent",
+                    color: authMode === "register" ? "#0F172A" : "#64748B",
+                    boxShadow: authMode === "register" ? "0 2px 8px rgba(15, 23, 42, 0.08)" : "none",
+                    cursor: "pointer",
+                    transition: "all 0.18s ease",
                   }}
-                />
-              </label>
-              <button
-                type="button"
-                disabled={busy || !email.trim() || password.length < 6}
-                onClick={() => void loginWithEmail()}
-                style={{
-                  width: "100%",
-                  height: 50,
-                  borderRadius: 14,
-                  background: "#059669",
-                  color: "#FFFFFF",
-                  border: 0,
-                  fontWeight: 800,
-                  fontSize: 15,
-                  cursor: busy || !email.trim() || password.length < 6 ? "not-allowed" : "pointer",
-                  opacity: busy || !email.trim() || password.length < 6 ? 0.6 : 1,
-                  boxShadow: "none",
-                  marginTop: 2,
-                }}
-              >
-                {busy ? c.verifying : emailCopy.submit}
-              </button>
-              <small style={{ textAlign: "center", color: "#94A3B8", fontSize: 11.5, lineHeight: 1.4 }}>
-                {emailCopy.autoHint}
-              </small>
+                >
+                  {emailCopy.tabSignUp}
+                </button>
+              </div>
+
+              {usePinLogin ? (
+                <div style={{ display: "grid", gap: 12 }}>
+                  <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
+                    {emailCopy.email}
+                    <input
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      type="email"
+                      autoComplete="email"
+                      placeholder={emailCopy.emailPlaceholder}
+                      style={{
+                        width: "100%",
+                        boxSizing: "border-box",
+                        height: 50,
+                        padding: "0 16px",
+                        borderRadius: 14,
+                        border: 0,
+                        outline: "none",
+                        background: "#F8FAFC",
+                        boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: "#0F172A",
+                      }}
+                    />
+                  </label>
+                  <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
+                    {pinCopy.pin}
+                    <input
+                      value={pinValue}
+                      onChange={e => setPinValue(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      inputMode="numeric"
+                      type="password"
+                      placeholder="••••••"
+                      onKeyDown={e => { if (e.key === "Enter") void loginWithPin(); }}
+                      style={{
+                        width: "100%",
+                        boxSizing: "border-box",
+                        height: 50,
+                        padding: "0 16px",
+                        borderRadius: 14,
+                        border: 0,
+                        outline: "none",
+                        background: "#F8FAFC",
+                        boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
+                        textAlign: "center",
+                        letterSpacing: "0.4em",
+                        fontSize: 22,
+                        fontWeight: 800,
+                        color: "#0F172A",
+                      }}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    disabled={busy || pinValue.length !== 6 || !email.trim()}
+                    onClick={() => void loginWithPin()}
+                    style={{
+                      width: "100%",
+                      height: 50,
+                      borderRadius: 14,
+                      background: "#059669",
+                      color: "#FFFFFF",
+                      border: 0,
+                      fontWeight: 800,
+                      fontSize: 15,
+                      cursor: busy || pinValue.length !== 6 || !email.trim() ? "not-allowed" : "pointer",
+                      opacity: busy || pinValue.length !== 6 || !email.trim() ? 0.6 : 1,
+                      boxShadow: "none",
+                    }}
+                  >
+                    {busy ? c.verifying : pinCopy.signIn}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setUsePinLogin(false); setError(""); }}
+                    style={{
+                      width: "100%",
+                      height: 38,
+                      borderRadius: 12,
+                      background: "transparent",
+                      color: "#059669",
+                      border: 0,
+                      fontWeight: 700,
+                      fontSize: 13,
+                      cursor: "pointer",
+                      boxShadow: "none",
+                    }}
+                  >
+                    {emailCopy.backToPassword}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: "grid", gap: 12 }}>
+                  <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
+                    {emailCopy.email}
+                    <input
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      type="email"
+                      autoComplete="email"
+                      placeholder={emailCopy.emailPlaceholder}
+                      style={{
+                        width: "100%",
+                        boxSizing: "border-box",
+                        height: 50,
+                        padding: "0 16px",
+                        borderRadius: 14,
+                        border: 0,
+                        outline: "none",
+                        background: "#F8FAFC",
+                        boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: "#0F172A",
+                      }}
+                    />
+                  </label>
+                  <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
+                    {emailCopy.password}
+                    <div style={{ position: "relative" }}>
+                      <input
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        type={showPassword ? "text" : "password"}
+                        autoComplete={authMode === "login" ? "current-password" : "new-password"}
+                        placeholder={emailCopy.passwordPlaceholder}
+                        onKeyDown={e => { if (e.key === "Enter" && authMode === "login") void loginWithEmail(); }}
+                        style={{
+                          width: "100%",
+                          boxSizing: "border-box",
+                          height: 50,
+                          padding: "0 46px 0 16px",
+                          borderRadius: 14,
+                          border: 0,
+                          outline: "none",
+                          background: "#F8FAFC",
+                          boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
+                          fontSize: 15,
+                          fontWeight: 600,
+                          color: "#0F172A",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(p => !p)}
+                        style={{
+                          position: "absolute",
+                          right: 12,
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          border: 0,
+                          background: "transparent",
+                          padding: 6,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: "none",
+                        }}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        <EyeToggleIcon visible={showPassword} />
+                      </button>
+                    </div>
+                  </label>
+
+                  {authMode === "register" && (
+                    <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
+                      {emailCopy.confirmPassword}
+                      <div style={{ position: "relative" }}>
+                        <input
+                          value={confirmPassword}
+                          onChange={e => setConfirmPassword(e.target.value)}
+                          type={showConfirmPassword ? "text" : "password"}
+                          autoComplete="new-password"
+                          placeholder={emailCopy.confirmPasswordPlaceholder}
+                          onKeyDown={e => { if (e.key === "Enter") void loginWithEmail(); }}
+                          style={{
+                            width: "100%",
+                            boxSizing: "border-box",
+                            height: 50,
+                            padding: "0 46px 0 16px",
+                            borderRadius: 14,
+                            border: 0,
+                            outline: "none",
+                            background: "#F8FAFC",
+                            boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
+                            fontSize: 15,
+                            fontWeight: 600,
+                            color: "#0F172A",
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(p => !p)}
+                          style={{
+                            position: "absolute",
+                            right: 12,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            border: 0,
+                            background: "transparent",
+                            padding: 6,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            boxShadow: "none",
+                          }}
+                          aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                        >
+                          <EyeToggleIcon visible={showConfirmPassword} />
+                        </button>
+                      </div>
+                    </label>
+                  )}
+
+                  <button
+                    type="button"
+                    disabled={busy || !email.trim() || password.length < 6 || (authMode === "register" && confirmPassword.length < 6)}
+                    onClick={() => void loginWithEmail()}
+                    style={{
+                      width: "100%",
+                      height: 50,
+                      borderRadius: 14,
+                      background: "#059669",
+                      color: "#FFFFFF",
+                      border: 0,
+                      fontWeight: 800,
+                      fontSize: 15,
+                      cursor: busy || !email.trim() || password.length < 6 || (authMode === "register" && confirmPassword.length < 6) ? "not-allowed" : "pointer",
+                      opacity: busy || !email.trim() || password.length < 6 || (authMode === "register" && confirmPassword.length < 6) ? 0.6 : 1,
+                      boxShadow: "none",
+                      marginTop: 2,
+                    }}
+                  >
+                    {busy ? c.verifying : authMode === "register" ? emailCopy.submitRegister : emailCopy.submitLogin}
+                  </button>
+
+                  {authMode === "login" ? (
+                    <button
+                      type="button"
+                      onClick={() => { setUsePinLogin(true); setError(""); }}
+                      style={{
+                        background: "transparent",
+                        border: 0,
+                        color: "#059669",
+                        fontSize: 13,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        padding: "6px 0",
+                        textAlign: "center",
+                        boxShadow: "none",
+                      }}
+                    >
+                      {emailCopy.forgotPasswordPin}
+                    </button>
+                  ) : (
+                    <small style={{ textAlign: "center", color: "#94A3B8", fontSize: 11.5, lineHeight: 1.4 }}>
+                      {emailCopy.autoHint}
+                    </small>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div style={{ display: "grid", gap: 12 }}>

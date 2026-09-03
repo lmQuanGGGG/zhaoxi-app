@@ -44,12 +44,12 @@ export class CustomerPinService {
       throw new CustomerPinError("AUTH_REQUIRED", 401, "Authentication required.");
     }
     if (!validPin(pin)) {
-      throw new CustomerPinError("PIN_INVALID", 422, "PIN must contain exactly 6 digits.");
+      throw new CustomerPinError("PIN_INVALID", 422, "Mã PIN phải gồm đúng 6 chữ số.");
     }
     const db = getDb();
     const [user] = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
-    if (!user || user.isGuest || !user.phone) {
-      throw new CustomerPinError("PHONE_VERIFICATION_REQUIRED", 403, "Verify a phone number before setting a PIN.");
+    if (!user || user.isGuest) {
+      throw new CustomerPinError("AUTH_REQUIRED", 401, "Cần đăng nhập để thiết lập mã PIN.");
     }
     await db.update(users).set({
       pinHash: await hashPin(pin),
@@ -62,17 +62,21 @@ export class CustomerPinService {
 
   async login(input: Record<string, unknown>) {
     const phone = normalizePhone(input.phone);
+    const email = typeof input.email === "string" ? input.email.trim().toLowerCase() : "";
     const pin = input.pin;
-    if (!phone || !validPin(pin)) {
-      throw new CustomerPinError("LOGIN_INVALID", 422, "Phone number and 6-digit PIN are required.");
+    if ((!phone && !email) || !validPin(pin)) {
+      throw new CustomerPinError("LOGIN_INVALID", 422, "Email hoặc số điện thoại và mã PIN 6 số là bắt buộc.");
     }
     const db = getDb();
-    const [user] = await db.select().from(users).where(and(eq(users.phone, phone), eq(users.status, "active"))).limit(1);
+    const condition = email
+      ? and(eq(users.email, email), eq(users.status, "active"))
+      : and(eq(users.phone, phone), eq(users.status, "active"));
+    const [user] = await db.select().from(users).where(condition).limit(1);
     if (!user || user.isGuest || !user.pinHash) {
-      throw new CustomerPinError("LOGIN_FAILED", 401, "Invalid phone number or PIN.");
+      throw new CustomerPinError("LOGIN_FAILED", 401, "Tài khoản chưa thiết lập mã PIN 6 số hoặc thông tin không chính xác.");
     }
     if (user.pinLockedUntil && user.pinLockedUntil.getTime() > Date.now()) {
-      throw new CustomerPinError("PIN_LOCKED", 429, "Too many attempts. Try again later.");
+      throw new CustomerPinError("PIN_LOCKED", 429, "Quá nhiều lần thử sai. Vui lòng thử lại sau 15 phút.");
     }
     if (!(await matchesPin(pin, user.pinHash))) {
       const attempts = user.pinFailedAttempts + 1;
@@ -81,7 +85,7 @@ export class CustomerPinService {
         pinLockedUntil: attempts >= MAX_ATTEMPTS ? new Date(Date.now() + LOCK_MS) : null,
         updatedAt: new Date(),
       }).where(eq(users.id, user.id));
-      throw new CustomerPinError(attempts >= MAX_ATTEMPTS ? "PIN_LOCKED" : "LOGIN_FAILED", attempts >= MAX_ATTEMPTS ? 429 : 401, "Invalid phone number or PIN.");
+      throw new CustomerPinError(attempts >= MAX_ATTEMPTS ? "PIN_LOCKED" : "LOGIN_FAILED", attempts >= MAX_ATTEMPTS ? 429 : 401, "Mã PIN không chính xác.");
     }
     await db.update(users).set({ pinFailedAttempts: 0, pinLockedUntil: null, updatedAt: new Date() }).where(eq(users.id, user.id));
     return sessionService.issue({
