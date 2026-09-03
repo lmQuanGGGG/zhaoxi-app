@@ -891,4 +891,16 @@ html[data-theme="dark"] select:focus {
   box-shadow: 0 0 0 2px #10B981, 0 6px 20px rgba(16, 185, 129, 0.2) !important;
 }
 
+/* Prevent browser autofill from adding ugly blue/yellow border or background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #F8FAFC inset, 0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06) !important;
+  -webkit-text-fill-color: #0F172A !important;
+  border: 0 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+
 

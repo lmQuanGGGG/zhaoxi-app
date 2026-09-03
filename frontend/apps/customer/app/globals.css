@@ -1174,3 +1174,35 @@ button.zx-loc-search-btn {
   box-shadow: none !important;
   filter: none !important;
 }
+
+/* Global Inputs: NO BORDER, LUXURY CLEAR SOFT SHADOW */
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+textarea,
+select {
+  border: 0 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06) !important;
+  transition: all 0.2s ease !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):focus,
+textarea:focus,
+select:focus {
+  border: 0 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px #059669, 0 8px 26px rgba(5, 150, 105, 0.22) !important;
+}
+
+/* Prevent browser autofill from adding ugly blue/yellow border or background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #F8FAFC inset, 0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06) !important;
+  -webkit-text-fill-color: #0F172A !important;
+  border: 0 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+

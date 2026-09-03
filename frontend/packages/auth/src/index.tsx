@@ -216,18 +216,67 @@ function LanguageStep({ onDone }: { onDone: (locale: ZhaoXiLocale) => void }) {
   const t = gateCopy[locale];
   return (
     <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}>
-      <section style={{width:"min(440px,100%)",padding:24,border:`1px solid ${uiTokens.colors.border}`,borderRadius:uiTokens.radius.xl,background:uiTokens.colors.glassStrong,boxShadow:uiTokens.shadow,backdropFilter:uiTokens.blur,WebkitBackdropFilter:uiTokens.blur}}>
-        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:22}}><div style={{width:54,height:54,borderRadius:17,background:"linear-gradient(145deg,#2bdd8b,#07b95f)",color:"white",display:"grid",placeItems:"center",fontSize:25,fontWeight:950,boxShadow:"0 12px 30px rgba(7,193,96,.28)"}}>喜</div><div><b style={{fontSize:20,color:"#10203a"}}>ZHAOXI</b><small style={{display:"block",marginTop:3,color:"#66758d"}}>Customer · Partner · Admin</small></div></div>
-        <h1 style={{margin:"0 0 7px",fontSize:27,color:"#10203a"}}>{t.chooseLanguage}</h1>
-        <p style={{color:"#69778e",margin:"0 0 20px",lineHeight:1.5,fontSize:13}}>{t.chooseLanguageHint}</p>
-        <div style={{display:"grid",gap:10,margin:"0 0 18px"}}>
+      <section style={{width:"min(440px,100%)",padding:28,border:0,borderRadius:28,background:"#FFFFFF",boxShadow:"0 24px 64px -12px rgba(15,23,42,0.18), 0 8px 24px -4px rgba(15,23,42,0.08)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:22}}>
+          <div style={{width:52,height:52,borderRadius:16,overflow:"hidden",display:"grid",placeItems:"center",boxShadow:"0 4px 14px rgba(15,23,42,.08)",background:"#FFFFFF",flexShrink:0}}>
+            <img src="/brand-logo.png" alt="ZhaoXi" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} />
+          </div>
+          <div>
+            <b style={{fontSize:20,color:"#10203a",letterSpacing:"-0.01em"}}>ZHAOXI</b>
+            <small style={{display:"block",marginTop:3,color:"#66758d",fontWeight:600}}>Customer · Partner · Admin</small>
+          </div>
+        </div>
+        <h1 style={{margin:"0 0 7px",fontSize:26,fontWeight:800,color:"#10203a"}}>{t.chooseLanguage}</h1>
+        <p style={{color:"#64748B",margin:"0 0 20px",lineHeight:1.5,fontSize:13}}>{t.chooseLanguageHint}</p>
+        <div style={{display:"grid",gap:10,margin:"0 0 20px"}}>
           {(Object.keys(localeNames) as ZhaoXiLocale[]).map((code) => (
-            <button key={code} type="button" onClick={() => setLocale(code)} style={{minHeight:54,padding:"0 15px",display:"flex",alignItems:"center",justifyContent:"space-between",textAlign:"left",borderRadius:16,border:`1px solid ${locale===code?"rgba(7,193,96,.45)":"rgba(255,255,255,.88)"}`,background:locale===code?"linear-gradient(135deg,rgba(225,255,240,.94),rgba(255,255,255,.76))":"rgba(255,255,255,.58)",boxShadow:locale===code?"0 10px 24px rgba(7,193,96,.12)":"0 8px 22px rgba(38,57,88,.06)",color:"#15233b",fontWeight:800,backdropFilter:"blur(16px)"}}>
-              <span>{localeNames[code]}</span><span style={{width:25,height:25,display:"grid",placeItems:"center",borderRadius:9,background:locale===code?"#07c160":"rgba(221,230,240,.75)",color:locale===code?"white":"#76849a",fontSize:11}}>{locale===code?"✓":code.split("-")[0].toUpperCase()}</span>
+            <button
+              key={code}
+              type="button"
+              onClick={() => setLocale(code)}
+              style={{
+                minHeight:54,
+                padding:"0 18px",
+                display:"flex",
+                alignItems:"center",
+                justifyContent:"space-between",
+                textAlign:"left",
+                borderRadius:16,
+                border: 0,
+                background: locale === code ? "#ECFDF5" : "#F8FAFC",
+                boxShadow: locale === code ? "0 4px 16px rgba(5,150,105,0.12), inset 0 0 0 1.5px #10B981" : "0 2px 8px rgba(15,23,42,0.05)",
+                color: "#15233b",
+                fontWeight: 750,
+                cursor: "pointer",
+                transition: "all 0.18s ease",
+              }}
+            >
+              <span style={{fontSize:15}}>{localeNames[code]}</span>
+              <span style={{width:26,height:26,display:"grid",placeItems:"center",borderRadius:10,background:locale===code?"#059669":"#E2E8F0",color:locale===code?"white":"#64748B",fontSize:11,fontWeight:800}}>
+                {locale===code?"✓":code.split("-")[0].toUpperCase()}
+              </span>
             </button>
           ))}
         </div>
-        <button type="button" onClick={() => { saveBrowserLocale(locale); onDone(locale); }} style={{width:"100%",height:50,border:0,borderRadius:16,background:"linear-gradient(145deg,#18cf74,#07b95f)",color:"white",fontSize:14,fontWeight:900,boxShadow:"0 12px 26px rgba(7,193,96,.24)"}}>{t.continue}</button>
+        <button
+          type="button"
+          onClick={() => { saveBrowserLocale(locale); onDone(locale); }}
+          style={{
+            width:"100%",
+            height:50,
+            border:0,
+            borderRadius:16,
+            background:"#059669",
+            color:"white",
+            fontSize:15,
+            fontWeight:800,
+            boxShadow:"none",
+            cursor:"pointer",
+            transition:"background 0.18s ease",
+          }}
+        >
+          {t.continue}
+        </button>
       </section>
     </main>
   );
@@ -338,10 +387,10 @@ function PhoneEntryStep({role,locale,onDone}:{role:"customer"|"partner";locale:Z
   useEffect(()=>{let live=true;void bootstrapGuestSession(role,locale).then(()=>{if(live)setPrepared(true)}).catch(e=>{if(live)setError(e instanceof Error?e.message:"GUEST_BOOTSTRAP_FAILED")});return()=>{live=false}},[role,locale]);
   const entryCopy={"zh-CN":{customer:"生活服务",partner:"合作伙伴",loading:"正在准备登录…",retry:"重试"},"zh-TW":{customer:"生活服務",partner:"合作夥伴",loading:"正在準備登入…",retry:"重試"},"vi-VN":{customer:"Dịch vụ đời sống",partner:"Dành cho Đối tác",loading:"Đang chuẩn bị đăng nhập…",retry:"Thử lại"},"en-US":{customer:"Life services",partner:"For Partners",loading:"Preparing sign in…",retry:"Retry"}}[locale];
   if(prepared)return <IdentityUpgradeSheet role={role} open onClose={onDone} onVerified={onDone}/>;
-  return <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}><Surface style={{width:"min(460px,100%)",padding:28,textAlign:"center"}}><small style={{color:uiTokens.colors.primary,fontWeight:800}}>ZHAOXI</small><h1>{role === "partner" ? entryCopy.partner : entryCopy.customer}</h1>{error?<><div style={{padding:12,borderRadius:12,background:"#fff1f2",color:"#b42318"}}>{error}</div><ActionButton onClick={()=>location.reload()}>{entryCopy.retry}</ActionButton></>:<><div style={{fontSize:38}}>喜</div><p>{entryCopy.loading}</p></>}</Surface></main>
+  return <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}><Surface style={{width:"min(460px,100%)",padding:28,textAlign:"center"}}><small style={{color:uiTokens.colors.primary,fontWeight:800}}>ZHAOXI</small><h1>{role === "partner" ? entryCopy.partner : entryCopy.customer}</h1>{error?<><div style={{padding:12,borderRadius:12,background:"#fff1f2",color:"#b42318"}}>{error}</div><ActionButton onClick={()=>location.reload()}>{entryCopy.retry}</ActionButton></>:<><div style={{width:52,height:52,borderRadius:16,overflow:"hidden",display:"grid",placeItems:"center",boxShadow:"0 4px 14px rgba(15,23,42,.08)",background:"#FFFFFF",margin:"0 auto 12px"}}><img src="/brand-logo.png" alt="ZhaoXi" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} /></div><p>{entryCopy.loading}</p></>}</Surface></main>
 }
 
-function LoginStep({role,locale,onDone}:{role:ZhaoXiRole;locale:ZhaoXiLocale;onDone:()=>void}){const t=gateCopy[locale];const title=role==="customer"?t.customerTitle:role==="partner"?t.partnerTitle:role==="driver"?t.driverTitle:t.adminTitle;const internalCopy={"zh-CN":"配送员账号由平台内部发放。","zh-TW":"配送員帳號由平台內部發放。","vi-VN":"Tài khoản tài xế được nền tảng cấp nội bộ.","en-US":"Driver accounts are issued internally by the platform."}[locale];if(role==="admin")return <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}><section style={{width:"min(440px,100%)",padding:24,border:`1px solid ${uiTokens.colors.border}`,borderRadius:uiTokens.radius.xl,background:uiTokens.colors.glassStrong,boxShadow:uiTokens.shadow,backdropFilter:uiTokens.blur,WebkitBackdropFilter:uiTokens.blur}}><div style={{display:"flex",alignItems:"center",gap:11,marginBottom:21}}><div style={{width:50,height:50,display:"grid",placeItems:"center",borderRadius:16,background:"linear-gradient(145deg,#2bdd8b,#07b95f)",color:"white",fontSize:24,fontWeight:950,boxShadow:"0 12px 30px rgba(7,193,96,.26)"}}>喜</div><div><small style={{color:"#07884c",fontWeight:900,letterSpacing:".08em"}}>ZHAOXI</small><h1 style={{margin:"3px 0 0",fontSize:23,color:"#10203a"}}>{title}</h1></div></div><AdminCardLogin locale={locale} onDone={onDone}/></section></main>;return <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}><Surface style={{width:"min(460px,100%)",padding:28}}><small style={{color:uiTokens.colors.primary,fontWeight:800}}>ZHAOXI</small><h1>{title}</h1>{(role==="customer"||role==="partner")?<ZhaoXiQrLogin role={role} locale={locale} onDone={onDone}/>:<p>{internalCopy}</p>}</Surface></main>}
+function LoginStep({role,locale,onDone}:{role:ZhaoXiRole;locale:ZhaoXiLocale;onDone:()=>void}){const t=gateCopy[locale];const title=role==="customer"?t.customerTitle:role==="partner"?t.partnerTitle:role==="driver"?t.driverTitle:t.adminTitle;const internalCopy={"zh-CN":"配送员账号由平台内部发放。","zh-TW":"配送員帳號由平台內部發放。","vi-VN":"Tài khoản tài xế được nền tảng cấp nội bộ.","en-US":"Driver accounts are issued internally by the platform."}[locale];if(role==="admin")return <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}><section style={{width:"min(440px,100%)",padding:24,border:0,borderRadius:24,background:uiTokens.colors.glassStrong,boxShadow:"0 20px 60px -10px rgba(15,23,42,.18)",backdropFilter:uiTokens.blur,WebkitBackdropFilter:uiTokens.blur}}><div style={{display:"flex",alignItems:"center",gap:12,marginBottom:21}}><div style={{width:50,height:50,borderRadius:16,overflow:"hidden",display:"grid",placeItems:"center",boxShadow:"0 4px 14px rgba(15,23,42,.08)",background:"#FFFFFF",flexShrink:0}}><img src="/brand-logo.png" alt="ZhaoXi" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} /></div><div><small style={{color:"#07884c",fontWeight:900,letterSpacing:".08em"}}>ZHAOXI</small><h1 style={{margin:"3px 0 0",fontSize:23,color:"#10203a"}}>{title}</h1></div></div><AdminCardLogin locale={locale} onDone={onDone}/></section></main>;return <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}><Surface style={{width:"min(460px,100%)",padding:28}}><small style={{color:uiTokens.colors.primary,fontWeight:800}}>ZHAOXI</small><h1>{title}</h1>{(role==="customer"||role==="partner")?<ZhaoXiQrLogin role={role} locale={locale} onDone={onDone}/>:<p>{internalCopy}</p>}</Surface></main>}
 
 export function IdentityUpgradeSheet({
   role,
@@ -359,7 +408,7 @@ export function IdentityUpgradeSheet({
   const { locale } = useZhaoXiLocale();
   const [caps, setCaps] = useState<any>(null);
   const [channel, setChannel] = useState<"sms" | "whatsapp" | null>("sms");
-  const [authTab, setAuthTab] = useState<"email" | "phone">("email");
+  const [authTab, setAuthTab] = useState<"email" | "pin">("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [dialCode, setDialCode] = useState("+84");
@@ -386,8 +435,8 @@ export function IdentityUpgradeSheet({
     setNameValue("");
     setEmail("");
     setPassword("");
+    setPinStage("none");
     const current = readSession();
-    setPinStage(current?.role === role && current.authMethod !== "guest" ? "login" : "none");
     const saved = String(current?.phone || "").replace(/[\s()-]/g, "");
     const savedDial = ["+86", "+84", "+852", "+1"].find(c => saved.startsWith(c));
     setDialCode(savedDial || "+84");
@@ -416,7 +465,7 @@ export function IdentityUpgradeSheet({
   const emailCopy = {
     "zh-CN": {
       tabEmail: "账号密码",
-      tabPhone: "手机验证码",
+      tabPin: "6 位密码登录",
       email: "电子邮箱",
       emailPlaceholder: "例如 yourname@email.com",
       password: "密码",
@@ -426,7 +475,7 @@ export function IdentityUpgradeSheet({
     },
     "zh-TW": {
       tabEmail: "帳號密碼",
-      tabPhone: "手機驗證碼",
+      tabPin: "6 位密碼登入",
       email: "電子郵件",
       emailPlaceholder: "例如 yourname@email.com",
       password: "密碼",
@@ -436,17 +485,17 @@ export function IdentityUpgradeSheet({
     },
     "vi-VN": {
       tabEmail: "Email & Mật khẩu",
-      tabPhone: "Số điện thoại (OTP)",
+      tabPin: "Mã PIN 6 số",
       email: "Địa chỉ Email",
       emailPlaceholder: "Ví dụ: yourname@email.com",
       password: "Mật khẩu",
       passwordPlaceholder: "Nhập tối thiểu 6 ký tự",
       submit: "Đăng nhập / Đăng ký nhanh",
-      autoHint: "Chưa có tài khoản sẽ tự động tạo mới ngay không cần xác thực.",
+      autoHint: "Chưa có tài khoản sẽ tự động tạo mới ngay không cần xác thực OTP.",
     },
     "en-US": {
       tabEmail: "Email & Password",
-      tabPhone: "Phone OTP",
+      tabPin: "6-digit PIN",
       email: "Email address",
       emailPlaceholder: "e.g. yourname@email.com",
       password: "Password",
@@ -747,9 +796,10 @@ export function IdentityUpgradeSheet({
       <div style={{
         display: "flex",
         alignItems: "center",
-        border: "1.5px solid #CBD5E1",
+        border: 0,
         borderRadius: 14,
         background: "#F8FAFC",
+        boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
         overflow: "hidden",
       }}>
         <select
@@ -772,7 +822,7 @@ export function IdentityUpgradeSheet({
             <option key={country.code} value={country.code}>{country.label}</option>
           ))}
         </select>
-        <div style={{ width: 1, height: 24, background: "#CBD5E1", margin: "0 2px" }} />
+        <div style={{ width: 1, height: 24, background: "#E2E8F0", margin: "0 2px" }} />
         <input
           value={phone}
           onChange={e => setPhone(e.target.value.replace(/\D/g, ""))}
@@ -801,25 +851,31 @@ export function IdentityUpgradeSheet({
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{
-            width: 44,
-            height: 44,
+            width: 48,
+            height: 48,
             borderRadius: 14,
-            background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#FFFFFF",
-            fontSize: 22,
-            fontWeight: 900,
-            boxShadow: "none",
+            overflow: "hidden",
+            display: "grid",
+            placeItems: "center",
+            boxShadow: "0 3px 12px rgba(15, 23, 42, 0.08)",
+            background: "#FFFFFF",
             flexShrink: 0,
           }}>
-            喜
+            <img
+              src="/brand-logo.png"
+              alt="ZhaoXi"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+            />
           </div>
           <div>
             <div style={{ fontSize: 11, fontWeight: 800, color: "#059669", letterSpacing: "0.08em", textTransform: "uppercase" }}>ZHAOXI ACCOUNT</div>
             <h2 style={{ margin: "2px 0 0", fontSize: 18, fontWeight: 800, color: "#0F172A" }}>
-              {pinStage === "complete_profile" ? completeCopy.title : pinStage === "name" ? nameCopy.title : pinStage === "setup" ? pinCopy.setup : pinStage === "login" ? pinCopy.login : challenge ? c.code : c.title}
+              {pinStage === "complete_profile" ? completeCopy.title : pinStage === "name" ? nameCopy.title : pinStage === "setup" ? pinCopy.setup : (role === "partner" && authTab === "pin") ? pinCopy.login : c.title}
             </h2>
           </div>
         </div>
@@ -851,7 +907,7 @@ export function IdentityUpgradeSheet({
       </div>
 
       <p style={{ margin: 0, fontSize: 13, color: "#64748B", lineHeight: 1.45 }}>
-        {pinStage === "complete_profile" ? completeCopy.hint : pinStage === "name" ? nameCopy.hint : pinStage === "setup" ? pinCopy.setupHint : pinStage === "login" ? pinCopy.loginHint : challenge ? `${c.sent} ${challenge.maskedPhone || normalizedPhone}` : c.body}
+        {pinStage === "complete_profile" ? completeCopy.hint : pinStage === "name" ? nameCopy.hint : pinStage === "setup" ? pinCopy.setupHint : (role === "partner" && authTab === "pin") ? pinCopy.loginHint : c.body}
       </p>
 
       {error && (
@@ -884,8 +940,9 @@ export function IdentityUpgradeSheet({
                 height: 48,
                 padding: "0 14px",
                 borderRadius: 14,
-                border: "1.5px solid #CBD5E1",
+                border: 0,
                 background: "#F8FAFC",
+                boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
                 fontSize: 15,
                 fontWeight: 600,
                 color: "#0F172A",
@@ -898,9 +955,10 @@ export function IdentityUpgradeSheet({
             <div style={{
               display: "flex",
               alignItems: "center",
-              border: "1.5px solid #CBD5E1",
+              border: 0,
               borderRadius: 14,
               background: "#F8FAFC",
+              boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
               overflow: "hidden",
             }}>
               <select
@@ -922,7 +980,7 @@ export function IdentityUpgradeSheet({
                   <option key={country.code} value={country.code}>{country.label}</option>
                 ))}
               </select>
-              <div style={{ width: 1, height: 24, background: "#CBD5E1", margin: "0 2px" }} />
+              <div style={{ width: 1, height: 24, background: "#E2E8F0", margin: "0 2px" }} />
               <input
                 value={phone}
                 onChange={e => setPhone(e.target.value.replace(/\D/g, ""))}
@@ -997,8 +1055,9 @@ export function IdentityUpgradeSheet({
                 height: 48,
                 padding: "0 14px",
                 borderRadius: 14,
-                border: "1.5px solid #CBD5E1",
+                border: 0,
                 background: "#F8FAFC",
+                boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
                 fontSize: 15,
                 fontWeight: 600,
                 color: "#0F172A",
@@ -1061,8 +1120,9 @@ export function IdentityUpgradeSheet({
                 height: 48,
                 padding: "0 14px",
                 borderRadius: 14,
-                border: "1.5px solid #CBD5E1",
+                border: 0,
                 background: "#F8FAFC",
+                boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
                 textAlign: "center",
                 letterSpacing: "0.4em",
                 fontSize: 22,
@@ -1086,8 +1146,9 @@ export function IdentityUpgradeSheet({
                 height: 48,
                 padding: "0 14px",
                 borderRadius: 14,
-                border: "1.5px solid #CBD5E1",
+                border: 0,
                 background: "#F8FAFC",
+                boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
                 textAlign: "center",
                 letterSpacing: "0.4em",
                 fontSize: 22,
@@ -1118,123 +1179,60 @@ export function IdentityUpgradeSheet({
             {busy ? c.verifying : pinCopy.save}
           </button>
         </div>
-      ) : pinStage === "login" ? (
-        <div style={{ display: "grid", gap: 12 }}>
-          <button
-            type="button"
-            onClick={() => { setPinStage("none"); setPinValue(""); setError(""); }}
-            style={{
-              border: 0,
-              background: "transparent",
-              padding: 0,
-              textAlign: "left",
-              color: "#059669",
-              fontWeight: 750,
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
-            ‹ {c.back} (Đăng nhập Email / SĐT)
-          </button>
-          {modernPhoneInput}
-          <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
-            {pinCopy.pin}
-            <input
-              value={pinValue}
-              onChange={e => setPinValue(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              inputMode="numeric"
-              type="password"
-              placeholder="••••••"
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                height: 48,
-                padding: "0 14px",
-                borderRadius: 14,
-                border: "1.5px solid #CBD5E1",
-                background: "#F8FAFC",
-                textAlign: "center",
-                letterSpacing: "0.4em",
-                fontSize: 22,
-                fontWeight: 800,
-                color: "#0F172A",
-                outline: "none",
-              }}
-            />
-          </label>
-          <button
-            type="button"
-            disabled={busy || pinValue.length !== 6 || !/^\+[1-9]\d{7,14}$/.test(normalizedPhone)}
-            onClick={() => void loginWithPin()}
-            style={{
-              width: "100%",
-              height: 48,
+      ) : (
+        <div style={{ display: "grid", gap: 14 }}>
+          {role === "partner" && (
+            <div style={{
+              display: "flex",
+              background: "#F1F5F9",
+              padding: 4,
               borderRadius: 14,
-              background: "#059669",
-              color: "#FFFFFF",
-              border: 0,
-              fontWeight: 800,
-              fontSize: 15,
-              cursor: busy || pinValue.length !== 6 || !/^\+[1-9]\d{7,14}$/.test(normalizedPhone) ? "not-allowed" : "pointer",
-              opacity: busy || pinValue.length !== 6 || !/^\+[1-9]\d{7,14}$/.test(normalizedPhone) ? 0.6 : 1,
-              boxShadow: "none",
-            }}
-          >
-            {busy ? c.verifying : pinCopy.signIn}
-          </button>
-        </div>
-      ) : !challenge ? (
-        <div style={{ display: "grid", gap: 12 }}>
-          <div style={{
-            display: "flex",
-            background: "#F1F5F9",
-            padding: 3,
-            borderRadius: 12,
-            gap: 4,
-          }}>
-            <button
-              type="button"
-              onClick={() => { setAuthTab("email"); setError(""); }}
-              style={{
-                flex: 1,
-                border: 0,
-                borderRadius: 9,
-                padding: "8px 10px",
-                fontSize: 13,
-                fontWeight: 700,
-                background: authTab === "email" ? "#FFFFFF" : "transparent",
-                color: authTab === "email" ? "#059669" : "#64748B",
-                boxShadow: authTab === "email" ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
-                cursor: "pointer",
-                transition: "all 0.15s ease",
-              }}
-            >
-              {emailCopy.tabEmail}
-            </button>
-            <button
-              type="button"
-              onClick={() => { setAuthTab("phone"); setError(""); }}
-              style={{
-                flex: 1,
-                border: 0,
-                borderRadius: 9,
-                padding: "8px 10px",
-                fontSize: 13,
-                fontWeight: 700,
-                background: authTab === "phone" ? "#FFFFFF" : "transparent",
-                color: authTab === "phone" ? "#059669" : "#64748B",
-                boxShadow: authTab === "phone" ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
-                cursor: "pointer",
-                transition: "all 0.15s ease",
-              }}
-            >
-              {emailCopy.tabPhone}
-            </button>
-          </div>
+              gap: 4,
+            }}>
+              <button
+                type="button"
+                onClick={() => { setAuthTab("email"); setError(""); }}
+                style={{
+                  flex: 1,
+                  border: 0,
+                  borderRadius: 10,
+                  padding: "9px 12px",
+                  fontSize: 13,
+                  fontWeight: 750,
+                  background: authTab === "email" ? "#FFFFFF" : "transparent",
+                  color: authTab === "email" ? "#0F172A" : "#64748B",
+                  boxShadow: authTab === "email" ? "0 2px 8px rgba(15, 23, 42, 0.08)" : "none",
+                  cursor: "pointer",
+                  transition: "all 0.18s ease",
+                }}
+              >
+                {emailCopy.tabEmail}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAuthTab("pin"); setError(""); }}
+                style={{
+                  flex: 1,
+                  border: 0,
+                  borderRadius: 10,
+                  padding: "9px 12px",
+                  fontSize: 13,
+                  fontWeight: 750,
+                  background: authTab === "pin" ? "#FFFFFF" : "transparent",
+                  color: authTab === "pin" ? "#0F172A" : "#64748B",
+                  boxShadow: authTab === "pin" ? "0 2px 8px rgba(15, 23, 42, 0.08)" : "none",
+                  cursor: "pointer",
+                  transition: "all 0.18s ease",
+                }}
+              >
+                {emailCopy.tabPin}
+              </button>
+            </div>
+          )}
 
-          {authTab === "email" ? (
-            <div style={{ display: "grid", gap: 10 }}>
-              <label style={{ display: "grid", gap: 5, fontSize: 13, fontWeight: 700, color: "#334155" }}>
+          {role === "customer" || authTab === "email" ? (
+            <div style={{ display: "grid", gap: 12 }}>
+              <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
                 {emailCopy.email}
                 <input
                   value={email}
@@ -1245,19 +1243,20 @@ export function IdentityUpgradeSheet({
                   style={{
                     width: "100%",
                     boxSizing: "border-box",
-                    height: 48,
-                    padding: "0 14px",
+                    height: 50,
+                    padding: "0 16px",
                     borderRadius: 14,
-                    border: "1.5px solid #CBD5E1",
+                    border: 0,
+                    outline: "none",
                     background: "#F8FAFC",
+                    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
                     fontSize: 15,
                     fontWeight: 600,
                     color: "#0F172A",
-                    outline: "none",
                   }}
                 />
               </label>
-              <label style={{ display: "grid", gap: 5, fontSize: 13, fontWeight: 700, color: "#334155" }}>
+              <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
                 {emailCopy.password}
                 <input
                   value={password}
@@ -1269,15 +1268,16 @@ export function IdentityUpgradeSheet({
                   style={{
                     width: "100%",
                     boxSizing: "border-box",
-                    height: 48,
-                    padding: "0 14px",
+                    height: 50,
+                    padding: "0 16px",
                     borderRadius: 14,
-                    border: "1.5px solid #CBD5E1",
+                    border: 0,
+                    outline: "none",
                     background: "#F8FAFC",
+                    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
                     fontSize: 15,
                     fontWeight: 600,
                     color: "#0F172A",
-                    outline: "none",
                   }}
                 />
               </label>
@@ -1287,7 +1287,7 @@ export function IdentityUpgradeSheet({
                 onClick={() => void loginWithEmail()}
                 style={{
                   width: "100%",
-                  height: 48,
+                  height: 50,
                   borderRadius: 14,
                   background: "#059669",
                   color: "#FFFFFF",
@@ -1309,138 +1309,54 @@ export function IdentityUpgradeSheet({
           ) : (
             <div style={{ display: "grid", gap: 12 }}>
               {modernPhoneInput}
+              <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
+                {pinCopy.pin}
+                <input
+                  value={pinValue}
+                  onChange={e => setPinValue(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  inputMode="numeric"
+                  type="password"
+                  placeholder="••••••"
+                  onKeyDown={e => { if (e.key === "Enter") void loginWithPin(); }}
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                    height: 50,
+                    padding: "0 16px",
+                    borderRadius: 14,
+                    border: 0,
+                    outline: "none",
+                    background: "#F8FAFC",
+                    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06)",
+                    textAlign: "center",
+                    letterSpacing: "0.4em",
+                    fontSize: 22,
+                    fontWeight: 800,
+                    color: "#0F172A",
+                  }}
+                />
+              </label>
               <button
                 type="button"
-                disabled={busy || !/^\+[1-9]\d{7,14}$/.test(normalizedPhone)}
-                onClick={() => void startOtp()}
+                disabled={busy || pinValue.length !== 6 || !/^\+[1-9]\d{7,14}$/.test(normalizedPhone)}
+                onClick={() => void loginWithPin()}
                 style={{
                   width: "100%",
-                  height: 48,
+                  height: 50,
                   borderRadius: 14,
                   background: "#059669",
                   color: "#FFFFFF",
                   border: 0,
                   fontWeight: 800,
                   fontSize: 15,
-                  cursor: busy || !/^\+[1-9]\d{7,14}$/.test(normalizedPhone) ? "not-allowed" : "pointer",
-                  opacity: busy || !/^\+[1-9]\d{7,14}$/.test(normalizedPhone) ? 0.6 : 1,
+                  cursor: busy || pinValue.length !== 6 || !/^\+[1-9]\d{7,14}$/.test(normalizedPhone) ? "not-allowed" : "pointer",
+                  opacity: busy || pinValue.length !== 6 || !/^\+[1-9]\d{7,14}$/.test(normalizedPhone) ? 0.6 : 1,
                   boxShadow: "none",
                 }}
               >
-                {busy ? c.sending : c.send}
-              </button>
-
-              <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "2px 0" }}>
-                <div style={{ flex: 1, height: 1, background: "#E2E8F0" }} />
-                <span style={{ fontSize: 12, color: "#94A3B8", fontWeight: 600 }}>hoặc</span>
-                <div style={{ flex: 1, height: 1, background: "#E2E8F0" }} />
-              </div>
-
-              <button
-                type="button"
-                onClick={() => { setPinStage("login"); setError(""); }}
-                style={{
-                  width: "100%",
-                  height: 46,
-                  borderRadius: 14,
-                  background: "#F8FAFC",
-                  color: "#1E293B",
-                  border: "1.5px solid #E2E8F0",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  cursor: "pointer",
-                  boxShadow: "none",
-                }}
-              >
-                {pinCopy.login}
+                {busy ? c.verifying : pinCopy.signIn}
               </button>
             </div>
-          )}
-        </div>
-      ) : (
-        <div style={{ display: "grid", gap: 12 }}>
-          <button
-            type="button"
-            onClick={() => { setChallenge(null); setCode(""); setError(""); }}
-            style={{
-              border: 0,
-              background: "transparent",
-              padding: 0,
-              textAlign: "left",
-              color: "#059669",
-              fontWeight: 750,
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
-            ‹ {c.back} (Đổi số điện thoại)
-          </button>
-          <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
-            {c.code}
-            <input
-              value={code}
-              onChange={e => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              placeholder="••••••"
-              autoFocus
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                height: 52,
-                padding: "0 14px",
-                borderRadius: 14,
-                border: "1.5px solid #CBD5E1",
-                background: "#F8FAFC",
-                textAlign: "center",
-                letterSpacing: "0.35em",
-                fontSize: 24,
-                fontWeight: 800,
-                color: "#0F172A",
-                outline: "none",
-              }}
-            />
-          </label>
-          <button
-            type="button"
-            disabled={busy || code.length < 4}
-            onClick={() => void verifyOtp()}
-            style={{
-              width: "100%",
-              height: 48,
-              borderRadius: 14,
-              background: "linear-gradient(135deg, #10B981, #059669)",
-              color: "#FFFFFF",
-              border: 0,
-              fontWeight: 800,
-              fontSize: 15,
-              cursor: busy || code.length < 4 ? "not-allowed" : "pointer",
-              opacity: busy || code.length < 4 ? 0.6 : 1,
-              boxShadow: "none",
-            }}
-          >
-            {busy ? c.verifying : c.verify}
-          </button>
-          {challenge.resendAllowed !== false && (
-            <button
-              type="button"
-              disabled={busy || resendSeconds > 0}
-              onClick={() => void startOtp()}
-              style={{
-                width: "100%",
-                height: 44,
-                borderRadius: 14,
-                background: "#F8FAFC",
-                color: resendSeconds > 0 ? "#94A3B8" : "#059669",
-                border: "1px solid #E2E8F0",
-                fontWeight: 700,
-                fontSize: 13,
-                cursor: resendSeconds > 0 ? "not-allowed" : "pointer",
-                boxShadow: "none",
-              }}
-            >
-              {resendSeconds > 0 ? `${c.resend} (${resendSeconds}s)` : c.resend}
-            </button>
           )}
         </div>
       )}
@@ -1472,13 +1388,13 @@ export function IdentityUpgradeSheet({
     return (
       <div style={{
         width: "100%",
-        maxWidth: 460,
+        maxWidth: 440,
         margin: "0 auto",
         background: "#FFFFFF",
-        borderRadius: 24,
-        border: "1px solid #EEF2F6",
-        padding: "24px 20px",
-        boxShadow: "0 8px 30px rgba(15,23,42,0.06)",
+        borderRadius: 28,
+        border: 0,
+        padding: "28px 24px",
+        boxShadow: "0 12px 40px rgba(15,23,42,0.08)",
       }}>
         {cardContent}
       </div>
@@ -1493,23 +1409,29 @@ export function IdentityUpgradeSheet({
         position: "fixed",
         inset: 0,
         zIndex: 9999,
-        background: "rgba(15,23,42,.45)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
+        background: "rgba(15, 23, 42, 0.55)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
         display: "grid",
-        placeItems: "end center",
-        padding: "0 0 env(safe-area-inset-bottom) 0",
+        placeItems: "center",
+        padding: "20px 16px",
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
         style={{
-          width: "min(520px, 100%)",
+          width: "min(440px, 100%)",
           background: "#FFFFFF",
-          borderRadius: "28px 28px 0 0",
-          padding: "24px 20px 32px",
-          border: "1px solid #EEF2F6",
-          boxShadow: "0 -8px 40px rgba(15,23,42,0.12)",
+          borderRadius: 28,
+          padding: "28px 24px",
+          border: 0,
+          boxShadow: "0 24px 64px -12px rgba(15, 23, 42, 0.25), 0 8px 24px -4px rgba(15, 23, 42, 0.1)",
+          maxHeight: "calc(100dvh - 40px)",
+          overflowY: "auto",
         }}
+        onClick={(e) => e.stopPropagation()}
       >
         {cardContent}
       </div>
