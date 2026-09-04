@@ -29,6 +29,9 @@ export function localizeOrganizationName(locale: ZhaoXiLocale, code?: string | n
     const value = (localized as Record<string, unknown>)[locale];
     if (typeof value === "string" && value.trim()) return value.trim();
   }
+  // A merchant's saved name always wins. Demo labels are only a fallback for
+  // seed records that do not yet have a real store name.
+  if (fallback && fallback.trim() !== "川渝老火锅" && fallback.trim() !== "川渝老火鍋") return fallback.trim();
   if (code && organizationLabels[code]) return organizationLabels[code][locale];
   if (fallback && (fallback.trim() === "川渝老火锅" || fallback.trim() === "川渝老火鍋")) {
     return organizationLabels["ZX-FOOD-001"][locale];
