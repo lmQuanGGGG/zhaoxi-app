@@ -25,6 +25,48 @@ const arrivalCopy={
  "vi-VN":"Tài xế đã đến, hãy xuống lấy hàng.",
  "en-US":"Your driver has arrived. Please come down to collect your order.",
 } as const;
+const fulfillmentTimeline={
+ "zh-CN":{
+  PARTNER_ACCEPTED_FOOD_ORDER:{title:"餐厅已接单",detail:"餐厅正在开始准备餐品"},
+  FOOD_PREPARING:{title:"餐品正在准备",detail:"餐厅正在制作您的订单"},
+  FOOD_READY_FOR_PICKUP:{title:"餐品已备好",detail:"等待配送员到店取餐"},
+  AUTO_READY_FOR_EXTERNAL_PICKUP:{title:"餐品已备好",detail:"等待配送员到店取餐"},
+  EXTERNAL_COURIER_BOOKED:{title:"已安排配送",detail:"配送员将前往餐厅取餐"},
+  FOOD_HANDED_TO_COURIER:{title:"已交给配送员",detail:"配送员正把餐品送往您的地址"},
+  EXTERNAL_DELIVERY_DELIVERED:{title:"配送员已到达",detail:"请下楼取餐"},
+  FOOD_ORDER_CANCELLED:{title:"订单已取消",detail:"该订单不会继续处理"},
+ },
+ "zh-TW":{
+  PARTNER_ACCEPTED_FOOD_ORDER:{title:"餐廳已接單",detail:"餐廳正在開始準備餐點"},
+  FOOD_PREPARING:{title:"餐點正在準備",detail:"餐廳正在製作您的訂單"},
+  FOOD_READY_FOR_PICKUP:{title:"餐點已備好",detail:"等待外送員到店取餐"},
+  AUTO_READY_FOR_EXTERNAL_PICKUP:{title:"餐點已備好",detail:"等待外送員到店取餐"},
+  EXTERNAL_COURIER_BOOKED:{title:"已安排配送",detail:"外送員將前往餐廳取餐"},
+  FOOD_HANDED_TO_COURIER:{title:"已交給外送員",detail:"外送員正把餐點送往您的地址"},
+  EXTERNAL_DELIVERY_DELIVERED:{title:"外送員已到達",detail:"請下樓取餐"},
+  FOOD_ORDER_CANCELLED:{title:"訂單已取消",detail:"此訂單不會繼續處理"},
+ },
+ "vi-VN":{
+  PARTNER_ACCEPTED_FOOD_ORDER:{title:"Nhà hàng đã nhận đơn",detail:"Nhà hàng bắt đầu chuẩn bị món"},
+  FOOD_PREPARING:{title:"Đang chuẩn bị món",detail:"Nhà hàng đang làm món cho đơn của bạn"},
+  FOOD_READY_FOR_PICKUP:{title:"Món đã sẵn sàng",detail:"Chờ tài xế đến lấy món"},
+  AUTO_READY_FOR_EXTERNAL_PICKUP:{title:"Món đã sẵn sàng",detail:"Chờ tài xế đến lấy món"},
+  EXTERNAL_COURIER_BOOKED:{title:"Đã bố trí giao hàng",detail:"Tài xế sẽ đến nhà hàng lấy món"},
+  FOOD_HANDED_TO_COURIER:{title:"Đã bàn giao món cho tài xế",detail:"Tài xế đang giao món đến địa chỉ của bạn"},
+  EXTERNAL_DELIVERY_DELIVERED:{title:"Tài xế đã đến nơi",detail:"Hãy xuống lấy hàng"},
+  FOOD_ORDER_CANCELLED:{title:"Đơn đã hủy",detail:"Đơn này sẽ không được tiếp tục xử lý"},
+ },
+ "en-US":{
+  PARTNER_ACCEPTED_FOOD_ORDER:{title:"Restaurant accepted the order",detail:"The restaurant has started preparing your food"},
+  FOOD_PREPARING:{title:"Preparing your food",detail:"The restaurant is making your order"},
+  FOOD_READY_FOR_PICKUP:{title:"Food is ready",detail:"Waiting for the driver to pick it up"},
+  AUTO_READY_FOR_EXTERNAL_PICKUP:{title:"Food is ready",detail:"Waiting for the driver to pick it up"},
+  EXTERNAL_COURIER_BOOKED:{title:"Courier arranged",detail:"The driver will collect the food from the restaurant"},
+  FOOD_HANDED_TO_COURIER:{title:"Food handed to driver",detail:"The driver is delivering to your address"},
+  EXTERNAL_DELIVERY_DELIVERED:{title:"Driver has arrived",detail:"Please come down to collect your order"},
+  FOOD_ORDER_CANCELLED:{title:"Order cancelled",detail:"This order will not be processed further"},
+ },
+} as const;
 
 export default function OrderDetail(){
  const{id}=useParams<{id:string}>();
@@ -264,14 +306,16 @@ export default function OrderDetail(){
     <section style={{display:"grid",gap:10}}>
      <h2 style={{fontSize:15,fontWeight:750,color:"#1E293B",margin:"6px 2px 2px"}}>{t.progress}</h2>
      <div className={styles.list}>
-      {data.history.map((h,index)=>(
-       <article className={styles.card} key={h.id} style={{borderRadius:18,border:"1px solid #EEF2F6",background:"#FFFFFF",padding:14,boxShadow:"none"}}>
+      {data.history.map((h,index)=>{
+       const foodStep=h.note&&h.note in fulfillmentTimeline[locale]?fulfillmentTimeline[locale][h.note as keyof typeof fulfillmentTimeline[typeof locale]]:null;
+       const detail=foodStep?.detail||(h.note==='AUTO_COMPLETED_FINDING_COURIER'?t.autoDone:h.note==='AUTO_COMPLETED_EXTERNAL_DELIVERY_PENDING'?t.externalPending:h.note);
+       return <article className={styles.card} key={h.id} style={{borderRadius:18,border:"1px solid #EEF2F6",background:"#FFFFFF",padding:14,boxShadow:"none"}}>
         <small style={{color:"#059669",fontWeight:750,fontSize:10.5}}>{t.step} {index+1}</small>
-        <h2 style={{fontSize:14,fontWeight:700,margin:"4px 0"}}>{statusLabels[locale][h.toStatus]||h.toStatus}</h2>
-        {h.note&&<p style={{fontSize:12,color:"#64748B",margin:"4px 0"}}>{h.note==='AUTO_COMPLETED_FINDING_COURIER'?t.autoDone:h.note==='AUTO_COMPLETED_EXTERNAL_DELIVERY_PENDING'?t.externalPending:h.note}</p>}
+        <h2 style={{fontSize:14,fontWeight:700,margin:"4px 0"}}>{foodStep?.title||statusLabels[locale][h.toStatus]||h.toStatus}</h2>
+        {detail&&<p style={{fontSize:12,color:"#64748B",margin:"4px 0"}}>{detail}</p>}
         <time style={{fontSize:10,color:"#94A3B8"}}>{new Date(h.createdAt).toLocaleString(locale)}</time>
        </article>
-      ))}
+      })}
      </div>
     </section>
 
