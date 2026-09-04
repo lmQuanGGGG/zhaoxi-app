@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 const backend = () =>
   process.env.ZHAOXI_BACKEND_URL ||
   process.env.NEXT_PUBLIC_ZHAOXI_API_URL ||
-  "https://zhaoxi-backend.vercel.app";
+  "https://zhaoxi-app-puce.vercel.app";
 
 const ACCESS_COOKIE = "zx_access_v2";
 const REFRESH_COOKIE = "zx_refresh_v2";
@@ -57,9 +57,9 @@ async function upstream(path: string, method: string, body?: unknown, access?: s
       signal: AbortSignal.timeout(15000),
     });
   } catch (err) {
-    if (primaryUrl !== "https://zhaoxi-backend.vercel.app") {
+    if (primaryUrl !== "https://zhaoxi-app-puce.vercel.app") {
       try {
-        return await fetch(`https://zhaoxi-backend.vercel.app/api/auth/${path}`, {
+        return await fetch(`https://zhaoxi-app-puce.vercel.app/api/auth/${path}`, {
           method,
           headers: {
             ...(body !== undefined ? { "content-type": "application/json" } : {}),

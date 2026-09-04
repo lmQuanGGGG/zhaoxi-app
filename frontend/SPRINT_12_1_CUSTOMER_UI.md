@@ -10,7 +10,7 @@ Implemented:
 - Responsive layout optimized for 360–480 px mobile screens.
 
 Optional Vercel variable:
-- ZHAOXI_BACKEND_URL=https://zhaoxi-backend.vercel.app
+- ZHAOXI_BACKEND_URL=https://zhaoxi-app-puce.vercel.app
 
 Validation on Windows:
 1. npm install

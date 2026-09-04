@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 export const dynamic = "force-dynamic";
-const backend=()=>process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"https://zhaoxi-backend.vercel.app";
+const backend=()=>process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"https://zhaoxi-app-puce.vercel.app";
 export async function GET(request:NextRequest){
   try {
     const params=new URLSearchParams(request.nextUrl.searchParams);

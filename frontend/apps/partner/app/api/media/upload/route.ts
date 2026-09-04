@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const backend =
       process.env.ZHAOXI_BACKEND_URL ||
       process.env.NEXT_PUBLIC_ZHAOXI_API_URL ||
-      "https://zhaoxi-backend.vercel.app";
+      "https://zhaoxi-app-puce.vercel.app";
     const access = request.headers.get("cookie")
       ?.split(";")
       .map((part) => part.trim())

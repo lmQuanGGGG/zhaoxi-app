@@ -37,7 +37,7 @@ type DecryptedTransaction = {
 
 function env(name: string) { return (process.env[name] || "").trim(); }
 function pem(value: string) { return value.replace(/\\n/g, "\n").trim(); }
-function publicOrigin() { return env("ZHAOXI_BACKEND_PUBLIC_URL") || env("WECHAT_AUTH_CALLBACK_ORIGIN") || "https://zhaoxi-backend.vercel.app"; }
+function publicOrigin() { return env("ZHAOXI_BACKEND_PUBLIC_URL") || env("WECHAT_AUTH_CALLBACK_ORIGIN") || "https://zhaoxi-app-puce.vercel.app"; }
 
 export function weChatPayConfig(): WeChatConfig | null {
   const config: WeChatConfig = {

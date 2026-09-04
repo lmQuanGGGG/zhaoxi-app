@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 const backend = () =>
   process.env.ZHAOXI_BACKEND_URL ||
   process.env.NEXT_PUBLIC_ZHAOXI_API_URL ||
-  "https://zhaoxi-backend.vercel.app";
+  "https://zhaoxi-app-puce.vercel.app";
 
 function authHeaders(request: NextRequest): Record<string, string> {
   const accessToken = request.cookies.get("zx_access_v2")?.value;
