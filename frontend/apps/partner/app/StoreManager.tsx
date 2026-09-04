@@ -410,6 +410,11 @@ export default function StoreManager() {
   async function saveStore() {
     if (!orgId) { setMsg("Không tìm thấy gian hàng đang đăng nhập."); return; }
     if (!storeName.trim() || !storeAddress.trim() || !contactPhone.trim()) { setMsg(`Vui lòng điền các mục ${requiredText}: ${t.storeName}, ${t.address}, ${t.contactPhone}.`); return; }
+    const activeSession = await refreshServerSession();
+    if (!activeSession || activeSession.role !== "partner") {
+      setMsg("Phiên đăng nhập Partner đã hết hạn. Hãy đăng nhập lại rồi lưu gian hàng.");
+      return;
+    }
     const trimmedName = storeName.trim();
     const trimmedAddress = storeAddress.trim();
     const trimmedPhone = contactPhone.trim();
@@ -424,16 +429,19 @@ export default function StoreManager() {
           localizedNames: { ...((orgMetadata.localizedNames || {}) as Record<string, unknown>), [locale]: trimmedName },
           draftLogoUrl: logo,
           draftBannerUrls: bannerUrls,
+          logoUrl: logo,
+          bannerUrls,
           bannerDraftConfirmed: bannersConfirmed,
           address: trimmedAddress,
           contactPhone: trimmedPhone,
           wechat: wechat.trim(),
+          catalogSyncedAt: new Date().toISOString(),
         },
       }),
     });
     const payload = await response.json().catch(() => null);
     if (response.ok) {
-      setMsg(`✓ ${t.saved}`);
+      setMsg("✓ Đã lưu và cập nhật ngay trên Customer.");
       updateSession({ organizationName: trimmedName });
       // Remove old logo/banner objects only after the new metadata is durable.
       // This keeps retries safe and prevents abandoned media rows from growing.
