@@ -72,8 +72,15 @@ export default function PartnerStoreSwitcher() {
       } catch {}
     }
     void fetchOrganizations();
-    window.addEventListener("zhaoxi:partner-store-updated", fetchOrganizations);
-    return () => { active = false; window.removeEventListener("zhaoxi:partner-store-updated", fetchOrganizations); };
+    const syncUpdatedStore = (event: Event) => {
+      const detail = (event as CustomEvent<{ id?: string; name?: string }>).detail;
+      const id = detail?.id;
+      const name = detail?.name;
+      if (id && name) setOrgs((current) => current.map((org) => org.id === id ? { ...org, name } : org));
+      void fetchOrganizations();
+    };
+    window.addEventListener("zhaoxi:partner-store-updated", syncUpdatedStore);
+    return () => { active = false; window.removeEventListener("zhaoxi:partner-store-updated", syncUpdatedStore); };
   }, [currentOrgId]);
 
   if (orgs.length <= 1) {
@@ -138,7 +145,7 @@ export default function PartnerStoreSwitcher() {
       <span className="zx-store-switcher-label">{t.label}</span>
       <div className="zx-store-switcher-menu">
         <button type="button" className="zx-store-switcher-trigger" aria-label={t.switchStore} aria-expanded={open} onClick={() => setOpen((value) => !value)} disabled={switching || isPending}>
-          <span>{localizeOrganizationName(locale, orgs.find((o) => o.id === currentOrgId)?.code, orgs.find((o) => o.id === currentOrgId)?.name || session?.organizationName || "", orgs.find((o) => o.id === currentOrgId)?.metadata)}</span><span aria-hidden="true">⌄</span>
+          <span>{localizeOrganizationName(locale, orgs.find((o) => o.id === currentOrgId)?.code, session?.organizationName || orgs.find((o) => o.id === currentOrgId)?.name || "", orgs.find((o) => o.id === currentOrgId)?.metadata)}</span><span aria-hidden="true">⌄</span>
         </button>
         {open && <div className="zx-store-switcher-options" role="menu">{orgs.map((o) => {
           const displayName = localizeOrganizationName(locale, o.code, o.name, o.metadata);

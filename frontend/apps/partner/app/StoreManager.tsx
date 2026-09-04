@@ -443,7 +443,7 @@ export default function StoreManager() {
     if (response.ok) {
       setMsg("✓ Đã lưu và cập nhật ngay trên Customer.");
       updateSession({ organizationName: trimmedName });
-      window.dispatchEvent(new Event("zhaoxi:partner-store-updated"));
+      window.dispatchEvent(new CustomEvent("zhaoxi:partner-store-updated", { detail: { id: orgId, name: trimmedName } }));
       // Remove old logo/banner objects only after the new metadata is durable.
       // This keeps retries safe and prevents abandoned media rows from growing.
       void Promise.all([
