@@ -1,14 +1,14 @@
 "use client";
 import {useCallback,useEffect,useRef,useState} from "react";
-import {useZhaoXiSession} from "@zhaoxi/auth";
+import {refreshServerSession,useZhaoXiSession} from "@zhaoxi/auth";
 import {useZhaoXiLocale} from "@zhaoxi/i18n";
 import type{ServiceRequestRow}from"@zhaoxi/sdk";
 import {IosPersonIcon,IosPhoneIcon} from "./IosIcons";
 const copy={
- "zh-CN":{newOrder:"新订单",customer:"客户",customerPhone:"客户电话",address:"配送地址",total:"订单总额",accept:"接单",reject:"拒绝",eta:"预计完成时间",minutes:"分钟",confirm:"确认接单",cancel:"返回",auto:"倒计时结束后，餐品会标记为已准备，等待外部配送安排。",shipVia:"指定配送",customerSelfPay:"客户自付配送费"},
- "zh-TW":{newOrder:"新訂單",customer:"客戶",customerPhone:"客戶電話",address:"配送地址",total:"訂單總額",accept:"接單",reject:"拒絕",eta:"預計完成時間",minutes:"分鐘",confirm:"確認接單",cancel:"返回",auto:"倒數結束後，餐點會標記為已準備，等待外部配送安排。",shipVia:"指定配送",customerSelfPay:"客戶自付運費"},
- "vi-VN":{newOrder:"Có đơn hàng mới",customer:"Khách hàng",customerPhone:"Số điện thoại khách",address:"Địa chỉ nhận hàng",total:"Tổng đơn",accept:"Nhận đơn",reject:"Từ chối",eta:"Thời gian dự kiến hoàn thành",minutes:"phút",confirm:"Xác nhận đơn giao",cancel:"Quay lại",auto:"Khi hết thời gian, món được đánh dấu đã sẵn sàng và chờ bố trí đơn vị giao hàng bên ngoài.",shipVia:"Giao qua",customerSelfPay:"Khách tự trả phí ship"},
- "en-US":{newOrder:"New order",customer:"Customer",customerPhone:"Customer phone",address:"Delivery address",total:"Order total",accept:"Accept",reject:"Reject",eta:"Estimated completion time",minutes:"minutes",confirm:"Confirm order",cancel:"Back",auto:"When the timer ends, the food is marked ready and awaits external delivery arrangement.",shipVia:"Deliver via",customerSelfPay:"Customer pays courier directly"}
+ "zh-CN":{newOrder:"新订单",customer:"客户",customerPhone:"客户电话",address:"配送地址",total:"订单总额",accept:"接单",reject:"拒绝",eta:"预计完成时间",minutes:"分钟",confirm:"确认接单",cancel:"返回",auto:"倒计时结束后，餐品会标记为已准备，等待外部配送安排。",shipVia:"指定配送",customerSelfPay:"客户自付配送费",authExpired:"登录状态已过期，请重新登录后确认订单。",confirmFailed:"无法确认订单，请重试。",confirming:"正在确认…"},
+ "zh-TW":{newOrder:"新訂單",customer:"客戶",customerPhone:"客戶電話",address:"配送地址",total:"訂單總額",accept:"接單",reject:"拒絕",eta:"預計完成時間",minutes:"分鐘",confirm:"確認接單",cancel:"返回",auto:"倒數結束後，餐點會標記為已準備，等待外部配送安排。",shipVia:"指定配送",customerSelfPay:"客戶自付運費",authExpired:"登入狀態已過期，請重新登入後確認訂單。",confirmFailed:"無法確認訂單，請再試一次。",confirming:"正在確認…"},
+ "vi-VN":{newOrder:"Có đơn hàng mới",customer:"Khách hàng",customerPhone:"Số điện thoại khách",address:"Địa chỉ nhận hàng",total:"Tổng đơn",accept:"Nhận đơn",reject:"Từ chối",eta:"Thời gian dự kiến hoàn thành",minutes:"phút",confirm:"Xác nhận đơn giao",cancel:"Quay lại",auto:"Khi hết thời gian, món được đánh dấu đã sẵn sàng và chờ bố trí đơn vị giao hàng bên ngoài.",shipVia:"Giao qua",customerSelfPay:"Khách tự trả phí ship",authExpired:"Phiên đăng nhập đã hết. Hãy đăng nhập lại rồi xác nhận đơn.",confirmFailed:"Không thể xác nhận đơn. Vui lòng thử lại.",confirming:"Đang xác nhận…"},
+ "en-US":{newOrder:"New order",customer:"Customer",customerPhone:"Customer phone",address:"Delivery address",total:"Order total",accept:"Accept",reject:"Reject",eta:"Estimated completion time",minutes:"minutes",confirm:"Confirm order",cancel:"Back",auto:"When the timer ends, the food is marked ready and awaits external delivery arrangement.",shipVia:"Deliver via",customerSelfPay:"Customer pays courier directly",authExpired:"Your sign-in has expired. Sign in again, then confirm the order.",confirmFailed:"Unable to confirm this order. Please try again.",confirming:"Confirming…"}
 }as const;
 const money=(v:unknown)=>Number(v||0).toLocaleString("vi-VN")+" VND";
 function playLoudOrderChime() {
@@ -58,14 +58,14 @@ function playLoudOrderChime() {
   }
 }
 
-export default function PartnerOrderAlerts(){const session=useZhaoXiSession();const{locale}=useZhaoXiLocale();const t=copy[locale];const orgId=session?.organizationId||"";const[order,setOrder]=useState<ServiceRequestRow|null>(null);const[step,setStep]=useState<"order"|"eta">("order");const[eta,setEta]=useState(15);const seen=useRef(new Set<string>());
+export default function PartnerOrderAlerts(){const session=useZhaoXiSession();const{locale}=useZhaoXiLocale();const t=copy[locale];const orgId=session?.organizationId||"";const[order,setOrder]=useState<ServiceRequestRow|null>(null);const[step,setStep]=useState<"order"|"eta">("order");const[eta,setEta]=useState(15);const[confirming,setConfirming]=useState(false);const[notice,setNotice]=useState("");const seen=useRef(new Set<string>());
  const poll=useCallback(async()=>{if(!orgId)return;try{const r=await fetch(`/api/platform-requests?scope=operations&organizationId=${encodeURIComponent(orgId)}&locale=${locale}`,{cache:"no-store"});const p=await r.json().catch(()=>null);const next=(Array.isArray(p?.data)?p.data:[]).find((x:ServiceRequestRow)=>x.status==="assigned"&&x.details?.deliveryFulfillmentMode==="external_manual"&&!seen.current.has(x.id));if(next&&!order){setOrder(next);window.dispatchEvent(new CustomEvent("zhaoxi:new-order",{detail:next}))}}catch{}},[orgId,locale,order]);
  useEffect(()=>{let timer:number;let stopped=false;const schedule=()=>{void poll().finally(()=>{if(!stopped)timer=window.setTimeout(schedule,document.visibilityState==="visible"?2500:12000)})};schedule();const open=(event:Event)=>{const next=(event as CustomEvent<ServiceRequestRow>).detail;if(next){setOrder(next);setStep("eta")}};window.addEventListener("zhaoxi-open-order",open);return()=>{stopped=true;window.clearTimeout(timer);window.removeEventListener("zhaoxi-open-order",open)}},[poll]);
  useEffect(()=>{if(!order)return;playLoudOrderChime();const chimeTimer=setInterval(()=>playLoudOrderChime(),3200);return()=>clearInterval(chimeTimer)},[order]);
  useEffect(()=>{const unlock=()=>{try{const AudioCtx=window.AudioContext||(window as unknown as {webkitAudioContext:typeof AudioContext}).webkitAudioContext;if(AudioCtx){const c=new AudioCtx();c.resume().then(()=>c.close()).catch(()=>{})}}catch{}};window.addEventListener("click",unlock,{once:true});window.addEventListener("touchstart",unlock,{once:true});window.addEventListener("keydown",unlock,{once:true});return()=>{window.removeEventListener("click",unlock);window.removeEventListener("touchstart",unlock);window.removeEventListener("keydown",unlock)}},[]);
  function close(mark=true){if(order&&mark)seen.current.add(order.id);setOrder(null);setStep("order");setEta(15)}
  async function reject(){if(!order)return;await fetch(`/api/partner-fulfillment/${order.id}`,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({action:"cancelled",note:"partner_cancelled_before_accept"})});close()}
- async function confirm(){if(!order)return;const response=await fetch(`/api/partner-fulfillment/${order.id}`,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({action:"accept",estimatedMinutes:eta,note:`partner_accept_eta:${eta}`})});if(response.ok){try{new Audio("data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAACAqKCgoKCgoKCgoKCgoA==").play()}catch{}close()}}
+ async function confirm(){if(!order||confirming)return;setConfirming(true);setNotice("");try{const active=await refreshServerSession();if(!active||active.role!=="partner"){setNotice(t.authExpired);return}const response=await fetch(`/api/partner-fulfillment/${order.id}`,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({action:"accept",estimatedMinutes:eta,note:`partner_accept_eta:${eta}`})});if(response.ok){try{new Audio("data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAACAqKCgoKCgoKCgoKCgoA==").play()}catch{}close()}else{const payload=await response.json().catch(()=>null);setNotice(String(payload?.error?.message||payload?.error?.code||t.confirmFailed))}}catch{setNotice(t.confirmFailed)}finally{setConfirming(false)}}
  if(!order)return null;const d=order.details||{};
  const displayPhone = (typeof d.recipientPhone === "string" && d.recipientPhone.trim()) ? d.recipientPhone.trim() : (order.customerPhone || "");
  const isFriend = Boolean(typeof d.recipientPhone === "string" && d.recipientPhone.trim() && d.recipientPhone.trim() !== order.customerPhone);
@@ -108,9 +108,10 @@ export default function PartnerOrderAlerts(){const session=useZhaoXiSession();co
         {[10,15,20,25,30].map(value=><button key={value} data-active={eta===value} onClick={()=>setEta(value)}><b>{value}</b><span>{t.minutes}</span></button>)}
       </div>
       <p className="zx-auto-note">⏱ {t.auto}</p>
+      {notice&&<p role="alert" style={{margin:"0 0 10px",padding:"9px 11px",borderRadius:10,background:"#fff1f2",color:"#b42318",fontSize:13,fontWeight:700}}>{notice}</p>}
       <div className="zx-order-actions">
         <button className="ghost" onClick={()=>setStep("order")}>{t.cancel}</button>
-        <button className="primary" onClick={()=>void confirm()}>{t.confirm}</button>
+        <button className="primary" disabled={confirming} onClick={()=>void confirm()}>{confirming?t.confirming:t.confirm}</button>
       </div>
     </>}
   </section>
