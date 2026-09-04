@@ -20,22 +20,22 @@ const copy={
 "zh-CN":{
  fallback:"赵喜用户",member:"赵喜会员",guest:"临时访客",persistent:"已保存账户",identity:"赵喜 ID",profile:"个人资料",edit:"编辑",save:"保存资料",saving:"正在保存…",cancel:"取消",saved:"资料已保存",name:"姓名",phone:"手机号码",email:"邮箱",nationality:"国籍",gender:"性别",birthday:"生日",city:"城市",address:"常用地址",whatsapp:"WhatsApp",wechat:"微信 ID",notes:"备注",optional:"选填",male:"男",female:"女",other:"其他",unset:"未设置",
  completion:"资料完整度",addressBook:"常用地址",addAddress:"添加地址",default:"默认",setDefault:"设为默认",delete:"删除",label:"地址名称",recipient:"收件人",recipientPhone:"联系电话",saveAddress:"保存地址",noAddress:"尚未保存地址",home:"家",work:"工作",
- orders:"我的订单",favorites:"我的收藏",history:"浏览记录",coupons:"优惠券",notifications:"消息中心",language:"语言设置",security:"设备与登录",emergency:"紧急帮助",personal:"个人中心",accountHint:"保存资料后，此设备下次打开赵喜会识别同一账户。",guestHint:"当前为临时访客。验证手机号码后，将成为长期赵喜账户。"
+ orders:"我的订单",favorites:"我的收藏",history:"浏览记录",coupons:"优惠券",notifications:"消息中心",language:"语言设置",security:"设备与登录",emergency:"紧急帮助",personal:"个人中心",accountHint:"保存资料后，此设备下次打开赵喜会识别同一账户。",guestHint:"当前为临时访客。验证手机号码后，将成为长期赵喜账户。",verifyPhone:"验证手机号码"
 },
 "zh-TW":{
  fallback:"趙喜用戶",member:"趙喜會員",guest:"臨時訪客",persistent:"已儲存帳戶",identity:"趙喜 ID",profile:"個人資料",edit:"編輯",save:"儲存資料",saving:"正在儲存…",cancel:"取消",saved:"資料已儲存",name:"姓名",phone:"手機號碼",email:"Email",nationality:"國籍",gender:"性別",birthday:"生日",city:"城市",address:"常用地址",whatsapp:"WhatsApp",wechat:"微信 ID",notes:"備註",optional:"選填",male:"男",female:"女",other:"其他",unset:"未設定",
  completion:"資料完整度",addressBook:"常用地址",addAddress:"新增地址",default:"預設",setDefault:"設為預設",delete:"刪除",label:"地址名稱",recipient:"收件人",recipientPhone:"聯絡電話",saveAddress:"儲存地址",noAddress:"尚未儲存地址",home:"家",work:"工作",
- orders:"我的訂單",favorites:"我的收藏",history:"瀏覽記錄",coupons:"優惠券",notifications:"訊息中心",language:"語言設定",security:"裝置與登入",emergency:"緊急協助",personal:"個人中心",accountHint:"儲存資料後，此裝置下次開啟趙喜會識別同一帳戶。",guestHint:"目前為臨時訪客。驗證手機號碼後，將成為長期趙喜帳戶。"
+ orders:"我的訂單",favorites:"我的收藏",history:"瀏覽記錄",coupons:"優惠券",notifications:"訊息中心",language:"語言設定",security:"裝置與登入",emergency:"緊急協助",personal:"個人中心",accountHint:"儲存資料後，此裝置下次開啟趙喜會識別同一帳戶。",guestHint:"目前為臨時訪客。驗證手機號碼後，將成為長期趙喜帳戶。",verifyPhone:"驗證手機號碼"
 },
 "vi-VN":{
  fallback:"Người dùng ZhaoXi",member:"Thành viên ZhaoXi",guest:"Khách tạm thời",persistent:"Tài khoản đã lưu",identity:"ID ZhaoXi",profile:"Thông tin cá nhân",edit:"Chỉnh sửa",save:"Lưu thông tin",saving:"Đang lưu…",cancel:"Hủy",saved:"Đã lưu thông tin",name:"Họ và tên",phone:"Số điện thoại",email:"Email",nationality:"Quốc tịch",gender:"Giới tính",birthday:"Ngày sinh",city:"Thành phố",address:"Địa chỉ thường dùng",whatsapp:"WhatsApp",wechat:"WeChat ID",notes:"Ghi chú",optional:"Không bắt buộc",male:"Nam",female:"Nữ",other:"Khác",unset:"Chưa thiết lập",
  completion:"Mức độ hoàn thiện",addressBook:"Địa chỉ đã lưu",addAddress:"Thêm địa chỉ",default:"Mặc định",setDefault:"Đặt mặc định",delete:"Xóa",label:"Tên địa chỉ",recipient:"Người nhận",recipientPhone:"Số điện thoại",saveAddress:"Lưu địa chỉ",noAddress:"Chưa có địa chỉ đã lưu",home:"Nhà",work:"Công việc",
- orders:"Đơn của tôi",favorites:"Yêu thích",history:"Lịch sử xem",coupons:"Mã ưu đãi",notifications:"Trung tâm thông báo",language:"Ngôn ngữ",security:"Thiết bị & đăng nhập",emergency:"Hỗ trợ khẩn cấp",personal:"Cá nhân",accountHint:"Sau khi lưu hồ sơ, thiết bị này sẽ nhận lại đúng tài khoản ZhaoXi ở lần mở sau.",guestHint:"Bạn đang dùng tài khoản Guest. Hãy xác minh số điện thoại để chuyển thành tài khoản ZhaoXi lâu dài."
+ orders:"Đơn của tôi",favorites:"Yêu thích",history:"Lịch sử xem",coupons:"Mã ưu đãi",notifications:"Trung tâm thông báo",language:"Ngôn ngữ",security:"Thiết bị & đăng nhập",emergency:"Hỗ trợ khẩn cấp",personal:"Cá nhân",accountHint:"Sau khi lưu hồ sơ, thiết bị này sẽ nhận lại đúng tài khoản ZhaoXi ở lần mở sau.",guestHint:"Bạn đang dùng tài khoản Guest. Hãy xác minh số điện thoại để chuyển thành tài khoản ZhaoXi lâu dài.",verifyPhone:"Xác minh số điện thoại"
 },
 "en-US":{
  fallback:"ZhaoXi user",member:"ZhaoXi member",guest:"Temporary guest",persistent:"Saved account",identity:"ZhaoXi ID",profile:"Personal information",edit:"Edit",save:"Save profile",saving:"Saving…",cancel:"Cancel",saved:"Profile saved",name:"Full name",phone:"Phone",email:"Email",nationality:"Nationality",gender:"Gender",birthday:"Birthday",city:"City",address:"Usual address",whatsapp:"WhatsApp",wechat:"WeChat ID",notes:"Notes",optional:"Optional",male:"Male",female:"Female",other:"Other",unset:"Not set",
  completion:"Profile completion",addressBook:"Saved addresses",addAddress:"Add address",default:"Default",setDefault:"Set default",delete:"Delete",label:"Address label",recipient:"Recipient",recipientPhone:"Phone",saveAddress:"Save address",noAddress:"No saved addresses",home:"Home",work:"Work",
- orders:"My orders",favorites:"Favorites",history:"Browsing history",coupons:"Coupons",notifications:"Notification center",language:"Language",security:"Devices & sign-in",emergency:"Emergency help",personal:"Personal",accountHint:"After saving your profile, this device will recognize the same ZhaoXi account next time.",guestHint:"You are using a Guest identity. Verify your phone number to make it a persistent ZhaoXi account."
+ orders:"My orders",favorites:"Favorites",history:"Browsing history",coupons:"Coupons",notifications:"Notification center",language:"Language",security:"Devices & sign-in",emergency:"Emergency help",personal:"Personal",accountHint:"After saving your profile, this device will recognize the same ZhaoXi account next time.",guestHint:"You are using a Guest identity. Verify your phone number to make it a persistent ZhaoXi account.",verifyPhone:"Verify phone number"
 }} as const;
 
 import { getCached, setCached } from "../_lib/client-cache";
@@ -195,7 +195,7 @@ export default function Profile(){
 
    <section style={{padding:"13px 15px",borderRadius:18,background:data.identity.isGuest?"#fff7ed":"#ecfdf5",color:data.identity.isGuest?"#9a5b13":"#067647",fontSize:11.5,lineHeight:1.55,border:data.identity.isGuest?"1px solid #fed7aa":"1px solid #d1fae5",boxShadow:"none"}}>
     <div>{data.identity.isGuest?t.guestHint:t.accountHint}</div>
-    {data.identity.isGuest&&<button type="button" onClick={()=>setPhoneLoginOpen(true)} style={{marginTop:9,border:0,borderRadius:999,padding:"8px 14px",background:"#078343",color:"#fff",fontWeight:850,fontSize:11.5,cursor:"pointer",boxShadow:"none"}}>Xác minh số điện thoại</button>}
+    {data.identity.isGuest&&<button type="button" onClick={()=>setPhoneLoginOpen(true)} style={{marginTop:9,border:0,borderRadius:999,padding:"8px 14px",background:"#078343",color:"#fff",fontWeight:850,fontSize:11.5,cursor:"pointer",boxShadow:"none"}}>{t.verifyPhone}</button>}
    </section>
 
    <section className={styles.listing} style={{display:"grid",gap:12,borderRadius:20,border:"1px solid #EEF2F6",background:"#FFFFFF",boxShadow:"none"}}>
