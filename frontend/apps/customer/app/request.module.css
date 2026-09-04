@@ -619,3 +619,44 @@ section.card {
   background: #ECFDF5 !important;
   box-shadow: 0 3px 12px rgba(5, 150, 105, 0.14) !important;
 }
+
+/* Keep the success mark styling isolated from the optional payment panel. */
+.success > .successIcon {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--zx-brand);
+  color: #fff;
+  font-size: 31px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: var(--zx-shadow-md);
+}
+
+.success > .paymentPanel {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  box-sizing: border-box;
+  display: block;
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid #dce7e0;
+  border-radius: 18px;
+  background: #fff;
+  color: var(--zx-text);
+  text-align: center;
+  font-size: inherit;
+  font-weight: inherit;
+  box-shadow: none;
+}
+
+.paymentQr {
+  width: 220px;
+  height: 220px;
+  max-width: 100%;
+  border-radius: 14px;
+}
