@@ -21,6 +21,7 @@ import { deliveryIntelligenceService } from "@/lib/services/delivery-intelligenc
 import { restaurantAvailabilityService } from "@/lib/services/restaurant-availability-service";
 import {foodCommercialService} from "@/lib/services/food-commercial-service";
 import {restaurantCouponService,type CouponEvaluation} from "@/lib/services/restaurant-coupon-service";
+import { partnerWebPushService } from "@/lib/services/partner-web-push-service";
 
 export const dynamic = "force-dynamic";
 
@@ -289,6 +290,8 @@ export async function POST(request: Request) {
         toStatus: "assigned",
         note: `Request routed directly to partner: ${serviceRow.organizationName ?? serviceRow.organizationId}`,
       });
+      try { await partnerWebPushService.sendNewOrder(serviceRow.organizationId, { id: created.id, requestCode: created.requestCode, customerName: created.customerName }); }
+      catch (pushError) { console.error("partner web push failed", pushError); }
       try { await paymentService.ensureForRequest(created.id, typeof input.details?.paymentMethod === "string" ? input.details.paymentMethod : "cash_on_delivery"); }
       catch (paymentError) { console.error("payment initialization failed", paymentError); }
       return json({
