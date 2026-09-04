@@ -19,6 +19,12 @@ const copy={
 "vi-VN":{loading:"Đang tải…",confirmed:"Đối tác đã xác nhận đơn",soon:"Sắp hoàn thành",auto:"Tự động hoàn thành khi hết thời gian",completed:"Đã hoàn thành đơn",finding:"Đang tìm người giao hàng",progress:"Tiến trình đơn hàng",updated:"Tự động cập nhật vị trí mỗi 4 giây",step:"Bước",autoDone:"Đã hoàn thành, đang tìm người giao hàng",deliveryTimeline:"Tiến trình giao hàng",toPickup:"Đang đến điểm lấy",toDropoff:"Đang đến điểm giao",gpsStale:"Vị trí cập nhật chậm",externalPending:"Món đã sẵn sàng, đang chờ bố trí đơn vị giao hàng",grossDelivery:"Phí giao hàng gốc",subsidy:"Nhà hàng trợ giá",deliveryPay:"Phí giao hàng thực trả",readyPickup:"Món đã sẵn sàng, chờ lấy món",courierBooked:"Đã bố trí đơn vị giao hàng",handedOff:"Đã bàn giao món cho người giao",deliveredFood:"Đã giao đến khách",itemOriginal:"Giá món gốc",itemDiscount:"Ưu đãi món",itemPay:"Tiền món thực trả",couponDiscount:"Giảm bằng coupon"},
 "en-US":{loading:"Loading…",confirmed:"Partner confirmed the order",soon:"Almost completed",auto:"Automatically completes when time ends",completed:"Order completed",finding:"Finding a courier",progress:"Order progress",updated:"Automatically updates location every 4 seconds",step:"Step",autoDone:"Completed, finding a courier",deliveryTimeline:"Delivery timeline",toPickup:"Heading to pickup",toDropoff:"Heading to drop-off",gpsStale:"Location updates are delayed",externalPending:"Food is ready and awaiting external delivery arrangement",grossDelivery:"Gross delivery fee",subsidy:"Restaurant subsidy",deliveryPay:"Delivery fee you pay",readyPickup:"Food ready for pickup",courierBooked:"External courier arranged",handedOff:"Food handed to courier",deliveredFood:"Delivered to customer",itemOriginal:"Original items",itemDiscount:"Food promotion",itemPay:"Final item amount",couponDiscount:"Coupon discount"}
 } as const;
+const arrivalCopy={
+ "zh-CN":"骑手已到，请下楼取餐。",
+ "zh-TW":"外送員已到，請下樓取餐。",
+ "vi-VN":"Tài xế đã đến, hãy xuống lấy hàng.",
+ "en-US":"Your driver has arrived. Please come down to collect your order.",
+} as const;
 
 export default function OrderDetail(){
  const{id}=useParams<{id:string}>();
@@ -87,7 +93,7 @@ export default function OrderDetail(){
  const eta=Number(details.estimatedMinutes||0);
  const external=details.deliveryFulfillmentMode==='external_manual'||details.driverDispatchRequired===false;
  const fulfillmentStage=String(details.fulfillmentStage||'');
- const externalStage=fulfillmentStage==='ready_for_pickup'?t.readyPickup:fulfillmentStage==='courier_booked'?t.courierBooked:fulfillmentStage==='handed_off'?t.handedOff:fulfillmentStage==='delivered'?t.deliveredFood:t.externalPending;
+ const externalStage=fulfillmentStage==='ready_for_pickup'?t.readyPickup:fulfillmentStage==='courier_booked'?t.courierBooked:fulfillmentStage==='handed_off'?t.handedOff:fulfillmentStage==='delivered'?arrivalCopy[locale]:t.externalPending;
 
  return (
   <CustomerShell>

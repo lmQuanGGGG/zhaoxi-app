@@ -37,6 +37,10 @@ const externalDeliveryBody:Record<string,Record<string,string>>={
  "vi-VN":{PARTNER_ACCEPTED_FOOD_ORDER:"Nhà hàng đã nhận và bắt đầu chuẩn bị món",FOOD_PREPARING:"Món đang được chuẩn bị",FOOD_READY_FOR_PICKUP:"Món đã sẵn sàng, chờ lấy món",EXTERNAL_COURIER_BOOKED:"Đã bố trí đơn vị giao hàng",FOOD_HANDED_TO_COURIER:"Món đã được bàn giao cho người giao",EXTERNAL_DELIVERY_DELIVERED:"Đơn đã giao đến khách",FOOD_ORDER_CANCELLED:"Đơn đã hủy",AUTO_READY_FOR_EXTERNAL_PICKUP:"Món đã sẵn sàng, chờ lấy món"},
  "en-US":{PARTNER_ACCEPTED_FOOD_ORDER:"Restaurant accepted the order and started preparation",FOOD_PREPARING:"Food is being prepared",FOOD_READY_FOR_PICKUP:"Food is ready for pickup",EXTERNAL_COURIER_BOOKED:"External courier arranged",FOOD_HANDED_TO_COURIER:"Food handed to courier",EXTERNAL_DELIVERY_DELIVERED:"Order delivered",FOOD_ORDER_CANCELLED:"Order cancelled",AUTO_READY_FOR_EXTERNAL_PICKUP:"Food is ready for pickup"},
 };
+externalDeliveryBody["zh-CN"].EXTERNAL_DELIVERY_DELIVERED="骑手已到，请下楼取餐。";
+externalDeliveryBody["zh-TW"].EXTERNAL_DELIVERY_DELIVERED="外送員已到，請下樓取餐。";
+externalDeliveryBody["vi-VN"].EXTERNAL_DELIVERY_DELIVERED="Tài xế đã đến, hãy xuống lấy hàng.";
+externalDeliveryBody["en-US"].EXTERNAL_DELIVERY_DELIVERED="Your driver has arrived. Please come down to collect your order.";
 const assistantTitle={"zh-CN":"赵喜助手","zh-TW":"趙喜助手","vi-VN":"Trợ lý ZhaoXi","en-US":"ZhaoXi Assistant"} as Record<string,string>;
 const orderTitle={"zh-CN":"订单更新","zh-TW":"訂單更新","vi-VN":"Cập nhật đơn hàng","en-US":"Order update"} as Record<string,string>;
 const paymentTitle={"zh-CN":"付款更新","zh-TW":"付款更新","vi-VN":"Cập nhật thanh toán","en-US":"Payment update"} as Record<string,string>;
