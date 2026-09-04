@@ -170,6 +170,7 @@ const C = {
     quote: "Estimated price",
   },
 } as const;
+const guestCta = { "zh-CN": "登录后发送预约 ›", "zh-TW": "登入後發送預約 ›", "vi-VN": "Đăng nhập để gửi yêu cầu ›", "en-US": "Sign in to send a booking request ›" } as const;
 const money = (v: number, c = "VND") =>
   `${Math.round(v).toLocaleString("vi-VN")} ${c}`;
 export default function TravelExperienceDetail({ id }: { id: string }) {
@@ -598,7 +599,7 @@ export default function TravelExperienceDetail({ id }: { id: string }) {
                   onClick={() => router.push(`/login?redirect=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "/travel")}`)}
                   style={send}
                 >
-                  Đăng nhập để gửi yêu cầu ›
+                  {guestCta[locale]}
                 </button>
               ) : (
                 <button

@@ -16,6 +16,7 @@ const C={
 "zh-TW":{back:"租房",month:"月",verified:"趙喜認證房源",property:"房源資訊",bed:"臥室",bath:"衛浴",area:"面積",furnished:"家具",deposit:"押金",available:"可入住日期",lease:"最短租期",district:"區域",amenities:"配套設施",location:"位置",contact:"聯絡房東/機構",phone:"電話聯絡",wechat:"微信",favorite:"收藏",favorited:"已收藏",inquiry:"發送租房意向",name:"姓名",mobile:"聯絡電話",moveIn:"預計入住日期",months:"預計租期（月）",occupants:"入住人數",budget:"月預算",contactBy:"優先聯絡方式",notes:"補充需求",send:"發送給房源方",sending:"發送中…",sent:"已發送租房意向",sentHint:"房源方已收到您的需求，可在趙喜訂單/服務記錄中繼續跟進。",requestCode:"諮詢編號",map:"查看地圖",gallery:"房源圖片",noImages:"暫無更多圖片",yes:"全家具",partial:"部分家具",no:"無家具",notSet:"未填寫",support:"讓趙喜協助溝通",supportHint:"需要中文/越南語協助時可聯絡趙喜助手",phoneOpt:"電話",wechatOpt:"微信",whatsappOpt:"WhatsApp",whatsapp:"WhatsApp",statusAvailable:"可租",statusReserved:"已預訂",statusRented:"已出租",unavailableHint:"該房源目前不接受新的租房意向"},
 "vi-VN":{back:"Thuê nhà",month:"tháng",verified:"Nhà/Phòng được ZhaoXi xác thực",property:"Thông tin nhà/phòng",bed:"Phòng ngủ",bath:"WC",area:"Diện tích",furnished:"Nội thất",deposit:"Đặt cọc",available:"Có thể vào ở từ",lease:"Thời hạn thuê tối thiểu",district:"Khu vực",amenities:"Tiện ích",location:"Vị trí",contact:"Liên hệ chủ nhà/đơn vị",phone:"Gọi điện",wechat:"WeChat",favorite:"Yêu thích",favorited:"Đã yêu thích",inquiry:"Gửi yêu cầu thuê nhà",name:"Họ tên",mobile:"Số điện thoại",moveIn:"Ngày dự kiến vào ở",months:"Thời gian thuê (tháng)",occupants:"Số người ở",budget:"Ngân sách/tháng",contactBy:"Ưu tiên liên hệ",notes:"Nhu cầu bổ sung",send:"Gửi cho Partner",sending:"Đang gửi…",sent:"Đã gửi yêu cầu thuê nhà",sentHint:"Partner đã nhận nhu cầu của bạn. Bạn có thể tiếp tục theo dõi trong lịch sử đơn/dịch vụ ZhaoXi.",requestCode:"Mã yêu cầu",map:"Xem bản đồ",gallery:"Hình ảnh nhà/phòng",noImages:"Chưa có thêm hình ảnh",yes:"Đầy đủ nội thất",partial:"Nội thất một phần",no:"Không nội thất",notSet:"Chưa cập nhật",support:"Nhờ ZhaoXi hỗ trợ trao đổi",supportHint:"Trợ lý ZhaoXi có thể hỗ trợ khi bạn cần giao tiếp Trung–Việt",phoneOpt:"Điện thoại",wechatOpt:"WeChat",whatsappOpt:"WhatsApp",whatsapp:"WhatsApp",statusAvailable:"Còn trống",statusReserved:"Đã giữ chỗ",statusRented:"Đã cho thuê",unavailableHint:"Nhà/phòng này hiện chưa nhận thêm yêu cầu thuê mới"},
 "en-US":{back:"Housing",month:"month",verified:"ZhaoXi verified listing",property:"Property details",bed:"Bedrooms",bath:"Bathrooms",area:"Area",furnished:"Furnishing",deposit:"Deposit",available:"Available from",lease:"Minimum lease",district:"Area",amenities:"Amenities",location:"Location",contact:"Contact landlord/provider",phone:"Call",wechat:"WeChat",favorite:"Favorite",favorited:"Favorited",inquiry:"Send rental inquiry",name:"Name",mobile:"Phone",moveIn:"Expected move-in",months:"Lease length (months)",occupants:"Occupants",budget:"Monthly budget",contactBy:"Preferred contact",notes:"Additional needs",send:"Send to Partner",sending:"Sending…",sent:"Rental inquiry sent",sentHint:"The housing provider has received your request. You can continue tracking it in ZhaoXi service history.",requestCode:"Inquiry code",map:"Open map",gallery:"Property photos",noImages:"No additional photos",yes:"Fully furnished",partial:"Partly furnished",no:"Unfurnished",notSet:"Not specified",support:"Ask ZhaoXi to assist",supportHint:"ZhaoXi Assistant can help with Chinese–Vietnamese communication",phoneOpt:"Phone",wechatOpt:"WeChat",whatsappOpt:"WhatsApp",whatsapp:"WhatsApp",statusAvailable:"Available",statusReserved:"Reserved",statusRented:"Rented",unavailableHint:"This property is not accepting new rental inquiries"}} as const;
+const guestCta={"zh-CN":"登录后发送租房意向 ›","zh-TW":"登入後發送租房意向 ›","vi-VN":"Đăng nhập để gửi yêu cầu thuê ›","en-US":"Sign in to send a rental inquiry ›"} as const;
 const money=(v:number,c="VND")=>`${Math.round(v||0).toLocaleString("vi-VN")} ${c}`;
 
 export default function HousingListingDetail({id}:{id:string}){useEffect(()=>{if(id)fetch(`/api/customer-discovery/views/${id}`,{method:"POST"}).catch(()=>{})},[id]);
@@ -43,19 +44,374 @@ export default function HousingListingDetail({id}:{id:string}){useEffect(()=>{if
  const housingStatus=String(m.housingAvailabilityStatus||"available");
  const canInquire=m.isAvailable!==false&&housingStatus==="available";
  const statusLabel=housingStatus==="reserved"?t.statusReserved:housingStatus==="rented"?t.statusRented:t.statusAvailable;
- return <main style={shell}>
-  <header style={top}><Link href="/housing" style={back}>‹</Link><button onClick={()=>void toggleFavorite()} style={{...favBase,background:favorite?"#fff1f2":"#fff",color:favorite?"#e11d48":"#475569"}}>{favorite?"♥":"♡"} {favorite?t.favorited:t.favorite}</button></header>
-  <section aria-label={t.gallery} style={galleryWrap}>{gallery.length?gallery.map((src,i)=><img key={`${src}-${i}`} src={src} alt={`${data.name||data.code} ${i+1}`} style={galleryImage}/>):<div style={placeholder}><CustomerServiceIcon serviceId="housing" size={48}/><small>{t.noImages}</small></div>}</section>
-  <section style={body}><div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"start"}}><div><div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>{m.adminVerified===true&&<small style={verified}>✓ {t.verified}</small>}<small style={{padding:"4px 7px",borderRadius:999,background:canInquire?"#ecfdf5":housingStatus==="reserved"?"#fff7ed":"#f1f5f9",color:canInquire?"#067647":housingStatus==="reserved"?"#c2410c":"#64748b",fontWeight:900,fontSize:8}}>{statusLabel}</small></div><h1 style={{margin:"7px 0 5px",fontSize:22}}>{data.name||data.code}</h1><p style={{margin:0,color:"#64748b",fontSize:11}}>{data.summary}</p></div></div>
-   <strong style={{display:"block",fontSize:18,color:"#ef5a3c",marginTop:12}}>{Number(data.priceFrom||0)>0?`${money(Number(data.priceFrom),data.currency)}/${t.month}`:""}</strong>
-   <section style={facts}><Fact icon="🛏" l={t.bed} v={Number(m.bedrooms||0)>0?String(m.bedrooms):t.notSet}/><Fact icon="🚿" l={t.bath} v={Number(m.bathrooms||0)>0?String(m.bathrooms):t.notSet}/><Fact icon="▱" l={t.area} v={Number(m.areaSqm||0)>0?`${m.areaSqm} m²`:t.notSet}/><Fact icon="🛋" l={t.furnished} v={furnishing}/></section>
-   <section style={card}><h2 style={h2}>{t.property}</h2><Info l={t.district} v={String(m.district||t.notSet)}/><Info l={t.deposit} v={Number(m.depositMonths||0)>0?`${m.depositMonths} ${t.month}`:t.notSet}/><Info l={t.available} v={String(m.availableFrom||t.notSet)}/><Info l={t.lease} v={Number(m.minLeaseMonths||0)>0?`${m.minLeaseMonths} ${t.month}`:t.notSet}/>{data.description&&<p style={{fontSize:11,lineHeight:1.6,color:"#475569",margin:"10px 0 0"}}>{data.description}</p>}</section>
-   {amenities.length>0&&<section style={card}><h2 style={h2}>{t.amenities}</h2><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{amenities.map(a=><span key={a} style={amenity}>✓ {a}</span>)}</div></section>}
-   <section style={card}><h2 style={h2}>{t.location}</h2><p style={{fontSize:11,color:"#475569"}}>⌖ {propertyAddress||t.notSet}</p>{hasMap&&<iframe title={t.location} loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={`https://maps.google.com/maps?q=${encodeURIComponent(`${lat},${lng}`)}&z=15&output=embed`} style={map}/>} {hasMap&&<a target="_blank" rel="noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lat},${lng}`)}`} style={mapLink}>{t.map} ↗</a>}</section>
-   <section style={card}><h2 style={h2}>{t.contact}</h2><b style={{fontSize:12}}>{provider}</b><div style={{display:"flex",gap:7,marginTop:9,flexWrap:"wrap"}}>{phone&&<a href={`tel:${phone}`} style={contactBtn}>☎ {t.phone}</a>}{wechat&&<button onClick={()=>navigator.clipboard?.writeText(wechat)} style={contactBtn}>💬 {t.wechat}: {wechat}</button>}</div></section>
-   <section style={card}><h2 style={h2}>{t.inquiry}</h2>{!canInquire?<div style={{padding:11,borderRadius:12,background:"#fff7ed",color:"#9a3412",fontSize:10,fontWeight:800}}>{t.unavailableHint}</div>:sent?<div style={success}><b>✓ {t.sent}</b><p>{t.sentHint}</p><small>{t.requestCode}: {sent.requestCode}</small></div>:<div style={formGrid}><Field l={t.name}><input value={form.customerName} onChange={e=>setForm({...form,customerName:e.target.value})}/></Field><Field l={t.mobile}><input inputMode="tel" value={form.customerPhone} readOnly aria-readonly="true"/></Field><Field l={t.moveIn}><input type="date" value={form.moveInDate} onChange={e=>setForm({...form,moveInDate:e.target.value})}/></Field><Field l={t.months}><input type="number" min={1} max={60} value={form.leaseMonths} onChange={e=>setForm({...form,leaseMonths:e.target.value})}/></Field><Field l={t.occupants}><input type="number" min={1} max={20} value={form.occupants} onChange={e=>setForm({...form,occupants:e.target.value})}/></Field><Field l={t.budget}><input type="number" min={0} value={form.budget} onChange={e=>setForm({...form,budget:e.target.value})}/></Field><Field l={t.contactBy}><select value={form.preferredContact} onChange={e=>setForm({...form,preferredContact:e.target.value})}><option value="phone">{t.phoneOpt}</option><option value="wechat">{t.wechatOpt}</option><option value="whatsapp">{t.whatsappOpt}</option></select></Field>{form.preferredContact==="wechat"&&<Field l={t.wechat}><input value={form.wechat} onChange={e=>setForm({...form,wechat:e.target.value})}/></Field>}{form.preferredContact==="whatsapp"&&<Field l={t.whatsapp}><input value={form.whatsapp} onChange={e=>setForm({...form,whatsapp:e.target.value})}/></Field>}<label style={{...fieldStyle,gridColumn:"1/-1"}}>{t.notes}<textarea rows={4} value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})}/></label>{error&&<small style={{gridColumn:"1/-1",color:"#b42318"}}>{error}</small>}{isGuest ? <button type="button" onClick={()=>router.push(`/login?redirect=${encodeURIComponent(typeof window!=="undefined"?window.location.pathname:"/housing")}`)} style={send}>Đăng nhập để gửi yêu cầu thuê ›</button> : <button disabled={sending||!form.customerName.trim()||!form.customerPhone.trim()} onClick={()=>void sendInquiry()} style={send}>{sending?t.sending:t.send}</button>}</div>}</section>
-  </section><div style={{display:"flex",justifyContent:"flex-end",margin:"8px 0"}}><FavoriteServiceButton serviceId={id}/></div><CrossModuleRecommendations serviceId={id}/><MiniTabBar/>
- </main>
+ return (
+   <main style={shell}>
+     <header style={top}>
+       <Link href="/housing" style={back}>
+         ‹
+       </Link>
+       <button
+         onClick={() => void toggleFavorite()}
+         style={{
+           ...favBase,
+           background: favorite ? "#fff1f2" : "#fff",
+           color: favorite ? "#e11d48" : "#475569",
+         }}
+       >
+         {favorite ? "♥" : "♡"} {favorite ? t.favorited : t.favorite}
+       </button>
+     </header>
+     <section aria-label={t.gallery} style={galleryWrap}>
+       {gallery.length ? (
+         gallery.map((src, i) => (
+           <img
+             key={`${src}-${i}`}
+             src={src}
+             alt={`${data.name || data.code} ${i + 1}`}
+             style={galleryImage}
+           />
+         ))
+       ) : (
+         <div style={placeholder}>
+           <CustomerServiceIcon serviceId="housing" size={48} />
+           <small>{t.noImages}</small>
+         </div>
+       )}
+     </section>
+     <section style={body}>
+       <div
+         style={{
+           display: "flex",
+           justifyContent: "space-between",
+           gap: 10,
+           alignItems: "start",
+         }}
+       >
+         <div>
+           <div
+             style={{
+               display: "flex",
+               gap: 6,
+               alignItems: "center",
+               flexWrap: "wrap",
+             }}
+           >
+             {m.adminVerified === true && (
+               <small style={verified}>✓ {t.verified}</small>
+             )}
+             <small
+               style={{
+                 padding: "4px 7px",
+                 borderRadius: 999,
+                 background: canInquire
+                   ? "#ecfdf5"
+                   : housingStatus === "reserved"
+                     ? "#fff7ed"
+                     : "#f1f5f9",
+                 color: canInquire
+                   ? "#067647"
+                   : housingStatus === "reserved"
+                     ? "#c2410c"
+                     : "#64748b",
+                 fontWeight: 900,
+                 fontSize: 8,
+               }}
+             >
+               {statusLabel}
+             </small>
+           </div>
+           <h1 style={{ margin: "7px 0 5px", fontSize: 22 }}>
+             {data.name || data.code}
+           </h1>
+           <p style={{ margin: 0, color: "#64748b", fontSize: 11 }}>
+             {data.summary}
+           </p>
+         </div>
+       </div>
+       <strong
+         style={{
+           display: "block",
+           fontSize: 18,
+           color: "#ef5a3c",
+           marginTop: 12,
+         }}
+       >
+         {Number(data.priceFrom || 0) > 0
+           ? `${money(Number(data.priceFrom), data.currency)}/${t.month}`
+           : ""}
+       </strong>
+       <section style={facts}>
+         <Fact
+           icon="🛏"
+           l={t.bed}
+           v={Number(m.bedrooms || 0) > 0 ? String(m.bedrooms) : t.notSet}
+         />
+         <Fact
+           icon="🚿"
+           l={t.bath}
+           v={Number(m.bathrooms || 0) > 0 ? String(m.bathrooms) : t.notSet}
+         />
+         <Fact
+           icon="▱"
+           l={t.area}
+           v={Number(m.areaSqm || 0) > 0 ? `${m.areaSqm} m²` : t.notSet}
+         />
+         <Fact icon="🛋" l={t.furnished} v={furnishing} />
+       </section>
+       <section style={card}>
+         <h2 style={h2}>{t.property}</h2>
+         <Info l={t.district} v={String(m.district || t.notSet)} />
+         <Info
+           l={t.deposit}
+           v={
+             Number(m.depositMonths || 0) > 0
+               ? `${m.depositMonths} ${t.month}`
+               : t.notSet
+           }
+         />
+         <Info l={t.available} v={String(m.availableFrom || t.notSet)} />
+         <Info
+           l={t.lease}
+           v={
+             Number(m.minLeaseMonths || 0) > 0
+               ? `${m.minLeaseMonths} ${t.month}`
+               : t.notSet
+           }
+         />
+         {data.description && (
+           <p
+             style={{
+               fontSize: 11,
+               lineHeight: 1.6,
+               color: "#475569",
+               margin: "10px 0 0",
+             }}
+           >
+             {data.description}
+           </p>
+         )}
+       </section>
+       {amenities.length > 0 && (
+         <section style={card}>
+           <h2 style={h2}>{t.amenities}</h2>
+           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+             {amenities.map((a) => (
+               <span key={a} style={amenity}>
+                 ✓ {a}
+               </span>
+             ))}
+           </div>
+         </section>
+       )}
+       <section style={card}>
+         <h2 style={h2}>{t.location}</h2>
+         <p style={{ fontSize: 11, color: "#475569" }}>
+           ⌖ {propertyAddress || t.notSet}
+         </p>
+         {hasMap && (
+           <iframe
+             title={t.location}
+             loading="lazy"
+             referrerPolicy="no-referrer-when-downgrade"
+             src={`https://maps.google.com/maps?q=${encodeURIComponent(`${lat},${lng}`)}&z=15&output=embed`}
+             style={map}
+           />
+         )}{" "}
+         {hasMap && (
+           <a
+             target="_blank"
+             rel="noreferrer"
+             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lat},${lng}`)}`}
+             style={mapLink}
+           >
+             {t.map} ↗
+           </a>
+         )}
+       </section>
+       <section style={card}>
+         <h2 style={h2}>{t.contact}</h2>
+         <b style={{ fontSize: 12 }}>{provider}</b>
+         <div
+           style={{ display: "flex", gap: 7, marginTop: 9, flexWrap: "wrap" }}
+         >
+           {phone && (
+             <a href={`tel:${phone}`} style={contactBtn}>
+               ☎ {t.phone}
+             </a>
+           )}
+           {wechat && (
+             <button
+               onClick={() => navigator.clipboard?.writeText(wechat)}
+               style={contactBtn}
+             >
+               💬 {t.wechat}: {wechat}
+             </button>
+           )}
+         </div>
+       </section>
+       <section style={card}>
+         <h2 style={h2}>{t.inquiry}</h2>
+         {!canInquire ? (
+           <div
+             style={{
+               padding: 11,
+               borderRadius: 12,
+               background: "#fff7ed",
+               color: "#9a3412",
+               fontSize: 10,
+               fontWeight: 800,
+             }}
+           >
+             {t.unavailableHint}
+           </div>
+         ) : sent ? (
+           <div style={success}>
+             <b>✓ {t.sent}</b>
+             <p>{t.sentHint}</p>
+             <small>
+               {t.requestCode}: {sent.requestCode}
+             </small>
+           </div>
+         ) : (
+           <div style={formGrid}>
+             <Field l={t.name}>
+               <input
+                 value={form.customerName}
+                 onChange={(e) =>
+                   setForm({ ...form, customerName: e.target.value })
+                 }
+               />
+             </Field>
+             <Field l={t.mobile}>
+               <input
+                 inputMode="tel"
+                 value={form.customerPhone}
+                 readOnly
+                 aria-readonly="true"
+               />
+             </Field>
+             <Field l={t.moveIn}>
+               <input
+                 type="date"
+                 value={form.moveInDate}
+                 onChange={(e) =>
+                   setForm({ ...form, moveInDate: e.target.value })
+                 }
+               />
+             </Field>
+             <Field l={t.months}>
+               <input
+                 type="number"
+                 min={1}
+                 max={60}
+                 value={form.leaseMonths}
+                 onChange={(e) =>
+                   setForm({ ...form, leaseMonths: e.target.value })
+                 }
+               />
+             </Field>
+             <Field l={t.occupants}>
+               <input
+                 type="number"
+                 min={1}
+                 max={20}
+                 value={form.occupants}
+                 onChange={(e) =>
+                   setForm({ ...form, occupants: e.target.value })
+                 }
+               />
+             </Field>
+             <Field l={t.budget}>
+               <input
+                 type="number"
+                 min={0}
+                 value={form.budget}
+                 onChange={(e) => setForm({ ...form, budget: e.target.value })}
+               />
+             </Field>
+             <Field l={t.contactBy}>
+               <select
+                 value={form.preferredContact}
+                 onChange={(e) =>
+                   setForm({ ...form, preferredContact: e.target.value })
+                 }
+               >
+                 <option value="phone">{t.phoneOpt}</option>
+                 <option value="wechat">{t.wechatOpt}</option>
+                 <option value="whatsapp">{t.whatsappOpt}</option>
+               </select>
+             </Field>
+             {form.preferredContact === "wechat" && (
+               <Field l={t.wechat}>
+                 <input
+                   value={form.wechat}
+                   onChange={(e) =>
+                     setForm({ ...form, wechat: e.target.value })
+                   }
+                 />
+               </Field>
+             )}
+             {form.preferredContact === "whatsapp" && (
+               <Field l={t.whatsapp}>
+                 <input
+                   value={form.whatsapp}
+                   onChange={(e) =>
+                     setForm({ ...form, whatsapp: e.target.value })
+                   }
+                 />
+               </Field>
+             )}
+             <label style={{ ...fieldStyle, gridColumn: "1/-1" }}>
+               {t.notes}
+               <textarea
+                 rows={4}
+                 value={form.notes}
+                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
+               />
+             </label>
+             {error && (
+               <small style={{ gridColumn: "1/-1", color: "#b42318" }}>
+                 {error}
+               </small>
+             )}
+             {isGuest ? (
+               <button
+                 type="button"
+                 onClick={() =>
+                   router.push(
+                     `/login?redirect=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "/housing")}`,
+                   )
+                 }
+                 style={send}
+               >
+                 {guestCta[locale]}
+               </button>
+             ) : (
+               <button
+                 disabled={
+                   sending ||
+                   !form.customerName.trim() ||
+                   !form.customerPhone.trim()
+                 }
+                 onClick={() => void sendInquiry()}
+                 style={send}
+               >
+                 {sending ? t.sending : t.send}
+               </button>
+             )}
+           </div>
+         )}
+       </section>
+     </section>
+     <div
+       style={{ display: "flex", justifyContent: "flex-end", margin: "8px 0" }}
+     >
+       <FavoriteServiceButton serviceId={id} />
+     </div>
+     <CrossModuleRecommendations serviceId={id} />
+     <MiniTabBar />
+   </main>
+ );
 }
 function Fact({icon,l,v}:{icon:string;l:string;v:string}){return <div style={{padding:10,borderRadius:13,background:"#f8faf9"}}><span>{icon}</span><small style={{display:"block",fontSize:7,color:"#64748b",marginTop:4}}>{l}</small><b style={{fontSize:9}}>{v}</b></div>}
 function Info({l,v}:{l:string;v:string}){return <div style={{display:"flex",justifyContent:"space-between",gap:10,padding:"7px 0",borderBottom:"1px solid #f0f3f1",fontSize:10}}><span style={{color:"#64748b"}}>{l}</span><b style={{textAlign:"right"}}>{v}</b></div>}

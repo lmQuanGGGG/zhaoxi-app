@@ -26,6 +26,16 @@ type Item = {
   isEnabled?: boolean;
 };
 
+type ItemDraft = {
+  name: string;
+  summary: string;
+  price: string;
+  image: string;
+  imageFile?: File;
+  imagePreview?: string;
+  extra: Record<string, string>;
+};
+
 type DynamicField = { key: string; label: string; type?: "text" | "number" | "select" | "date"; options?: string[] };
 
 const copy = {
@@ -233,8 +243,11 @@ export default function StoreManager() {
   const [orgMetadata, setOrgMetadata] = useState<Record<string, unknown>>(() => cachedData?.org?.metadata || {});
   const [logo, setLogo] = useState(() => cachedData?.org?.logo || "");
   const [bannerUrls, setBannerUrls] = useState<string[]>(() => cachedData?.org?.bannerUrls || []);
-  const [form, setForm] = useState({ name: "", summary: "", price: "", image: "", extra: {} as Record<string, string> });
+  const [form, setForm] = useState<ItemDraft>({ name: "", summary: "", price: "", image: "", extra: {} });
+  const [queuedItems, setQueuedItems] = useState<ItemDraft[]>([]);
+  const [savingItems, setSavingItems] = useState(false);
   const [msg, setMsg] = useState("");
+  const [itemNotice, setItemNotice] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
   const [logoPreview, setLogoPreview] = useState("");
   const [bannerPreviews, setBannerPreviews] = useState<string[]>([]);
@@ -242,6 +255,7 @@ export default function StoreManager() {
   const [bannerIndex, setBannerIndex] = useState(0);
   const [bannersConfirmed, setBannersConfirmed] = useState(() => Boolean(cachedData?.org?.bannersConfirmed));
   const [syncing, setSyncing] = useState(false);
+  const [syncNotice, setSyncNotice] = useState("");
   const logoInput = useRef<HTMLInputElement>(null);
   const bannersInput = useRef<HTMLInputElement>(null);
   const itemInput = useRef<HTMLInputElement>(null);
@@ -314,8 +328,8 @@ export default function StoreManager() {
     body.set("folder", folder);
     body.set("organizationId", orgId);
     const response = await fetch("/api/media/upload", { method: "POST", body });
-    const payload = await response.json();
-    if (!response.ok || !payload?.data?.url) throw new Error(payload?.error || t.uploadFailed);
+    const payload = await response.json().catch(() => null);
+    if (!response.ok || !payload?.data?.url) throw new Error(String(payload?.error?.message || payload?.error?.code || payload?.error || t.uploadFailed));
     return String(payload.data.url);
   }
 
@@ -366,41 +380,44 @@ export default function StoreManager() {
     if (!file) return;
     const previewUrl = createPreviewUrl(file);
     setItemPreview(previewUrl);
-    try {
-      setUploading("item");
-      const image = await uploadFile(file, "items");
-      setForm((current) => ({ ...current, image }));
-      setItemPreview("");
-      URL.revokeObjectURL(previewUrl);
-      setMsg(`✓ ${t.imageUploaded}`);
-    } catch (error) {
-      setMsg(error instanceof Error ? error.message : t.uploadFailed);
-    } finally {
-      setUploading(null);
-      event.target.value = "";
-    }
+    setForm((current) => ({ ...current, image: "", imageFile: file, imagePreview: previewUrl }));
+    setItemNotice("✓ Đã chọn ảnh. Ảnh chỉ được tải lên khi bạn bấm ‘Lưu các món trong danh sách’.");
+    event.target.value = "";
   }
 
   async function saveStore() {
-    if (!orgId) return;
+    if (!orgId) { setMsg("Không tìm thấy gian hàng đang đăng nhập."); return; }
+    if (!storeName.trim() || !storeAddress.trim() || !contactPhone.trim()) { setMsg(`Vui lòng điền các mục ${requiredText}: ${t.storeName}, ${t.address}, ${t.contactPhone}.`); return; }
     const response = await fetch(`/api/platform-organizations/${orgId}`, {
       method: "PATCH", headers: { "content-type": "application/json" },
       body: JSON.stringify({ metadata: { ...orgMetadata, localizedNames: { ...((orgMetadata.localizedNames || {}) as Record<string, unknown>), [locale]: storeName }, draftLogoUrl: logo, draftBannerUrls: bannerUrls, bannerDraftConfirmed: bannersConfirmed, address: storeAddress, contactPhone, wechat } }),
     });
-    setMsg(response.ok ? `✓ ${t.saved}` : "!");
+    const payload = await response.json().catch(() => null);
+    setMsg(response.ok ? `✓ ${t.saved}` : String(payload?.error?.message || payload?.error?.code || "Không thể lưu gian hàng. Vui lòng thử lại."));
   }
 
-  async function addItem() {
-    if (!orgId || !form.name.trim() || uploading === "item") return;
+  async function addItem(draft: ItemDraft) {
+    if (!orgId) { setMsg("Không tìm thấy gian hàng đang đăng nhập."); return false; }
+    const invalid = itemValidation(draft);
+    if (invalid) { setMsg(`Vui lòng điền: ${invalid}`); return false; }
+    let uploadedImage = draft.image;
+    try {
+      if (!uploadedImage && draft.imageFile) uploadedImage = await uploadFile(draft.imageFile, "items");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : t.uploadFailed;
+      setMsg(message);
+      setItemNotice(`Không thể tải ảnh của “${draft.name}”: ${message}`);
+      return false;
+    }
 
     // Keep one immutable snapshot so the uploaded image is bound to the exact
     // service returned by the create request, never matched later by name.
     const submitted = {
-      name: form.name.trim(),
-      summary: form.summary.trim(),
-      price: Number(form.price || 0),
-      image: form.image,
-      extra: { ...form.extra },
+      name: draft.name.trim(),
+      summary: draft.summary.trim(),
+      price: Number(draft.price || 0),
+      image: uploadedImage,
+      extra: { ...draft.extra },
     };
     const translations: Record<string, unknown> = {
       [locale]: {
@@ -432,7 +449,7 @@ export default function StoreManager() {
     const payload = await response.json().catch(() => null);
     if (!response.ok) {
       setMsg(String(payload?.error?.message || payload?.error || "Unable to create service"));
-      return;
+      return false;
     }
 
     // Explicitly persist the same image against the newly-created service ID.
@@ -455,15 +472,27 @@ export default function StoreManager() {
       });
       if (!imageResponse.ok) {
         setMsg("Món đã được tạo nhưng chưa thể gắn ảnh. Vui lòng thử lại.");
-        await load();
-        return;
+        return false;
       }
     }
+    if (draft.imagePreview) URL.revokeObjectURL(draft.imagePreview);
+    return true;
+  }
 
-    setForm({ name: "", summary: "", price: "", image: "", extra: {} });
-    setItemPreview("");
-    setMsg(`✓ ${t.saved}`);
+  async function saveQueuedItems() {
+    if (!queuedItems.length) { queueItem(); return; }
+    setSavingItems(true);
+    let saved = 0;
+    const remaining: ItemDraft[] = [];
+    for (const draft of queuedItems) {
+      if (await addItem(draft)) saved += 1;
+      else remaining.push(draft);
+    }
+    setQueuedItems(remaining);
     await load();
+    setSavingItems(false);
+    setMsg(saved === queuedItems.length ? `✓ Đã lưu ${saved} món` : `Đã lưu ${saved}/${queuedItems.length} món; các món còn lại cần kiểm tra lại.`);
+    setSyncNotice(saved === queuedItems.length ? "Món đã lưu xong. Bạn có thể đồng bộ dịch vụ sang Customer." : "Còn món chưa lưu được; hãy xử lý xong trước khi đồng bộ.");
   }
 
   async function updateItem(item: Item, patch: Record<string, unknown>) {
@@ -504,21 +533,35 @@ export default function StoreManager() {
   }
 
   async function confirmBanners() {
-    setBannersConfirmed(true);
-    if (orgId) {
-      await fetch(`/api/platform-organizations/${orgId}`, {
+    if (!orgId) { setMsg("Không tìm thấy gian hàng đang đăng nhập."); return; }
+    try {
+      const response = await fetch(`/api/platform-organizations/${orgId}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ metadata: { ...orgMetadata, draftLogoUrl: logo, draftBannerUrls: bannerUrls, bannerDraftConfirmed: true, address: storeAddress, contactPhone, wechat } }),
       });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(String(payload?.error?.message || payload?.error?.code || "Không thể xác nhận banner."));
+      setBannersConfirmed(true);
+      setMsg(`✓ ${t.bannersConfirmed}`);
+    } catch (error) {
+      setMsg(error instanceof Error ? error.message : "Không thể xác nhận banner.");
     }
-    setMsg(`✓ ${t.bannersConfirmed}`);
   }
 
   async function syncServices() {
     if (!orgId) return;
+    if (queuedItems.length) {
+      setSyncNotice(`Hãy bấm “Lưu các món trong danh sách (${queuedItems.length})” trước. Món hiện chưa được tạo trên database.`);
+      return;
+    }
+    if (!items.length) {
+      setSyncNotice("Chưa có món nào đã lưu để đồng bộ. Hãy thêm và lưu ít nhất một món trước.");
+      return;
+    }
     if (bannerUrls.length > 0 && !bannersConfirmed) {
       setMsg(t.syncHint);
+      setSyncNotice(t.syncHint);
       return;
     }
     try {
@@ -562,9 +605,11 @@ export default function StoreManager() {
       });
       if (!publishResponse.ok) throw new Error("Marketplace publish failed");
       setMsg(`✓ ${t.synced}`);
+      setSyncNotice(`✓ ${t.synced}`);
       await load();
     } catch (error) {
       setMsg(error instanceof Error ? error.message : "Sync failed");
+      setSyncNotice(error instanceof Error ? error.message : "Không thể đồng bộ dịch vụ.");
     } finally {
       setSyncing(false);
     }
@@ -607,6 +652,35 @@ export default function StoreManager() {
   const visibleLogo = logoPreview || logo;
   const visibleBanners = bannerPreviews.length ? bannerPreviews : bannerUrls;
   const visibleItemImage = itemPreview || form.image;
+  const syncBlockedMessage = queuedItems.length
+    ? `Cần lưu ${queuedItems.length} món trong danh sách vào database trước khi đồng bộ.`
+    : !items.length ? "Chưa có món đã lưu để đồng bộ." : "";
+  const requiredText = locale === "vi-VN" ? "bắt buộc" : locale === "en-US" ? "required" : "必填";
+  const optionalText = locale === "vi-VN" ? "không bắt buộc" : locale === "en-US" ? "optional" : "选填";
+  const queueText = locale === "vi-VN" ? "Thêm vào danh sách" : locale === "en-US" ? "Add to list" : "加入列表";
+  const saveQueuedText = locale === "vi-VN" ? "Lưu các món trong danh sách" : locale === "en-US" ? "Save listed items" : "保存列表中的项目";
+
+  function itemValidation(candidate: ItemDraft) {
+    if (!candidate.name.trim()) return `${t.name} (${requiredText})`;
+    if (!candidate.price.trim() || Number(candidate.price) < 0) return `${t.price} (${requiredText})`;
+    if (!candidate.image.trim() && !candidate.imageFile) return `${presentation.image} — hãy chọn ảnh hoặc dán URL ảnh`;
+    return "";
+  }
+
+  function queueItem() {
+    const invalid = itemValidation(form);
+    if (invalid) {
+      const message = `Vui lòng điền: ${invalid}`;
+      setMsg(message);
+      setItemNotice(form.name.trim() && form.price.trim() && !form.image.trim() ? "Ảnh đang chỉ là bản xem trước hoặc chưa tải xong. Chọn lại ảnh, chờ ‘Ảnh đã sẵn sàng’, hoặc dán URL ảnh công khai." : message);
+      return;
+    }
+    setQueuedItems((current) => [...current, { ...form, extra: { ...form.extra } }]);
+    setForm({ name: "", summary: "", price: "", image: "", extra: {} });
+    setItemPreview("");
+    setMsg(`✓ ${queueText}`);
+    setItemNotice("✓ Đã thêm vào danh sách. Ảnh chưa được tải lên database; điền món tiếp theo, rồi bấm ‘Lưu các món trong danh sách’ khi xong.");
+  }
 
   return <main style={{ ...appShellStyle, maxWidth: 1100, margin: "0 auto", padding: 20 }}>
     <header style={{ textAlign: "center", padding: "10px 0 4px" }}>
@@ -616,31 +690,32 @@ export default function StoreManager() {
     </header>
     <PartnerWorkspaceNav/>
     <PartnerOrderAlerts/>
-    {moduleCode==="food"&&<><RestaurantOperationsPanel organizationId={orgId}/><CouponManager organizationId={orgId}/></>} 
+    {moduleCode==="food"&&<><RestaurantOperationsPanel organizationId={orgId}/><CouponManager organizationId={orgId}/></>}
 
     <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
-      <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 11px", border: "1px dashed #cbd5e1", borderRadius: 12, background: "rgba(255,255,255,.55)" }}><small>{t.category} · TEST</small><select value={moduleCode} onChange={(e) => setModuleCode(e.target.value)}>{Object.entries(t.categories).map(([code, label]) => <option key={code} value={code}>{label}</option>)}</select></label>
+      <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 11px", border: "1px dashed #cbd5e1", borderRadius: 12, background: "rgba(255,255,255,.55)" }}><small>{t.category}</small><select value={moduleCode} onChange={(e) => setModuleCode(e.target.value)}>{Object.entries(t.categories).map(([code, label]) => <option key={code} value={code}>{label}</option>)}</select></label>
     </div>
 
     {msg && <div role="status" style={{ marginTop: 14, padding: 12, borderRadius: 12, background: msg.startsWith("✓") ? "#ecfdf3" : "#fff1f2", color: msg.startsWith("✓") ? "#087a3e" : "#b42318", fontWeight: 700 }}>{msg}</div>}
 
     <Surface style={{ marginTop: 18 }}>
       <h2>{presentation.store}</h2>
-      <label style={{ display: "grid", gap: 6, marginBottom: 16 }}>{t.storeName}<input value={storeName} onChange={(e) => setStoreName(e.target.value)} style={{ padding: 12 }} /></label>
+      <p style={{ margin: "0 0 12px", color: "#64748b", fontSize: 14 }}><b style={{ color: "#dc2626" }}>*</b> {requiredText} · ({optionalText})</p>
+      <label style={{ display: "grid", gap: 6, marginBottom: 16 }}>{t.storeName} <b style={{ color: "#dc2626" }}>* {requiredText}</b><input required value={storeName} onChange={(e) => setStoreName(e.target.value)} style={{ padding: 12 }} /></label>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12, marginBottom: 18 }}>
-        <label style={{ display: "grid", gap: 6 }}>{t.address}<input value={storeAddress} onChange={(e) => setStoreAddress(e.target.value)} style={{ padding: 12 }} /></label>
-        <label style={{ display: "grid", gap: 6 }}>{t.contactPhone}<input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} inputMode="tel" style={{ padding: 12 }} /></label>
-        <label style={{ display: "grid", gap: 6 }}>{t.wechat}<input value={wechat} onChange={(e) => setWechat(e.target.value)} style={{ padding: 12 }} /></label>
+        <label style={{ display: "grid", gap: 6 }}>{t.address} <b style={{ color: "#dc2626" }}>* {requiredText}</b><input required value={storeAddress} onChange={(e) => setStoreAddress(e.target.value)} style={{ padding: 12 }} /></label>
+        <label style={{ display: "grid", gap: 6 }}>{t.contactPhone} <b style={{ color: "#dc2626" }}>* {requiredText}</b><input required value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} inputMode="tel" style={{ padding: 12 }} /></label>
+        <label style={{ display: "grid", gap: 6 }}>{t.wechat} <small>({optionalText})</small><input value={wechat} onChange={(e) => setWechat(e.target.value)} style={{ padding: 12 }} /></label>
       </div>
       <section style={{ display: "grid", gap: 10, marginBottom: 18 }}>
-        <b>{t.logo}</b><ImagePreview url={visibleLogo} alt={t.logo} height={130} />
+        <b>{t.logo} <small>({optionalText})</small></b><ImagePreview url={visibleLogo} alt={t.logo} height={130} />
         <input ref={logoInput} type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={chooseLogo} />
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><ActionButton tone="neutral" onClick={() => logoInput.current?.click()}>{uploading === "logo" ? t.uploading : t.chooseImage}</ActionButton>{logo && <ActionButton tone="neutral" onClick={() => { setLogo(""); setLogoPreview(""); }}>{t.remove}</ActionButton>}</div>
         <input placeholder={t.urlFallback} value={logo} onChange={(e) => setLogo(e.target.value)} style={{ padding: 10 }} /><small>{t.uploadHint}</small>
       </section>
 
       <section style={{ display: "grid", gap: 10 }}>
-        <b>{presentation.banners}</b>
+        <b>{presentation.banners} <small>({optionalText})</small></b>
         <small style={{ color: "#64748b", fontWeight: 700 }}>{t.bannerPreview}</small>
         {visibleBanners.length > 0 && <div style={{ position: "relative", width: "100%", maxWidth: 760, height: 280, overflow: "hidden", borderRadius: 20, background: "#eef8f1", border: "1px solid #dfe7e2" }}>
           {visibleBanners.map((url, index) => <img key={`${url}-${index}`} src={url} alt={`${presentation.banners} ${index + 1}`} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: index === bannerIndex ? 1 : 0, transition: "opacity .6s ease" }} />)}
@@ -661,14 +736,17 @@ export default function StoreManager() {
 
     <Surface style={{ marginTop: 18 }}>
       <h2>{presentation.add}</h2>
+      <p style={{ margin: "0 0 12px", color: "#64748b", fontSize: 14 }}><b style={{ color: "#dc2626" }}>*</b> {requiredText}: {t.name}, {t.price}, và {presentation.image} (chọn ảnh <b>hoặc</b> dán URL). {t.summary} ({optionalText}).</p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 10 }}>
-        <input placeholder={t.name} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-        <input placeholder={t.summary} value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} />
-        <input type="number" min="0" placeholder={t.price} value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+        <input required aria-label={`${t.name} (${requiredText})`} placeholder={`${t.name} *`} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        <input aria-label={`${t.summary} (${optionalText})`} placeholder={`${t.summary} (${optionalText})`} value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} />
+        <input required aria-label={`${t.price} (${requiredText})`} type="number" min="0" placeholder={`${t.price} *`} value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
         {activeFields.map((field) => field.type === "select" ? <select key={field.key} value={form.extra[field.key] || ""} onChange={(e) => setForm({ ...form, extra: { ...form.extra, [field.key]: e.target.value } })}><option value="">{field.label}</option>{field.options?.map((option) => <option key={option} value={option}>{localizedOption(field.key,option,locale)}</option>)}</select> : <input key={field.key} type={field.type || "text"} placeholder={field.label} value={form.extra[field.key] || ""} onChange={(e) => setForm({ ...form, extra: { ...form.extra, [field.key]: e.target.value } })} />)}
       </div>
-      <section style={{ display: "grid", gap: 8, marginTop: 14 }}><b>{presentation.image}</b><ImagePreview url={visibleItemImage} alt={form.name || presentation.image} height={180} /><input ref={itemInput} type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={chooseItemImage} /><div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><ActionButton tone="neutral" onClick={() => itemInput.current?.click()}>{uploading === "item" ? t.uploading : t.chooseImage}</ActionButton>{form.image && <ActionButton tone="neutral" onClick={() => { setForm({ ...form, image: "" }); setItemPreview(""); }}>{t.remove}</ActionButton>}</div><input placeholder={t.urlFallback} value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} /></section>
-      <div style={{ marginTop: 12 }}><ActionButton onClick={addItem}>{t.add}</ActionButton></div>
+      <section style={{ display: "grid", gap: 8, marginTop: 14 }}><b>{presentation.image} <span style={{ color: "#dc2626" }}>* {requiredText}</span> <small>(chọn ảnh hoặc dán URL)</small></b><ImagePreview url={visibleItemImage} alt={form.name || presentation.image} height={180} /><input ref={itemInput} type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={chooseItemImage} /><div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><ActionButton tone="neutral" onClick={() => itemInput.current?.click()}>{t.chooseImage}</ActionButton>{(form.image || form.imageFile) && <ActionButton tone="neutral" onClick={() => { if (form.imagePreview) URL.revokeObjectURL(form.imagePreview); setForm({ ...form, image: "", imageFile: undefined, imagePreview: undefined }); setItemPreview(""); setItemNotice("Ảnh đã được gỡ khỏi món này."); }}>{t.remove}</ActionButton>}</div><input aria-label={`${t.urlFallback} (${optionalText})`} placeholder={`${t.urlFallback} (${optionalText})`} value={form.image} onChange={(e) => { if (form.imagePreview) URL.revokeObjectURL(form.imagePreview); setItemPreview(""); setForm({ ...form, image: e.target.value, imageFile: undefined, imagePreview: undefined }); setItemNotice(e.target.value.trim() ? "✓ Sẽ dùng URL ảnh này khi lưu danh sách." : ""); }} /></section>
+      <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}><ActionButton onClick={queueItem}>{queueText}</ActionButton><ActionButton disabled={savingItems || !queuedItems.length} onClick={() => void saveQueuedItems()}>{savingItems ? t.uploading : `${saveQueuedText}${queuedItems.length ? ` (${queuedItems.length})` : ""}`}</ActionButton></div>
+      {itemNotice && <p role="status" style={{ margin: "10px 0 0", padding: "10px 12px", borderRadius: 10, background: itemNotice.startsWith("✓") ? "#ecfdf3" : "#fff7ed", color: itemNotice.startsWith("✓") ? "#087a3e" : "#9a3412", fontWeight: 700 }}>{itemNotice}</p>}
+      {queuedItems.length > 0 && <div style={{ marginTop: 12, display: "grid", gap: 7 }}>{queuedItems.map((item, index) => <div key={`${item.name}-${index}`} style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", padding: "9px 11px", border: "1px solid #dbe4df", borderRadius: 10 }}><div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}><img src={item.image || item.imagePreview} alt={item.name} style={{ width: 54, height: 54, flex: "0 0 auto", objectFit: "cover", borderRadius: 9, border: "1px solid #dbe4df" }} /><span style={{ minWidth: 0 }}><b>{index + 1}. {item.name}</b><small style={{ display: "block", color: "#64748b", marginTop: 3 }}>Ảnh sẽ tải lên khi lưu danh sách</small><span style={{ display: "block", marginTop: 3 }}>{Number(item.price).toLocaleString("vi-VN")} VND</span></span></div><button type="button" onClick={() => { if (item.imagePreview) URL.revokeObjectURL(item.imagePreview); setQueuedItems((current) => current.filter((_, i) => i !== index)); }}>{t.remove}</button></div>)}</div>}
     </Surface>
 
     <h2 style={{ marginTop: 24 }}>{presentation.menu}</h2>
@@ -680,8 +758,8 @@ export default function StoreManager() {
 
     <Surface style={{ marginTop: 22, marginBottom: 28, padding: 20, border: "1px solid #b7e7cb", background: "linear-gradient(135deg,#f0fff6,#ffffff)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
-        <div><h2 style={{ margin: "0 0 6px" }}>{t.syncServices}</h2><p style={{ margin: 0, color: "#64748b" }}>{t.syncHint}</p></div>
-        <button type="button" disabled={syncing} onClick={() => void syncServices()} style={{ minWidth: 220, border: 0, borderRadius: 14, padding: "14px 20px", background: "linear-gradient(135deg,#07c160,#05964a)", color: "white", fontWeight: 900, fontSize: 16, boxShadow: "0 12px 26px rgba(7,193,96,.24)", opacity: syncing ? .65 : 1 }}>{syncing ? t.syncing : `✓ ${t.syncServices}`}</button>
+        <div><h2 style={{ margin: "0 0 6px" }}>{t.syncServices}</h2><p style={{ margin: 0, color: syncNotice || syncBlockedMessage ? "#9a3412" : "#64748b", fontWeight: syncNotice || syncBlockedMessage ? 700 : 400 }}>{syncNotice || syncBlockedMessage || t.syncHint}</p></div>
+        <button type="button" disabled={syncing || Boolean(syncBlockedMessage)} onClick={() => void syncServices()} style={{ minWidth: 220, border: 0, borderRadius: 14, padding: "14px 20px", background: "linear-gradient(135deg,#07c160,#05964a)", color: "white", fontWeight: 900, fontSize: 16, boxShadow: "0 12px 26px rgba(7,193,96,.24)", opacity: syncing || syncBlockedMessage ? .55 : 1, cursor: syncing || syncBlockedMessage ? "not-allowed" : "pointer" }}>{syncing ? t.syncing : `✓ ${t.syncServices}`}</button>
       </div>
     </Surface>
   </main>;
