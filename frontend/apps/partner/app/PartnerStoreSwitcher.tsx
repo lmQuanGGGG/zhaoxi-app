@@ -55,6 +55,7 @@ export default function PartnerStoreSwitcher() {
   const t = copy[locale];
   const [orgs, setOrgs] = useState<OrgItem[]>([]);
   const [switching, setSwitching] = useState(false);
+  const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const currentOrgId = session?.organizationId || "";
@@ -71,7 +72,8 @@ export default function PartnerStoreSwitcher() {
       } catch {}
     }
     void fetchOrganizations();
-    return () => { active = false; };
+    window.addEventListener("zhaoxi:partner-store-updated", fetchOrganizations);
+    return () => { active = false; window.removeEventListener("zhaoxi:partner-store-updated", fetchOrganizations); };
   }, [currentOrgId]);
 
   if (orgs.length <= 1) {
@@ -80,7 +82,8 @@ export default function PartnerStoreSwitcher() {
   }
 
   async function handleSwitch(targetOrgId: string) {
-    if (!targetOrgId || targetOrgId === currentOrgId || switching) return;
+    if (!targetOrgId || switching) return;
+    if (targetOrgId === currentOrgId) { setOpen(false); return; }
     setSwitching(true);
     try {
       const targetOrg = orgs.find((o) => o.id === targetOrgId);
@@ -116,6 +119,7 @@ export default function PartnerStoreSwitcher() {
         router.refresh();
       });
       window.setTimeout(() => setSwitching(false), 260);
+      setOpen(false);
     } catch {
       setSwitching(false);
     }
@@ -132,23 +136,16 @@ export default function PartnerStoreSwitcher() {
     >
       <span className="zx-store-switcher-icon" aria-hidden="true">⌂</span>
       <span className="zx-store-switcher-label">{t.label}</span>
-      <select
-        value={currentOrgId}
-        disabled={switching || isPending}
-        onChange={(e) => void handleSwitch(e.target.value)}
-        aria-label={t.switchStore}
-        className="zx-store-switcher-select"
-      >
-        {orgs.map((o) => {
+      <div className="zx-store-switcher-menu">
+        <button type="button" className="zx-store-switcher-trigger" aria-label={t.switchStore} aria-expanded={open} onClick={() => setOpen((value) => !value)} disabled={switching || isPending}>
+          <span>{localizeOrganizationName(locale, orgs.find((o) => o.id === currentOrgId)?.code, orgs.find((o) => o.id === currentOrgId)?.name || session?.organizationName || "", orgs.find((o) => o.id === currentOrgId)?.metadata)}</span><span aria-hidden="true">⌄</span>
+        </button>
+        {open && <div className="zx-store-switcher-options" role="menu">{orgs.map((o) => {
           const displayName = localizeOrganizationName(locale, o.code, o.name, o.metadata);
-          const roleLabel = o.memberRole && (t as any)[o.memberRole] ? ` (${(t as any)[o.memberRole]})` : "";
-          return (
-            <option key={o.id} value={o.id}>
-              {displayName}{roleLabel}
-            </option>
-          );
-        })}
-      </select>
+          const roleLabel = o.memberRole && (t as any)[o.memberRole] ? ` · ${(t as any)[o.memberRole]}` : "";
+          return <button type="button" role="menuitem" data-active={o.id === currentOrgId} key={o.id} onClick={() => void handleSwitch(o.id)}>{displayName}<small>{roleLabel.replace(/^ · /, "")}</small></button>;
+        })}</div>}
+      </div>
       {(switching || isPending) && <span className="zx-store-switcher-progress" role="status">{t.switching}</span>}
     </div>
   );
