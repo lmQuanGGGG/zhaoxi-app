@@ -111,7 +111,7 @@ function getDefaultSchedule() {
   const cartItems = useMemo(() => cartOrg ? readZhaoXiCart().filter(item => String(item.organizationId || "unknown") === cartOrg) : [], [cartOrg, serviceId]);
   const t = copy[locale];
 
-  const isGuest = !session || session.authMethod === "guest" || !session.phone;
+  const isGuest = !session || session.authMethod === "guest";
 
   useEffect(() => {
     const sched = getDefaultSchedule();
@@ -123,7 +123,7 @@ function getDefaultSchedule() {
   }, []);
 
   useEffect(() => {
-    if (session && (session.authMethod === "guest" || !session.phone)) {
+    if (session?.authMethod === "guest") {
       router.replace(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
     }
   }, [session, router]);

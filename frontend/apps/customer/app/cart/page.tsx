@@ -18,7 +18,7 @@ export default function CartPage(){
  const{locale}=useZhaoXiLocale();const t=copy[locale];
  const session=useZhaoXiSession();const router=useRouter();const[identityUpgradeOpen,setIdentityUpgradeOpen]=useState(false);const[pendingCheckout,setPendingCheckout]=useState<string|null>(null);
  const{groups,remove,setQuantity,clearOrganization,count,total}=useZhaoXiCart();
- function checkout(href:string){if(!session||session.role!=="customer"||(!localTestBypass&&(session.authMethod==="guest"||!session.phone))){router.push(`/login?redirect=${encodeURIComponent(href)}`);return}router.push(href)}
+ function checkout(href:string){if(!session||session.role!=="customer"||(!localTestBypass&&session.authMethod==="guest")){router.push(`/login?redirect=${encodeURIComponent(href)}`);return}router.push(href)}
  return <main style={{width:"100%",maxWidth:680,margin:"0 auto",padding:"14px 14px calc(110px + env(safe-area-inset-bottom))",minHeight:"100dvh",background:"#f5f7fa",boxSizing:"border-box"}}>
    <header style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
      <Link href="/services/food" style={back}>‹</Link>

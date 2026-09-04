@@ -22,7 +22,7 @@ const money=(v:number,c="VND")=>`${Math.round(v||0).toLocaleString("vi-VN")} ${c
 export default function HousingListingDetail({id}:{id:string}){useEffect(()=>{if(id)fetch(`/api/customer-discovery/views/${id}`,{method:"POST"}).catch(()=>{})},[id]);
  const router = useRouter();
  const session = useZhaoXiSession();
- const isGuest = !session || session.authMethod === "guest" || !session.phone;
+ const isGuest = !session || session.authMethod === "guest";
  const{locale}=useZhaoXiLocale(),t=C[locale];
  const cacheKey=`housing_listing_${id}_${locale}`;
  const initialHousing=getCached<Listing>(cacheKey);

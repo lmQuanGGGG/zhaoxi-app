@@ -176,7 +176,7 @@ const money = (v: number, c = "VND") =>
 export default function TravelExperienceDetail({ id }: { id: string }) {
   const router = useRouter();
   const session = useZhaoXiSession();
-  const isGuest = !session || session.authMethod === "guest" || !session.phone;
+  const isGuest = !session || session.authMethod === "guest";
   useEffect(() => {
     if (id)
       fetch(`/api/customer-discovery/views/${id}`, { method: "POST" }).catch(

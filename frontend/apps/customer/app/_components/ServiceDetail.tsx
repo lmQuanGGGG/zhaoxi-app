@@ -14,7 +14,7 @@ const copy={
 "vi-VN":{back:"Quay lại",verified:"Đối tác ZhaoXi xác thực",from:"Từ",address:"Địa chỉ",phone:"Điện thoại",request:"Đặt dịch vụ",loading:"Đang tải…",info:"Thông tin dịch vụ",consult:"Liên hệ tư vấn",assistant:"Hỏi Trợ lý ZhaoXi",favorite:"Yêu thích",favorited:"Đã yêu thích",soldOut:"Hết món",paused:"Nhà hàng tạm ngưng nhận đơn",closed:"Nhà hàng đã đóng cửa",busy:"Bếp đang quá tải",promo:"Ưu đãi",scheduledOff:"Chưa đến giờ bán",platformPaused:"Platform đang tạm dừng nhận đơn",property:"Thông tin nhà/phòng",bedrooms:"Phòng ngủ",bathrooms:"WC",area:"Diện tích",district:"Khu vực",deposit:"Đặt cọc",furnished:"Nội thất"},
 "en-US":{back:"Back",verified:"ZhaoXi verified partner",from:"From",address:"Address",phone:"Phone",request:"Place order",loading:"Loading…",info:"Service information",consult:"Contact for price",assistant:"Ask ZhaoXi Assistant",favorite:"Favorite",favorited:"Favorited",soldOut:"Sold out",paused:"Restaurant paused orders",closed:"Restaurant closed",busy:"Kitchen at capacity",promo:"Promotion",scheduledOff:"Not on sale now",platformPaused:"Platform has temporarily paused orders",property:"Property details",bedrooms:"Bedrooms",bathrooms:"Bathrooms",area:"Area",district:"Area",deposit:"Deposit",furnished:"Furnishing"}} as const;
 export default function ServiceDetail({id}:{id:string}){
- const{locale}=useZhaoXiLocale();const session=useZhaoXiSession();const isGuest=!session||session.authMethod==="guest"||!session.phone;
+ const{locale}=useZhaoXiLocale();const session=useZhaoXiSession();const isGuest=!session||session.authMethod==="guest";
  const cacheKey=`service_detail_${id}_${locale}`;
  const initialData=getCached<Detail>(cacheKey);
  const[data,setData]=useState<Detail|null>(()=>initialData);

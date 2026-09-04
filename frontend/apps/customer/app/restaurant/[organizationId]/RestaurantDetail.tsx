@@ -43,7 +43,7 @@ function money(value: number, currency = "VND") {
 export default function RestaurantDetail({ organizationId }: { organizationId: string }) {
   const router = useRouter();
   const session = useZhaoXiSession();
-  const isGuest = !session || session.authMethod === "guest" || !session.phone;
+  const isGuest = !session || session.authMethod === "guest";
   const { locale } = useZhaoXiLocale();
   const t = ui[locale];
   const { add, count } = useZhaoXiCart();
