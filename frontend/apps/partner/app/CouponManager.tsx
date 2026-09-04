@@ -11,11 +11,37 @@ const copy={
 
 const blank={code:"",title:"",discountType:"percent",discountValue:10,maxDiscountAmount:"",minOrderAmount:0,totalUsageLimit:"",perCustomerLimit:1,startsAt:"",endsAt:"",enabled:true};
 
+function couponErrorMessage(code:unknown,locale:string){
+ const value=String(code||"");
+ if(locale==="vi-VN"){
+  if(value==="COUPON_CODE_INVALID")return "Nhập mã coupon 3–40 ký tự: chữ in hoa, số, dấu gạch ngang hoặc gạch dưới.";
+  if(value==="COUPON_CODE_EXISTS")return "Mã coupon này đã tồn tại. Hãy dùng một mã khác.";
+  if(value==="COUPON_TIME_RANGE_INVALID")return "Thời gian kết thúc phải sau thời gian bắt đầu.";
+  if(value==="PARTNER_FORBIDDEN"||value==="PARTNER_REQUIRED")return "Bạn không có quyền tạo coupon cho gian hàng này. Hãy đăng nhập lại Partner.";
+  if(value==="COUPONS_UNAVAILABLE")return "Không kết nối được máy chủ coupon. Vui lòng thử lại.";
+ }
+ return value||"Không thể tạo coupon. Vui lòng thử lại.";
+}
+
 export default function CouponManager({organizationId}:{organizationId:string}){
- const{locale}=useZhaoXiLocale();const t=copy[locale];const[rows,setRows]=useState<Coupon[]>([]);const[form,setForm]=useState<any>(blank);const[msg,setMsg]=useState("");
+ const{locale}=useZhaoXiLocale();const t=copy[locale];const[rows,setRows]=useState<Coupon[]>([]);const[form,setForm]=useState<any>(blank);const[msg,setMsg]=useState("");const[creating,setCreating]=useState(false);
  async function load(){if(!organizationId)return;try{const r=await fetch(`/api/partner-coupons?organizationId=${encodeURIComponent(organizationId)}`,{cache:"no-store"});const j=await r.json().catch(()=>null);if(j?.ok)setRows(j.data||[])}catch{}}
  useEffect(()=>{void load()},[organizationId]);
- async function create(){setMsg("");try{const r=await fetch("/api/partner-coupons",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...form,organizationId,maxDiscountAmount:form.maxDiscountAmount===""?null:Number(form.maxDiscountAmount),totalUsageLimit:form.totalUsageLimit===""?null:Number(form.totalUsageLimit),startsAt:form.startsAt?new Date(form.startsAt).toISOString():null,endsAt:form.endsAt?new Date(form.endsAt).toISOString():null})});const j=await r.json().catch(()=>null);if(r.ok&&j?.ok){setForm(blank);await load()}else setMsg(j?.error?.code||"ERROR")}catch{setMsg("ERROR")}}
+ async function create(){
+  if(creating)return;
+  const code=String(form.code||"").trim().toUpperCase();
+  if(!/^[A-Z0-9_-]{3,40}$/.test(code)){setMsg(couponErrorMessage("COUPON_CODE_INVALID",locale));return;}
+  if(form.startsAt&&form.endsAt&&new Date(form.endsAt)<=new Date(form.startsAt)){setMsg(couponErrorMessage("COUPON_TIME_RANGE_INVALID",locale));return;}
+  setCreating(true);setMsg("");
+  const controller=new AbortController();const timer=window.setTimeout(()=>controller.abort(),12000);
+  try{
+   const r=await fetch("/api/partner-coupons",{method:"POST",headers:{"content-type":"application/json"},signal:controller.signal,body:JSON.stringify({...form,code,organizationId,maxDiscountAmount:form.maxDiscountAmount===""?null:Number(form.maxDiscountAmount),totalUsageLimit:form.totalUsageLimit===""?null:Number(form.totalUsageLimit),startsAt:form.startsAt?new Date(form.startsAt).toISOString():null,endsAt:form.endsAt?new Date(form.endsAt).toISOString():null})});
+   const j=await r.json().catch(()=>null);
+   if(r.ok&&j?.ok&&j.data){setRows(current=>[j.data,...current.filter(row=>row.id!==j.data.id)]);setForm(blank);setMsg(locale==="vi-VN"?`✓ Đã tạo coupon ${j.data.code}. Customer có thể dùng ngay.`:"✓ Coupon created successfully.");}
+   else setMsg(couponErrorMessage(j?.error?.code,locale));
+  }catch(error){setMsg(error instanceof DOMException&&error.name==="AbortError"?(locale==="vi-VN"?"Tạo coupon mất quá lâu. Vui lòng thử lại.":"Coupon creation timed out. Please try again."):couponErrorMessage("COUPONS_UNAVAILABLE",locale));}
+  finally{window.clearTimeout(timer);setCreating(false);}
+ }
  async function patch(row:Coupon,values:Record<string,unknown>){await fetch(`/api/partner-coupons/${row.id}`,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({organizationId,...values})});await load()}
  async function remove(row:Coupon){await fetch(`/api/partner-coupons/${row.id}?organizationId=${encodeURIComponent(organizationId)}`,{method:"DELETE"});await load()}
  return <section style={{margin:"18px 0",padding:16,border:"1px solid #dfe7e3",borderRadius:18,background:"#fff",display:"grid",gap:12}}>
@@ -32,7 +58,7 @@ export default function CouponManager({organizationId}:{organizationId:string}){
    <Field l={t.start}><input type="datetime-local" value={form.startsAt} onChange={e=>setForm((v:any)=>({...v,startsAt:e.target.value}))}/></Field>
    <Field l={t.end}><input type="datetime-local" value={form.endsAt} onChange={e=>setForm((v:any)=>({...v,endsAt:e.target.value}))}/></Field>
   </div>
-  <button onClick={()=>void create()} style={{border:0,borderRadius:12,padding:10,background:"#07c160",color:"#fff",fontWeight:850}}>{t.new}</button>{msg&&<small style={{color:"#b42318"}}>{msg}</small>}
+  <button type="button" disabled={creating} onClick={()=>void create()} style={{border:0,borderRadius:12,padding:10,background:"#07c160",color:"#fff",fontWeight:850,opacity:creating ? .7 : 1,cursor:creating?"wait":"pointer"}}>{creating?(locale==="vi-VN"?"Đang tạo coupon…":"Creating coupon…"):t.new}</button>{msg&&<small role="status" style={{color:msg.startsWith("✓")?"#078343":"#b42318",fontWeight:700}}>{msg}</small>}
   <div style={{display:"grid",gap:8}}>{!rows.length?<small style={{color:"#94a3b8"}}>{t.empty}</small>:rows.map(row=><article key={row.id} style={{padding:11,border:"1px solid #edf2ef",borderRadius:14,display:"grid",gap:6}}>
     <div style={{display:"flex",justifyContent:"space-between",gap:8}}><b>{row.code} · {row.title}</b><span>{t.used}: {row.usedCount}{row.totalUsageLimit?`/${row.totalUsageLimit}`:""}</span></div>
     <small>{row.discountType==="percent"?`${row.discountValue}%${row.maxDiscountAmount?` · max ${row.maxDiscountAmount.toLocaleString("vi-VN")} VND`:""}`:`${row.discountValue.toLocaleString("vi-VN")} VND`} · min {row.minOrderAmount.toLocaleString("vi-VN")} VND</small>
