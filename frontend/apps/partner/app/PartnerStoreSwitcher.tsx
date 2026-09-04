@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { updateSession, useZhaoXiSession } from "@zhaoxi/auth";
 import { localizeOrganizationName, useZhaoXiLocale, type ZhaoXiLocale } from "@zhaoxi/i18n";
 
@@ -54,6 +55,8 @@ export default function PartnerStoreSwitcher() {
   const t = copy[locale];
   const [orgs, setOrgs] = useState<OrgItem[]>([]);
   const [switching, setSwitching] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const currentOrgId = session?.organizationId || "";
 
   useEffect(() => {
@@ -106,7 +109,13 @@ export default function PartnerStoreSwitcher() {
       try {
         localStorage.setItem("zhaoxi.partner.organizationId", targetOrgId);
       } catch {}
-      window.location.reload();
+      // Let the session subscribers redraw immediately. A router refresh keeps the
+      // current screen mounted, so changing stores does not flash a blank page.
+      startTransition(() => {
+        window.dispatchEvent(new Event("zhaoxi:partner-organization-changed"));
+        router.refresh();
+      });
+      window.setTimeout(() => setSwitching(false), 260);
     } catch {
       setSwitching(false);
     }
@@ -118,31 +127,17 @@ export default function PartnerStoreSwitcher() {
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: 8,
-        padding: "5px 12px",
-        borderRadius: 999,
-        background: "#ffffff",
-        border: "1.5px solid #86efac",
-        boxShadow: "0 2px 8px rgba(7, 193, 96, 0.08)",
-        margin: "6px 0",
+        gap: 9,
       }}
     >
-      <span style={{ fontSize: 16 }}>🏪</span>
-      <span style={{ fontSize: 12, fontWeight: 750, color: "#166534" }}>{t.label}:</span>
+      <span className="zx-store-switcher-icon" aria-hidden="true">🏪</span>
+      <span className="zx-store-switcher-label">{t.label}</span>
       <select
         value={currentOrgId}
-        disabled={switching}
+        disabled={switching || isPending}
         onChange={(e) => void handleSwitch(e.target.value)}
-        style={{
-          border: "none",
-          background: "transparent",
-          fontSize: 13,
-          fontWeight: 800,
-          color: "#0f172a",
-          cursor: "pointer",
-          outline: "none",
-          paddingRight: 6,
-        }}
+        aria-label={t.switchStore}
+        className="zx-store-switcher-select"
       >
         {orgs.map((o) => {
           const displayName = localizeOrganizationName(locale, o.code, o.name, o.metadata);
@@ -154,7 +149,7 @@ export default function PartnerStoreSwitcher() {
           );
         })}
       </select>
-      {switching && <small style={{ color: "#07c160", fontSize: 11, fontWeight: 800 }}>{t.switching}</small>}
+      {(switching || isPending) && <span className="zx-store-switcher-progress" role="status">{t.switching}</span>}
     </div>
   );
 }

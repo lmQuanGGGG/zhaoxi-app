@@ -10,7 +10,6 @@ import {
 } from "@zhaoxi/i18n";
 import { ActionButton, Surface, appShellStyle } from "@zhaoxi/ui";
 import { getCached, setCached } from "./_lib/client-cache";
-import PartnerWorkspaceNav from "./PartnerWorkspaceNav";
 import PartnerOrderAlerts from "./PartnerOrderAlerts";
 import RestaurantOperationsPanel from "./RestaurantOperationsPanel";
 import FoodCommercialEditor from "./FoodCommercialEditor";
@@ -256,6 +255,7 @@ export default function StoreManager() {
   const [bannersConfirmed, setBannersConfirmed] = useState(() => Boolean(cachedData?.org?.bannersConfirmed));
   const [syncing, setSyncing] = useState(false);
   const [syncNotice, setSyncNotice] = useState("");
+  const [isLoadingStore, setIsLoadingStore] = useState(!cachedData);
   const logoInput = useRef<HTMLInputElement>(null);
   const bannersInput = useRef<HTMLInputElement>(null);
   const itemInput = useRef<HTMLInputElement>(null);
@@ -271,16 +271,18 @@ export default function StoreManager() {
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    const [serviceResponse, orgResponse] = await Promise.all([
-      fetch(`/api/platform-services?organizationId=${orgId}&module=${moduleCode}&locale=${locale}&includeDrafts=1`, { cache: "no-store" }).catch(() => null),
-      fetch(`/api/platform-organizations?status=active`, { cache: "no-store" }).catch(() => null),
-    ]);
-    const d = serviceResponse ? await serviceResponse.json().catch(() => null) : null;
-    const od = orgResponse ? await orgResponse.json().catch(() => null) : null;
-    const loadedItems = Array.isArray(d?.data) ? d.data : [];
-    setItems(loadedItems);
-    const org = (Array.isArray(od?.data) ? od.data : []).find((x: { id: string }) => x.id === orgId);
-    if (org) {
+    setIsLoadingStore(true);
+    try {
+      const [serviceResponse, orgResponse] = await Promise.all([
+        fetch(`/api/platform-services?organizationId=${orgId}&module=${moduleCode}&locale=${locale}&includeDrafts=1`, { cache: "no-store" }).catch(() => null),
+        fetch(`/api/platform-organizations?status=active`, { cache: "no-store" }).catch(() => null),
+      ]);
+      const d = serviceResponse ? await serviceResponse.json().catch(() => null) : null;
+      const od = orgResponse ? await orgResponse.json().catch(() => null) : null;
+      const loadedItems = Array.isArray(d?.data) ? d.data : [];
+      setItems(loadedItems);
+      const org = (Array.isArray(od?.data) ? od.data : []).find((x: { id: string }) => x.id === orgId);
+      if (!org) return;
       const metadata = (org.metadata || {}) as Record<string, unknown>;
       setOrgMetadata(metadata);
       const names = (metadata.localizedNames || {}) as Record<string, unknown>;
@@ -314,6 +316,8 @@ export default function StoreManager() {
           bannersConfirmed: sConfirmed,
         }
       });
+    } finally {
+      setIsLoadingStore(false);
     }
   }, [orgId, locale, moduleCode, cacheKey]);
 
@@ -721,15 +725,16 @@ export default function StoreManager() {
     setItemNotice("✓ Đã thêm vào danh sách. Ảnh chưa được tải lên database; điền món tiếp theo, rồi bấm ‘Lưu các món trong danh sách’ khi xong.");
   }
 
-  return <main style={{ ...appShellStyle, maxWidth: 1100, margin: "0 auto", padding: 20 }}>
+  return <main className="zx-store-manager" style={{ ...appShellStyle, maxWidth: 1100, margin: "0 auto", padding: 20 }}>
     <header style={{ textAlign: "center", padding: "10px 0 4px" }}>
       <small style={{ color: "#07c160", fontWeight: 900, letterSpacing: ".08em" }}>ZHAOXI PARTNER</small>
       <h1 style={{ margin: "7px 0 14px", fontSize: "clamp(28px,4vw,40px)" }}>{t.title}</h1>
 
     </header>
-    <PartnerWorkspaceNav/>
     <PartnerOrderAlerts/>
     {moduleCode==="food"&&<><RestaurantOperationsPanel organizationId={orgId}/><CouponManager organizationId={orgId}/></>}
+
+    {isLoadingStore && <div className="zx-store-loading" role="status" aria-live="polite"><span className="zx-store-loading-spinner" /><div><b>Đang tải gian hàng</b><small>Nội dung sẽ cập nhật ngay khi hoàn tất.</small></div></div>}
 
     <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
       <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 11px", border: "1px dashed #cbd5e1", borderRadius: 12, background: "rgba(255,255,255,.55)" }}><small>{t.category}</small><select value={moduleCode} onChange={(e) => setModuleCode(e.target.value)}>{Object.entries(t.categories).map(([code, label]) => <option key={code} value={code}>{label}</option>)}</select></label>
