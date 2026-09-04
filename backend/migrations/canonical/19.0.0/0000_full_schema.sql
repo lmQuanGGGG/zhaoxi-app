@@ -417,7 +417,7 @@ CREATE TABLE "delivery_pricing_policies" (
 	"partner_subsidy_amount" integer DEFAULT 20000 NOT NULL,
 	"subsidy_windows" jsonb DEFAULT '[{"start":"07:00","end":"10:00"},{"start":"13:00","end":"16:00"}]'::jsonb NOT NULL,
 	"timezone" varchar(64) DEFAULT 'Asia/Ho_Chi_Minh' NOT NULL,
-	"max_delivery_radius_km" numeric(8, 2) DEFAULT '15' NOT NULL,
+	"max_delivery_radius_km" numeric(8, 2) DEFAULT '12' NOT NULL,
 	"distance_provider" varchar(32) DEFAULT 'google_routes' NOT NULL,
 	"allow_geo_fallback" boolean DEFAULT true NOT NULL,
 	"enabled" boolean DEFAULT true NOT NULL,

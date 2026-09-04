@@ -32,7 +32,7 @@ INSERT INTO customer_support_settings(scope,basic_assistant_enabled,paid_human_e
 VALUES('default',true,true,50000,'VND',true) ON CONFLICT(scope) DO NOTHING;
 
 INSERT INTO delivery_pricing_policies(scope,base_fee,base_distance_km,per_km_fee,partner_subsidy_amount,subsidy_windows,timezone,max_delivery_radius_km,distance_provider,allow_geo_fallback,enabled)
-VALUES('default',15000,2,8000,20000,'[{"start":"07:00","end":"10:00"},{"start":"13:00","end":"16:00"}]'::jsonb,'Asia/Ho_Chi_Minh',15,'google_routes',true,true)
+VALUES('default',15000,2,8000,20000,'[{"start":"07:00","end":"10:00"},{"start":"13:00","end":"16:00"}]'::jsonb,'Asia/Ho_Chi_Minh',12,'google_routes',true,true)
 ON CONFLICT(scope) DO NOTHING;
 
 INSERT INTO support_sla_policies(priority,first_response_minutes,resolution_minutes) VALUES

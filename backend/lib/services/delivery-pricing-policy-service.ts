@@ -13,7 +13,7 @@ export type DeliveryPricingPolicy={
 export const DEFAULT_DELIVERY_PRICING_POLICY:DeliveryPricingPolicy={
   scope:"default",baseFee:15000,baseDistanceKm:2,perKmFee:8000,partnerSubsidyAmount:20000,
   subsidyWindows:[{start:"07:00",end:"10:00"},{start:"13:00",end:"16:00"}],
-  timezone:"Asia/Ho_Chi_Minh",maxDeliveryRadiusKm:15,distanceProvider:"google_routes",
+  timezone:"Asia/Ho_Chi_Minh",maxDeliveryRadiusKm:12,distanceProvider:"google_routes",
   allowGeoFallback:true,enabled:true,
   weatherSurchargeEnabled:true,weatherLightRainFee:4000,weatherModerateRainFee:7000,weatherHeavyRainFee:10000,
 };

@@ -13,7 +13,7 @@ try{
    partner_subsidy_amount integer not null default 20000,
    subsidy_windows jsonb not null default '[{"start":"07:00","end":"10:00"},{"start":"13:00","end":"16:00"}]'::jsonb,
    timezone varchar(64) not null default 'Asia/Ho_Chi_Minh',
-   max_delivery_radius_km numeric(8,2) not null default 15,
+   max_delivery_radius_km numeric(8,2) not null default 12,
    distance_provider varchar(32) not null default 'google_routes',
    allow_geo_fallback boolean not null default true,
    enabled boolean not null default true,
@@ -26,7 +26,7 @@ try{
  ) values(
    'default',15000,2,8000,20000,
    '[{"start":"07:00","end":"10:00"},{"start":"13:00","end":"16:00"}]'::jsonb,
-   'Asia/Ho_Chi_Minh',15,'google_routes',true,true
+   'Asia/Ho_Chi_Minh',12,'google_routes',true,true
  ) on conflict(scope) do nothing`;
  console.log("Sprint 16.25.1 external delivery pricing policy migration applied.");
 }finally{await sql.end({timeout:5})}

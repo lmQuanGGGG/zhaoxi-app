@@ -272,7 +272,7 @@ export const deliveryPricingPolicies = pgTable("delivery_pricing_policies", {
     { start:"13:00", end:"16:00" },
   ]),
   timezone: varchar("timezone", { length: 64 }).notNull().default("Asia/Ho_Chi_Minh"),
-  maxDeliveryRadiusKm: numeric("max_delivery_radius_km", { precision: 8, scale: 2 }).notNull().default("15"),
+  maxDeliveryRadiusKm: numeric("max_delivery_radius_km", { precision: 8, scale: 2 }).notNull().default("12"),
   distanceProvider: varchar("distance_provider", { length: 32 }).notNull().default("google_routes"),
   allowGeoFallback: boolean("allow_geo_fallback").notNull().default(true),
   enabled: boolean("enabled").notNull().default(true),

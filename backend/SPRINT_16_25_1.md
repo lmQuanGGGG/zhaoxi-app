@@ -19,7 +19,7 @@ Cumulative hotfix/refactor on Sprint 16.25.
 - Each started km beyond 2 km: +8,000 VND/km.
 - Restaurant subsidy cap: 20,000 VND during 07:00–10:00 and 13:00–16:00.
 - Timezone: Asia/Ho_Chi_Minh.
-- Maximum delivery radius: 15 km.
+- Maximum delivery radius: 12 km.
 - Subsidy cannot exceed the gross delivery fee.
 - Customer total = item subtotal + gross delivery fee - restaurant subsidy.
 
