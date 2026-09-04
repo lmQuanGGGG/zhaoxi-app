@@ -1,4 +1,4 @@
-import {and,eq} from "drizzle-orm";
+import {and,eq,sql} from "drizzle-orm";
 import {getDb} from "@/db";
 import {organizationMembers,serviceRequests,serviceRequestStatusHistory} from "@/db/schema";
 
@@ -28,7 +28,12 @@ export class PartnerFoodFulfillmentService{
   const nextDetails:Record<string,unknown>={...details};
   let nextStatus=current.status;
   const noteByAction:Record<FoodFulfillmentAction,string>={accept:"PARTNER_ACCEPTED_FOOD_ORDER",start_preparing:"FOOD_PREPARING",ready_for_pickup:"FOOD_READY_FOR_PICKUP",courier_booked:"EXTERNAL_COURIER_BOOKED",handed_off:"FOOD_HANDED_TO_COURIER",delivered:"EXTERNAL_DELIVERY_DELIVERED",cancelled:"FOOD_ORDER_CANCELLED"};
+  const stageByAction:Record<FoodFulfillmentAction,string>={accept:"preparing",start_preparing:"preparing",ready_for_pickup:"ready_for_pickup",courier_booked:"courier_booked",handed_off:"handed_off",delivered:"delivered",cancelled:"cancelled"};
   const note=noteByAction[action];
+  const targetStage=stageByAction[action];
+  if(!targetStage)throw new Error("FULFILLMENT_ACTION_INVALID");
+  // Replayed mobile taps and background retries must not create another timeline step.
+  if(details.fulfillmentStage===targetStage)return current;
 
   if(action==="accept"){
     if(!["assigned","accepted","in_progress"].includes(current.status))throw new Error("INVALID_FULFILLMENT_TRANSITION");
@@ -55,7 +60,9 @@ export class PartnerFoodFulfillmentService{
     nextStatus="cancelled";Object.assign(nextDetails,{fulfillmentStage:"cancelled",cancelledAt:now.toISOString(),deliveryStage:"cancelled"});
   }
 
-  const [updated]=await db.update(serviceRequests).set({status:nextStatus as any,details:nextDetails,updatedAt:now}).where(eq(serviceRequests.id,requestId)).returning();
+  // This guard makes the transition atomic: only the first identical request wins.
+  const [updated]=await db.update(serviceRequests).set({status:nextStatus as any,details:nextDetails,updatedAt:now}).where(and(eq(serviceRequests.id,requestId),sql`coalesce(${serviceRequests.details}->>'fulfillmentStage','') <> ${targetStage}`)).returning();
+  if(!updated)return (await db.select().from(serviceRequests).where(eq(serviceRequests.id,requestId)).limit(1))[0]||current;
   await db.insert(serviceRequestStatusHistory).values({requestId,fromStatus:current.status,toStatus:nextStatus as any,note});
   return updated;
  }
