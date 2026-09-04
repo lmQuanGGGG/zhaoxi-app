@@ -35,6 +35,7 @@ export function AccountCenter(){
   const [phone,setPhone]=useState("");
   const [email,setEmail]=useState("");
   const [message,setMessage]=useState("");
+  const [saving,setSaving]=useState(false);
   const [switching,setSwitching]=useState<Role|null>(null);
   const [devices,setDevices]=useState<ZhaoXiDeviceSession[]>([]);
   const [deviceBusy,setDeviceBusy]=useState<string|null>(null);
@@ -53,9 +54,16 @@ export function AccountCenter(){
   useEffect(()=>{void load();void loadDevices();},[]);
 
   async function save(){
-    const r=await fetch("/api/platform-account/me",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({displayName:name,phone,email,preferredLocale:locale})});
-    const x=await r.json().catch(()=>null);
-    if(r.ok&&x?.data){setAccount(x.data);updateSession({displayName:name.trim(),phone:phone.trim()});setMessage(t.saved);window.setTimeout(()=>setMessage(""),1800);}
+    const normalizedPhone=phone.trim().replace(/[\s().-]/g,"");
+    if(normalizedPhone&&!/^\+?\d{8,15}$/.test(normalizedPhone)){setMessage("Số điện thoại không hợp lệ. Nhập 8–15 chữ số, có thể bắt đầu bằng +.");return;}
+    setSaving(true);
+    try{
+      const r=await fetch("/api/platform-account/me",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({displayName:name,phone:normalizedPhone,email,preferredLocale:locale})});
+      const x=await r.json().catch(()=>null);
+      if(r.ok&&x?.data){setAccount(x.data);setPhone(normalizedPhone);updateSession({displayName:name.trim(),phone:normalizedPhone});setMessage(t.saved);window.setTimeout(()=>setMessage(""),1800);}
+      else setMessage(String(x?.error?.message||x?.error?.code||"Không thể lưu số điện thoại. Vui lòng thử lại."));
+    }catch{setMessage("Không thể lưu số điện thoại. Vui lòng thử lại.");}
+    finally{setSaving(false);}
   }
   async function switchRole(role:Role){
     setSwitching(role);
@@ -91,9 +99,9 @@ export function AccountCenter(){
     <h1 style={{margin:0}}>{t.title}</h1>
     <div style={{display:"grid",gap:9,padding:16,border:"1px solid #e5e7eb",borderRadius:18,background:"#fff"}}>
       <label>{t.name}<input value={name} onChange={e=>setName(e.target.value)} style={{width:"100%",padding:11,border:"1px solid #dbe3dd",borderRadius:12}}/></label>
-      <label>{t.phone}<input value={phone} onChange={e=>setPhone(e.target.value)} style={{width:"100%",padding:11,border:"1px solid #dbe3dd",borderRadius:12}}/></label>
+      <label>{t.phone}<input type="tel" inputMode="tel" autoComplete="tel" placeholder="Ví dụ: +84 942 411 045" value={phone} onChange={e=>setPhone(e.target.value)} style={{width:"100%",padding:11,border:"1px solid #dbe3dd",borderRadius:12}}/><small style={{display:"block",marginTop:4,color:"#64748b"}}>Có thể thêm mới hoặc thay đổi số điện thoại, rồi bấm lưu.</small></label>
       <label>{t.email}<input value={email} onChange={e=>setEmail(e.target.value)} style={{width:"100%",padding:11,border:"1px solid #dbe3dd",borderRadius:12}}/></label>
-      <button type="button" onClick={()=>void save()} style={{padding:12,border:0,borderRadius:12,background:"#07c160",color:"white",fontWeight:800}}>{t.save}</button>
+      <button type="button" disabled={saving} onClick={()=>void save()} style={{padding:12,border:0,borderRadius:12,background:"#07c160",color:"white",fontWeight:800,opacity:saving ? .7 : 1}}>{saving?"Đang lưu…":t.save}</button>
       {message&&<small>{message}</small>}
     </div>
 
