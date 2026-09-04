@@ -4,10 +4,10 @@ import {useZhaoXiLocale} from "@zhaoxi/i18n";
 
 type Coupon={id:string;code:string;title:string;discountType:"percent"|"fixed";discountValue:number;maxDiscountAmount:number|null;minOrderAmount:number;totalUsageLimit:number|null;perCustomerLimit:number;startsAt:string|null;endsAt:string|null;enabled:boolean;usedCount:number};
 const copy={
-"zh-CN":{title:"优惠券与活动",new:"新建优惠券",code:"优惠码",name:"活动名称",type:"优惠类型",percent:"百分比",fixed:"固定金额",value:"优惠值",cap:"最高优惠",min:"最低订单金额",total:"总使用次数",per:"每位客户次数",start:"开始时间",end:"结束时间",enabled:"启用",save:"保存",delete:"删除",used:"已使用",empty:"暂无优惠券"},
-"zh-TW":{title:"優惠券與活動",new:"新增優惠券",code:"優惠碼",name:"活動名稱",type:"優惠類型",percent:"百分比",fixed:"固定金額",value:"優惠值",cap:"最高優惠",min:"最低訂單金額",total:"總使用次數",per:"每位客戶次數",start:"開始時間",end:"結束時間",enabled:"啟用",save:"儲存",delete:"刪除",used:"已使用",empty:"暫無優惠券"},
-"vi-VN":{title:"Coupon & chiến dịch",new:"Tạo coupon",code:"Mã coupon",name:"Tên chiến dịch",type:"Loại giảm",percent:"Phần trăm",fixed:"Số tiền cố định",value:"Giá trị giảm",cap:"Giảm tối đa",min:"Đơn tối thiểu",total:"Tổng lượt dùng",per:"Lượt dùng mỗi khách",start:"Bắt đầu",end:"Kết thúc",enabled:"Đang bật",save:"Lưu",delete:"Xóa",used:"Đã dùng",empty:"Chưa có coupon"},
-"en-US":{title:"Coupons & campaigns",new:"Create coupon",code:"Coupon code",name:"Campaign name",type:"Discount type",percent:"Percent",fixed:"Fixed amount",value:"Discount value",cap:"Maximum discount",min:"Minimum order",total:"Total uses",per:"Uses per customer",start:"Starts",end:"Ends",enabled:"Enabled",save:"Save",delete:"Delete",used:"Used",empty:"No coupons yet"}} as const;
+"zh-CN":{title:"优惠券与活动",new:"新建优惠券",code:"优惠码",name:"活动名称",type:"优惠类型",percent:"百分比",fixed:"固定金额",value:"优惠值",cap:"最高优惠",min:"最低订单金额",total:"总使用次数",per:"每位客户次数",start:"开始时间",end:"结束时间",enabled:"启用",save:"保存",delete:"删除",deleteConfirm:"确定删除此优惠券吗？",used:"已使用",empty:"暂无优惠券"},
+"zh-TW":{title:"優惠券與活動",new:"新增優惠券",code:"優惠碼",name:"活動名稱",type:"優惠類型",percent:"百分比",fixed:"固定金額",value:"優惠值",cap:"最高優惠",min:"最低訂單金額",total:"總使用次數",per:"每位客戶次數",start:"開始時間",end:"結束時間",enabled:"啟用",save:"儲存",delete:"刪除",deleteConfirm:"確定刪除此優惠券嗎？",used:"已使用",empty:"暫無優惠券"},
+"vi-VN":{title:"Coupon & chiến dịch",new:"Tạo coupon",code:"Mã coupon",name:"Tên chiến dịch",type:"Loại giảm",percent:"Phần trăm",fixed:"Số tiền cố định",value:"Giá trị giảm",cap:"Giảm tối đa",min:"Đơn tối thiểu",total:"Tổng lượt dùng",per:"Lượt dùng mỗi khách",start:"Bắt đầu",end:"Kết thúc",enabled:"Đang bật",save:"Lưu",delete:"Xóa",deleteConfirm:"Bạn có chắc muốn xóa coupon này?",used:"Đã dùng",empty:"Chưa có coupon"},
+"en-US":{title:"Coupons & campaigns",new:"Create coupon",code:"Coupon code",name:"Campaign name",type:"Discount type",percent:"Percent",fixed:"Fixed amount",value:"Discount value",cap:"Maximum discount",min:"Minimum order",total:"Total uses",per:"Uses per customer",start:"Starts",end:"Ends",enabled:"Enabled",save:"Save",delete:"Delete",deleteConfirm:"Delete this coupon?",used:"Used",empty:"No coupons yet"}} as const;
 
 const blank={code:"",title:"",discountType:"percent",discountValue:10,maxDiscountAmount:"",minOrderAmount:0,totalUsageLimit:"",perCustomerLimit:1,startsAt:"",endsAt:"",enabled:true};
 
@@ -43,7 +43,7 @@ export default function CouponManager({organizationId}:{organizationId:string}){
   finally{window.clearTimeout(timer);setCreating(false);}
  }
  async function patch(row:Coupon,values:Record<string,unknown>){await fetch(`/api/partner-coupons/${row.id}`,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({organizationId,...values})});await load()}
- async function remove(row:Coupon){await fetch(`/api/partner-coupons/${row.id}?organizationId=${encodeURIComponent(organizationId)}`,{method:"DELETE"});await load()}
+ async function remove(row:Coupon){if(!window.confirm(t.deleteConfirm))return;await fetch(`/api/partner-coupons/${row.id}?organizationId=${encodeURIComponent(organizationId)}`,{method:"DELETE"});await load()}
  return <section style={{margin:"18px 0",padding:16,border:"1px solid #dfe7e3",borderRadius:18,background:"#fff",display:"grid",gap:12}}>
   <h2 style={{margin:0}}>{t.title}</h2>
   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))",gap:8}}>
