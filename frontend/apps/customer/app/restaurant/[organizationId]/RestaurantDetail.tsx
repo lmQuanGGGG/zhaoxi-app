@@ -60,7 +60,7 @@ export default function RestaurantDetail({ organizationId }: { organizationId: s
     let cancelled = false;
     const load = () =>
       fetch(`/api/platform-services?module=food&organizationId=${encodeURIComponent(organizationId)}&locale=${locale}`, { cache: "no-store" })
-        .then((response) => response.json())
+        .then((response) => response.json().catch(() => null))
         .then((payload) => {
           if (!cancelled) {
             const next = Array.isArray(payload?.data) ? payload.data : [];
@@ -80,7 +80,7 @@ export default function RestaurantDetail({ organizationId }: { organizationId: s
     };
   }, [organizationId, locale]);
 
-  useEffect(()=>{let alive=true;const load=()=>fetch(`/api/restaurant-status/${encodeURIComponent(organizationId)}`,{cache:"no-store"}).then(r=>r.json()).then(j=>{if(alive&&j?.ok){setRestaurantStatus(j.data);setCached(`restaurant_status_${organizationId}`, j.data);}}).catch(()=>{});void load();const timer=setInterval(load,15000);return()=>{alive=false;clearInterval(timer)}},[organizationId]);
+  useEffect(()=>{let alive=true;const load=()=>fetch(`/api/restaurant-status/${encodeURIComponent(organizationId)}`,{cache:"no-store"}).then(r=>r.json().catch(()=>null)).then(j=>{if(alive&&j?.ok){setRestaurantStatus(j.data);setCached(`restaurant_status_${organizationId}`, j.data);}}).catch(()=>{});void load();const timer=setInterval(load,15000);return()=>{alive=false;clearInterval(timer)}},[organizationId]);
 
   const organization = items[0];
   const banners = useMemo(() => {
@@ -99,7 +99,7 @@ export default function RestaurantDetail({ organizationId }: { organizationId: s
     return () => window.clearInterval(timer);
   }, [banners.length]);
 
-  useEffect(()=>{if(!items.length){setFoodPricing({});return}const timer=setTimeout(()=>{const q=new URLSearchParams({ids:items.map(x=>x.id).join(",")});for(const item of items)q.set(`q_${item.id}`,String(Math.max(1,quantities[item.id]||1)));fetch(`/api/food-pricing?${q}`,{cache:"no-store"}).then(r=>r.json()).then(j=>{if(j?.ok)setFoodPricing(j.data||{})}).catch(()=>{})},120);return()=>clearTimeout(timer)},[items,quantities]);
+  useEffect(()=>{if(!items.length){setFoodPricing({});return}const timer=setTimeout(()=>{const q=new URLSearchParams({ids:items.map(x=>x.id).join(",")});for(const item of items)q.set(`q_${item.id}`,String(Math.max(1,quantities[item.id]||1)));fetch(`/api/food-pricing?${q}`,{cache:"no-store"}).then(r=>r.json().catch(()=>null)).then(j=>{if(j?.ok)setFoodPricing(j.data||{})}).catch(()=>{})},120);return()=>clearTimeout(timer)},[items,quantities]);
 
   function change(event: MouseEvent, id: string, delta: number) {
     event.preventDefault();

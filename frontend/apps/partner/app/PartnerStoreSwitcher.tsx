@@ -61,7 +61,7 @@ export default function PartnerStoreSwitcher() {
     async function fetchOrganizations() {
       try {
         const res = await fetch("/api/platform-account/me", { cache: "no-store" });
-        const json = await res.json();
+        const json = await res.json().catch(() => null);
         if (active && json?.ok && Array.isArray(json?.data?.organizations)) {
           setOrgs(json.data.organizations);
         }
@@ -86,7 +86,7 @@ export default function PartnerStoreSwitcher() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ organizationId: targetOrgId }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
       if (res.ok && data?.ok) {
         updateSession({
           organizationId: targetOrgId,

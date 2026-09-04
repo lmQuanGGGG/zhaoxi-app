@@ -4,7 +4,7 @@ const backend=()=>process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI
 export async function GET(){
   try{
     const response=await fetch(`${backend()}/api/integration/preflight`,{cache:"no-store",headers:{"cache-control":"no-cache"},signal:AbortSignal.timeout(10000)});
-    const payload=await response.json();
+    const payload=(await response.json().catch(()=>null))||{};
     return NextResponse.json({...payload,platformApp:"partner"},{status:response.status,headers:{"cache-control":"no-store"}});
   }catch{
     return NextResponse.json({ok:false,platformApp:"partner",error:{message:"Backend unavailable",code:"BACKEND_UNAVAILABLE"}},{status:503,headers:{"cache-control":"no-store"}});

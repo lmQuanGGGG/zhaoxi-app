@@ -15,7 +15,7 @@ export function createApiClient(options: ApiClientOptions) {
       },
     });
     if (!response.ok) throw new Error(`API ${response.status}: ${await response.text()}`);
-    return response.json() as Promise<T>;
+    return (await response.json().catch(() => null)) as T;
   }
   return { request };
 }

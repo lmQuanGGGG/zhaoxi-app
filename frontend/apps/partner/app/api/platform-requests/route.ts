@@ -7,6 +7,10 @@ export async function GET(request:NextRequest){
   if(!params.has("locale"))params.set("locale","zh-CN");
   const token=request.cookies.get("zx_access_v2")?.value;
   const headers:Record<string,string>={};if(token)headers.authorization=`Bearer ${token}`;
-  try{const response=await fetch(`${backend()}/api/service-requests?${params.toString()}`,{headers,cache:"no-store"});return Response.json(await response.json(),{status:response.status})}
-  catch{return Response.json({ok:false,error:{code:"PARTNER_ORDERS_UNAVAILABLE"}},{status:503})}
+  try{
+    const response=await fetch(`${backend()}/api/service-requests?${params.toString()}`,{headers,cache:"no-store"});
+    const payload=await response.json().catch(()=>null);
+    return Response.json(payload||{ok:true,data:[]},{status:response.status});
+  }
+  catch{return Response.json({ok:false,data:[],error:{code:"PARTNER_ORDERS_UNAVAILABLE"}},{status:503})}
 }

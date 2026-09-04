@@ -287,7 +287,7 @@ export default function HousingBrowser() {
         </div>
       </header>
       <section className={styles.body}>
-        <div className={styles.locationWrap}><CustomerLocationBar inline /></div>
+        <div className={styles.locationWrap}><CustomerLocationBar banner /></div>
         <label className={styles.search}>
           <CustomerIcon name="search" />
           <input

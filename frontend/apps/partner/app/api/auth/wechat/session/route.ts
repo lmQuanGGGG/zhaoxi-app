@@ -4,6 +4,7 @@ const backend=()=>process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI
 export async function POST(request:NextRequest){
   try{
     const response=await fetch(`${backend()}/api/auth/wechat/session`,{method:"POST",headers:{"content-type":"application/json"},body:await request.text(),cache:"no-store",signal:AbortSignal.timeout(10000)});
-    return Response.json(await response.json(),{status:response.status,headers:{"cache-control":"no-store"}});
+    const payload=(await response.json().catch(()=>null))||{ok:false};
+    return Response.json(payload,{status:response.status,headers:{"cache-control":"no-store"}});
   }catch{return Response.json({ok:false,error:{message:"Backend unavailable",code:"BACKEND_UNAVAILABLE"}},{status:503});}
 }

@@ -20,7 +20,7 @@ function anonymousSubject(){
 export function RuntimeGate({app,children}:{app:App;children:ReactNode}){
  const{locale}=useZhaoXiLocale();const session=useZhaoXiSession();const[state,setState]=useState<Control|null>(null);
  const subject=useMemo(()=>session?.userId||anonymousSubject(),[session?.userId]);
- useEffect(()=>{let active=true;const load=()=>fetch(`/api/platform-runtime-control?app=${app}&subject=${encodeURIComponent(subject)}`,{cache:"no-store"}).then(r=>r.json()).then(x=>{if(active&&x?.ok)setState(x.data)}).catch(()=>{});void load();const timer=window.setInterval(()=>void load(),30000);return()=>{active=false;window.clearInterval(timer)}},[app,subject]);
+ useEffect(()=>{let active=true;const load=()=>fetch(`/api/platform-runtime-control?app=${app}&subject=${encodeURIComponent(subject)}`,{cache:"no-store"}).then(r=>r.json().catch(()=>null)).then(x=>{if(active&&x?.ok)setState(x.data)}).catch(()=>{});void load();const timer=window.setInterval(()=>void load(),30000);return()=>{active=false;window.clearInterval(timer)}},[app,subject]);
  if(app==="admin"||!state)return <>{children}</>;
  const stagedBlocked=state.accessMode==="public"&&!state.publicEligible;
  const blocked=state.maintenanceEnabled||state.accessMode==="closed"||stagedBlocked;

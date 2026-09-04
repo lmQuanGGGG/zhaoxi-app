@@ -16,7 +16,7 @@ const showDate=(iso?:string)=>iso?new Date(iso).toLocaleString():"—";
 
 export default function HousingLeadPipeline({organizationId}:{organizationId:string}){
  const{locale}=useZhaoXiLocale(),t=C[locale];const[rows,setRows]=useState<Lead[]>([]),[busy,setBusy]=useState(""),[notes,setNotes]=useState<Record<string,string>>({}),[times,setTimes]=useState<Record<string,string>>({});
- const load=useCallback(async()=>{if(!organizationId)return;const r=await fetch(`/api/partner-housing-leads?organizationId=${encodeURIComponent(organizationId)}`,{cache:"no-store"}),j=await r.json();if(j?.ok)setRows(j.data||[])},[organizationId]);
+ const load=useCallback(async()=>{if(!organizationId)return;try{const r=await fetch(`/api/partner-housing-leads?organizationId=${encodeURIComponent(organizationId)}`,{cache:"no-store"}),j=await r.json().catch(()=>null);if(j?.ok)setRows(j.data||[])}catch{}},[organizationId]);
  useEffect(()=>{void load();const timer=setInterval(()=>void load(),12000);return()=>clearInterval(timer)},[load]);
  const grouped=useMemo(()=>Object.fromEntries(stages.map(s=>[s,rows.filter(r=>String(r.details?.housingLeadStage||"new")===s)])) as Record<Stage,Lead[]>,[rows]);
  async function move(row:Lead,stage:Stage){setBusy(row.id+stage);try{await fetch(`/api/partner-housing-leads/${row.id}`,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({organizationId,stage,note:notes[row.id]||""})});setNotes(v=>({...v,[row.id]:""}));await load()}finally{setBusy("")}}

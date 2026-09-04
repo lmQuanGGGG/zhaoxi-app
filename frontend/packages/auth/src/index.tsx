@@ -303,11 +303,47 @@ type WeChatRemoteSession = {
 const DEVICE_STORAGE_KEY="zhaoxi-device-id-v2";
 function getDeviceId(){if(typeof window==="undefined")return "server";let id=window.localStorage.getItem(DEVICE_STORAGE_KEY);if(!id){id=`web-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;window.localStorage.setItem(DEVICE_STORAGE_KEY,id);}return id;}
 function deviceName(){if(typeof navigator==="undefined")return "Web";return `${/Mobile|Android|iPhone|iPad/i.test(navigator.userAgent)?"Mobile":"Desktop"} · ${navigator.platform||"Web"}`.slice(0,180);}
-function saveServerSession(data:any){saveSession({role:data.role,displayName:data.displayName,phone:data.phone,organizationId:data.organizationId,organizationName:data.organizationName,organizationCode:data.organizationCode,organizationType:data.organizationType,userId:data.userId,avatarUrl:data.avatarUrl,authMethod:data.authMethod||"wechat",sessionMode:"server",sessionId:data.sessionId});}
-export async function refreshServerSession(){const controller=new AbortController();const timeout=window.setTimeout(()=>controller.abort(),5000);try{const response=await fetch("/api/auth/unified/session/me",{cache:"no-store",signal:controller.signal});const payload=await response.json();if(!response.ok||!payload?.ok)return null;saveServerSession(payload.data);return readSession();}catch{return null;}finally{window.clearTimeout(timeout);}}
+function sanitizeAuthError(err: unknown, locale: ZhaoXiLocale, fallback: string): string {
+  const msg = err instanceof Error ? err.message : String(err || "");
+  if (
+    !msg ||
+    msg.includes("<!DOCTYPE") ||
+    msg.includes("Unexpected token") ||
+    msg.includes("JSON") ||
+    msg.includes("HTML") ||
+    msg === "AUTH_BACKEND_INVALID_RESPONSE" ||
+    msg === "AUTH_BACKEND_UNAVAILABLE" ||
+    msg === "GUEST_BOOTSTRAP_FAILED"
+  ) {
+    return locale === "vi-VN"
+      ? "Hệ thống đang đồng bộ phiên bản mới trên máy chủ, vui lòng thử lại sau vài giây."
+      : locale.startsWith("zh")
+        ? "服务器正在同步新版本，请稍后重试。"
+        : "System is updating. Please try again in a moment.";
+  }
+  return msg || fallback;
+}
+
+function saveServerSession(data: any, defaultRole?: ZhaoXiRole) {
+  saveSession({
+    role: (data?.role as ZhaoXiRole) || defaultRole || "customer",
+    displayName: data?.displayName,
+    phone: data?.phone,
+    organizationId: data?.organizationId,
+    organizationName: data?.organizationName,
+    organizationCode: data?.organizationCode,
+    organizationType: data?.organizationType,
+    userId: data?.userId,
+    avatarUrl: data?.avatarUrl,
+    authMethod: data?.authMethod || "wechat",
+    sessionMode: "server",
+    sessionId: data?.sessionId,
+  });
+}
+export async function refreshServerSession(){const controller=new AbortController();const timeout=window.setTimeout(()=>controller.abort(),5000);try{const response=await fetch("/api/auth/unified/session/me",{cache:"no-store",signal:controller.signal});const payload=await response.json().catch(()=>null);if(!response.ok||!payload?.ok)return null;const current=readSession();saveServerSession(payload.data,current?.role);return readSession();}catch{return null;}finally{window.clearTimeout(timeout);}}
 export async function logoutZhaoXiSession(){try{await fetch("/api/auth/unified/session/logout",{method:"POST",headers:{"content-type":"application/json"},body:"{}"});}catch{}finally{clearSession();}}
 export async function logoutAllZhaoXiSessions(){try{await fetch("/api/auth/unified/session/logout-all",{method:"POST",headers:{"content-type":"application/json"},body:"{}"});}finally{clearSession();}}
-export type ZhaoXiDeviceSession={sessionId:string;role:string;deviceId?:string;deviceName?:string;lastSeenAt:string;createdAt:string;refreshExpiresAt:string;isCurrent?:boolean};export async function listZhaoXiDevices(){const response=await fetch("/api/auth/unified/session/devices",{cache:"no-store"});const payload=await response.json();if(!response.ok||!payload?.ok)throw new Error(payload?.error?.code||"DEVICE_SESSION_READ_FAILED");return payload.data as ZhaoXiDeviceSession[];}export async function revokeZhaoXiDevice(sessionId:string){const current=readSession();const response=await fetch("/api/auth/unified/session/devices/revoke",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({sessionId})});const payload=await response.json();if(!response.ok||!payload?.ok)throw new Error(payload?.error?.code||"DEVICE_SESSION_REVOKE_FAILED");if(current?.sessionId===sessionId)clearSession();return payload.data as {revoked:boolean;sessionId:string;currentSessionRevoked?:boolean};}
+export type ZhaoXiDeviceSession={sessionId:string;role:string;deviceId?:string;deviceName?:string;lastSeenAt:string;createdAt:string;refreshExpiresAt:string;isCurrent?:boolean};export async function listZhaoXiDevices(){const response=await fetch("/api/auth/unified/session/devices",{cache:"no-store"});const payload=await response.json().catch(()=>null);if(!response.ok||!payload?.ok)throw new Error(payload?.error?.code||"DEVICE_SESSION_READ_FAILED");return payload.data as ZhaoXiDeviceSession[];}export async function revokeZhaoXiDevice(sessionId:string){const current=readSession();const response=await fetch("/api/auth/unified/session/devices/revoke",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({sessionId})});const payload=await response.json().catch(()=>null);if(!response.ok||!payload?.ok)throw new Error(payload?.error?.code||"DEVICE_SESSION_REVOKE_FAILED");if(current?.sessionId===sessionId)clearSession();return payload.data as {revoked:boolean;sessionId:string;currentSessionRevoked?:boolean};}
 
 export function WeChatLoginPanel({ role, locale, onDone }: { role:ZhaoXiRole; locale:ZhaoXiLocale; onDone:()=>void }) {
   const t=gateCopy[locale];
@@ -323,10 +359,10 @@ export function WeChatLoginPanel({ role, locale, onDone }: { role:ZhaoXiRole; lo
     setBusy(true); setMessage("");
     try{
       const response=await fetch("/api/auth/wechat/session",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({role,locale,returnUrl:"/"})});
-      const payload=await response.json();
+      const payload=await response.json().catch(()=>null);
       if(!response.ok||!payload?.ok) throw new Error(payload?.error?.code||payload?.error?.message||"WECHAT_SESSION_CREATE_FAILED");
       setRemote(payload.data);
-    }catch(error){ setMessage(error instanceof Error?error.message:"WECHAT_SESSION_CREATE_FAILED"); }
+    }catch(error){ setMessage(sanitizeAuthError(error,locale,"WECHAT_SESSION_CREATE_FAILED")); }
     finally{setBusy(false);}
   }
 
@@ -338,18 +374,18 @@ export function WeChatLoginPanel({ role, locale, onDone }: { role:ZhaoXiRole; lo
       polling.current=true;
       try{
         const response=await fetch(`/api/auth/wechat/session/${encodeURIComponent(remote.id)}`,{cache:"no-store"});
-        const payload=await response.json();
-        if(!response.ok||!payload?.ok){setMessage(payload?.error?.code||"WECHAT_SESSION_READ_FAILED");return;}
+        const payload=await response.json().catch(()=>null);
+        if(!response.ok||!payload?.ok){setMessage(sanitizeAuthError(payload?.error?.code||"WECHAT_SESSION_READ_FAILED",locale,"WECHAT_SESSION_READ_FAILED"));return;}
         const next=payload.data as WeChatRemoteSession;
         setRemote(next);
         if(next.state==="confirmed"&&next.exchangeCode&&!exchanging.current){
           exchanging.current=true;
           const exchangeResponse=await fetch("/api/auth/unified/session/exchange",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({qrSessionId:next.id,exchangeCode:next.exchangeCode,role,deviceId:getDeviceId(),deviceName:deviceName()})});
-          const exchangePayload=await exchangeResponse.json();
+          const exchangePayload=await exchangeResponse.json().catch(()=>null);
           if(!exchangeResponse.ok||!exchangePayload?.ok){exchanging.current=false;throw new Error(exchangePayload?.error?.code||"SESSION_EXCHANGE_FAILED");}
-          saveServerSession(exchangePayload.data); window.clearInterval(timer); onDone();
+          saveServerSession(exchangePayload.data, role); window.clearInterval(timer); onDone();
         }
-      }catch(error){setMessage(error instanceof Error?error.message:"WECHAT_SESSION_READ_FAILED");}
+      }catch(error){setMessage(sanitizeAuthError(error,locale,"WECHAT_SESSION_READ_FAILED"));}
       finally{polling.current=false;}
     },2000);
     return()=>window.clearInterval(timer);
@@ -369,9 +405,9 @@ export function WeChatLoginPanel({ role, locale, onDone }: { role:ZhaoXiRole; lo
 }
 
 type PairingRemote={id:string;role:"customer"|"partner";state:string;expiresAt:string;qrSvg?:string;exchangeCode?:string;handoff?:"zhaoxi_qr";wechatIdentityVerified?:false};
-function ZhaoXiQrLogin({role,locale,onDone}:{role:"customer"|"partner";locale:ZhaoXiLocale;onDone:()=>void}){const t=gateCopy[locale];const [remote,setRemote]=useState<PairingRemote|null>(null);const [message,setMessage]=useState("");const exchanging=useRef(false);const exchangeCode=useRef("");async function create(){setMessage("");exchanging.current=false;exchangeCode.current="";try{const r=await fetch("/api/auth/unified/qr/session",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({role,locale})});const j=await r.json();if(!r.ok||!j.ok){setMessage(t.qrCreateFailed);return}exchangeCode.current=String(j.data.exchangeCode||"");setRemote(j.data)}catch{setMessage(t.qrCreateFailed)}}useEffect(()=>{void create()},[role,locale]);useEffect(()=>{if(!remote?.id||remote.state!=="waiting_scan")return;const id=remote.id;const timer=window.setInterval(async()=>{try{const r=await fetch(`/api/auth/unified/qr/session/${id}`,{cache:"no-store"});const j=await r.json();if(!r.ok||!j.ok)return;setRemote(prev=>prev?{...prev,...j.data}:j.data);if(j.data.state==="confirmed"&&exchangeCode.current&&!exchanging.current){exchanging.current=true;const x=await fetch("/api/auth/unified/qr/exchange",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({qrSessionId:id,exchangeCode:exchangeCode.current,deviceId:getDeviceId(),deviceName:deviceName()})});const y=await x.json();if(x.ok&&y.ok){exchangeCode.current="";saveSession({...y.data,authMethod:y.data?.authMethod||"guest",sessionMode:"server"});window.clearInterval(timer);onDone()}else{exchanging.current=false;const code=y?.error?.code;setMessage(code==="PARTNER_QR_REQUIRES_TRUSTED_IDENTITY"||code==="PARTNER_QR_NOT_AUTHORIZED"?t.partnerQrTrusted:t.qrExchangeFailed)}}}catch{}},1500);return()=>window.clearInterval(timer)},[remote?.id,remote?.state,onDone]);return <section style={{display:"grid",gap:14,textAlign:"center"}}><p style={{color:uiTokens.colors.muted}}>{t.scanWechat}</p>{remote?.qrSvg?<div aria-label={t.wechatLogin} style={{width:260,height:260,margin:"0 auto",padding:8,background:"white",borderRadius:20}} dangerouslySetInnerHTML={{__html:remote.qrSvg}}/>:<div>{t.qrGenerating}</div>}<small style={{color:uiTokens.colors.muted}}>{t.loginHint}</small>{message&&<div style={{color:"#b42318"}}>{message}</div>}<ActionButton tone="neutral" onClick={()=>void create()}>{t.retryWechat}</ActionButton></section>}
+function ZhaoXiQrLogin({role,locale,onDone}:{role:"customer"|"partner";locale:ZhaoXiLocale;onDone:()=>void}){const t=gateCopy[locale];const [remote,setRemote]=useState<PairingRemote|null>(null);const [message,setMessage]=useState("");const exchanging=useRef(false);const exchangeCode=useRef("");async function create(){setMessage("");exchanging.current=false;exchangeCode.current="";try{const r=await fetch("/api/auth/unified/qr/session",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({role,locale})});const j=await r.json().catch(()=>null);if(!r.ok||!j?.ok){setMessage(t.qrCreateFailed);return}exchangeCode.current=String(j.data.exchangeCode||"");setRemote(j.data)}catch{setMessage(t.qrCreateFailed)}}useEffect(()=>{void create()},[role,locale]);useEffect(()=>{if(!remote?.id||remote.state!=="waiting_scan")return;const id=remote.id;const timer=window.setInterval(async()=>{try{const r=await fetch(`/api/auth/unified/qr/session/${id}`,{cache:"no-store"});const j=await r.json().catch(()=>null);if(!r.ok||!j?.ok)return;setRemote(prev=>prev?{...prev,...j.data}:j.data);if(j.data.state==="confirmed"&&exchangeCode.current&&!exchanging.current){exchanging.current=true;const x=await fetch("/api/auth/unified/qr/exchange",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({qrSessionId:id,exchangeCode:exchangeCode.current,deviceId:getDeviceId(),deviceName:deviceName()})});const y=await x.json().catch(()=>null);if(x.ok&&y?.ok){exchangeCode.current="";saveSession({...y.data,role,authMethod:y.data?.authMethod||"guest",sessionMode:"server"});window.clearInterval(timer);onDone()}else{exchanging.current=false;const code=y?.error?.code;setMessage(code==="PARTNER_QR_REQUIRES_TRUSTED_IDENTITY"||code==="PARTNER_QR_NOT_AUTHORIZED"?t.partnerQrTrusted:t.qrExchangeFailed)}}}catch{}},1500);return()=>window.clearInterval(timer)},[remote?.id,remote?.state,onDone]);return <section style={{display:"grid",gap:14,textAlign:"center"}}><p style={{color:uiTokens.colors.muted}}>{t.scanWechat}</p>{remote?.qrSvg?<div aria-label={t.wechatLogin} style={{width:260,height:260,margin:"0 auto",padding:8,background:"white",borderRadius:20}} dangerouslySetInnerHTML={{__html:remote.qrSvg}}/>:<div>{t.qrGenerating}</div>}<small style={{color:uiTokens.colors.muted}}>{t.loginHint}</small>{message&&<div style={{color:"#b42318"}}>{message}</div>}<ActionButton tone="neutral" onClick={()=>void create()}>{t.retryWechat}</ActionButton></section>}
 const adminCardCopy={"vi-VN":{title:"Admin Test QR",body:"Quét mã QR Admin đã được phát hành bằng Camera/WeChat trên thiết bị cần đăng nhập. Mã QR test có thể dùng lại trên nhiều thiết bị.",fallback:"Hoặc nhập mã Admin Test Access nếu đang test trên cùng thiết bị.",placeholder:"Mã Admin Test Access",submit:"Đăng nhập",invalid:"Mã QR / Admin Test Access không hợp lệ"},"zh-CN":{title:"管理员测试二维码",body:"请使用相机或微信扫描已发行的管理员测试二维码。同一二维码可在多个设备重复使用。",fallback:"如在同一设备测试，也可以手动输入管理员测试访问码。",placeholder:"管理员测试访问码",submit:"登录",invalid:"二维码或管理员测试访问码无效"},"zh-TW":{title:"管理員測試 QR",body:"請使用相機或微信掃描已發行的管理員測試 QR。同一 QR 可在多個裝置重複使用。",fallback:"如在同一裝置測試，也可以手動輸入管理員測試存取碼。",placeholder:"管理員測試存取碼",submit:"登入",invalid:"QR 或管理員測試存取碼無效"},"en-US":{title:"Admin Test QR",body:"Scan the issued Admin Test QR with Camera or WeChat on the device you want to sign in. The same QR can be reused across multiple devices.",fallback:"Or enter the Admin Test Access code when testing on this device.",placeholder:"Admin Test Access Code",submit:"Sign in",invalid:"Invalid Admin QR or Admin Test Access code"}} as const;
-function AdminCardLogin({locale,onDone}:{locale:ZhaoXiLocale;onDone:()=>void}){const [code,setCode]=useState("");const [message,setMessage]=useState("");const c=adminCardCopy[locale];async function submit(){try{const r=await fetch("/api/auth/unified/admin/card",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({cardCode:code,deviceId:getDeviceId(),deviceName:deviceName()})});const j=await r.json();if(!r.ok||!j.ok){setMessage(c.invalid);return}saveSession({...j.data,authMethod:"internal",sessionMode:"server"});onDone()}catch{setMessage(c.invalid)}}return <div style={{display:"grid",gap:14}}><section style={{padding:15,border:"1px solid rgba(255,255,255,.86)",borderRadius:18,background:"linear-gradient(145deg,rgba(235,255,245,.86),rgba(255,255,255,.64))",boxShadow:"inset 0 1px 0 rgba(255,255,255,.9)",backdropFilter:"blur(18px)"}}><b style={{color:"#07673a",fontSize:14}}>{c.title}</b><p style={{margin:"7px 0 0",color:"#64748b",fontSize:12,lineHeight:1.5}}>{c.body}</p></section><small style={{color:"#64748b",lineHeight:1.45}}>{c.fallback}</small><input value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,"").slice(0,6))} type="password" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="Mã quản trị 6 số" style={{...inputStyle,background:"rgba(255,255,255,.68)",border:"1px solid rgba(215,225,235,.9)",borderRadius:15,boxShadow:"inset 0 1px 0 rgba(255,255,255,.9)"}}/>{message&&<div style={{padding:10,borderRadius:12,background:"#fff1f2",color:"#b42318",fontSize:12}}>{message}</div>}<ActionButton disabled={code.length!==6} onClick={()=>void submit()}>{c.submit}</ActionButton></div>}
+function AdminCardLogin({locale,onDone}:{locale:ZhaoXiLocale;onDone:()=>void}){const [code,setCode]=useState("");const [message,setMessage]=useState("");const c=adminCardCopy[locale];async function submit(){try{const r=await fetch("/api/auth/unified/admin/card",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({cardCode:code,deviceId:getDeviceId(),deviceName:deviceName()})});const j=await r.json().catch(()=>null);if(!r.ok||!j?.ok){setMessage(c.invalid);return}saveSession({...j.data,authMethod:"internal",sessionMode:"server"});onDone()}catch{setMessage(c.invalid)}}return <div style={{display:"grid",gap:14}}><section style={{padding:15,border:"1px solid rgba(255,255,255,.86)",borderRadius:18,background:"linear-gradient(145deg,rgba(235,255,245,.86),rgba(255,255,255,.64))",boxShadow:"inset 0 1px 0 rgba(255,255,255,.9)",backdropFilter:"blur(18px)"}}><b style={{color:"#07673a",fontSize:14}}>{c.title}</b><p style={{margin:"7px 0 0",color:"#64748b",fontSize:12,lineHeight:1.5}}>{c.body}</p></section><small style={{color:"#64748b",lineHeight:1.45}}>{c.fallback}</small><input value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,"").slice(0,6))} type="password" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="Mã quản trị 6 số" style={{...inputStyle,background:"rgba(255,255,255,.68)",border:"1px solid rgba(215,225,235,.9)",borderRadius:15,boxShadow:"inset 0 1px 0 rgba(255,255,255,.9)"}}/>{message&&<div style={{padding:10,borderRadius:12,background:"#fff1f2",color:"#b42318",fontSize:12}}>{message}</div>}<ActionButton disabled={code.length!==6} onClick={()=>void submit()}>{c.submit}</ActionButton></div>}
 async function bootstrapGuestSession(role:"customer"|"partner",locale:ZhaoXiLocale){
   const maxRetries = 2;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -392,12 +428,17 @@ async function bootstrapGuestSession(role:"customer"|"partner",locale:ZhaoXiLoca
         throw new Error("AUTH_BACKEND_INVALID_RESPONSE");
       }
       if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.error?.code || payload?.error?.message || "GUEST_BOOTSTRAP_FAILED");
+        const errCode = payload?.error?.code;
+        const errMsg = payload?.error?.message;
+        if (errMsg && (errMsg.includes("<!DOCTYPE") || errMsg.includes("Unexpected token"))) {
+          throw new Error("AUTH_BACKEND_UNAVAILABLE");
+        }
+        throw new Error(errCode || errMsg || "GUEST_BOOTSTRAP_FAILED");
       }
       const data = payload.data?.session || payload.data;
       if (!data) throw new Error("GUEST_BOOTSTRAP_INVALID_DATA");
       saveSession({
-        role: data.role || role,
+        role,
         displayName: data.displayName || (role === "partner" ? "ZhaoXi Partner" : "ZhaoXi Guest"),
         phone: data.phone || "",
         organizationId: data.organizationId,
@@ -444,15 +485,7 @@ function PhoneEntryStep({role,locale,onDone}:{role:"customer"|"partner";locale:Z
       })
       .catch(e => {
         if (live) {
-          const raw = e instanceof Error ? e.message : "GUEST_BOOTSTRAP_FAILED";
-          const sanitized = raw.includes("<!DOCTYPE") || raw.includes("Unexpected token")
-            ? (locale === "vi-VN"
-                ? "Hệ thống đang đồng bộ phiên bản mới trên máy chủ, vui lòng thử lại sau vài giây."
-                : locale.startsWith("zh")
-                  ? "服务器正在同步新版本，请稍后重试。"
-                  : "Server is updating. Please try again in a moment.")
-            : raw;
-          setError(sanitized);
+          setError(sanitizeAuthError(e, locale, "GUEST_BOOTSTRAP_FAILED"));
         }
       });
     return () => {
@@ -545,7 +578,7 @@ export function IdentityUpgradeSheet({
     setDialCode(savedDial || "+84");
     setPhone(savedDial ? saved.slice(savedDial.length) : saved.replace(/^\+/, ""));
     void fetch("/api/auth/unified/identity/capabilities", { cache: "no-store" })
-      .then(r => r.json())
+      .then(r => r.json().catch(() => null))
       .then(j => setCaps(j?.data || null))
       .catch(() => setCaps(null));
   }, [open, inline, role]);
@@ -720,7 +753,7 @@ export function IdentityUpgradeSheet({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ channel: "sms", phone: normalizedPhone, locale }),
       });
-      const j = await r.json();
+      const j = await r.json().catch(() => null);
       if (!r.ok || !j?.ok) throw new Error(j?.error?.code || "OTP_START_FAILED");
       setChallenge(j.data);
       setResendAt(Date.now() + Number(j.data?.resendAfterSeconds || 45) * 1000);
@@ -754,7 +787,7 @@ export function IdentityUpgradeSheet({
                 : locale.startsWith("zh")
                   ? "验证码尚未发送：Unimatrix China 账户需要已审核的 +86 短信签名。"
                   : "No OTP was sent: the Unimatrix China account requires an approved +86 SMS signature."
-              : c.invalid;
+              : sanitizeAuthError(err, locale, c.invalid);
       setError(message);
     } finally {
       setBusy(false);
@@ -771,13 +804,13 @@ export function IdentityUpgradeSheet({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ channel: "sms", phone: normalizedPhone, challengeId: challenge.challengeId, code }),
       });
-      const j = await r.json();
+      const j = await r.json().catch(() => null);
       if (!r.ok || !j?.ok) throw new Error(j?.error?.code || "OTP_VERIFY_FAILED");
-      saveServerSession(j.data);
+      saveServerSession(j.data, role);
       setChallenge(null);
       setPinStage("setup");
-    } catch {
-      setError(c.invalid);
+    } catch (err) {
+      setError(sanitizeAuthError(err, locale, c.invalid));
     } finally {
       setBusy(false);
     }
@@ -800,12 +833,12 @@ export function IdentityUpgradeSheet({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ pin: pinValue }),
       });
-      const j = await r.json();
+      const j = await r.json().catch(() => null);
       if (!r.ok || !j?.ok) throw new Error(j?.error?.message || j?.error?.code || "PIN_SET_FAILED");
       setPinStage("none");
       onVerified?.();
     } catch (err: any) {
-      setError(err?.message || c.invalid);
+      setError(sanitizeAuthError(err, locale, c.invalid));
     } finally {
       setBusy(false);
     }
@@ -821,7 +854,7 @@ export function IdentityUpgradeSheet({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ displayName: nameValue.trim() }),
       });
-      const j = await r.json();
+      const j = await r.json().catch(() => null);
       if (!r.ok || !j?.ok) throw new Error();
       const current = readSession();
       if (current) {
@@ -867,11 +900,11 @@ export function IdentityUpgradeSheet({
           deviceName: deviceName(),
         }),
       });
-      const j = await r.json();
+      const j = await r.json().catch(() => null);
       if (!r.ok || !j?.ok) {
         throw new Error(j?.error?.message || j?.error?.code || "ACCOUNT_LOGIN_FAILED");
       }
-      saveServerSession(j.data);
+      saveServerSession(j.data, role);
       if (authMode === "register" || j.data?.isNewUser) {
         setPinValue("");
         setPinConfirm("");
@@ -880,7 +913,7 @@ export function IdentityUpgradeSheet({
         onVerified?.();
       }
     } catch (err: any) {
-      setError(err?.message || c.invalid);
+      setError(sanitizeAuthError(err, locale, c.invalid));
     } finally {
       setBusy(false);
     }
@@ -901,7 +934,7 @@ export function IdentityUpgradeSheet({
           headers: { "content-type": "application/json" },
           body: JSON.stringify(payload),
         });
-        const j = await r.json();
+        await r.json().catch(() => null);
         const current = readSession();
         if (current) {
           saveSession({
@@ -949,12 +982,12 @@ export function IdentityUpgradeSheet({
           deviceName: deviceName(),
         }),
       });
-      const j = await r.json();
+      const j = await r.json().catch(() => null);
       if (!r.ok || !j?.ok) throw new Error(j?.error?.message || j?.error?.code || "PIN_LOGIN_FAILED");
-      saveServerSession(j.data);
+      saveServerSession(j.data, role);
       onVerified?.();
     } catch (err: any) {
-      setError(err?.message || c.invalid);
+      setError(sanitizeAuthError(err, locale, c.invalid));
     } finally {
       setBusy(false);
     }

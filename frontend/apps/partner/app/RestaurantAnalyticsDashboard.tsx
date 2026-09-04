@@ -35,13 +35,14 @@ export default function RestaurantAnalyticsDashboard(){
   if(getCached(cacheKey)===null)setLoading(true);
   try{
     const r=await fetch(`/api/partner-restaurant-analytics?organizationId=${encodeURIComponent(orgId)}&days=${days}&timezone=Asia%2FHo_Chi_Minh`,{cache:"no-store"});
-    const j=await r.json();
+    const j=await r.json().catch(()=>null);
     if(!r.ok||!j?.ok)throw new Error(j?.error?.code||"ANALYTICS_FAILED");
     setData(j.data);
     setCached(cacheKey,j.data);
     setError("");
   }catch(e){
-    setError(e instanceof Error?e.message:"ANALYTICS_FAILED");
+    const msg=e instanceof Error?e.message:"ANALYTICS_FAILED";
+    setError(msg.includes("<!DOCTYPE")||msg.includes("Unexpected token")?"Hệ thống đang đồng bộ. Vui lòng thử lại sau vài giây.":msg);
   }finally{
     setLoading(false);
   }

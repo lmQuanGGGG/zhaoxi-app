@@ -26,8 +26,8 @@ async function geocode(value: string): Promise<Coordinate | null> {
     headers: { Accept: "application/json" },
   });
   if (!response.ok) return null;
-  const payload = await response.json() as { features?: Array<{ geometry?: { coordinates?: [number, number] } }> };
-  const coordinates = payload.features?.[0]?.geometry?.coordinates;
+  const payload = (await response.json().catch(() => null)) as { features?: Array<{ geometry?: { coordinates?: [number, number] } }> } | null;
+  const coordinates = payload?.features?.[0]?.geometry?.coordinates;
   if (!coordinates || !Number.isFinite(coordinates[0]) || !Number.isFinite(coordinates[1])) return null;
   const result = { longitude: coordinates[0], latitude: coordinates[1] };
   geocodeCache.set(query, result);
@@ -40,9 +40,9 @@ async function routeDistance(origin: Coordinate, destination: Coordinate) {
     headers: { Accept: "application/json" },
   });
   if (!response.ok) return null;
-  const payload = await response.json() as { code?: string; routes?: Array<{ distance?: number }> };
-  const meters = payload.routes?.[0]?.distance;
-  if (payload.code !== "Ok" || !Number.isFinite(meters) || !meters) return null;
+  const payload = (await response.json().catch(() => null)) as { code?: string; routes?: Array<{ distance?: number }> } | null;
+  const meters = payload?.routes?.[0]?.distance;
+  if (payload?.code !== "Ok" || !Number.isFinite(meters) || !meters) return null;
   return Math.max(0.1, Math.round((meters / 1000) * 10) / 10);
 }
 
@@ -65,8 +65,8 @@ async function reverseGeocode(coordinate: Coordinate): Promise<string | null> {
       headers: { Accept: "application/json" },
     });
     if (!response.ok) return null;
-    const payload = await response.json() as { features?: Array<{ properties?: Record<string, unknown> }> };
-    const properties = payload.features?.[0]?.properties;
+    const payload = (await response.json().catch(() => null)) as { features?: Array<{ properties?: Record<string, unknown> }> } | null;
+    const properties = payload?.features?.[0]?.properties;
     if (!properties) return null;
     return geocodeLabel(properties);
   } catch {
@@ -105,7 +105,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json() as { origins?: string[]; destination?: string };
+    const body = ((await request.json().catch(() => null)) || {}) as { origins?: string[]; destination?: string };
     if (!Array.isArray(body.origins) || !body.destination || body.origins.length === 0 || body.origins.length > 20) {
       return Response.json({ error: "invalid-route-request" }, { status: 400 });
     }

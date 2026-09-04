@@ -17,7 +17,7 @@ export default function KitchenQueue({organizationId}:{organizationId:string}){
  const cacheKey=`partner_kitchen_${organizationId}_${locale}`;
  const[data,setData]=useState<Data>(()=>getCached<Data>(cacheKey)||{counts:{waiting:0,preparing:0,ready:0,courier:0,late:0},items:[]});
  const[busy,setBusy]=useState("");
- const load=useCallback(async()=>{if(!organizationId)return;try{const r=await fetch(`/api/partner-kitchen?organizationId=${encodeURIComponent(organizationId)}&locale=${encodeURIComponent(locale)}`,{cache:"no-store"});const j=await r.json();if(j?.ok){setData(j.data);setCached(cacheKey,j.data)}}catch{}},[organizationId,locale,cacheKey]);
+ const load=useCallback(async()=>{if(!organizationId)return;try{const r=await fetch(`/api/partner-kitchen?organizationId=${encodeURIComponent(organizationId)}&locale=${encodeURIComponent(locale)}`,{cache:"no-store"});const j=await r.json().catch(()=>null);if(j?.ok){setData(j.data);setCached(cacheKey,j.data)}}catch{}},[organizationId,locale,cacheKey]);
  useEffect(()=>{void load();const timer=setInterval(()=>void load(),5000);return()=>clearInterval(timer)},[load]);
  async function patch(item:Item,payload:Record<string,unknown>){setBusy(item.requestId+String(payload.action));try{await fetch("/api/partner-kitchen",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({organizationId,requestId:item.requestId,...payload})});await load()}finally{setBusy("")}}
  const columns=useMemo(()=>[

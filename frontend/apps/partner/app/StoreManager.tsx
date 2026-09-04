@@ -272,11 +272,11 @@ export default function StoreManager() {
   const load = useCallback(async () => {
     if (!orgId) return;
     const [serviceResponse, orgResponse] = await Promise.all([
-      fetch(`/api/platform-services?organizationId=${orgId}&module=${moduleCode}&locale=${locale}&includeDrafts=1`, { cache: "no-store" }),
-      fetch(`/api/platform-organizations?status=active`, { cache: "no-store" }),
+      fetch(`/api/platform-services?organizationId=${orgId}&module=${moduleCode}&locale=${locale}&includeDrafts=1`, { cache: "no-store" }).catch(() => null),
+      fetch(`/api/platform-organizations?status=active`, { cache: "no-store" }).catch(() => null),
     ]);
-    const d = await serviceResponse.json();
-    const od = await orgResponse.json();
+    const d = serviceResponse ? await serviceResponse.json().catch(() => null) : null;
+    const od = orgResponse ? await orgResponse.json().catch(() => null) : null;
     const loadedItems = Array.isArray(d?.data) ? d.data : [];
     setItems(loadedItems);
     const org = (Array.isArray(od?.data) ? od.data : []).find((x: { id: string }) => x.id === orgId);
@@ -597,8 +597,8 @@ export default function StoreManager() {
     }
     try {
       setSyncing(true);
-      const latestResponse = await fetch(`/api/platform-services?organizationId=${orgId}&module=${moduleCode}&locale=${locale}&includeDrafts=1&refresh=${Date.now()}`, { cache: "no-store" });
-      const latestPayload = await latestResponse.json();
+      const latestResponse = await fetch(`/api/platform-services?organizationId=${orgId}&module=${moduleCode}&locale=${locale}&includeDrafts=1&refresh=${Date.now()}`, { cache: "no-store" }).catch(() => null);
+      const latestPayload = latestResponse ? await latestResponse.json().catch(() => null) : null;
       const latestItems: Item[] = Array.isArray(latestPayload?.data) ? latestPayload.data : items;
       const trimmedName = storeName.trim();
       const trimmedAddress = storeAddress.trim();

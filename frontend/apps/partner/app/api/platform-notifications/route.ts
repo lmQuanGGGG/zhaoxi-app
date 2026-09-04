@@ -10,7 +10,8 @@ export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get("zx_access_v2")?.value;
     const response = await fetch(`${backend()}/api/notifications?${params}`, { headers: token ? { authorization: `Bearer ${token}` } : {}, cache: "no-store" });
-    return Response.json(await response.json(), { status: response.status });
+    const payload = await response.json().catch(() => null);
+    return Response.json(payload || { ok: true, data: [] }, { status: response.status });
   } catch {
     return Response.json({ ok: false, data: [], alerts: [], error: { message: "Backend unavailable" } }, { status: 503 });
   }

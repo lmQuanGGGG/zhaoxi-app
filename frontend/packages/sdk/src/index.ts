@@ -4,11 +4,19 @@ export type ServiceRequestRow = { id:string; requestCode:string; status:RequestS
 export type Organization = { id:string; code:string; name:string; type:string; metadata?:Record<string,unknown> };
 
 async function decode<T>(responseOrPromise: Response | Promise<Response>): Promise<T> {
-  const response = await responseOrPromise;
+  let response: Response;
+  try {
+    response = await responseOrPromise;
+  } catch (err) {
+    throw new Error("Không thể kết nối đến máy chủ.");
+  }
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
-    const message = payload?.error?.message || payload?.error || `API ${response.status}`;
+    const message = payload?.error?.message || payload?.error?.code || (typeof payload?.error === "string" ? payload.error : "") || `Hệ thống phản hồi trạng thái ${response.status}`;
     throw new Error(String(message));
+  }
+  if (!payload) {
+    throw new Error("Phản hồi từ máy chủ không hợp lệ.");
   }
   return payload as T;
 }

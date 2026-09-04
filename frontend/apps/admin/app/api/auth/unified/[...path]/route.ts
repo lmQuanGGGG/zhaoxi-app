@@ -107,8 +107,20 @@ async function refreshWithCookie(request: NextRequest) {
 }
 
 async function handle(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
-  const { path: parts } = await context.params;
-  const path = (parts || []).join("/");
+  let path = "";
+  try {
+    const raw = await (context?.params ?? {});
+    const parts = (raw as any)?.path;
+    if (Array.isArray(parts) && parts.length) {
+      path = parts.join("/");
+    }
+  } catch {}
+  if (!path) {
+    path = request.nextUrl.pathname
+      .replace(/^\/api\/auth\/unified\/?/, "")
+      .split("?")[0]
+      .replace(/^\/+|\/+$/g, "");
+  }
   if (
     !(
       path.startsWith("session/") ||

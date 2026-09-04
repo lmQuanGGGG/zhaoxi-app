@@ -42,7 +42,7 @@ export function AccountCenter(){
   const load=async()=>{
     try{
       const r=await fetch("/api/platform-account/me",{cache:"no-store"});
-      const x=await r.json();
+      const x=await r.json().catch(()=>null);
       const d=(x?.data||null) as Account|null;
       setAccount(d);
       if(d){setName(d.user.displayName||"");setPhone(d.user.phone||"");setEmail(d.user.email||"");}
@@ -54,17 +54,22 @@ export function AccountCenter(){
 
   async function save(){
     const r=await fetch("/api/platform-account/me",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({displayName:name,phone,email,preferredLocale:locale})});
-    const x=await r.json();
-    if(r.ok){setAccount(x.data);updateSession({displayName:name.trim(),phone:phone.trim()});setMessage(t.saved);window.setTimeout(()=>setMessage(""),1800);}
+    const x=await r.json().catch(()=>null);
+    if(r.ok&&x?.data){setAccount(x.data);updateSession({displayName:name.trim(),phone:phone.trim()});setMessage(t.saved);window.setTimeout(()=>setMessage(""),1800);}
   }
   async function switchRole(role:Role){
     setSwitching(role);
     try{
       const r=await fetch("/api/platform-account/role-switch",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({targetRole:role})});
-      const x=await r.json();
-      if(!r.ok||!x?.ok||!x?.data?.url)throw new Error(x?.error?.code||"ROLE_SWITCH_FAILED");
+      const x=await r.json().catch(()=>null);
+      if(!r.ok||!x?.ok||!x?.data?.url)throw new Error(x?.error?.message||x?.error?.code||"ROLE_SWITCH_FAILED");
       window.location.assign(String(x.data.url));
-    }catch(e){setMessage(e instanceof Error?e.message:"ROLE_SWITCH_FAILED");setSwitching(null);}
+    }catch(e){
+      const raw=e instanceof Error?e.message:"ROLE_SWITCH_FAILED";
+      const sanitized=raw.includes("<!DOCTYPE")||raw.includes("Unexpected token")||raw.includes("JSON")?"Hệ thống đang đồng bộ. Vui lòng thử lại sau giây lát.":raw;
+      setMessage(sanitized);
+      setSwitching(null);
+    }
   }
   async function revokeDevice(sessionId:string){
     setDeviceBusy(sessionId);
