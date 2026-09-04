@@ -9,7 +9,7 @@ if(!url)throw new Error("POSTGRES_URL or DATABASE_URL is required");
 
 const organizationId="818e97fe-cdb0-41ae-b700-00668faa34ba";
 // 15 Trung Lương 16, Hòa Xuân, Cẩm Lệ, Đà Nẵng.
-const location={latitude:16.007,longitude:108.226,deliveryRadiusKm:10};
+const location={latitude:16.007,longitude:108.226,deliveryRadiusKm:15};
 const sql=postgres(url,{ssl:"require",max:1,prepare:false});
 
 try{
