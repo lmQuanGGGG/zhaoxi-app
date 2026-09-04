@@ -4,6 +4,7 @@ import { modules, organizations, services, serviceTranslations } from "@/db/sche
 import { errorResponse, json } from "@/lib/api";
 import { localeFromRequest } from "@/lib/locale";
 import { requireSession, mayManageOrganization } from "@/lib/security/route-authorization";
+import { autoTranslateServiceTranslations } from "@/lib/services/auto-translate";
 
 export const dynamic = "force-dynamic";
 const LOCALES = ["zh-CN", "zh-TW", "vi-VN", "en-US"] as const;
@@ -16,6 +17,7 @@ type ServiceInput = {
   currency?: string;
   isEnabled?: boolean;
   metadata?: Record<string, unknown>;
+  autoTranslate?: boolean;
   translations?: Partial<Record<(typeof LOCALES)[number], { name?: string; summary?: string; description?: string }>>;
 };
 
@@ -99,9 +101,10 @@ export async function POST(request: Request) {
       priceFrom: String(Math.max(0, Number(body.price || 0))), currency: body.currency || "VND",
       isEnabled: body.isEnabled ?? true, metadata: body.metadata || {},
     }).returning();
-    const firstTranslation = Object.values(body.translations || {}).find((value) => value?.name?.trim());
+    const translations = body.autoTranslate ? await autoTranslateServiceTranslations(body.translations || {}) : body.translations || {};
+    const firstTranslation = Object.values(translations).find((value) => value?.name?.trim());
     for (const locale of LOCALES) {
-      const value = body.translations?.[locale] || firstTranslation;
+      const value = translations[locale] || firstTranslation;
       if (!value?.name?.trim()) continue;
       await db.insert(serviceTranslations).values({ serviceId: created.id, locale, name: value.name.trim(), summary: value.summary?.trim(), description: value.description?.trim() });
     }

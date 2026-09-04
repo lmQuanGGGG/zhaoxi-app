@@ -495,6 +495,7 @@ export default function StoreManager() {
         isEnabled: false,
         metadata,
         translations,
+        autoTranslate: true,
       }),
     });
     const payload = await response.json().catch(() => null);
