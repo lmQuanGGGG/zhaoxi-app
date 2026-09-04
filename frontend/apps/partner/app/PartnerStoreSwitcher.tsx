@@ -16,7 +16,7 @@ type OrgItem = {
 
 const copy = {
   "vi-VN": {
-    label: "Gian hàng đang quản lý",
+    label: "Gian đang quản lý",
     switchStore: "Chuyển gian hàng",
     switching: "Đang chuyển...",
     owner: "Chủ quán",
@@ -130,7 +130,7 @@ export default function PartnerStoreSwitcher() {
         gap: 9,
       }}
     >
-      <span className="zx-store-switcher-icon" aria-hidden="true">🏪</span>
+      <span className="zx-store-switcher-icon" aria-hidden="true">⌂</span>
       <span className="zx-store-switcher-label">{t.label}</span>
       <select
         value={currentOrgId}
