@@ -481,7 +481,8 @@ export default function StoreManager() {
       imageUrl: submitted.image,
       emoji: moduleCode === "food" ? "🍽️" : "🏷️",
       isAvailable: true,
-      syncStatus: "draft",
+      syncStatus: "published",
+      publishedAt: new Date().toISOString(),
       ...submitted.extra,
     };
 
@@ -492,7 +493,7 @@ export default function StoreManager() {
         organizationId: orgId,
         moduleCode,
         price: submitted.price,
-        isEnabled: false,
+        isEnabled: true,
         metadata,
         translations,
         autoTranslate: true,
@@ -514,7 +515,7 @@ export default function StoreManager() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           organizationId: orgId,
-          isEnabled: false,
+          isEnabled: true,
           metadata: {
             ...(created.metadata || {}),
             ...metadata,
@@ -544,17 +545,23 @@ export default function StoreManager() {
     await load();
     setSavingItems(false);
     setMsg(saved === queuedItems.length ? `✓ Đã lưu ${saved} món` : `Đã lưu ${saved}/${queuedItems.length} món; các món còn lại cần kiểm tra lại.`);
-    setSyncNotice(saved === queuedItems.length ? "Món đã lưu xong. Bạn có thể đồng bộ dịch vụ sang Customer." : "Còn món chưa lưu được; hãy xử lý xong trước khi đồng bộ.");
+    setSyncNotice(saved === queuedItems.length ? "✓ Món mới đã hiển thị ngay trên Customer." : "Còn món chưa lưu được; hãy kiểm tra lại các món đó.");
   }
 
   async function updateItem(item: Item, patch: Record<string, unknown>) {
-    const response = await fetch(`/api/platform-services/${item.id}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ organizationId: orgId, isEnabled: false, ...patch }) });
+    const response = await fetch(`/api/platform-services/${item.id}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ organizationId: orgId, ...patch, isEnabled: true }) });
     const payload = await response.json().catch(() => null);
     if (!response.ok || payload?.ok === false) {
       setMsg(String(payload?.error?.message || payload?.error?.code || payload?.error || "Không thể cập nhật món. Vui lòng thử lại."));
       return false;
     }
-    await load();
+    setItems((current) => current.map((currentItem) => currentItem.id === item.id ? {
+      ...currentItem,
+      ...patch,
+      isEnabled: true,
+      metadata: patch.metadata ? { ...(currentItem.metadata || {}), ...(patch.metadata as Record<string, unknown>), syncStatus: "published", syncedAt: new Date().toISOString() } : currentItem.metadata,
+    } : currentItem));
+    setMsg("✓ Đã cập nhật món ngay trên Customer.");
     return true;
   }
 
@@ -720,7 +727,11 @@ export default function StoreManager() {
       setMsg(String(payload?.error || "Unable to update item availability"));
       return;
     }
-    await load();
+    setItems((current) => current.map((currentItem) => currentItem.id === item.id ? {
+      ...currentItem,
+      metadata: { ...(currentItem.metadata || {}), isAvailable: !isAvailable },
+    } : currentItem));
+    setMsg("✓ Trạng thái món đã cập nhật ngay trên Customer.");
   }
 
   async function deleteItem(item: Item) {
@@ -731,7 +742,8 @@ export default function StoreManager() {
       setMsg(String(payload?.error?.message || payload?.error || "Delete failed"));
       return;
     }
-    await load();
+    setItems((current) => current.filter((currentItem) => currentItem.id !== item.id));
+    setMsg("✓ Đã xóa món khỏi Customer.");
   }
 
   const visibleLogo = logoPreview || logo;
@@ -842,11 +854,5 @@ export default function StoreManager() {
       return <Surface key={item.id} style={{ opacity: isAvailable ? 1 : .72 }}><div style={{ display: "grid", gridTemplateColumns: "100px 1fr auto", gap: 12, alignItems: "center" }}><ItemImage url={imageUrl} alt={item.name || item.id} /><div><b>{item.name || item.id}</b><p>{item.summary}</p><strong>{Number(item.priceFrom || 0).toLocaleString("vi-VN")} VND</strong><small style={{ display: "block", marginTop: 6, color: item.isEnabled ? "#07883f" : "#b45309" }}>{item.isEnabled ? `✓ ${t.synced}` : t.syncHint}</small><small style={{ display: "block", marginTop: 4, fontWeight: 800, color: isAvailable ? "#07883f" : "#dc2626" }}>{isAvailable ? t.available : t.soldOut}</small></div><div style={{ display: "grid", gap: 6 }}><ActionButton tone="neutral" onClick={() => { const price = prompt(t.price, String(item.priceFrom || 0)); if (price !== null) void updateItem(item, { price: Number(price) }); }}>{t.price}</ActionButton><label style={{ cursor: "pointer", padding: "10px 12px", borderRadius: 10, border: "1px solid #dbe4df", textAlign: "center" }}>{uploading === item.id ? t.uploading : t.chooseImage}<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={(e) => { void replaceExistingImage(item, e.target.files?.[0]); e.currentTarget.value = ""; }} /></label>{moduleCode==="food"&&<FoodCommercialEditor serviceId={item.id} metadata={item.metadata} onSaved={()=>void load()}/>}{moduleCode==="housing"&&<><select aria-label="Housing availability" value={String(item.metadata?.housingAvailabilityStatus||"available")} onChange={e=>void updateItem(item,{metadata:{...(item.metadata||{}),housingAvailabilityStatus:e.target.value}})} style={{padding:"9px 10px",borderRadius:10,border:"1px solid #dbe4df",background:"#fff",fontSize:18,fontWeight:800}}><option value="available">{localizedOption("housingAvailabilityStatus","available",locale)}</option><option value="reserved">{localizedOption("housingAvailabilityStatus","reserved",locale)}</option><option value="rented">{localizedOption("housingAvailabilityStatus","rented",locale)}</option></select><label style={{cursor:"pointer",padding:"10px 12px",borderRadius:10,border:"1px solid #dbe4df",textAlign:"center",fontSize:18,fontWeight:800}}>{uploading===`gallery-${item.id}`?t.uploading:t.addGallery}<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden onChange={e=>void appendHousingGallery(item,e.target.files)}/></label></>}<ActionButton tone={isAvailable ? "danger" : "neutral"} onClick={() => void toggleItemAvailability(item)}>{isAvailable ? t.lockItem : t.unlockItem}</ActionButton><ActionButton tone="danger" onClick={() => void deleteItem(item)}>{t.deleteItem}</ActionButton></div></div>{moduleCode==="housing"&&Array.isArray(item.metadata?.galleryUrls)&&item.metadata.galleryUrls.length>0&&<div style={{marginTop:10}}><small style={{display:"block",color:"#64748b",marginBottom:6}}>{t.housingGallery} · {t.galleryHint}</small><div style={{display:"flex",gap:7,overflowX:"auto"}}>{item.metadata.galleryUrls.filter((x):x is string=>typeof x==="string").map(url=><div key={url} style={{position:"relative",flex:"0 0 82px"}}><img src={url} alt="" style={{width:82,height:62,objectFit:"cover",borderRadius:9}}/><button type="button" onClick={()=>void removeHousingGalleryImage(item,url)} style={{position:"absolute",top:2,right:2,border:0,borderRadius:999,width:20,height:20,background:"rgba(15,23,42,.72)",color:"#fff"}}>×</button></div>)}</div></div>}</Surface>;
     })}</div>}
 
-    <Surface style={{ marginTop: 22, marginBottom: 28, padding: 20, border: "1px solid #b7e7cb", background: "linear-gradient(135deg,#f0fff6,#ffffff)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
-        <div><h2 style={{ margin: "0 0 6px" }}>{t.syncServices}</h2><p style={{ margin: 0, color: syncNotice || syncBlockedMessage ? "#9a3412" : "#64748b", fontWeight: syncNotice || syncBlockedMessage ? 700 : 400 }}>{syncNotice || syncBlockedMessage || t.syncHint}</p></div>
-        <button type="button" disabled={syncing || Boolean(syncBlockedMessage)} onClick={() => void syncServices()} style={{ minWidth: 220, border: 0, borderRadius: 14, padding: "14px 20px", background: "linear-gradient(135deg,#07c160,#05964a)", color: "white", fontWeight: 900, fontSize: 16, boxShadow: "0 12px 26px rgba(7,193,96,.24)", opacity: syncing || syncBlockedMessage ? .55 : 1, cursor: syncing || syncBlockedMessage ? "not-allowed" : "pointer" }}>{syncing ? t.syncing : `✓ ${t.syncServices}`}</button>
-      </div>
-    </Surface>
   </main>;
 }
