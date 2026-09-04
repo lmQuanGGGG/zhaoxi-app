@@ -356,7 +356,7 @@ export default function StoreManager() {
       setLogo(uploadedUrl);
       setLogoPreview("");
       URL.revokeObjectURL(previewUrl);
-      setMsg(`✓ ${t.imageUploaded}`);
+      setMsg("✓ Ảnh đã tải lên. Bấm ‘Lưu thông tin gian hàng’ để áp dụng logo.");
     } catch (error) {
       setMsg(error instanceof Error ? error.message : t.uploadFailed);
     } finally {
@@ -378,7 +378,7 @@ export default function StoreManager() {
       setBannerUrls((current) => [...current, ...uploaded].slice(0, 10));
       setBannerPreviews([]);
       previews.forEach((url) => URL.revokeObjectURL(url));
-      setMsg(`✓ ${t.imageUploaded}`);
+      setMsg("✓ Ảnh đã tải lên. Bấm ‘Lưu thông tin gian hàng’ để áp dụng banner.");
     } catch (error) {
       setMsg(error instanceof Error ? error.message : t.uploadFailed);
     } finally {
