@@ -25,9 +25,13 @@ export const organizationLabels: Record<string, Record<ZhaoXiLocale, string>> = 
 
 export function localizeOrganizationName(locale: ZhaoXiLocale, code?: string | null, fallback?: string | null, metadata?: Record<string, unknown> | null) {
   const localized = metadata?.localizedNames;
+  const seedLabels = code ? Object.values(organizationLabels[code] || {}) : [];
   if (localized && typeof localized === "object") {
     const value = (localized as Record<string, unknown>)[locale];
-    if (typeof value === "string" && value.trim()) return value.trim();
+    const localizedName = typeof value === "string" ? value.trim() : "";
+    // Do not let an old seeded/demo translation overwrite a merchant's real,
+    // saved brand name after they change their store profile.
+    if (localizedName && !(fallback && !seedLabels.includes(fallback.trim()) && seedLabels.includes(localizedName))) return localizedName;
   }
   // A merchant's saved name always wins. Demo labels are only a fallback for
   // seed records that do not yet have a real store name.
