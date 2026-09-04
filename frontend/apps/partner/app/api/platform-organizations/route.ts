@@ -1,3 +1,4 @@
+import { NextResponse as EdgeNextResponse } from "next/server";
 export const runtime="edge";
 import { NextRequest } from "next/server";
 export const dynamic = "force-dynamic";
@@ -8,8 +9,8 @@ export async function GET(request:NextRequest){
     if(!params.has("status")) params.set("status","active");
     const response=await fetch(`${backend()}/api/organizations?${params.toString()}`,{cache:"no-store"});
     const payload = await response.json().catch(() => null);
-    return Response.json(payload || { ok: true, data: [] }, { status: response.status });
+    return EdgeNextResponse.json(payload || { ok: true, data: [] }, { status: response.status });
   } catch {
-    return Response.json({ ok: false, data: [], error: { code: "ORGANIZATIONS_UNAVAILABLE" } }, { status: 503 });
+    return EdgeNextResponse.json({ ok: false, data: [], error: { code: "ORGANIZATIONS_UNAVAILABLE" } }, { status: 503 });
   }
 }

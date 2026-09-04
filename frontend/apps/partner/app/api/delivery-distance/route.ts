@@ -1,3 +1,4 @@
+import { NextResponse as EdgeNextResponse } from "next/server";
 export const runtime="edge";
 type Coordinate = { latitude: number; longitude: number };
 
@@ -85,22 +86,22 @@ export async function GET(request: Request) {
       const latitude = Number(latStr);
       const longitude = Number(lonStr);
       if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-        return Response.json({ error: "invalid-coordinate" }, { status: 400 });
+        return EdgeNextResponse.json({ error: "invalid-coordinate" }, { status: 400 });
       }
       const label = await reverseGeocode({ latitude, longitude });
-      return Response.json({
+      return EdgeNextResponse.json({
         coordinate: { latitude, longitude },
         label: label || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
       }, { headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=86400" } });
     }
 
     const address = searchParams.get("address")?.trim() || "";
-    if (!address || address.length > 300) return Response.json({ error: "invalid-address" }, { status: 400 });
+    if (!address || address.length > 300) return EdgeNextResponse.json({ error: "invalid-address" }, { status: 400 });
     const coordinate = await geocode(address);
-    if (!coordinate) return Response.json({ error: "address-not-found" }, { status: 404 });
-    return Response.json({ coordinate }, { headers: { "Cache-Control": "no-store" } });
+    if (!coordinate) return EdgeNextResponse.json({ error: "address-not-found" }, { status: 404 });
+    return EdgeNextResponse.json({ coordinate }, { headers: { "Cache-Control": "no-store" } });
   } catch {
-    return Response.json({ error: "geocode-service-unavailable" }, { status: 502 });
+    return EdgeNextResponse.json({ error: "geocode-service-unavailable" }, { status: 502 });
   }
 }
 
@@ -108,14 +109,14 @@ export async function POST(request: Request) {
   try {
     const body = ((await request.json().catch(() => null)) || {}) as { origins?: string[]; destination?: string };
     if (!Array.isArray(body.origins) || !body.destination || body.origins.length === 0 || body.origins.length > 20) {
-      return Response.json({ error: "invalid-route-request" }, { status: 400 });
+      return EdgeNextResponse.json({ error: "invalid-route-request" }, { status: 400 });
     }
     const destination = await geocode(body.destination);
-    if (!destination) return Response.json({ distances: body.origins.map(() => null) });
+    if (!destination) return EdgeNextResponse.json({ distances: body.origins.map(() => null) });
     const origins = await Promise.all(body.origins.map((origin) => geocode(origin)));
     const distances = await Promise.all(origins.map((origin) => origin ? routeDistance(origin, destination) : null));
-    return Response.json({ distances }, { headers: { "Cache-Control": "no-store" } });
+    return EdgeNextResponse.json({ distances }, { headers: { "Cache-Control": "no-store" } });
   } catch {
-    return Response.json({ error: "route-service-unavailable" }, { status: 502 });
+    return EdgeNextResponse.json({ error: "route-service-unavailable" }, { status: 502 });
   }
 }

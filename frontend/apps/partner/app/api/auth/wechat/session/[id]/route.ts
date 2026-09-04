@@ -1,3 +1,4 @@
+import { NextResponse as EdgeNextResponse } from "next/server";
 export const runtime="edge";
 import { NextRequest } from "next/server";
 export const dynamic = "force-dynamic";
@@ -7,6 +8,6 @@ export async function GET(_:NextRequest,context:{params:Promise<{id:string}>}){
     const {id}=await context.params;
     const response=await fetch(`${backend()}/api/auth/wechat/session/${encodeURIComponent(id)}`,{cache:"no-store",headers:{"cache-control":"no-cache"},signal:AbortSignal.timeout(10000)});
     const payload=(await response.json().catch(()=>null))||{ok:false};
-    return Response.json(payload,{status:response.status,headers:{"cache-control":"no-store"}});
-  }catch{return Response.json({ok:false,error:{message:"Backend unavailable",code:"BACKEND_UNAVAILABLE"}},{status:503});}
+    return EdgeNextResponse.json(payload,{status:response.status,headers:{"cache-control":"no-store"}});
+  }catch{return EdgeNextResponse.json({ok:false,error:{message:"Backend unavailable",code:"BACKEND_UNAVAILABLE"}},{status:503});}
 }

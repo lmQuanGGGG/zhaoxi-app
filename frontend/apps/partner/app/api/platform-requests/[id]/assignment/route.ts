@@ -1,3 +1,4 @@
+import { NextResponse as EdgeNextResponse } from "next/server";
 export const runtime="edge";
 import { NextRequest } from "next/server";
 export const dynamic = "force-dynamic";
@@ -8,8 +9,8 @@ export async function PATCH(request:NextRequest,context:{params:Promise<{id:stri
     const token=request.cookies.get("zx_access_v2")?.value;
     const response=await fetch(`${backend()}/api/service-requests/${id}/assignment`,{method:"PATCH",headers:{"content-type":"application/json",...(token?{authorization:`Bearer ${token}`}:{})},body:await request.text(),cache:"no-store"});
     const payload = await response.json().catch(() => null);
-    return Response.json(payload || { ok: false, error: { code: "ASSIGNMENT_UPDATE_FAILED" } }, { status: response.status });
+    return EdgeNextResponse.json(payload || { ok: false, error: { code: "ASSIGNMENT_UPDATE_FAILED" } }, { status: response.status });
   } catch {
-    return Response.json({ ok: false, error: { code: "ASSIGNMENT_UPDATE_UNAVAILABLE" } }, { status: 503 });
+    return EdgeNextResponse.json({ ok: false, error: { code: "ASSIGNMENT_UPDATE_UNAVAILABLE" } }, { status: 503 });
   }
 }

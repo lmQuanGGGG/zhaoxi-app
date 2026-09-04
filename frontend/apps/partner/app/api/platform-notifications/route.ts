@@ -1,3 +1,4 @@
+import { NextResponse as EdgeNextResponse } from "next/server";
 export const runtime="edge";
 import { NextRequest } from "next/server";
 export const dynamic = "force-dynamic";
@@ -12,8 +13,8 @@ export async function GET(request: NextRequest) {
     const token = request.cookies.get("zx_access_v2")?.value;
     const response = await fetch(`${backend()}/api/notifications?${params}`, { headers: token ? { authorization: `Bearer ${token}` } : {}, cache: "no-store" });
     const payload = await response.json().catch(() => null);
-    return Response.json(payload || { ok: true, data: [] }, { status: response.status });
+    return EdgeNextResponse.json(payload || { ok: true, data: [] }, { status: response.status });
   } catch {
-    return Response.json({ ok: false, data: [], alerts: [], error: { message: "Backend unavailable" } }, { status: 503 });
+    return EdgeNextResponse.json({ ok: false, data: [], alerts: [], error: { message: "Backend unavailable" } }, { status: 503 });
   }
 }

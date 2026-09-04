@@ -1,3 +1,4 @@
+import { NextResponse as EdgeNextResponse } from "next/server";
 export const runtime="edge";
 import {NextRequest} from "next/server";
 export const dynamic="force-dynamic";
@@ -11,7 +12,7 @@ export async function GET(request:NextRequest){
   try{
     const response=await fetch(`${backend()}/api/service-requests?${params.toString()}`,{headers,cache:"no-store"});
     const payload=await response.json().catch(()=>null);
-    return Response.json(payload||{ok:true,data:[]},{status:response.status});
+    return EdgeNextResponse.json(payload||{ok:true,data:[]},{status:response.status});
   }
-  catch{return Response.json({ok:false,data:[],error:{code:"PARTNER_ORDERS_UNAVAILABLE"}},{status:503})}
+  catch{return EdgeNextResponse.json({ok:false,data:[],error:{code:"PARTNER_ORDERS_UNAVAILABLE"}},{status:503})}
 }

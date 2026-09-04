@@ -1,3 +1,4 @@
+import { NextResponse as EdgeNextResponse } from "next/server";
 export const runtime="edge";
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export async function GET() {
     const response = await fetch(`${backend()}/api/health`, { cache: "no-store", signal: controller.signal });
     clearTimeout(timeout);
     const payload = await response.json().catch(() => ({ ok:false }));
-    return Response.json({
+    return EdgeNextResponse.json({
       ok: response.ok && Boolean(payload?.ok),
       app: "zhaoxi-platform",
       backendLatencyMs: Date.now() - started,
@@ -19,7 +20,7 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     }, { status: response.ok ? 200 : 503, headers: { "cache-control":"no-store" } });
   } catch {
-    return Response.json({
+    return EdgeNextResponse.json({
       ok:false,
       app:"zhaoxi-platform",
       backendLatencyMs: Date.now() - started,
