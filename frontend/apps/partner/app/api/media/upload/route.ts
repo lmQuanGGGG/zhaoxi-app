@@ -1,4 +1,6 @@
 import { put } from "@vercel/blob";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -60,11 +62,41 @@ export async function POST(request: Request) {
     const pathname = `zhaoxi/${organizationId}/${folder}/${Date.now()}.${safeSegment(extension)}`;
     const token = publicMediaToken();
 
-    const blob = await put(pathname, file, {
-      access: "public",
-      addRandomSuffix: true,
-      ...(token ? { token } : {}),
-    });
+    let blobUrl = "";
+    let blobPathname = pathname;
+
+    if (token) {
+      try {
+        const blob = await put(pathname, file, {
+          access: "public",
+          addRandomSuffix: true,
+          token,
+        });
+        blobUrl = blob.url;
+        blobPathname = blob.pathname;
+      } catch (err) {
+        if (process.env.NODE_ENV === "production") throw err;
+      }
+    }
+
+    if (!blobUrl) {
+      const bytes = Buffer.from(await file.arrayBuffer());
+      const partnerPublic = path.resolve(process.cwd(), process.cwd().endsWith("partner") ? "public" : "apps/partner/public");
+      const customerPublic = path.resolve(process.cwd(), process.cwd().endsWith("partner") ? "../customer/public" : "apps/customer/public");
+
+      const localFile = path.join(partnerPublic, "uploads", pathname);
+      await mkdir(path.dirname(localFile), { recursive: true });
+      await writeFile(localFile, bytes);
+
+      try {
+        const customerFile = path.join(customerPublic, "uploads", pathname);
+        await mkdir(path.dirname(customerFile), { recursive: true });
+        await writeFile(customerFile, bytes);
+      } catch {}
+
+      blobUrl = `/uploads/${pathname}`;
+      blobPathname = pathname;
+    }
 
     const kind =
       folder === "logo"
@@ -84,8 +116,8 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           organizationId,
           kind,
-          blobUrl: blob.url,
-          pathname: blob.pathname,
+          blobUrl,
+          pathname: blobPathname,
           mimeType: file.type,
           sizeBytes: file.size,
         }),
@@ -101,8 +133,8 @@ export async function POST(request: Request) {
     return Response.json({
       ok: true,
       data: {
-        url: blob.url,
-        pathname: blob.pathname,
+        url: blobUrl,
+        pathname: blobPathname,
         contentType: file.type,
         size: file.size,
         media,

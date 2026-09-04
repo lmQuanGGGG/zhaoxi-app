@@ -42,7 +42,7 @@ await requireText("packages/auth/src/index.tsx", [
   /identity\/otp\/verify/,
   /identity\/pin\/set/,
   /identity\/pin\/login/,
-  /dialCode==="\+86"/,
+  /dialCode\s*===\s*"\+86"/,
 ]);
 
 for (const app of ["customer", "partner", "admin"]) {

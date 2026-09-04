@@ -78,6 +78,10 @@ const copy = {
     formula: "计价公式与试算",
     customer: "顾客实际配送费",
     timezone: "时区",
+    courierNoticeTitle: "第三方即时配送模式（Xanh SM / Grab）已启用",
+    courierNoticeDesc: "当前餐饮订单已切换为第三方即时配送。顾客下单时选择 Xanh SM 或 Grab，配送费由顾客在收货时直接线下支付给骑手。平台原有的自动计价配置已暂时隐藏。",
+    showLegacyConfig: "⚙️ 展开旧版计价配置（暂隐）⌄",
+    hideLegacyConfig: "✕ 收起计价配置 ⌃",
   },
   "zh-TW": {
     title: "配送計價與天氣附加費",
@@ -106,6 +110,10 @@ const copy = {
     formula: "計價公式與試算",
     customer: "顧客實際配送費",
     timezone: "時區",
+    courierNoticeTitle: "第三方即時配送模式（Xanh SM / Grab）已啟用",
+    courierNoticeDesc: "目前餐飲訂單已切換為第三方即時配送。顧客下單時選擇 Xanh SM 或 Grab，配送費由顧客在收貨時直接線下支付給外送員。平台原有的自動計價設定已暫時隱藏。",
+    showLegacyConfig: "⚙️ 展開舊版計價設定（暫隱）⌄",
+    hideLegacyConfig: "✕ 收起計價設定 ⌃",
   },
   "vi-VN": {
     title: "Chính sách phí giao hàng & Phụ phí thời tiết",
@@ -134,6 +142,10 @@ const copy = {
     formula: "Công thức tính & Mô phỏng ví dụ",
     customer: "Phí Customer thực trả",
     timezone: "Múi giờ",
+    courierNoticeTitle: "Chế độ giao hàng bên thứ 3 (Xanh SM / Grab) đang kích hoạt",
+    courierNoticeDesc: "Hiện tại các đơn món ăn đã chuyển sang hình thức gọi xe bên thứ 3 (Xanh SM / Grab). Tiền giao hàng do khách tự thanh toán trực tiếp cho tài xế khi nhận hàng. Cấu hình tính phí giao hàng tự động của nền tảng tạm thời được ẩn.",
+    showLegacyConfig: "⚙️ Xem cấu hình tính phí cũ (Đang tạm ẩn) ⌄",
+    hideLegacyConfig: "✕ Thu gọn cấu hình tính phí ⌃",
   },
   "en-US": {
     title: "Delivery pricing & Weather surcharge",
@@ -162,6 +174,10 @@ const copy = {
     formula: "Formula & Simulation",
     customer: "Customer delivery fee",
     timezone: "Timezone",
+    courierNoticeTitle: "3rd-Party Delivery Mode (Xanh SM / Grab) Active",
+    courierNoticeDesc: "Food orders currently use 3rd-party on-demand delivery (Xanh SM / Grab). Delivery fee is paid directly by the customer to the driver upon delivery. Automated platform pricing configuration is temporarily hidden.",
+    showLegacyConfig: "⚙️ View legacy delivery pricing settings (Paused) ⌄",
+    hideLegacyConfig: "✕ Collapse delivery pricing settings ⌃",
   },
 } as const;
 
@@ -172,6 +188,7 @@ export default function DeliveryPricingPanel() {
   const t = copy[locale];
   const cacheKey = "admin_delivery_policy";
   const [policy, setPolicy] = useState<Policy>(() => getCached<Policy>(cacheKey) || fallback);
+  const [showConfig, setShowConfig] = useState(false);
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
@@ -239,6 +256,59 @@ export default function DeliveryPricingPanel() {
         <p style={{ margin: 0, color: "#64748B", fontSize: 13 }}>{t.hint}</p>
       </header>
 
+      {/* 3rd-Party Courier Mode Active Banner */}
+      <section
+        style={{
+          ...card,
+          border: "1px solid #00B092",
+          background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)",
+          display: "grid",
+          gap: 12,
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 14 }}>
+          <div style={{ display: "grid", gap: 6, flex: 1, minWidth: 260 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 24 }}>🛵</span>
+              <b style={{ fontSize: 16, color: "#065F46" }}>{t.courierNoticeTitle}</b>
+            </div>
+            <p style={{ margin: 0, fontSize: 13, color: "#047857", lineHeight: 1.5 }}>
+              {t.courierNoticeDesc}
+            </p>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 4 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, background: "#fff", border: "1px solid #00B092", boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}>
+                <img src="/couriers/green-sm.png" alt="Xanh SM" style={{ height: 16, width: "auto", objectFit: "contain" }} />
+                <strong style={{ color: "#065F46", fontSize: 12 }}>Xanh SM</strong>
+              </span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, background: "#fff", border: "1px solid #00B14F", boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}>
+                <img src="/couriers/grab.png" alt="Grab" style={{ height: 16, width: "auto", objectFit: "contain" }} />
+                <strong style={{ color: "#00B14F", fontSize: 12 }}>Grab</strong>
+              </span>
+              <span style={{ fontSize: 12, color: "#065F46", fontWeight: 700 }}>• Direct Pay (Khách trả trực tiếp tài xế)</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowConfig((v) => !v)}
+            style={{
+              padding: "9px 16px",
+              borderRadius: 12,
+              border: "1px solid #00B092",
+              background: showConfig ? "#fff" : "#00B092",
+              color: showConfig ? "#065F46" : "#fff",
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: "pointer",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+            }}
+          >
+            {showConfig ? t.hideLegacyConfig : t.showLegacyConfig}
+          </button>
+        </div>
+      </section>
+
+      {showConfig && (
+        <>
       {/* Live Weather Indicator Card */}
       <section
         style={{
@@ -493,6 +563,8 @@ export default function DeliveryPricingPanel() {
         <div style={{ padding: "10px 14px", borderRadius: 10, background: msg.includes("ERROR") || msg.includes("ADMIN") ? "#FEE2E2" : "#DCFCE7", color: msg.includes("ERROR") || msg.includes("ADMIN") ? "#991B1B" : "#166534", fontSize: 13, fontWeight: 700 }}>
           {msg}
         </div>
+      )}
+        </>
       )}
     </section>
   );

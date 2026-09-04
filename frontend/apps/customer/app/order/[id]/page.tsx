@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import {useCallback,useEffect,useState} from "react";
+import {useCallback,useEffect,useRef,useState} from "react";
 import {useParams} from "next/navigation";
 import {useZhaoXiLocale,statusLabels} from "@zhaoxi/i18n";
 import {CustomerPageHeader,CustomerShell} from "../../_components/CustomerShell";
 import styles from "../../orders.module.css";
 import {DeliveryLiveMap,deliveryStageLabel,type DeliveryTracking} from "@zhaoxi/driver";
 import {paymentMethodLabel,paymentStatusLabel} from "@zhaoxi/payment";
+import {playCustomerOrderChime,registerAudioUnlock,type OrderStageType} from "../../_lib/customer-audio";
+import {GrabLogo, XanhSMLogo} from "../../_components/DeliveryCourierLogos";
 
 type Data={requestCode:string;status:string;details?:Record<string,unknown>;title:string;serviceName?:string;moduleName?:string;description?:string;addressText?:string;createdAt:string;history:Array<{id:string;toStatus:string;note?:string;createdAt:string}>};
 
@@ -37,6 +39,46 @@ export default function OrderDetail(){
   return()=>clearInterval(timer);
  },[load]);
 
+ const lastStageKeyRef = useRef<string | null>(null);
+
+ useEffect(() => {
+  return registerAudioUnlock();
+ }, []);
+
+ useEffect(() => {
+  if (!data) return;
+  const fulfillmentStage = String(data?.details?.fulfillmentStage || "");
+  const trackingStatus = String(tracking?.job?.status || "");
+  const orderStatus = String(data.status || "");
+  const currentKey = `${orderStatus}:${fulfillmentStage}:${trackingStatus}`;
+
+  if (lastStageKeyRef.current === null) {
+    lastStageKeyRef.current = currentKey;
+    return;
+  }
+
+  if (lastStageKeyRef.current !== currentKey) {
+    lastStageKeyRef.current = currentKey;
+    let targetStage: OrderStageType = "general";
+    if (orderStatus === "delivered" || fulfillmentStage === "delivered" || trackingStatus === "delivered") {
+      targetStage = "delivered";
+    } else if (
+      orderStatus === "delivering" ||
+      fulfillmentStage === "handed_off" ||
+      fulfillmentStage === "courier_booked" ||
+      trackingStatus === "delivering" ||
+      trackingStatus === "pickup"
+    ) {
+      targetStage = "delivering";
+    } else if (orderStatus === "in_progress" || fulfillmentStage === "ready_for_pickup") {
+      targetStage = "preparing";
+    } else if (orderStatus === "accepted" || orderStatus === "completed") {
+      targetStage = "accepted";
+    }
+    playCustomerOrderChime(targetStage);
+  }
+ }, [data, tracking]);
+
  if(!data)return <CustomerShell><CustomerPageHeader title={t.loading} backHref="/orders"/><div className={styles.empty}>{t.loading}</div></CustomerShell>;
 
  const details=data.details||{};
@@ -54,7 +96,28 @@ export default function OrderDetail(){
     <article className={styles.card} style={{borderRadius:20,border:"1px solid #EEF2F6",background:"#FFFFFF",padding:16,boxShadow:"0 4px 16px rgba(15,23,42,0.04)"}}>
      <div className={styles.row}>
       <code style={{background:"#F1F5F9",padding:"3px 8px",borderRadius:8,fontSize:11,fontWeight:600}}>{data.moduleName||"ZhaoXi"}</code>
-      <span data-status={data.status} style={{padding:"4px 10px",borderRadius:999,fontSize:11,fontWeight:750}}>{statusLabels[locale][data.status]||data.status}</span>
+      <div style={{display:"inline-flex",alignItems:"center",gap:6}}>
+       <span data-status={data.status} style={{padding:"4px 10px",borderRadius:999,fontSize:11,fontWeight:750}}>{statusLabels[locale][data.status]||data.status}</span>
+       <button
+        type="button"
+        title="Phát lại chuông"
+        aria-label="Phát chuông thông báo"
+        onClick={()=>{
+         const fs = String(data.details?.fulfillmentStage || "");
+         const ts = String(tracking?.job?.status || "");
+         const os = String(data.status || "");
+         let s: OrderStageType = "general";
+         if (os === "delivered" || fs === "delivered" || ts === "delivered") s = "delivered";
+         else if (os === "delivering" || fs === "handed_off" || fs === "courier_booked" || ts === "delivering" || ts === "pickup") s = "delivering";
+         else if (os === "in_progress" || fs === "ready_for_pickup") s = "preparing";
+         else if (os === "accepted" || os === "completed") s = "accepted";
+         playCustomerOrderChime(s);
+        }}
+        style={{border:"none",background:"#F1F5F9",cursor:"pointer",borderRadius:"50%",width:26,height:26,display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:12,padding:0}}
+       >
+        🔔
+       </button>
+      </div>
      </div>
 
      {data.status==='in_progress'&&eta>0&&(
@@ -76,6 +139,31 @@ export default function OrderDetail(){
      {external&&fulfillmentStage&&(
       <div style={{margin:"12px 0 0",padding:"11px 14px",borderRadius:16,background:"#F0FDF4",border:"1px solid #BBF7D0",color:"#166534",fontWeight:700,fontSize:12.5}}>
        🚚 {externalStage}{details.courierName?` · ${String(details.courierName)}`:""}
+      </div>
+     )}
+
+     {(Boolean(details.deliveryProvider) || details.deliveryPricingMode === "customer_direct_pay") && (
+      <div style={{margin:"12px 0 0",padding:"12px 14px",borderRadius:16,background:"#F8FAFC",border:"1px solid #E2E8F0",display:"grid",gap:6}}>
+       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:7}}>
+         {details.deliveryProvider === "grab" ? <GrabLogo size={20}/> : <XanhSMLogo size={20}/>}
+         <b style={{fontSize:13,color:"#0F172A"}}>
+          {details.deliveryProvider === "grab" ? "Grab (GrabExpress)" : "Xanh SM (Green SM)"}
+         </b>
+        </div>
+        <span style={{fontSize:11,fontWeight:750,background:"#ECFDF5",color:"#059669",padding:"3px 8px",borderRadius:99}}>
+         {locale === "vi-VN" ? "Khách tự trả tài xế" : locale === "en-US" ? "Direct pay" : locale === "zh-TW" ? "顧客自付" : "顾客自付"}
+        </span>
+       </div>
+       <small style={{color:"#64748B",fontSize:11.5,lineHeight:1.4}}>
+        {locale === "vi-VN"
+         ? "💡 Cước phí giao hàng do khách tự thanh toán trực tiếp cho tài xế khi nhận món."
+         : locale === "en-US"
+          ? "💡 Delivery fee is paid directly by customer to the driver upon delivery."
+          : locale === "zh-TW"
+           ? "💡 配送費由顧客在取餐時直接支付給外送員。"
+           : "💡 配送费由顾客在收餐时直接支付给骑手。"}
+       </small>
       </div>
      )}
 
@@ -113,7 +201,14 @@ export default function OrderDetail(){
        {Number(details.deliverySubsidy||0)>0&&(
         <div style={{display:"flex",justifyContent:"space-between",color:"#059669"}}><span>{t.subsidy}</span><b>−{Number(details.deliverySubsidy).toLocaleString("vi-VN")} VND</b></div>
        )}
-       <div style={{display:"flex",justifyContent:"space-between",fontSize:13,paddingTop:6,borderTop:"1px solid #E2E8F0"}}><span>{t.deliveryPay}</span><b style={{color:"#0F172A",fontWeight:800}}>{Number(details.deliveryCustomerFee??details.deliveryFee??0).toLocaleString("vi-VN")} VND</b></div>
+       <div style={{display:"flex",justifyContent:"space-between",fontSize:13,paddingTop:6,borderTop:"1px solid #E2E8F0"}}>
+        <span>{t.deliveryPay}</span>
+        <b style={{color:details.deliveryPricingMode==="customer_direct_pay"?"#059669":"#0F172A",fontWeight:800}}>
+         {details.deliveryPricingMode==="customer_direct_pay"
+          ? (locale === "vi-VN" ? "Khách tự trả tài xế" : locale === "en-US" ? "Direct pay to driver" : locale === "zh-TW" ? "顧客自付" : "顾客自付")
+          : `${Number(details.deliveryCustomerFee??details.deliveryFee??0).toLocaleString("vi-VN")} VND`}
+        </b>
+       </div>
       </div>
      )}
 

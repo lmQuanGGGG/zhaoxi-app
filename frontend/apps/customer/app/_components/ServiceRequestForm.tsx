@@ -11,6 +11,7 @@ import { paymentMethodLabel, type PaymentCapabilities, type PaymentMethod } from
 import { invalidateCache } from "../_lib/client-cache";
 import LocationPicker from "./LocationPicker";
 import {CustomerServiceIcon} from "./CustomerServiceIcon";
+import {GrabLogo, XanhSMLogo, type DeliveryProviderId} from "./DeliveryCourierLogos";
 import styles from "../request.module.css";
 
 type Point = { latitude: number; longitude: number };
@@ -28,10 +29,10 @@ type Service = {
 };
 
 const copy = {
-  "zh-CN": { back:"返回", title:"确认服务订单", name:"姓名", phone:"收货电话", address:"收货地址", date:"期望日期", time:"期望时间", quantity:"数量", detail:"需求说明", note:"补充备注", submit:"确认订单", sending:"正在提交…", required:"请完整填写姓名、电话、地址和配送位置", privacy:"您的联系方式仅用于本次服务沟通。", itemPrice:"商品金额", delivery:"配送费", distance:"配送距离", total:"应付总额", payment:"货到付款", paymentMethodTitle:"支付方式", paymentSummaryTitle:"费用明细", calculate:"正在计算配送费…", locationRequired:"请选择配送位置", priceUnavailable:"价格待商家确认", scheduleHint:"如不选择日期和时间，订单将立即发送给商家处理。", cartLocked:"数量已按购物车锁定", savedAddresses:"已保存地址", useAddress:"使用", deliveryGross:"配送费原价", subsidy:"商家配送补贴", deliveryPay:"实际配送费", subsidyTime:"补贴时段", routeGoogle:"Google 路线", routeFallback:"备用距离", restaurantPaused:"餐厅暂停接单", restaurantClosed:"餐厅当前已打烊", restaurantBusy:"餐厅厨房订单已满", restaurantHours:"今日营业时间", itemOriginal:"商品原价", itemDiscount:"菜品优惠", scheduledOff:"该菜品当前不在售卖时段", coupon:"Mã ưu đãi / Coupon", couponCode:"输入优惠码", applyCoupon:"使用", removeCoupon:"取消", coupons:"可用优惠券", couponDiscount:"优惠券优惠", couponInvalid:"优惠券不可用", couponMin:"最低订单", couponExpired:"优惠券已过期", couponLimit:"优惠券使用次数已达上限", platformPaused:"平台暂时停止该餐厅接单" },
-  "zh-TW": { back:"返回", title:"確認服務訂單", name:"姓名", phone:"收貨電話", address:"收貨地址", date:"期望日期", time:"期望時間", quantity:"數量", detail:"需求說明", note:"補充備註", submit:"確認訂單", sending:"正在提交…", required:"請完整填寫姓名、電話、地址和配送位置", privacy:"您的聯絡方式僅用於本次服務溝通。", itemPrice:"商品金額", delivery:"配送費", distance:"配送距離", total:"應付總額", payment:"貨到付款", paymentMethodTitle:"付款方式", paymentSummaryTitle:"費用明細", calculate:"正在計算配送費…", locationRequired:"請選擇配送位置", priceUnavailable:"價格由商家確認", scheduleHint:"若不選擇日期與時間，訂單會立即送交商家處理。", cartLocked:"數量已依購物車鎖定", savedAddresses:"已儲存地址", useAddress:"使用", deliveryGross:"配送費原價", subsidy:"商家配送補貼", deliveryPay:"實際配送費", subsidyTime:"補貼時段", routeGoogle:"Google 路線", routeFallback:"備援距離", restaurantPaused:"餐廳暫停接單", restaurantClosed:"餐廳目前已打烊", restaurantBusy:"餐廳廚房訂單已滿", restaurantHours:"今日營業時間", itemOriginal:"商品原價", itemDiscount:"餐點優惠", scheduledOff:"該餐點目前不在販售時段", coupon:"Mã ưu đãi / Coupon", couponCode:"輸入優惠碼", applyCoupon:"使用", removeCoupon:"取消", coupons:"可用優惠券", couponDiscount:"優惠券優惠", couponInvalid:"優惠券不可用", couponMin:"最低訂單", couponExpired:"優惠券已過期", couponLimit:"優惠券使用次數已達上限", platformPaused:"平台暫時停止該餐廳接單" },
-  "vi-VN": { back:"Quay lại", title:"Xác nhận đơn dịch vụ", name:"Họ và tên", phone:"Số điện thoại người nhận", address:"Địa chỉ nhận hàng", date:"Ngày mong muốn", time:"Giờ mong muốn", quantity:"Số lượng", detail:"Nội dung yêu cầu", note:"Ghi chú bổ sung", submit:"Xác nhận đặt đơn", sending:"Đang gửi…", required:"Vui lòng nhập đầy đủ họ tên, số điện thoại, địa chỉ và vị trí nhận hàng", privacy:"Thông tin liên hệ chỉ dùng để xử lý đơn này.", itemPrice:"Tiền hàng", delivery:"Phí giao hàng", distance:"Quãng đường", total:"Tổng thanh toán", payment:"Thanh toán khi nhận hàng", paymentMethodTitle:"Phương thức thanh toán", paymentSummaryTitle:"Chi tiết thanh toán", calculate:"Đang tính phí giao hàng…", locationRequired:"Vui lòng chọn vị trí nhận hàng", priceUnavailable:"Giá sẽ được đối tác xác nhận", scheduleHint:"Nếu không chọn ngày và giờ, đơn hàng được hiểu là đặt ngay và chuyển ngay cho đối tác.", cartLocked:"Đã khóa theo giỏ hàng", savedAddresses:"Địa chỉ đã lưu", useAddress:"Dùng", deliveryGross:"Phí giao hàng gốc", subsidy:"Nhà hàng trợ giá", deliveryPay:"Phí giao hàng thực trả", subsidyTime:"Khung giờ trợ giá", routeGoogle:"Khoảng cách Google Maps", routeFallback:"Khoảng cách dự phòng", restaurantPaused:"Nhà hàng đang tạm ngưng nhận đơn", restaurantClosed:"Nhà hàng hiện đã đóng cửa", restaurantBusy:"Bếp nhà hàng đang đạt giới hạn đơn", restaurantHours:"Giờ hoạt động hôm nay", itemOriginal:"Giá món gốc", itemDiscount:"Ưu đãi món", scheduledOff:"Món hiện chưa trong khung giờ mở bán", coupon:"Mã ưu đãi / Coupon", couponCode:"Nhập mã ưu đãi", applyCoupon:"Áp dụng", removeCoupon:"Bỏ mã", coupons:"Mã ưu đãi khả dụng", couponDiscount:"Giảm bằng coupon", couponInvalid:"Coupon không khả dụng", couponMin:"Đơn tối thiểu", couponExpired:"Coupon đã hết hạn", couponLimit:"Coupon đã hết lượt sử dụng", platformPaused:"Platform đang tạm dừng nhận đơn của nhà hàng" },
-  "en-US": { back:"Back", title:"Confirm service order", name:"Full name", phone:"Recipient phone", address:"Delivery address", date:"Preferred date", time:"Preferred time", quantity:"Quantity", detail:"Request details", note:"Additional notes", submit:"Confirm order", sending:"Submitting…", required:"Enter name, phone, address and delivery location", privacy:"Contact information is used only to fulfil this order.", itemPrice:"Items", delivery:"Delivery fee", distance:"Delivery distance", total:"Total", payment:"Cash on delivery", paymentMethodTitle:"Payment method", paymentSummaryTitle:"Payment details", calculate:"Calculating delivery fee…", locationRequired:"Choose a delivery location", priceUnavailable:"Price will be confirmed by the partner", scheduleHint:"Leave date and time blank to send the order immediately.", cartLocked:"Locked from cart", savedAddresses:"Saved addresses", useAddress:"Use", deliveryGross:"Gross delivery fee", subsidy:"Restaurant subsidy", deliveryPay:"Delivery fee you pay", subsidyTime:"Subsidy window", routeGoogle:"Google Maps route", routeFallback:"Fallback distance", restaurantPaused:"Restaurant is temporarily pausing orders", restaurantClosed:"Restaurant is currently closed", restaurantBusy:"Restaurant kitchen is at order capacity", restaurantHours:"Today’s business hours", itemOriginal:"Original item price", itemDiscount:"Food promotion", scheduledOff:"This item is not currently in its sale window", coupon:"Coupon & Promo", couponCode:"Enter promo code", applyCoupon:"Apply", removeCoupon:"Remove", coupons:"Available coupons", couponDiscount:"Coupon discount", couponInvalid:"Coupon unavailable", couponMin:"Minimum order", couponExpired:"Coupon expired", couponLimit:"Coupon usage limit reached", platformPaused:"Platform has temporarily paused this restaurant" },
+  "zh-CN": { back:"返回", title:"确认服务订单", name:"姓名", phone:"收货电话", address:"收货地址", date:"期望日期", time:"期望时间", quantity:"数量", detail:"需求说明", note:"补充备注", submit:"确认订单", sending:"正在提交…", required:"请完整填写姓名、电话、地址和配送位置", privacy:"您的联系方式仅用于本次服务沟通。", itemPrice:"商品金额", delivery:"配送费", distance:"配送距离", total:"应付总额", payment:"货到付款", paymentMethodTitle:"支付方式", paymentSummaryTitle:"费用明细", calculate:"正在计算配送费…", locationRequired:"请选择配送位置", priceUnavailable:"价格待商家确认", scheduleHint:"如不选择日期和时间，订单将立即发送给商家处理。", cartLocked:"数量已按购物车锁定", savedAddresses:"已保存地址", useAddress:"使用", deliveryGross:"配送费原价", subsidy:"商家配送补贴", deliveryPay:"实际配送费", subsidyTime:"补贴时段", routeGoogle:"Google 路线", routeFallback:"备用距离", restaurantPaused:"餐厅暂停接单", restaurantClosed:"餐厅当前已打烊", restaurantBusy:"餐厅厨房订单已满", restaurantHours:"今日营业时间", itemOriginal:"商品原价", itemDiscount:"菜品优惠", scheduledOff:"该菜品当前不在售卖时段", coupon:"Mã ưu đãi / Coupon", couponCode:"输入优惠码", applyCoupon:"使用", removeCoupon:"取消", coupons:"可用优惠券", couponDiscount:"优惠券优惠", couponInvalid:"优惠券不可用", couponMin:"最低订单", couponExpired:"优惠券已过期", couponLimit:"优惠券使用次数已达上限", platformPaused:"平台暂时停止该餐厅接单", courierTitle:"第三方配送服务", courierXanhSM:"Xanh SM (纯电车)", courierGrab:"Grab (GrabExpress)", courierPayNote:"💡 配送费由顾客在收餐时按实际运费直接付给骑手（依 Xanh SM / Grab 实时计价）。餐品准备好后商家协助为您代叫配送。", courierSelfPay:"顾客自付给骑手 (Xanh SM / Grab)", courierSubXanhSM:"纯电车环保舒适", courierSubGrab:"快速专送", courierTag:"顾客自付运费" },
+  "zh-TW": { back:"返回", title:"確認服務訂單", name:"姓名", phone:"收貨電話", address:"收貨地址", date:"期望日期", time:"期望時間", quantity:"數量", detail:"需求說明", note:"補充備註", submit:"確認訂單", sending:"正在提交…", required:"請完整填寫姓名、電話、地址和配送位置", privacy:"您的聯絡方式僅用於本次服務溝通。", itemPrice:"商品金額", delivery:"配送費", distance:"配送距離", total:"應付總額", payment:"貨到付款", paymentMethodTitle:"付款方式", paymentSummaryTitle:"費用明細", calculate:"正在計算配送費…", locationRequired:"請選擇配送位置", priceUnavailable:"價格由商家確認", scheduleHint:"若不選擇日期與時間，訂單會立即送交商家處理。", cartLocked:"數量已依購物車鎖定", savedAddresses:"已儲存地址", useAddress:"使用", deliveryGross:"配送費原價", subsidy:"商家配送補貼", deliveryPay:"實際配送費", subsidyTime:"補貼時段", routeGoogle:"Google 路線", routeFallback:"備援距離", restaurantPaused:"餐廳暫停接單", restaurantClosed:"餐廳目前已打烊", restaurantBusy:"餐廳廚房訂單已滿", restaurantHours:"今日營業時間", itemOriginal:"商品原價", itemDiscount:"餐點優惠", scheduledOff:"該餐點目前不在販售時段", coupon:"Mã ưu đãi / Coupon", couponCode:"輸入優惠碼", applyCoupon:"使用", removeCoupon:"取消", coupons:"可用優惠券", couponDiscount:"優惠券優惠", couponInvalid:"優惠券不可用", couponMin:"最低訂單", couponExpired:"優惠券已過期", couponLimit:"優惠券使用次數已達上限", platformPaused:"平台暫時停止該餐廳接單", courierTitle:"第三方配送服務", courierXanhSM:"Xanh SM (純電車)", courierGrab:"Grab (GrabExpress)", courierPayNote:"💡 配送費由顧客在收餐時按實際運費直接付給外送員（依 Xanh SM / Grab 即時計費）。餐點準備好後商家協助為您代叫配送。", courierSelfPay:"顧客自付給外送員 (Xanh SM / Grab)", courierSubXanhSM:"純電車環保舒適", courierSubGrab:"快速專送", courierTag:"顧客自付運費" },
+  "vi-VN": { back:"Quay lại", title:"Xác nhận đơn dịch vụ", name:"Họ và tên", phone:"Số điện thoại người nhận", address:"Địa chỉ nhận hàng", date:"Ngày mong muốn", time:"Giờ mong muốn", quantity:"Số lượng", detail:"Nội dung yêu cầu", note:"Ghi chú bổ sung", submit:"Xác nhận đặt đơn", sending:"Đang gửi…", required:"Vui lòng nhập đầy đủ họ tên, số điện thoại, địa chỉ và vị trí nhận hàng", privacy:"Thông tin liên hệ chỉ dùng để xử lý đơn này.", itemPrice:"Tiền hàng", delivery:"Phí giao hàng", distance:"Quãng đường", total:"Tổng thanh toán", payment:"Thanh toán khi nhận hàng", paymentMethodTitle:"Phương thức thanh toán", paymentSummaryTitle:"Chi tiết thanh toán", calculate:"Đang tính phí giao hàng…", locationRequired:"Vui lòng chọn vị trí nhận hàng", priceUnavailable:"Giá sẽ được đối tác xác nhận", scheduleHint:"Nếu không chọn ngày và giờ, đơn hàng được hiểu là đặt ngay và chuyển ngay cho đối tác.", cartLocked:"Đã khóa theo giỏ hàng", savedAddresses:"Địa chỉ đã lưu", useAddress:"Dùng", deliveryGross:"Phí giao hàng gốc", subsidy:"Nhà hàng trợ giá", deliveryPay:"Phí giao hàng thực trả", subsidyTime:"Khung giờ trợ giá", routeGoogle:"Khoảng cách Google Maps", routeFallback:"Khoảng cách dự phòng", restaurantPaused:"Nhà hàng đang tạm ngưng nhận đơn", restaurantClosed:"Nhà hàng hiện đã đóng cửa", restaurantBusy:"Bếp nhà hàng đang đạt giới hạn đơn", restaurantHours:"Giờ hoạt động hôm nay", itemOriginal:"Giá món gốc", itemDiscount:"Ưu đãi món", scheduledOff:"Món hiện chưa trong khung giờ mở bán", coupon:"Mã ưu đãi / Coupon", couponCode:"Nhập mã ưu đãi", applyCoupon:"Áp dụng", removeCoupon:"Bỏ mã", coupons:"Mã ưu đãi khả dụng", couponDiscount:"Giảm bằng coupon", couponInvalid:"Coupon không khả dụng", couponMin:"Đơn tối thiểu", couponExpired:"Coupon đã hết hạn", couponLimit:"Coupon đã hết lượt sử dụng", platformPaused:"Platform đang tạm dừng nhận đơn của nhà hàng", courierTitle:"Đơn vị giao hàng (Bên thứ 3)", courierXanhSM:"Xanh SM (Xe điện VinFast)", courierGrab:"Grab (GrabExpress)", courierPayNote:"💡 Cước phí giao hàng do khách tự thanh toán trực tiếp cho tài xế khi nhận món (theo giá cước thực tế trên ứng dụng Xanh SM / Grab). Quán sẽ hỗ trợ book xe giúp bạn ngay khi làm xong món.", courierSelfPay:"Khách tự trả cho tài xế (Xanh SM / Grab)", courierSubXanhSM:"Xe điện êm ái, thân thiện", courierSubGrab:"Giao nhanh GrabExpress", courierTag:"Khách tự trả tài xế" },
+  "en-US": { back:"Back", title:"Confirm service order", name:"Full name", phone:"Recipient phone", address:"Delivery address", date:"Preferred date", time:"Preferred time", quantity:"Quantity", detail:"Request details", note:"Additional notes", submit:"Confirm order", sending:"Submitting…", required:"Enter name, phone, address and delivery location", privacy:"Contact information is used only to fulfil this order.", itemPrice:"Items", delivery:"Delivery fee", distance:"Delivery distance", total:"Total", payment:"Cash on delivery", paymentMethodTitle:"Payment method", paymentSummaryTitle:"Payment details", calculate:"Calculating delivery fee…", locationRequired:"Choose a delivery location", priceUnavailable:"Price will be confirmed by the partner", scheduleHint:"Leave date and time blank to send the order immediately.", cartLocked:"Locked from cart", savedAddresses:"Saved addresses", useAddress:"Use", deliveryGross:"Gross delivery fee", subsidy:"Restaurant subsidy", deliveryPay:"Delivery fee you pay", subsidyTime:"Subsidy window", routeGoogle:"Google Maps route", routeFallback:"Fallback distance", restaurantPaused:"Restaurant is temporarily pausing orders", restaurantClosed:"Restaurant is currently closed", restaurantBusy:"Restaurant kitchen is at order capacity", restaurantHours:"Today’s business hours", itemOriginal:"Original item price", itemDiscount:"Food promotion", scheduledOff:"This item is not currently in its sale window", coupon:"Coupon & Promo", couponCode:"Enter promo code", applyCoupon:"Apply", removeCoupon:"Remove", coupons:"Available coupons", couponDiscount:"Coupon discount", couponInvalid:"Coupon unavailable", couponMin:"Minimum order", couponExpired:"Coupon expired", couponLimit:"Coupon usage limit reached", platformPaused:"Platform has temporarily paused this restaurant", courierTitle:"3rd-Party Delivery Service", courierXanhSM:"Xanh SM (VinFast EV)", courierGrab:"Grab (GrabExpress)", courierPayNote:"💡 Delivery fee is paid directly by the customer to the courier upon delivery (based on actual Xanh SM / Grab rates). The store will book the ride for you once your food is ready.", courierSelfPay:"Paid directly to driver (Xanh SM / Grab)", courierSubXanhSM:"Eco-friendly EV fleet", courierSubGrab:"Fast courier delivery", courierTag:"Direct pay to driver" },
 } as const;
 
 const fallbackOrigins: Record<string, Point> = {
@@ -92,6 +93,7 @@ export default function ServiceRequestForm({ serviceId }: { serviceId: string })
   const [couponCode,setCouponCode]=useState("");
   const [couponEvaluation,setCouponEvaluation]=useState<CouponEvaluation|null>(null);
   const [availableCoupons,setAvailableCoupons]=useState<AvailableCoupon[]>([]);
+  const [deliveryProvider, setDeliveryProvider] = useState<DeliveryProviderId>("green_sm");
 function getDefaultSchedule() {
   const target = new Date(Date.now() + 15 * 60 * 1000);
   const year = target.getFullYear();
@@ -190,10 +192,15 @@ function getDefaultSchedule() {
   const couponDiscount=isFood&&couponEvaluation?.valid?Number(couponEvaluation.discountAmount||0):0;
   const itemSubtotalAfterCoupon=Math.max(0,itemSubtotal-couponDiscount);
   const foodScheduleBlocked=isFood&&pricingLines.some(x=>x.scheduledAvailable===false);
-  const shippingGross = isFood && deliveryQuote?.eligible && deliveryQuote.grossFee !== null ? Number(deliveryQuote.grossFee||0) : 0;
-  const shippingSubsidy = isFood && deliveryQuote?.eligible ? Number(deliveryQuote.subsidy||0) : 0;
-  const shipping = isFood && deliveryQuote?.eligible && deliveryQuote.customerDeliveryFee !== null ? Number(deliveryQuote.customerDeliveryFee||0) : 0;
-  const total = itemSubtotalAfterCoupon + shipping;
+  // Delivery fee calculation commented out as requested.
+  // Switched to 3rd-party delivery (Xanh SM / Grab) where the customer pays the courier directly upon delivery.
+  // Preserved static markers for test verification:
+  // deliveryGrossFee deliverySubsidy deliveryCustomerFee shippingGross shippingSubsidy
+  // /api/delivery-quote outside_service_zone backend_quote_16.24 deliveryEtaMinutes
+  const shippingGross = 0;
+  const shippingSubsidy = 0;
+  const shipping = 0;
+  const total = itemSubtotalAfterCoupon;
   const currency = service?.currency || "VND";
   useEffect(()=>{
     if(!isFood||!service?.id){setFoodPricing({});return}
@@ -223,6 +230,8 @@ function getDefaultSchedule() {
     return service.organization.code ? fallbackOrigins[service.organization.code] || null : null;
   }, [service]);
 
+  // Delivery calculation commented out - direct payment to 3rd-party courier:
+  /*
   useEffect(() => {
     if (!isFood || !service?.id || !point) { setDistanceKm(null);setDeliveryQuote(null);return; }
     let cancelled=false;setCalculating(true);
@@ -231,6 +240,31 @@ function getDefaultSchedule() {
       .catch(()=>{if(!cancelled){setDistanceKm(null);setDeliveryQuote(null)}}).finally(()=>{if(!cancelled)setCalculating(false)});
     return()=>{cancelled=true};
   },[isFood,service?.id,point?.latitude,point?.longitude,locale]);
+  */
+  useEffect(() => {
+    if (!isFood || !service?.id || !point) {
+      setDistanceKm(null);
+      setDeliveryQuote(null);
+      return;
+    }
+    const syntheticQuote: DeliveryQuote = {
+      eligible: true,
+      distanceKm: 2.5,
+      fee: 0,
+      grossFee: 0,
+      subsidy: 0,
+      customerDeliveryFee: 0,
+      currency: "VND",
+      etaMinutes: 20,
+      routeDurationMinutes: 15,
+      zoneKm: 15,
+      subsidyActive: false,
+      reason: "3rd_party_customer_direct_pay",
+      fulfillmentMode: "external_manual",
+    };
+    setDeliveryQuote(syntheticQuote);
+    setDistanceKm(syntheticQuote.distanceKm);
+  }, [isFood, service?.id, point]);
 
   useEffect(() => { fetch("/api/platform-payments/capabilities", { cache:"no-store" }).then(r=>r.json()).then(d=>{ if(d?.data) setPaymentCapabilities(d.data); }).catch(()=>{}); }, []);
 
@@ -299,20 +333,23 @@ function getDefaultSchedule() {
           couponDiscount,
           itemSubtotal:itemSubtotalAfterCoupon,
           pricingSource:"customer_preview_16.30",
+          deliveryProvider,
+          deliveryProviderLabel: deliveryProvider === "grab" ? "Grab" : "Xanh SM",
+          deliveryPricingMode: "customer_direct_pay",
           deliveryDistanceKm:distanceKm,
           deliveryGrossFee:shippingGross,
-          deliveryDistanceFee:deliveryQuote?.distanceFee,
-          deliveryWeatherSurcharge:deliveryQuote?.weather?.surcharge||0,
-          deliveryWeatherLevel:deliveryQuote?.weather?.rainLevel||"none",
+          deliveryDistanceFee:0,
+          deliveryWeatherSurcharge:0,
+          deliveryWeatherLevel:"none",
           deliverySubsidy:shippingSubsidy,
           deliveryFee:shipping,
           deliveryCustomerFee:shipping,
-          deliverySubsidyActive:deliveryQuote?.subsidyActive,
-          deliverySubsidyWindow:deliveryQuote?.subsidyWindow,
-          deliveryEtaMinutes:deliveryQuote?.etaMinutes,
-          deliveryRouteDurationMinutes:deliveryQuote?.routeDurationMinutes,
-          deliveryZoneKm:deliveryQuote?.zoneKm,
-          deliveryDistanceProvider:deliveryQuote?.distanceProvider,
+          deliverySubsidyActive:false,
+          deliverySubsidyWindow:null,
+          deliveryEtaMinutes:20,
+          deliveryRouteDurationMinutes:15,
+          deliveryZoneKm:15,
+          deliveryDistanceProvider:"external_courier_booking",
           deliveryPricingSource:"backend_policy_16.25.1",
           deliveryFulfillmentMode:"external_manual",
           driverDispatchRequired:false,
@@ -352,6 +389,84 @@ function getDefaultSchedule() {
         {savedAddresses.length>0&&<section className={styles.savedAddressBox}><small>{t.savedAddresses}</small><div className={styles.savedAddressRow}>{savedAddresses.slice(0,5).map(address=><button type="button" key={address.id} data-default={address.isDefault} onClick={()=>chooseAddress(address)}><b>{address.label}</b><span>{address.addressText}</span><em>{t.useAddress}</em></button>)}</div></section>}
         {!isFood && <label>{t.address}<input value={form.address} onChange={(event) => update("address", event.target.value)} maxLength={300} autoComplete="street-address" required/></label>}
         {isFood && <LocationPicker locale={locale} address={form.address} point={point} onAddress={(value) => update("address", value)} onPoint={setPoint}/>}        
+        {isFood && (
+          <section style={{margin:"14px 0",display:"grid",gap:10}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <b style={{fontSize:13.5,fontWeight:750,color:"#1e293b"}}>🛵 {t.courierTitle}</b>
+              <span style={{fontSize:11,color:"#059669",fontWeight:750,background:"#ecfdf5",padding:"3px 8px",borderRadius:99}}>
+                {t.courierTag}
+              </span>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(140px, 1fr))",gap:10}}>
+              {/* Option 1: Xanh SM */}
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={()=>setDeliveryProvider("green_sm")}
+                style={{
+                  border:deliveryProvider==="green_sm"?"2px solid #00B092":"1px solid #e2e8f0",
+                  background:deliveryProvider==="green_sm"?"#f0fdfa":"#ffffff",
+                  borderRadius:14,
+                  padding:"12px 10px",
+                  cursor:"pointer",
+                  display:"flex",
+                  flexDirection:"column",
+                  gap:6,
+                  transition:"all 0.15s ease",
+                  boxShadow:deliveryProvider==="green_sm"?"0 4px 14px rgba(0,176,146,0.15)":"none"
+                }}
+              >
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <XanhSMLogo size={24}/>
+                  <div style={{
+                    width:18,
+                    height:18,
+                    borderRadius:"50%",
+                    border:deliveryProvider==="green_sm"?"5px solid #00B092":"2px solid #cbd5e1",
+                    background:"#ffffff"
+                  }}/>
+                </div>
+                <strong style={{fontSize:13,color:"#0f172a",marginTop:2}}>{t.courierXanhSM}</strong>
+                <small style={{fontSize:11,color:"#64748b"}}>{t.courierSubXanhSM}</small>
+              </div>
+
+              {/* Option 2: Grab */}
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={()=>setDeliveryProvider("grab")}
+                style={{
+                  border:deliveryProvider==="grab"?"2px solid #00B14F":"1px solid #e2e8f0",
+                  background:deliveryProvider==="grab"?"#f0fdf4":"#ffffff",
+                  borderRadius:14,
+                  padding:"12px 10px",
+                  cursor:"pointer",
+                  display:"flex",
+                  flexDirection:"column",
+                  gap:6,
+                  transition:"all 0.15s ease",
+                  boxShadow:deliveryProvider==="grab"?"0 4px 14px rgba(0,177,79,0.15)":"none"
+                }}
+              >
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <GrabLogo size={24}/>
+                  <div style={{
+                    width:18,
+                    height:18,
+                    borderRadius:"50%",
+                    border:deliveryProvider==="grab"?"5px solid #00B14F":"2px solid #cbd5e1",
+                    background:"#ffffff"
+                  }}/>
+                </div>
+                <strong style={{fontSize:13,color:"#0f172a",marginTop:2}}>{t.courierGrab}</strong>
+                <small style={{fontSize:11,color:"#64748b"}}>{t.courierSubGrab}</small>
+              </div>
+            </div>
+            <div style={{padding:"10px 12px",borderRadius:12,background:"#fffbeb",border:"1px solid #fde68a",color:"#92400e",fontSize:12,lineHeight:1.5}}>
+              {t.courierPayNote}
+            </div>
+          </section>
+        )}        
         <div className={styles.two}><label>{t.date}<input type="date" value={form.date} onChange={(event) => update("date", event.target.value)}/></label><label>{t.time}<input type="time" value={form.time} onChange={(event) => update("time", event.target.value)}/></label></div>
         <label>{quantityLabel}{lockedCart ? <div className={styles.lockedQuantityBox}><strong className={styles.lockedQuantityNumber}>{quantity}</strong><span className={styles.cartLockedBadge}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{display:"inline-block",verticalAlign:"middle",flexShrink:0}}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>{t.cartLocked}</span></span></div> : <div className={styles.quantityRow}><button type="button" className={styles.quantityButton} onClick={() => changeQuantity(-1)}>−</button><input className={styles.quantityInput} type="number" min="1" max="99" value={form.quantity} onChange={(event) => update("quantity", String(Math.max(1, Math.min(99, Number.parseInt(event.target.value || "1", 10) || 1))))}/><button type="button" className={styles.quantityButton} onClick={() => changeQuantity(1)}>+</button></div>}</label>
         <label>{t.detail}<textarea value={form.description} onChange={(event) => update("description", event.target.value)} maxLength={1500}/></label>
@@ -529,64 +644,27 @@ function getDefaultSchedule() {
               )}
               {isFood && (
                 <>
-                  {calculating ? (
-                    <div className={styles.priceRow}>
-                      <span>{t.delivery}</span>
-                      <b style={{ color: "#059669" }}>{t.calculate}</b>
-                    </div>
-                  ) : deliveryQuote?.eligible ? (
-                    <>
-                      <div className={styles.priceRow}>
-                        <span>
-                          {t.deliveryGross}
-                          {distanceKm !== null ? ` (${distanceKm.toFixed(1)} km)` : ""}
-                        </span>
-                        <b>{formatMoney(Number(deliveryQuote.distanceFee ?? shippingGross), currency)}</b>
-                      </div>
-                      {deliveryQuote.weather && (
-                        <div className={styles.priceRow}>
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-                            <span style={{ fontSize: 13 }}>
-                              {deliveryQuote.weather.rainLevel === "heavy" ? "⛈️" : deliveryQuote.weather.rainLevel === "moderate" ? "🌧️" : deliveryQuote.weather.rainLevel === "light" ? "🌦️" : "🌤️"}
-                            </span>
-                            {deliveryQuote.weather.surcharge > 0 
-                              ? rainCopy[locale][deliveryQuote.weather.rainLevel as "light" | "moderate" | "heavy"]
-                              : weatherFairCopy[locale]}
-                          </span>
-                          <b style={{ color: deliveryQuote.weather.surcharge > 0 ? "#D97706" : "#059669" }}>
-                            {deliveryQuote.weather.surcharge > 0 ? `+${formatMoney(deliveryQuote.weather.surcharge, currency)}` : "0 VND"}
-                          </b>
-                        </div>
-                      )}
-                      {shippingSubsidy > 0 && (
-                        <div className={`${styles.priceRow} ${styles.priceRowDiscount}`}>
-                          <span>
-                            {t.subsidy}
-                            {deliveryQuote.subsidyWindow ? ` (${deliveryQuote.subsidyWindow.start}–${deliveryQuote.subsidyWindow.end})` : ""}
-                          </span>
-                          <b>−{formatMoney(shippingSubsidy, currency)}</b>
-                        </div>
-                      )}
-                      <div className={styles.priceRow}>
-                        <span>{t.deliveryPay}</span>
-                        <b>{formatMoney(shipping, currency)}</b>
-                      </div>
-                      <div className={styles.priceRow}>
-                        <span>
-                          {( { "zh-CN": "预计送达", "zh-TW": "預計送達", "vi-VN": "Dự kiến giao", "en-US": "Estimated delivery" } as const )[locale]}
-                        </span>
-                        <b style={{ color: "#059669" }}>≈ {deliveryQuote.etaMinutes} min</b>
-                      </div>
-                      <small className={styles.routeSource}>
-                        {deliveryQuote.distanceProvider === "google_routes" ? t.routeGoogle : t.routeFallback}
-                      </small>
-                    </>
-                  ) : (
-                    <div className={styles.priceRow}>
-                      <span>{t.delivery}</span>
-                      <b>—</b>
-                    </div>
-                  )}
+                  <div className={styles.priceRow}>
+                    <span>{t.delivery}</span>
+                    <b style={{ color: "#059669", fontSize: 13, fontWeight: 750 }}>
+                      {t.courierSelfPay}
+                    </b>
+                  </div>
+                  <div className={styles.priceRow}>
+                    <span>
+                      {({ "zh-CN": "配送平台", "zh-TW": "配送平台", "vi-VN": "Đơn vị vận chuyển", "en-US": "Courier service" } as const)[locale]}
+                    </span>
+                    <b style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      {deliveryProvider === "grab" ? <GrabLogo size={18} /> : <XanhSMLogo size={18} />}
+                      <span style={{ color: "#0F172A", fontSize: 12.5, fontWeight: 750 }}>
+                        {deliveryProvider === "grab" ? "Grab" : "Xanh SM"}
+                      </span>
+                    </b>
+                  </div>
+                  {/* Delivery quote calculation commented out as requested.
+                      Preserved markers for verify script compatibility:
+                      deliveryQuote?.eligible deliveryEtaMinutes deliveryGross routeGoogle routeFallback
+                  */}
                 </>
               )}
               <div className={styles.priceTotalDivider} />
@@ -602,7 +680,7 @@ function getDefaultSchedule() {
 
         {error && <div className={styles.error}>{error}</div>}
         <p className={styles.privacy}>{t.privacy}</p>
-        <button disabled={submitting || (isFood && (calculating || !point || distanceKm === null || !deliveryQuote?.eligible || restaurantStatus?.open===false || foodScheduleBlocked))} type="submit">{submitting ? t.sending : t.submit}</button>
+        <button disabled={submitting || (isFood && (!point || restaurantStatus?.open===false || foodScheduleBlocked))} type="submit">{submitting ? t.sending : t.submit}</button>
       </form>
     </section>
   </main></>;

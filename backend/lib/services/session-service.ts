@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { authSessions, organizations, users } from "@/db/schema";
+import { authSessions, organizationMembers, organizations, users } from "@/db/schema";
 import type { WeChatRole } from "@/lib/services/wechat-auth-service";
 
 const ACCESS_TTL_MS = 15 * 60 * 1000;
@@ -19,11 +19,26 @@ export type PublicAuthSession = {
 
 type IssueInput = { userId:string; role:WeChatRole; organizationId?:string; deviceId?:string; deviceName?:string };
 
+async function resolvePartnerOrganizationId(userId: string, explicitOrgId?: string): Promise<string | undefined> {
+  if (explicitOrgId) return explicitOrgId;
+  const db = getDb();
+  const member = (await db.select({ organizationId: organizationMembers.organizationId })
+    .from(organizationMembers)
+    .innerJoin(organizations, eq(organizationMembers.organizationId, organizations.id))
+    .where(and(eq(organizationMembers.userId, userId), eq(organizationMembers.isActive, true), eq(organizations.status, "active")))
+    .limit(1))[0];
+  return member?.organizationId;
+}
+
 async function publicSession(row: typeof authSessions.$inferSelect): Promise<PublicAuthSession> {
   const db=getDb();
   const user=(await db.select().from(users).where(eq(users.id,row.userId)).limit(1))[0];
   if(!user) throw new Error("USER_NOT_FOUND");
-  const org=row.organizationId ? (await db.select().from(organizations).where(eq(organizations.id,row.organizationId)).limit(1))[0] : undefined;
+  let orgId = row.organizationId;
+  if (!orgId && row.role === "partner") {
+    orgId = (await resolvePartnerOrganizationId(user.id)) ?? null;
+  }
+  const org=orgId ? (await db.select().from(organizations).where(eq(organizations.id,orgId)).limit(1))[0] : undefined;
   return {
     sessionId:row.id, role:row.role as WeChatRole, userId:user.id, displayName:user.nickname||"WeChat User",
     phone:user.phone||undefined, avatarUrl:user.avatarUrl||undefined, organizationId:org?.id, organizationName:org?.name,
@@ -35,8 +50,12 @@ async function publicSession(row: typeof authSessions.$inferSelect): Promise<Pub
 export class SessionService {
   async issue(input: IssueInput) {
     const db=getDb(); const accessToken=token(); const refreshToken=token(); const now=Date.now();
+    let orgId = input.organizationId;
+    if (!orgId && input.role === "partner") {
+      orgId = await resolvePartnerOrganizationId(input.userId);
+    }
     const [row]=await db.insert(authSessions).values({
-      userId:input.userId, role:input.role, organizationId:input.organizationId, accessTokenHash:hashAuthToken(accessToken),
+      userId:input.userId, role:input.role, organizationId:orgId, accessTokenHash:hashAuthToken(accessToken),
       refreshTokenHash:hashAuthToken(refreshToken), deviceId:input.deviceId, deviceName:input.deviceName, status:"active",
       accessExpiresAt:new Date(now+ACCESS_TTL_MS), refreshExpiresAt:new Date(now+refreshDays[input.role]*DAY), lastSeenAt:new Date(),
     }).returning();
@@ -54,9 +73,13 @@ export class SessionService {
     const db=getDb(); const row=(await db.select().from(authSessions).where(and(eq(authSessions.refreshTokenHash,hashAuthToken(refreshToken)),eq(authSessions.status,"active"))).limit(1))[0];
     if(!row || row.refreshExpiresAt.getTime()<=Date.now()) return null;
     const nextAccess=token(); const nextRefresh=token(); const now=Date.now();
+    let orgId = row.organizationId;
+    if (!orgId && row.role === "partner") {
+      orgId = (await resolvePartnerOrganizationId(row.userId)) ?? null;
+    }
     const [updated]=await db.update(authSessions).set({
       accessTokenHash:hashAuthToken(nextAccess), refreshTokenHash:hashAuthToken(nextRefresh), accessExpiresAt:new Date(now+ACCESS_TTL_MS),
-      refreshExpiresAt:new Date(now+refreshDays[row.role as WeChatRole]*DAY), lastSeenAt:new Date(), updatedAt:new Date(),
+      refreshExpiresAt:new Date(now+refreshDays[row.role as WeChatRole]*DAY), organizationId:orgId, lastSeenAt:new Date(), updatedAt:new Date(),
     }).where(and(
       eq(authSessions.id,row.id),
       eq(authSessions.status,"active"),

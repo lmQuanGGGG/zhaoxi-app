@@ -2,6 +2,7 @@
 import Link from "next/link";
 import {useCallback,useEffect,useState} from "react";
 import {useZhaoXiLocale,statusLabels} from "@zhaoxi/i18n";
+import {playCustomerOrderChime,registerAudioUnlock,type OrderStageType} from "./_lib/customer-audio";
 type Alert={id:string;requestId:string;requestCode:string;status:string;note?:string;serviceName?:string;moduleName?:string;createdAt:string};
 const housingEvent=(x:Alert)=>String(x.note||"").startsWith("HOUSING_MESSAGE:")||String(x.note||"").startsWith("HOUSING_APPOINTMENT_REMINDER:");
 const travelEvent=(x:Alert)=>String(x.note||"").startsWith("TRAVEL_MESSAGE:")||String(x.note||"").startsWith("TRAVEL_DEPARTURE_REMINDER:")||String(x.note||"").startsWith("TRAVEL_BOOKING_");
@@ -14,4 +15,68 @@ const copy={
  "vi-VN":{completed:"Đơn đã hoàn thành, đang tìm người giao hàng",delivering:"Đơn hàng đang được giao",delivered:"Đơn hàng đã giao hoàn thành",accepted:(m:string)=>`Đối tác đã xác nhận, dự kiến ${m} phút`,view:"Xem đơn hàng",close:"Đóng",housingMessage:"Partner vừa gửi tin nhắn về nhà/phòng",housingReminder:"Sắp đến lịch xem nhà",housingView:"Xem yêu cầu thuê nhà",travelMessage:"Partner du lịch vừa gửi tin nhắn",travelReminder:"Sắp đến giờ khởi hành",travelConfirmed:"Booking du lịch đã được xác nhận",travelRejected:"Partner không thể tiếp nhận booking",travelCancelled:"Booking du lịch đã bị hủy",travelCompleted:"Dịch vụ du lịch đã hoàn tất",travelView:"Xem booking du lịch",paymentPaid:"Thanh toán đã được xác nhận",paymentRefunded:"Hoàn tiền đã hoàn tất",supportMessage:"Có tin nhắn mới về hỗ trợ thanh toán",supportStage:"Trạng thái hỗ trợ thanh toán đã thay đổi",slaSoon:"Yêu cầu hỗ trợ sắp đến SLA",slaOverdue:"Yêu cầu hỗ trợ đã quá SLA",refundSoon:"Sắp đến thời gian dự kiến hoàn tiền",refundOverdue:"Đã quá thời gian dự kiến hoàn tiền",paymentView:"Xem hỗ trợ thanh toán"},
  "en-US":{completed:"Order completed, finding a courier",delivering:"Order is being delivered",delivered:"Order delivered",accepted:(m:string)=>`Partner confirmed, estimated ${m} minutes`,view:"View order",close:"Close",housingMessage:"The housing provider sent a new message",housingReminder:"Your property viewing is coming up",housingView:"View rental inquiry",travelMessage:"Travel Partner sent a new message",travelReminder:"Your trip is starting soon",travelConfirmed:"Travel booking confirmed",travelRejected:"Travel booking unavailable",travelCancelled:"Travel booking cancelled",travelCompleted:"Travel service completed",travelView:"View travel booking",paymentPaid:"Payment confirmed",paymentRefunded:"Refund completed",supportMessage:"New payment-support message",supportStage:"Payment-support status updated",slaSoon:"Payment support is nearing SLA",slaOverdue:"Payment support is overdue",refundSoon:"Refund ETA is approaching",refundOverdue:"Refund ETA is overdue",paymentView:"View payment support"}
 } as const;
-export default function CustomerOrderAlerts(){const{locale}=useZhaoXiLocale();const t=copy[locale];const[item,setItem]=useState<Alert|null>(null);const poll=useCallback(async()=>{try{const codes=JSON.parse(localStorage.getItem("zhaoxi-request-codes")||"[]")as string[];if(!codes.length)return;const dismissed=new Set<string>(JSON.parse(localStorage.getItem("zhaoxi-dismissed-alert-stages")||"[]"));const r=await fetch(`/api/platform-notifications?audience=customer&codes=${encodeURIComponent(codes.join(','))}&locale=${locale}`,{cache:'no-store'});const p=await r.json();const pr=await fetch("/api/customer-notifications/preferences",{cache:"no-store"}).then(x=>x.json()).catch(()=>null),pref=pr?.data||pr?.ok&&pr.data||{};const list=(Array.isArray(p?.data)?p.data:[]) as Alert[];const allowedByPref=(x:Alert)=>paymentEvent(x)?pref.paymentEnabled!==false:housingEvent(x)?pref.housingEnabled!==false:travelEvent(x)?pref.travelEnabled!==false:pref.orderEnabled!==false;const next=list.find(x=>(allowed.has(x.status)||housingEvent(x)||travelEvent(x)||paymentEvent(x))&&allowedByPref(x)&&!dismissed.has(keyFor(x)));if(next&&!item)setItem(next)}catch{}},[locale,item]);useEffect(()=>{void poll();const timer=setInterval(()=>void poll(),5000);return()=>clearInterval(timer)},[poll]);function close(){if(!item)return;const values=JSON.parse(localStorage.getItem("zhaoxi-dismissed-alert-stages")||"[]") as string[];localStorage.setItem("zhaoxi-dismissed-alert-stages",JSON.stringify(Array.from(new Set([...values,keyFor(item)])).slice(-200)));setItem(null)}if(!item)return null;const eta=/ETA\s+(\d+)\s+minutes/i.exec(item.note||"");const note=String(item.note||""),isHousingMessage=note.startsWith("HOUSING_MESSAGE:"),isHousingReminder=note.startsWith("HOUSING_APPOINTMENT_REMINDER:"),isTravel=travelEvent(item),isPayment=paymentEvent(item),isTravelMessage=note.startsWith("TRAVEL_MESSAGE:"),isTravelReminder=note.startsWith("TRAVEL_DEPARTURE_REMINDER:");const travelLabel=isTravelMessage?t.travelMessage:isTravelReminder?t.travelReminder:note.startsWith("TRAVEL_BOOKING_CONFIRMED")?t.travelConfirmed:note.startsWith("TRAVEL_BOOKING_REJECTED")?t.travelRejected:note.startsWith("TRAVEL_BOOKING_COMPLETED")?t.travelCompleted:note.startsWith("TRAVEL_BOOKING_CANCELLED")?t.travelCancelled:"";const paymentLabel=note.includes("REFUND")&&(note.includes("COMPLETED")||note.includes("REFUNDED"))?t.paymentRefunded:note.includes("PAID")?t.paymentPaid:note.startsWith("PAYMENT_SUPPORT_MESSAGE:")?t.supportMessage:note.startsWith("PAYMENT_SUPPORT_SLA_DUE_SOON")?t.slaSoon:note.startsWith("PAYMENT_SUPPORT_SLA_OVERDUE")?t.slaOverdue:note.startsWith("PAYMENT_REFUND_ETA_DUE_SOON")?t.refundSoon:note.startsWith("PAYMENT_REFUND_ETA_OVERDUE")?t.refundOverdue:note.startsWith("PAYMENT_SUPPORT_STAGE:")?t.supportStage:t.supportStage;const label=isPayment?paymentLabel:isTravel?travelLabel:isHousingMessage?t.housingMessage:isHousingReminder?t.housingReminder:item.status==="completed"?t.completed:item.status==="delivering"?t.delivering:item.status==="delivered"?t.delivered:eta?t.accepted(eta[1]):(statusLabels[locale]?.[item.status]||item.note||item.status);return <div className="zx-customer-alert zx-bottom-alert"><button aria-label={t.close} onClick={close}>×</button><div>🔔</div><b>{item.serviceName||item.moduleName||item.requestCode}</b><p>{label}</p><Link href={isPayment||isTravel?"/travel/requests":isHousingMessage||isHousingReminder?"/housing/requests":`/order/${item.requestId}`} onClick={close}>{isPayment?t.paymentView:isTravel?t.travelView:isHousingMessage||isHousingReminder?t.housingView:t.view}</Link></div>}
+
+function getAlertStageType(x: Alert): OrderStageType {
+  const note = String(x.note || "").toLowerCase();
+  if (x.status === "delivered" || note.includes("delivered") || note.includes("đã giao")) return "delivered";
+  if (x.status === "delivering" || note.includes("courier") || note.includes("handed_off") || note.includes("đang giao")) return "delivering";
+  if (x.status === "in_progress" || note.includes("preparing") || note.includes("đang làm") || note.includes("bếp")) return "preparing";
+  if (x.status === "accepted" || note.includes("xác nhận") || x.status === "completed") return "accepted";
+  return "general";
+}
+
+export default function CustomerOrderAlerts(){
+  const{locale}=useZhaoXiLocale();
+  const t=copy[locale];
+  const[item,setItem]=useState<Alert|null>(null);
+
+  useEffect(()=>{
+    return registerAudioUnlock();
+  },[]);
+
+  const poll=useCallback(async()=>{
+    try{
+      const codes=JSON.parse(localStorage.getItem("zhaoxi-request-codes")||"[]")as string[];
+      if(!codes.length)return;
+      const dismissed=new Set<string>(JSON.parse(localStorage.getItem("zhaoxi-dismissed-alert-stages")||"[]"));
+      const r=await fetch(`/api/platform-notifications?audience=customer&codes=${encodeURIComponent(codes.join(','))}&locale=${locale}`,{cache:'no-store'});
+      const p=await r.json();
+      const pr=await fetch("/api/customer-notifications/preferences",{cache:"no-store"}).then(x=>x.json()).catch(()=>null),pref=pr?.data||pr?.ok&&pr.data||{};
+      const list=(Array.isArray(p?.data)?p.data:[]) as Alert[];
+      const allowedByPref=(x:Alert)=>paymentEvent(x)?pref.paymentEnabled!==false:housingEvent(x)?pref.housingEnabled!==false:travelEvent(x)?pref.travelEnabled!==false:pref.orderEnabled!==false;
+      const next=list.find(x=>(allowed.has(x.status)||housingEvent(x)||travelEvent(x)||paymentEvent(x))&&allowedByPref(x)&&!dismissed.has(keyFor(x)));
+      if(next && (!item || keyFor(next) !== keyFor(item))){
+        setItem(next);
+        const stage = getAlertStageType(next);
+        playCustomerOrderChime(stage);
+      }
+    }catch{}
+  },[locale,item]);
+
+  useEffect(()=>{void poll();const timer=setInterval(()=>void poll(),5000);return()=>clearInterval(timer)},[poll]);
+  function close(){if(!item)return;const values=JSON.parse(localStorage.getItem("zhaoxi-dismissed-alert-stages")||"[]") as string[];localStorage.setItem("zhaoxi-dismissed-alert-stages",JSON.stringify(Array.from(new Set([...values,keyFor(item)])).slice(-200)));setItem(null)}
+  if(!item)return null;
+  const eta=/ETA\s+(\d+)\s+minutes/i.exec(item.note||"");
+  const note=String(item.note||""),isHousingMessage=note.startsWith("HOUSING_MESSAGE:"),isHousingReminder=note.startsWith("HOUSING_APPOINTMENT_REMINDER:"),isTravel=travelEvent(item),isPayment=paymentEvent(item),isTravelMessage=note.startsWith("TRAVEL_MESSAGE:"),isTravelReminder=note.startsWith("TRAVEL_DEPARTURE_REMINDER:");
+  const travelLabel=isTravelMessage?t.travelMessage:isTravelReminder?t.travelReminder:note.startsWith("TRAVEL_BOOKING_CONFIRMED")?t.travelConfirmed:note.startsWith("TRAVEL_BOOKING_REJECTED")?t.travelRejected:note.startsWith("TRAVEL_BOOKING_COMPLETED")?t.travelCompleted:note.startsWith("TRAVEL_BOOKING_CANCELLED")?t.travelCancelled:"";
+  const paymentLabel=note.includes("REFUND")&&(note.includes("COMPLETED")||note.includes("REFUNDED"))?t.paymentRefunded:note.includes("PAID")?t.paymentPaid:note.startsWith("PAYMENT_SUPPORT_MESSAGE:")?t.supportMessage:note.startsWith("PAYMENT_SUPPORT_SLA_DUE_SOON")?t.slaSoon:note.startsWith("PAYMENT_SUPPORT_SLA_OVERDUE")?t.slaOverdue:note.startsWith("PAYMENT_REFUND_ETA_DUE_SOON")?t.refundSoon:note.startsWith("PAYMENT_REFUND_ETA_OVERDUE")?t.refundOverdue:note.startsWith("PAYMENT_SUPPORT_STAGE:")?t.supportStage:t.supportStage;
+  const label=isPayment?paymentLabel:isTravel?travelLabel:isHousingMessage?t.housingMessage:isHousingReminder?t.housingReminder:item.status==="completed"?t.completed:item.status==="delivering"?t.delivering:item.status==="delivered"?t.delivered:eta?t.accepted(eta[1]):(statusLabels[locale]?.[item.status]||item.note||item.status);
+  return (
+    <div className="zx-customer-alert zx-bottom-alert">
+      <button aria-label={t.close} onClick={close}>×</button>
+      <div
+        role="button"
+        title="Phát chuông thông báo"
+        style={{cursor:"pointer",userSelect:"none"}}
+        onClick={() => playCustomerOrderChime(getAlertStageType(item))}
+      >
+        🔔
+      </div>
+      <b>{item.serviceName||item.moduleName||item.requestCode}</b>
+      <p>{label}</p>
+      <Link href={isPayment||isTravel?"/travel/requests":isHousingMessage||isHousingReminder?"/housing/requests":`/order/${item.requestId}`} onClick={close}>
+        {isPayment?t.paymentView:isTravel?t.travelView:isHousingMessage||isHousingReminder?t.housingView:t.view}
+      </Link>
+    </div>
+  );
+}

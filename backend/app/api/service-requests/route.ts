@@ -208,9 +208,10 @@ export async function POST(request: Request) {
         const itemSubtotalBeforeCoupon=foodPricing.itemSubtotal;
         const couponDiscount=Number(couponEvaluation?.discountAmount||0);
         const itemSubtotal=Math.max(0,itemSubtotalBeforeCoupon-couponDiscount);
-        const grossDeliveryFee=Number(quote.grossFee||0);
-        const partnerDeliverySubsidy=Number(quote.subsidy||0);
-        const customerDeliveryFee=Number(quote.customerDeliveryFee||0);
+        const isCustomerDirectPay = input.details?.deliveryPricingMode === "customer_direct_pay" || Boolean(input.details?.deliveryProvider);
+        const grossDeliveryFee=isCustomerDirectPay ? 0 : Number(quote.grossFee||0);
+        const partnerDeliverySubsidy=isCustomerDirectPay ? 0 : Number(quote.subsidy||0);
+        const customerDeliveryFee=isCustomerDirectPay ? 0 : Number(quote.customerDeliveryFee||0);
         requestDetails={
           ...input.details,
           items:foodPricing.lines.map(line=>{
@@ -226,10 +227,13 @@ export async function POST(request: Request) {
           couponDiscount,
           itemSubtotal,
           pricingSource:"backend_food_coupon_16.30",
+          deliveryPricingMode: isCustomerDirectPay ? "customer_direct_pay" : "platform_calculated",
+          deliveryProvider: input.details?.deliveryProvider || "green_sm",
+          deliveryProviderLabel: input.details?.deliveryProvider === "grab" ? "Grab" : "Xanh SM",
           deliveryDistanceKm:quote.distanceKm,
           deliveryGrossFee:grossDeliveryFee,
-          deliveryDistanceFee:Number(quote.distanceFee||0),
-          deliveryWeatherSurcharge:Number(quote.weather?.surcharge||0),
+          deliveryDistanceFee:isCustomerDirectPay ? 0 : Number(quote.distanceFee||0),
+          deliveryWeatherSurcharge:isCustomerDirectPay ? 0 : Number(quote.weather?.surcharge||0),
           deliveryWeatherLevel:quote.weather?.rainLevel||"none",
           deliverySubsidy:partnerDeliverySubsidy,
           deliveryFee:customerDeliveryFee,
@@ -243,7 +247,7 @@ export async function POST(request: Request) {
           deliveryPricingSource:"backend_policy_16.25.1",
           deliveryFulfillmentMode:"external_manual",
           driverDispatchRequired:false,
-          totalAmount:itemSubtotal+grossDeliveryFee-partnerDeliverySubsidy,
+          totalAmount:isCustomerDirectPay ? itemSubtotal : (itemSubtotal+grossDeliveryFee-partnerDeliverySubsidy),
         };
       }
 

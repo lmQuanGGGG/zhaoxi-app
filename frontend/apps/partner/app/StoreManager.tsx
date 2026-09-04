@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { useZhaoXiSession } from "@zhaoxi/auth";
+import { refreshServerSession, updateSession, useZhaoXiSession } from "@zhaoxi/auth";
 import {
   useZhaoXiLocale,
   type ZhaoXiLocale,
@@ -236,7 +236,7 @@ export default function StoreManager() {
   const cacheKey = `partner_store_${orgId}_${moduleCode}_${locale}`;
   const cachedData = typeof window !== "undefined" ? getCached<{ items: Item[]; org: any }>(cacheKey) : null;
   const [items, setItems] = useState<Item[]>(() => cachedData?.items || []);
-  const [storeName, setStoreName] = useState(() => cachedData?.org?.name || "");
+  const [storeName, setStoreName] = useState(() => cachedData?.org?.name || session?.organizationName || "");
   const [storeAddress, setStoreAddress] = useState(() => cachedData?.org?.address || "");
   const [contactPhone, setContactPhone] = useState(() => cachedData?.org?.phone || "");
   const [wechat, setWechat] = useState(() => cachedData?.org?.wechat || "");
@@ -263,6 +263,12 @@ export default function StoreManager() {
   const activeFields = useMemo(() => moduleFields[moduleCode]?.[locale] || [], [moduleCode, locale]);
   const presentation = modulePresentation[moduleCode]?.[locale] || { store: t.store, menu: t.menu, add: t.add, image: t.image, banners: t.banners };
 
+  useEffect(() => {
+    if (!orgId) {
+      void refreshServerSession();
+    }
+  }, [orgId]);
+
   const load = useCallback(async () => {
     if (!orgId) return;
     const [serviceResponse, orgResponse] = await Promise.all([
@@ -278,16 +284,18 @@ export default function StoreManager() {
       const metadata = (org.metadata || {}) as Record<string, unknown>;
       setOrgMetadata(metadata);
       const names = (metadata.localizedNames || {}) as Record<string, unknown>;
-      const sName = typeof names[locale] === "string" ? String(names[locale]) : localizeOrganizationName(locale, org.code, org.name, metadata);
+      const sName = typeof names[locale] === "string" && String(names[locale]).trim()
+        ? String(names[locale]).trim()
+        : (org.name ? String(org.name) : localizeOrganizationName(locale, org.code, org.name, metadata));
       setStoreName(sName);
       const sLogo = String(metadata.draftLogoUrl || metadata.logoUrl || "");
       setLogo(sLogo);
       const draftBanners = Array.isArray(metadata.draftBannerUrls) ? metadata.draftBannerUrls : metadata.bannerUrls;
       const sBanners = Array.isArray(draftBanners) ? draftBanners.map(String) : [];
       setBannerUrls(sBanners);
-      const sAddr = String(metadata.address || org.address || "");
+      const sAddr = String(metadata.address || org.addressText || org.address || "");
       setStoreAddress(sAddr);
-      const sPhone = String(metadata.contactPhone || metadata.phone || "");
+      const sPhone = String(metadata.contactPhone || metadata.phone || org.phone || "");
       setContactPhone(sPhone);
       const sWechat = String(metadata.wechat || "");
       setWechat(sWechat);
@@ -388,12 +396,35 @@ export default function StoreManager() {
   async function saveStore() {
     if (!orgId) { setMsg("Không tìm thấy gian hàng đang đăng nhập."); return; }
     if (!storeName.trim() || !storeAddress.trim() || !contactPhone.trim()) { setMsg(`Vui lòng điền các mục ${requiredText}: ${t.storeName}, ${t.address}, ${t.contactPhone}.`); return; }
+    const trimmedName = storeName.trim();
+    const trimmedAddress = storeAddress.trim();
+    const trimmedPhone = contactPhone.trim();
     const response = await fetch(`/api/platform-organizations/${orgId}`, {
       method: "PATCH", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ metadata: { ...orgMetadata, localizedNames: { ...((orgMetadata.localizedNames || {}) as Record<string, unknown>), [locale]: storeName }, draftLogoUrl: logo, draftBannerUrls: bannerUrls, bannerDraftConfirmed: bannersConfirmed, address: storeAddress, contactPhone, wechat } }),
+      body: JSON.stringify({
+        name: trimmedName,
+        phone: trimmedPhone,
+        addressText: trimmedAddress,
+        metadata: {
+          ...orgMetadata,
+          localizedNames: { ...((orgMetadata.localizedNames || {}) as Record<string, unknown>), [locale]: trimmedName },
+          draftLogoUrl: logo,
+          draftBannerUrls: bannerUrls,
+          bannerDraftConfirmed: bannersConfirmed,
+          address: trimmedAddress,
+          contactPhone: trimmedPhone,
+          wechat: wechat.trim(),
+        },
+      }),
     });
     const payload = await response.json().catch(() => null);
-    setMsg(response.ok ? `✓ ${t.saved}` : String(payload?.error?.message || payload?.error?.code || "Không thể lưu gian hàng. Vui lòng thử lại."));
+    if (response.ok) {
+      setMsg(`✓ ${t.saved}`);
+      updateSession({ organizationName: trimmedName });
+      await load();
+    } else {
+      setMsg(String(payload?.error?.message || payload?.error?.code || "Không thể lưu gian hàng. Vui lòng thử lại."));
+    }
   }
 
   async function addItem(draft: ItemDraft) {
@@ -569,22 +600,30 @@ export default function StoreManager() {
       const latestResponse = await fetch(`/api/platform-services?organizationId=${orgId}&module=${moduleCode}&locale=${locale}&includeDrafts=1&refresh=${Date.now()}`, { cache: "no-store" });
       const latestPayload = await latestResponse.json();
       const latestItems: Item[] = Array.isArray(latestPayload?.data) ? latestPayload.data : items;
+      const trimmedName = storeName.trim();
+      const trimmedAddress = storeAddress.trim();
+      const trimmedPhone = contactPhone.trim();
       const storeResponse = await fetch(`/api/platform-organizations/${orgId}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ metadata: {
-          ...orgMetadata,
-          localizedNames: { ...((orgMetadata.localizedNames || {}) as Record<string, unknown>), [locale]: storeName },
-          draftLogoUrl: logo,
-          draftBannerUrls: bannerUrls,
-          bannerDraftConfirmed: bannersConfirmed,
-          logoUrl: logo,
-          bannerUrls,
-          address: storeAddress,
-          contactPhone,
-          wechat,
-          catalogSyncedAt: new Date().toISOString(),
-        } }),
+        body: JSON.stringify({
+          name: trimmedName,
+          phone: trimmedPhone,
+          addressText: trimmedAddress,
+          metadata: {
+            ...orgMetadata,
+            localizedNames: { ...((orgMetadata.localizedNames || {}) as Record<string, unknown>), [locale]: trimmedName },
+            draftLogoUrl: logo,
+            draftBannerUrls: bannerUrls,
+            bannerDraftConfirmed: bannersConfirmed,
+            logoUrl: logo,
+            bannerUrls,
+            address: trimmedAddress,
+            contactPhone: trimmedPhone,
+            wechat: wechat.trim(),
+            catalogSyncedAt: new Date().toISOString(),
+          },
+        }),
       });
       if (!storeResponse.ok) throw new Error("Store sync failed");
       for (const item of latestItems) {

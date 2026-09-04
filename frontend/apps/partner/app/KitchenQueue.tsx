@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useMemo,useState} from "react";
 import {useZhaoXiLocale} from "@zhaoxi/i18n";
 import {getCached,setCached} from "./_lib/client-cache";
+import {IosPersonIcon,IosPhoneIcon} from "./IosIcons";
 
 type Item={requestId:string;requestCode:string;stage:string;priority:string;serviceName:string;customerName:string;customerPhone?:string;addressText?:string;quantity:number;estimatedMinutes:number;estimatedReadyAt:string|null;overdueMinutes:number;elapsedMinutes:number;late:boolean;courierName:string;sortScore:number};
 type Data={counts:{waiting:number;preparing:number;ready:number;courier:number;late:number};items:Item[]};
@@ -34,8 +35,8 @@ export default function KitchenQueue({organizationId}:{organizationId:string}){
         <div style={{display:"flex",justifyContent:"space-between",gap:6}}><b style={{fontSize:18}}>{item.requestCode}</b>{item.late&&<span style={{fontSize:18,color:"#be123c",fontWeight:900}}>{t.overdue} {item.overdueMinutes}m</span>}</div>
         <strong style={{display:"block",fontSize:18,marginTop:5}}>{item.serviceName}</strong>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:6,marginTop:4,flexWrap:"wrap"}}>
-          <small style={{color:"#64748b",fontWeight:700}}>{item.customerName} · ×{item.quantity}</small>
-          {item.customerPhone&&<a href={`tel:${item.customerPhone}`} style={{display:"inline-flex",alignItems:"center",gap:3,background:"#ecfdf5",color:"#067647",padding:"2px 8px",borderRadius:999,fontSize:12,fontWeight:850,textDecoration:"none",border:"1px solid #bbf7d0"}}>📞 {item.customerPhone}</a>}
+          <small style={{display:"inline-flex",alignItems:"center",gap:4,color:"#64748b",fontWeight:700}}><IosPersonIcon size={13} color="#111827"/> {item.customerName} · ×{item.quantity}</small>
+          {item.customerPhone&&<a href={`tel:${item.customerPhone}`} style={{display:"inline-flex",alignItems:"center",gap:4,background:"#ecfdf5",color:"#067647",padding:"3px 8px",borderRadius:999,fontSize:12,fontWeight:850,textDecoration:"none",border:"1px solid #bbf7d0"}}><IosPhoneIcon size={12} color="#111827"/> {item.customerPhone}</a>}
         </div>
         <small style={{display:"block",color:"#64748b",marginTop:4}}>⏱ {t.elapsed}: {item.elapsedMinutes} {t.minutes}</small>
         <div style={{display:"flex",gap:5,marginTop:8}}>{(["normal","high","urgent"] as const).map(level=><button key={level} disabled={!!busy} onClick={()=>void patch(item,{action:"priority",priority:level})} style={{flex:1,border:0,borderRadius:8,padding:"6px 4px",background:item.priority===level?(level==="urgent"?"#fee2e2":"#dcfce7"):"#f1f5f9",color:item.priority===level?(level==="urgent"?"#b91c1c":"#067647"):"#64748b",fontSize:18,fontWeight:850}}>{t[level]}</button>)}</div>
