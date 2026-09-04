@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 const CANONICAL_BACKEND = "https://zhaoxi-app-puce.vercel.app";
 
