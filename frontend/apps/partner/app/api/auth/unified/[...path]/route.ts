@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
-const backend=()=>((process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"").includes("zhaoxi-backend.vercel.app")?"https://zhaoxi-app-puce.vercel.app":(process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"https://zhaoxi-app-puce.vercel.app")).replace(/\/+$/,"");
+const CANONICAL_BACKEND = "https://zhaoxi-app-puce.vercel.app";
+
+function backend() {
+  const configured = (process.env.ZHAOXI_BACKEND_URL || process.env.NEXT_PUBLIC_ZHAOXI_API_URL || "").trim();
+  if (!configured || configured.includes("zhaoxi-backend.vercel.app")) return CANONICAL_BACKEND;
+  return configured.replace(/\/+$/, "");
+}
 
 const ACCESS_COOKIE = "zx_access_v2";
 const REFRESH_COOKIE = "zx_refresh_v2";
@@ -42,8 +48,8 @@ async function responsePayload(response: Response) {
 
 async function upstream(path: string, method: string, body?: unknown, access?: string) {
   const primaryUrl = backend();
-  try {
-    return await fetch(`${primaryUrl}/api/auth/${path}`, {
+  const request = (baseUrl: string) =>
+    fetch(`${baseUrl}/api/auth/${path}`, {
       method,
       headers: {
         ...(body !== undefined ? { "content-type": "application/json" } : {}),
@@ -53,19 +59,14 @@ async function upstream(path: string, method: string, body?: unknown, access?: s
       cache: "no-store",
       signal: AbortSignal.timeout(15000),
     });
+  try {
+    const response = await request(primaryUrl);
+    if (response.status < 500 || primaryUrl === CANONICAL_BACKEND) return response;
+    return await request(CANONICAL_BACKEND);
   } catch (err) {
-    if (primaryUrl !== "https://zhaoxi-app-puce.vercel.app") {
+    if (primaryUrl !== CANONICAL_BACKEND) {
       try {
-        return await fetch(`https://zhaoxi-app-puce.vercel.app/api/auth/${path}`, {
-          method,
-          headers: {
-            ...(body !== undefined ? { "content-type": "application/json" } : {}),
-            ...(access ? { authorization: `Bearer ${access}` } : {}),
-          },
-          body: body !== undefined ? JSON.stringify(body) : undefined,
-          cache: "no-store",
-          signal: AbortSignal.timeout(15000),
-        });
+        return await request(CANONICAL_BACKEND);
       } catch {}
     }
     throw err;
