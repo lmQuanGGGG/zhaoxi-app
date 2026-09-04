@@ -1,5 +1,5 @@
 import {NextRequest} from "next/server";
-const backend=()=>process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"https://zhaoxi-app-puce.vercel.app";
+const backend=()=>((process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"").includes("zhaoxi-backend.vercel.app")?"https://zhaoxi-app-puce.vercel.app":(process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"https://zhaoxi-app-puce.vercel.app")).replace(/\/+$/,"");
 function h(r:NextRequest,json=false):Record<string,string>{const x:Record<string,string>={};const a=r.cookies.get("zx_access_v2")?.value;if(a)x.authorization=`Bearer ${a}`;if(json)x["content-type"]="application/json";return x}
 export async function GET(r:NextRequest){const u=await fetch(`${backend()}/api/releases/admin`,{cache:"no-store",headers:h(r)});return Response.json(await u.json(),{status:u.status})}
 export async function POST(r:NextRequest){const u=await fetch(`${backend()}/api/releases/admin`,{method:"POST",headers:h(r,true),body:await r.text()});return Response.json(await u.json(),{status:u.status})}

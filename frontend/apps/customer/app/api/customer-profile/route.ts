@@ -1,5 +1,5 @@
 import {NextRequest} from "next/server";export const dynamic="force-dynamic";
-const backend=()=>process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"https://zhaoxi-app-puce.vercel.app";
+const backend=()=>((process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"").includes("zhaoxi-backend.vercel.app")?"https://zhaoxi-app-puce.vercel.app":(process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"https://zhaoxi-app-puce.vercel.app")).replace(/\/+$/,"");
 function headers(r:NextRequest,json=false):Record<string,string>{const h:Record<string,string>={};const token=r.cookies.get("zx_access_v2")?.value;if(token)h.authorization=`Bearer ${token}`;if(json)h["content-type"]="application/json";return h}
 export async function GET(r:NextRequest){try{const u=await fetch(`${backend()}/api/customer-profile`,{headers:headers(r),cache:"no-store"});return Response.json(await u.json(),{status:u.status})}catch{return Response.json({ok:false,error:{code:"PROFILE_UNAVAILABLE"}},{status:503})}}
 export async function PATCH(r:NextRequest){try{const u=await fetch(`${backend()}/api/customer-profile`,{method:"PATCH",headers:headers(r,true),body:await r.text(),cache:"no-store"});return Response.json(await u.json(),{status:u.status})}catch{return Response.json({ok:false,error:{code:"PROFILE_UNAVAILABLE"}},{status:503})}}

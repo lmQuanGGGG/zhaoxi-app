@@ -1,6 +1,6 @@
 import {NextRequest,NextResponse} from "next/server";
 export const dynamic="force-dynamic";
-const backend=()=>process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"https://zhaoxi-app-puce.vercel.app";
+const backend=()=>((process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"").includes("zhaoxi-backend.vercel.app")?"https://zhaoxi-app-puce.vercel.app":(process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"https://zhaoxi-app-puce.vercel.app")).replace(/\/+$/,"");
 async function forward(request:NextRequest,method:"GET"|"PATCH"){
   const token=request.cookies.get("zx_access_v2")?.value||"";
   const body=method==="PATCH"?await request.text():undefined;
