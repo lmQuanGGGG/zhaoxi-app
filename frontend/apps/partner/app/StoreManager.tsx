@@ -347,6 +347,14 @@ export default function StoreManager() {
     return String(payload.data.url);
   }
 
+  async function removeStaleStoreMedia(kind: "logo" | "banner", keepUrls: string[]) {
+    await fetch("/api/media/upload", {
+      method: "DELETE",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ organizationId: orgId, kind, keepUrls }),
+    });
+  }
+
   async function chooseLogo(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -427,6 +435,12 @@ export default function StoreManager() {
     if (response.ok) {
       setMsg(`✓ ${t.saved}`);
       updateSession({ organizationName: trimmedName });
+      // Remove old logo/banner objects only after the new metadata is durable.
+      // This keeps retries safe and prevents abandoned media rows from growing.
+      void Promise.all([
+        removeStaleStoreMedia("logo", logo ? [logo] : []),
+        removeStaleStoreMedia("banner", bannerUrls),
+      ]);
       await load();
     } else {
       setMsg(String(payload?.error?.message || payload?.error?.code || "Không thể lưu gian hàng. Vui lòng thử lại."));

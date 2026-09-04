@@ -210,10 +210,10 @@ export default function ServiceBrowser({ moduleCode }: { moduleCode: string }) {
         <div className={styles.restaurantList}>
           {groups.map(([key, menu]) => {
             const organization = menu[0];
-            const banners = (Array.isArray(organization.organizationMetadata?.bannerUrls)
-              ? organization.organizationMetadata.bannerUrls
-              : []) as string[];
-            const fallback = String(organization.organizationMetadata?.logoUrl || "");
+            const banners = (Array.isArray(organization.organizationMetadata?.draftBannerUrls) && organization.organizationMetadata.draftBannerUrls.length
+              ? organization.organizationMetadata.draftBannerUrls
+              : Array.isArray(organization.organizationMetadata?.bannerUrls) ? organization.organizationMetadata.bannerUrls : []) as string[];
+            const fallback = String(organization.organizationMetadata?.draftLogoUrl || organization.organizationMetadata?.logoUrl || "");
             const displayBanners = banners.length ? banners : fallback ? [fallback] : [];
             const activeSlide = slides[key] || 0;
             const logo = fallback;

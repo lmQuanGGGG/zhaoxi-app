@@ -85,9 +85,9 @@ export default function RestaurantDetail({ organizationId }: { organizationId: s
   const organization = items[0];
   const banners = useMemo(() => {
     const metadata = organization?.organizationMetadata || {};
-    const source = Array.isArray(metadata.bannerUrls) && metadata.bannerUrls.length
-      ? metadata.bannerUrls
-      : Array.isArray(metadata.draftBannerUrls) ? metadata.draftBannerUrls : [];
+    const source = Array.isArray(metadata.draftBannerUrls) && metadata.draftBannerUrls.length
+      ? metadata.draftBannerUrls
+      : Array.isArray(metadata.bannerUrls) ? metadata.bannerUrls : [];
     return source.map(String).filter(Boolean);
   }, [organization]);
 
@@ -132,9 +132,9 @@ export default function RestaurantDetail({ organizationId }: { organizationId: s
   if (loading) return <main className={styles.shell}><div className={styles.state}><span>喜</span><p>{t.loading}</p></div></main>;
   if (!organization) return <main className={styles.shell}><div className={styles.state}><span>喜</span><p>{t.empty}</p></div></main>;
 
-  const fallbackBanner = String(organization.organizationMetadata?.logoUrl || "");
+  const fallbackBanner = String(organization.organizationMetadata?.draftLogoUrl || organization.organizationMetadata?.logoUrl || "");
   const displayBanners = banners.length ? banners : fallbackBanner ? [fallbackBanner] : [];
-  const logo = fallbackBanner;
+  const logo = String(organization.organizationMetadata?.draftLogoUrl || organization.organizationMetadata?.logoUrl || "");
   const restaurantOpen=restaurantStatus?.open!==false;
   const statusLabel=!restaurantStatus||restaurantStatus.code==="open"?t.open:restaurantStatus.code==="platform_paused"?t.platformPaused:restaurantStatus.code==="manual_paused"?t.paused:restaurantStatus.code==="closed_hours"?t.closed:t.busy;
 
