@@ -1,3 +1,4 @@
+export const runtime="edge";
 type Coordinate = { latitude: number; longitude: number };
 
 const geocodeCache = new Map<string, Coordinate>();

@@ -1,3 +1,4 @@
+export const runtime="edge";
 async function safeJsonResponse(res:Response){try{const text=await res.text();return Response.json(JSON.parse(text),{status:res.status});}catch{return Response.json({ok:false,error:{code:"UPSTREAM_UNAVAILABLE",upstreamStatus:res.status}},{status:res.status>=400?res.status:502});}}
 import {NextRequest} from "next/server";
 export const dynamic="force-dynamic";
