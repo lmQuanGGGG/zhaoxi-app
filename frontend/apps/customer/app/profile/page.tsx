@@ -147,7 +147,7 @@ export default function Profile(){
  async function save(){
   setSaving(true);setMsg("");
   try{
-   const {phone:verifiedPhone,...editableProfile}=form;void verifiedPhone;const r=await fetch("/api/customer-profile",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({...editableProfile,preferredLocale:locale})});
+   const phone=form.phone.trim();const r=await fetch("/api/customer-profile",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({...form,phone,preferredLocale:locale})});
    const j=await r.json();if(!r.ok||!j?.ok)throw new Error(j?.error?.code||"SAVE_FAILED");
    setData(j.data);setCached(PROFILE_CACHE_KEY, j.data);updateSession({displayName:j.data.user.displayName||form.displayName,phone:j.data.user.phone||form.phone,avatarUrl:j.data.user.avatarUrl||undefined});setEditing(false);setMsg(t.saved);window.setTimeout(()=>setMsg(""),2200);
   }catch(e){setMsg(e instanceof Error?e.message:"SAVE_FAILED")}finally{setSaving(false)}
@@ -202,7 +202,7 @@ export default function Profile(){
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><b>{t.profile}</b>{msg&&<small style={{color:"#078343",fontWeight:750}}>{msg}</small>}</div>
     {editing?<div style={{display:"grid",gap:9}}>
       <Field label={t.name}><input value={form.displayName} placeholder={locale==="vi-VN"?"Nhập họ và tên của bạn":""} onChange={e=>setForm({...form,displayName:e.target.value})}/></Field>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}><Field label={t.phone}><input value={form.phone} inputMode="tel" readOnly aria-readonly="true"/></Field><Field label={t.email}><input value={form.email} inputMode="email" onChange={e=>setForm({...form,email:e.target.value})}/></Field></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}><Field label={t.phone}><input value={form.phone} inputMode="tel" autoComplete="tel" placeholder={locale==="vi-VN"?"Ví dụ: 090 123 4567":"Phone number"} onChange={e=>setForm({...form,phone:e.target.value})}/></Field><Field label={t.email}><input value={form.email} inputMode="email" onChange={e=>setForm({...form,email:e.target.value})}/></Field></div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}><Field label={t.nationality}><input value={form.nationality} onChange={e=>setForm({...form,nationality:e.target.value})}/></Field><Field label={t.gender}><select value={form.gender} onChange={e=>setForm({...form,gender:e.target.value})}><option value="">{t.unset}</option><option value="male">{t.male}</option><option value="female">{t.female}</option><option value="other">{t.other}</option></select></Field></div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}><Field label={t.birthday}><input type="date" value={form.birthday} onChange={e=>setForm({...form,birthday:e.target.value})}/></Field><Field label={t.city}><input value={form.cityName} onChange={e=>setForm({...form,cityName:e.target.value})}/></Field></div>
       <Field label={t.address}><input value={form.addressText} onChange={e=>setForm({...form,addressText:e.target.value})}/></Field>
