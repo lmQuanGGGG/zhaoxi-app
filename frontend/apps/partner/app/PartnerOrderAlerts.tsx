@@ -5,10 +5,10 @@ import {useZhaoXiLocale} from "@zhaoxi/i18n";
 import type{ServiceRequestRow}from"@zhaoxi/sdk";
 import {IosPersonIcon,IosPhoneIcon} from "./IosIcons";
 const copy={
- "zh-CN":{newOrder:"新订单",customer:"客户",customerPhone:"客户电话",address:"配送地址",total:"订单总额",accept:"接单",reject:"拒绝",eta:"预计完成时间",minutes:"分钟",confirm:"确认接单",cancel:"返回",auto:"倒计时结束后，餐品会标记为已准备，等待外部配送安排。"},
- "zh-TW":{newOrder:"新訂單",customer:"客戶",customerPhone:"客戶電話",address:"配送地址",total:"訂單總額",accept:"接單",reject:"拒絕",eta:"預計完成時間",minutes:"分鐘",confirm:"確認接單",cancel:"返回",auto:"倒數結束後，餐點會標記為已準備，等待外部配送安排。"},
- "vi-VN":{newOrder:"Có đơn hàng mới",customer:"Khách hàng",customerPhone:"Số điện thoại khách",address:"Địa chỉ nhận hàng",total:"Tổng đơn",accept:"Nhận đơn",reject:"Từ chối",eta:"Thời gian dự kiến hoàn thành",minutes:"phút",confirm:"Xác nhận đơn giao",cancel:"Quay lại",auto:"Khi hết thời gian, món được đánh dấu đã sẵn sàng và chờ bố trí đơn vị giao hàng bên ngoài."},
- "en-US":{newOrder:"New order",customer:"Customer",customerPhone:"Customer phone",address:"Delivery address",total:"Order total",accept:"Accept",reject:"Reject",eta:"Estimated completion time",minutes:"minutes",confirm:"Confirm order",cancel:"Back",auto:"When the timer ends, the food is marked ready and awaits external delivery arrangement."}
+ "zh-CN":{newOrder:"新订单",customer:"客户",customerPhone:"客户电话",address:"配送地址",total:"订单总额",accept:"接单",reject:"拒绝",eta:"预计完成时间",minutes:"分钟",confirm:"确认接单",cancel:"返回",auto:"倒计时结束后，餐品会标记为已准备，等待外部配送安排。",shipVia:"指定配送",customerSelfPay:"客户自付配送费"},
+ "zh-TW":{newOrder:"新訂單",customer:"客戶",customerPhone:"客戶電話",address:"配送地址",total:"訂單總額",accept:"接單",reject:"拒絕",eta:"預計完成時間",minutes:"分鐘",confirm:"確認接單",cancel:"返回",auto:"倒數結束後，餐點會標記為已準備，等待外部配送安排。",shipVia:"指定配送",customerSelfPay:"客戶自付運費"},
+ "vi-VN":{newOrder:"Có đơn hàng mới",customer:"Khách hàng",customerPhone:"Số điện thoại khách",address:"Địa chỉ nhận hàng",total:"Tổng đơn",accept:"Nhận đơn",reject:"Từ chối",eta:"Thời gian dự kiến hoàn thành",minutes:"phút",confirm:"Xác nhận đơn giao",cancel:"Quay lại",auto:"Khi hết thời gian, món được đánh dấu đã sẵn sàng và chờ bố trí đơn vị giao hàng bên ngoài.",shipVia:"Giao qua",customerSelfPay:"Khách tự trả phí ship"},
+ "en-US":{newOrder:"New order",customer:"Customer",customerPhone:"Customer phone",address:"Delivery address",total:"Order total",accept:"Accept",reject:"Reject",eta:"Estimated completion time",minutes:"minutes",confirm:"Confirm order",cancel:"Back",auto:"When the timer ends, the food is marked ready and awaits external delivery arrangement.",shipVia:"Deliver via",customerSelfPay:"Customer pays courier directly"}
 }as const;
 const money=(v:unknown)=>Number(v||0).toLocaleString("vi-VN")+" VND";
 function playLoudOrderChime() {
@@ -85,6 +85,7 @@ export default function PartnerOrderAlerts(){const session=useZhaoXiSession();co
           </a>
         </div>
         {order.addressText&&<div style={{fontSize:13,color:"#1F2937",lineHeight:1.4}}>📍 <b>{t.address}:</b> {order.addressText}</div>}
+        {Boolean(d.deliveryProvider)&&<div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"4px 10px",borderRadius:999,background:d.deliveryProvider==="grab"?"#dcfce7":"#ccfbf1",color:d.deliveryProvider==="grab"?"#15803d":"#0f766e",fontWeight:850,fontSize:13,width:"fit-content"}}><img src={d.deliveryProvider==="grab"?"/couriers/grab.png":"/couriers/green-sm.png"} alt={d.deliveryProvider==="grab"?"Grab":"Green SM"} style={{height:15,width:"auto",objectFit:"contain",verticalAlign:"middle"}}/><span>{t.shipVia} {d.deliveryProvider==="grab"?"Grab":"Xanh SM"} ({t.customerSelfPay})</span></div>}
         {d.totalAmount!=null&&<div style={{fontSize:14,fontWeight:800,color:"#078343",marginTop:2}}>💰 {t.total}: {money(d.totalAmount)}</div>}
       </div>
       <div className="zx-order-actions">
@@ -101,6 +102,7 @@ export default function PartnerOrderAlerts(){const session=useZhaoXiSession();co
           </a>
         </div>
         {order.addressText&&<div style={{fontSize:12,color:"#4B5563",lineHeight:1.35}}>📍 {order.addressText}</div>}
+        {Boolean(d.deliveryProvider)&&<div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"3px 8px",borderRadius:999,background:d.deliveryProvider==="grab"?"#dcfce7":"#ccfbf1",color:d.deliveryProvider==="grab"?"#15803d":"#0f766e",fontWeight:850,fontSize:12,width:"fit-content"}}><img src={d.deliveryProvider==="grab"?"/couriers/grab.png":"/couriers/green-sm.png"} alt={d.deliveryProvider==="grab"?"Grab":"Green SM"} style={{height:14,width:"auto",objectFit:"contain",verticalAlign:"middle"}}/><span>{t.shipVia} {d.deliveryProvider==="grab"?"Grab":"Xanh SM"} ({t.customerSelfPay})</span></div>}
       </div>
       <div className="zx-eta-grid">
         {[10,15,20,25,30].map(value=><button key={value} data-active={eta===value} onClick={()=>setEta(value)}><b>{value}</b><span>{t.minutes}</span></button>)}

@@ -17,7 +17,7 @@ export const localeNames: Record<ZhaoXiLocale, string> = {
 
 
 export const organizationLabels: Record<string, Record<ZhaoXiLocale, string>> = {
-  "ZX-FOOD-001": { "zh-CN": "川渝老火锅", "zh-TW": "川渝老火鍋", "vi-VN": "Lẩu Tứ Xuyên", "en-US": "Sichuan Hotpot" },
+  "ZX-FOOD-001": { "zh-CN": "川渝老火锅", "zh-TW": "川渝老火鍋", "vi-VN": "Quán Lẩu Tứ Xuyên", "en-US": "Sichuan Hotpot" },
   "ZX-LIFE-001": { "zh-CN": "赵喜生活服务中心", "zh-TW": "趙喜生活服務中心", "vi-VN": "Trung tâm dịch vụ ZhaoXi", "en-US": "ZhaoXi Life Service Center" },
   "ZX-TRAVEL-001": { "zh-CN": "岘港华旅", "zh-TW": "峴港華旅", "vi-VN": "Du lịch Hoa Việt Đà Nẵng", "en-US": "Da Nang Chinese Travel" },
   "ZX-HOME-001": { "zh-CN": "安居岘港", "zh-TW": "安居峴港", "vi-VN": "An Cư Đà Nẵng", "en-US": "Da Nang Housing" },
@@ -30,7 +30,39 @@ export function localizeOrganizationName(locale: ZhaoXiLocale, code?: string | n
     if (typeof value === "string" && value.trim()) return value.trim();
   }
   if (code && organizationLabels[code]) return organizationLabels[code][locale];
+  if (fallback && (fallback.trim() === "川渝老火锅" || fallback.trim() === "川渝老火鍋")) {
+    return organizationLabels["ZX-FOOD-001"][locale];
+  }
   return fallback || code || "ZhaoXi";
+}
+
+export const serviceNameLabels: Record<string, Record<ZhaoXiLocale, string>> = {
+  "a1-藤椒鸡块": { "zh-CN": "A1 - 藤椒鸡块", "zh-TW": "A1 - 藤椒雞塊", "vi-VN": "A1 - Gà giòn tiêu Tứ Xuyên", "en-US": "A1 - Sichuan Pepper Chicken Bites" },
+  "a2-避风塘蟹堡": { "zh-CN": "A2 - 避风塘蟹堡", "zh-TW": "A2 - 避風塘蟹堡", "vi-VN": "A2 - Burger cua lột Hong Kong", "en-US": "A2 - Typhoon Shelter Crab Burger" },
+  "a3-孜然鸭肉堡": { "zh-CN": "A3 - 孜然鸭肉堡", "zh-TW": "A3 - 孜然鴨肉堡", "vi-VN": "A3 - Burger vịt nướng thì là", "en-US": "A3 - Cumin Roast Duck Burger" },
+  "a4-板烧凤梨堡": { "zh-CN": "A4 - 板烧凤梨堡", "zh-TW": "A4 - 板燒鳳梨堡", "vi-VN": "A4 - Burger gà nướng dứa", "en-US": "A4 - Grilled Pineapple Chicken Burger" },
+  "a5-香辣鸡腿堡": { "zh-CN": "A5 - 香辣鸡腿堡", "zh-TW": "A5 - 香辣雞腿堡", "vi-VN": "A5 - Burger đùi gà cay", "en-US": "A5 - Spicy Chicken Leg Burger" },
+  "a6-双拼鸡虾堡": { "zh-CN": "A6 - 双拼鸡虾堡", "zh-TW": "A6 - 雙拼雞蝦堡", "vi-VN": "A6 - Burger đôi gà & tôm", "en-US": "A6 - Double Chicken & Shrimp Burger" },
+  "a7-鳕鱼堡": { "zh-CN": "A7 - 鳕鱼堡", "zh-TW": "A7 - 鱈魚堡", "vi-VN": "A7 - Burger cá tuyết chiên giòn", "en-US": "A7 - Crispy Cod Fish Burger" },
+  "a8-奥尔良鸡腿堡": { "zh-CN": "A8 - 奥尔良鸡腿堡", "zh-TW": "A8 - 奧爾良雞腿堡", "vi-VN": "A8 - Burger gà New Orleans", "en-US": "A8 - Orleans Chicken Leg Burger" },
+  "a9-培根煎蛋堡": { "zh-CN": "A9 - 培根煎蛋堡", "zh-TW": "A9 - 培根煎蛋堡", "vi-VN": "A9 - Burger thịt xông khói trứng", "en-US": "A9 - Bacon & Egg Burger" },
+  "a10-老北京鸡肉卷": { "zh-CN": "A10 - 老北京鸡肉卷", "zh-TW": "A10 - 老北京雞肉卷", "vi-VN": "A10 - Cuộn gà Bắc Kinh truyền thống", "en-US": "A10 - Beijing Chicken Wrap" },
+  "a11-墨西哥鸡肉卷": { "zh-CN": "A11 - 墨西哥鸡肉卷", "zh-TW": "A11 - 墨西哥雞肉卷", "vi-VN": "A11 - Cuộn gà kiểu Mexico", "en-US": "A11 - Mexican Chicken Wrap" },
+};
+
+export function localizeServiceName(locale: ZhaoXiLocale, name?: string | null, code?: string | null): string {
+  if (!name) return code || "";
+  const key = name.toLowerCase().replace(/[\s–—-]+/g, "-");
+  if (serviceNameLabels[key]?.[locale]) {
+    return serviceNameLabels[key][locale];
+  }
+  const cleanKey = name.toLowerCase().replace(/[\s–—-]+/g, "");
+  for (const [k, v] of Object.entries(serviceNameLabels)) {
+    if (k.replace(/-/g, "") === cleanKey) {
+      return v[locale];
+    }
+  }
+  return name;
 }
 
 

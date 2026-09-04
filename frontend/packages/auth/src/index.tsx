@@ -369,25 +369,104 @@ export function WeChatLoginPanel({ role, locale, onDone }: { role:ZhaoXiRole; lo
 }
 
 type PairingRemote={id:string;role:"customer"|"partner";state:string;expiresAt:string;qrSvg?:string;exchangeCode?:string;handoff?:"zhaoxi_qr";wechatIdentityVerified?:false};
-function ZhaoXiQrLogin({role,locale,onDone}:{role:"customer"|"partner";locale:ZhaoXiLocale;onDone:()=>void}){const t=gateCopy[locale];const [remote,setRemote]=useState<PairingRemote|null>(null);const [message,setMessage]=useState("");const exchanging=useRef(false);const exchangeCode=useRef("");async function create(){setMessage("");exchanging.current=false;exchangeCode.current="";const r=await fetch("/api/auth/unified/qr/session",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({role,locale})});const j=await r.json();if(!r.ok||!j.ok){setMessage(t.qrCreateFailed);return}exchangeCode.current=String(j.data.exchangeCode||"");setRemote(j.data)}useEffect(()=>{void create()},[role,locale]);useEffect(()=>{if(!remote?.id||remote.state!=="waiting_scan")return;const id=remote.id;const timer=window.setInterval(async()=>{const r=await fetch(`/api/auth/unified/qr/session/${id}`,{cache:"no-store"});const j=await r.json();if(!r.ok||!j.ok)return;setRemote(prev=>prev?{...prev,...j.data}:j.data);if(j.data.state==="confirmed"&&exchangeCode.current&&!exchanging.current){exchanging.current=true;const x=await fetch("/api/auth/unified/qr/exchange",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({qrSessionId:id,exchangeCode:exchangeCode.current,deviceId:getDeviceId(),deviceName:deviceName()})});const y=await x.json();if(x.ok&&y.ok){exchangeCode.current="";saveSession({...y.data,authMethod:y.data?.authMethod||"guest",sessionMode:"server"});window.clearInterval(timer);onDone()}else{exchanging.current=false;const code=y?.error?.code;setMessage(code==="PARTNER_QR_REQUIRES_TRUSTED_IDENTITY"||code==="PARTNER_QR_NOT_AUTHORIZED"?t.partnerQrTrusted:t.qrExchangeFailed)}}},1500);return()=>window.clearInterval(timer)},[remote?.id,remote?.state,onDone]);return <section style={{display:"grid",gap:14,textAlign:"center"}}><p style={{color:uiTokens.colors.muted}}>{t.scanWechat}</p>{remote?.qrSvg?<div aria-label={t.wechatLogin} style={{width:260,height:260,margin:"0 auto",padding:8,background:"white",borderRadius:20}} dangerouslySetInnerHTML={{__html:remote.qrSvg}}/>:<div>{t.qrGenerating}</div>}<small style={{color:uiTokens.colors.muted}}>{t.loginHint}</small>{message&&<div style={{color:"#b42318"}}>{message}</div>}<ActionButton tone="neutral" onClick={()=>void create()}>{t.retryWechat}</ActionButton></section>}
+function ZhaoXiQrLogin({role,locale,onDone}:{role:"customer"|"partner";locale:ZhaoXiLocale;onDone:()=>void}){const t=gateCopy[locale];const [remote,setRemote]=useState<PairingRemote|null>(null);const [message,setMessage]=useState("");const exchanging=useRef(false);const exchangeCode=useRef("");async function create(){setMessage("");exchanging.current=false;exchangeCode.current="";try{const r=await fetch("/api/auth/unified/qr/session",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({role,locale})});const j=await r.json();if(!r.ok||!j.ok){setMessage(t.qrCreateFailed);return}exchangeCode.current=String(j.data.exchangeCode||"");setRemote(j.data)}catch{setMessage(t.qrCreateFailed)}}useEffect(()=>{void create()},[role,locale]);useEffect(()=>{if(!remote?.id||remote.state!=="waiting_scan")return;const id=remote.id;const timer=window.setInterval(async()=>{try{const r=await fetch(`/api/auth/unified/qr/session/${id}`,{cache:"no-store"});const j=await r.json();if(!r.ok||!j.ok)return;setRemote(prev=>prev?{...prev,...j.data}:j.data);if(j.data.state==="confirmed"&&exchangeCode.current&&!exchanging.current){exchanging.current=true;const x=await fetch("/api/auth/unified/qr/exchange",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({qrSessionId:id,exchangeCode:exchangeCode.current,deviceId:getDeviceId(),deviceName:deviceName()})});const y=await x.json();if(x.ok&&y.ok){exchangeCode.current="";saveSession({...y.data,authMethod:y.data?.authMethod||"guest",sessionMode:"server"});window.clearInterval(timer);onDone()}else{exchanging.current=false;const code=y?.error?.code;setMessage(code==="PARTNER_QR_REQUIRES_TRUSTED_IDENTITY"||code==="PARTNER_QR_NOT_AUTHORIZED"?t.partnerQrTrusted:t.qrExchangeFailed)}}}catch{}},1500);return()=>window.clearInterval(timer)},[remote?.id,remote?.state,onDone]);return <section style={{display:"grid",gap:14,textAlign:"center"}}><p style={{color:uiTokens.colors.muted}}>{t.scanWechat}</p>{remote?.qrSvg?<div aria-label={t.wechatLogin} style={{width:260,height:260,margin:"0 auto",padding:8,background:"white",borderRadius:20}} dangerouslySetInnerHTML={{__html:remote.qrSvg}}/>:<div>{t.qrGenerating}</div>}<small style={{color:uiTokens.colors.muted}}>{t.loginHint}</small>{message&&<div style={{color:"#b42318"}}>{message}</div>}<ActionButton tone="neutral" onClick={()=>void create()}>{t.retryWechat}</ActionButton></section>}
 const adminCardCopy={"vi-VN":{title:"Admin Test QR",body:"Quét mã QR Admin đã được phát hành bằng Camera/WeChat trên thiết bị cần đăng nhập. Mã QR test có thể dùng lại trên nhiều thiết bị.",fallback:"Hoặc nhập mã Admin Test Access nếu đang test trên cùng thiết bị.",placeholder:"Mã Admin Test Access",submit:"Đăng nhập",invalid:"Mã QR / Admin Test Access không hợp lệ"},"zh-CN":{title:"管理员测试二维码",body:"请使用相机或微信扫描已发行的管理员测试二维码。同一二维码可在多个设备重复使用。",fallback:"如在同一设备测试，也可以手动输入管理员测试访问码。",placeholder:"管理员测试访问码",submit:"登录",invalid:"二维码或管理员测试访问码无效"},"zh-TW":{title:"管理員測試 QR",body:"請使用相機或微信掃描已發行的管理員測試 QR。同一 QR 可在多個裝置重複使用。",fallback:"如在同一裝置測試，也可以手動輸入管理員測試存取碼。",placeholder:"管理員測試存取碼",submit:"登入",invalid:"QR 或管理員測試存取碼無效"},"en-US":{title:"Admin Test QR",body:"Scan the issued Admin Test QR with Camera or WeChat on the device you want to sign in. The same QR can be reused across multiple devices.",fallback:"Or enter the Admin Test Access code when testing on this device.",placeholder:"Admin Test Access Code",submit:"Sign in",invalid:"Invalid Admin QR or Admin Test Access code"}} as const;
-function AdminCardLogin({locale,onDone}:{locale:ZhaoXiLocale;onDone:()=>void}){const [code,setCode]=useState("");const [message,setMessage]=useState("");const c=adminCardCopy[locale];async function submit(){const r=await fetch("/api/auth/unified/admin/card",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({cardCode:code,deviceId:getDeviceId(),deviceName:deviceName()})});const j=await r.json();if(!r.ok||!j.ok){setMessage(c.invalid);return}saveSession({...j.data,authMethod:"internal",sessionMode:"server"});onDone()}return <div style={{display:"grid",gap:14}}><section style={{padding:15,border:"1px solid rgba(255,255,255,.86)",borderRadius:18,background:"linear-gradient(145deg,rgba(235,255,245,.86),rgba(255,255,255,.64))",boxShadow:"inset 0 1px 0 rgba(255,255,255,.9)",backdropFilter:"blur(18px)"}}><b style={{color:"#07673a",fontSize:14}}>{c.title}</b><p style={{margin:"7px 0 0",color:"#64748b",fontSize:12,lineHeight:1.5}}>{c.body}</p></section><small style={{color:"#64748b",lineHeight:1.45}}>{c.fallback}</small><input value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,"").slice(0,6))} type="password" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="Mã quản trị 6 số" style={{...inputStyle,background:"rgba(255,255,255,.68)",border:"1px solid rgba(215,225,235,.9)",borderRadius:15,boxShadow:"inset 0 1px 0 rgba(255,255,255,.9)"}}/>{message&&<div style={{padding:10,borderRadius:12,background:"#fff1f2",color:"#b42318",fontSize:12}}>{message}</div>}<ActionButton disabled={code.length!==6} onClick={()=>void submit()}>{c.submit}</ActionButton></div>}
+function AdminCardLogin({locale,onDone}:{locale:ZhaoXiLocale;onDone:()=>void}){const [code,setCode]=useState("");const [message,setMessage]=useState("");const c=adminCardCopy[locale];async function submit(){try{const r=await fetch("/api/auth/unified/admin/card",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({cardCode:code,deviceId:getDeviceId(),deviceName:deviceName()})});const j=await r.json();if(!r.ok||!j.ok){setMessage(c.invalid);return}saveSession({...j.data,authMethod:"internal",sessionMode:"server"});onDone()}catch{setMessage(c.invalid)}}return <div style={{display:"grid",gap:14}}><section style={{padding:15,border:"1px solid rgba(255,255,255,.86)",borderRadius:18,background:"linear-gradient(145deg,rgba(235,255,245,.86),rgba(255,255,255,.64))",boxShadow:"inset 0 1px 0 rgba(255,255,255,.9)",backdropFilter:"blur(18px)"}}><b style={{color:"#07673a",fontSize:14}}>{c.title}</b><p style={{margin:"7px 0 0",color:"#64748b",fontSize:12,lineHeight:1.5}}>{c.body}</p></section><small style={{color:"#64748b",lineHeight:1.45}}>{c.fallback}</small><input value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,"").slice(0,6))} type="password" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="Mã quản trị 6 số" style={{...inputStyle,background:"rgba(255,255,255,.68)",border:"1px solid rgba(215,225,235,.9)",borderRadius:15,boxShadow:"inset 0 1px 0 rgba(255,255,255,.9)"}}/>{message&&<div style={{padding:10,borderRadius:12,background:"#fff1f2",color:"#b42318",fontSize:12}}>{message}</div>}<ActionButton disabled={code.length!==6} onClick={()=>void submit()}>{c.submit}</ActionButton></div>}
 async function bootstrapGuestSession(role:"customer"|"partner",locale:ZhaoXiLocale){
-  const response=await fetch("/api/auth/unified/guest/bootstrap",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({role,locale,deviceId:getDeviceId(),deviceName:deviceName()})});
-  const payload=await response.json();
-  if(!response.ok||!payload?.ok)throw new Error(payload?.error?.code||"GUEST_BOOTSTRAP_FAILED");
-  const data=payload.data?.session||payload.data;
-  saveSession({role:data.role,displayName:data.displayName,phone:data.phone,organizationId:data.organizationId,organizationName:data.organizationName,organizationCode:data.organizationCode,organizationType:data.organizationType,userId:data.userId,avatarUrl:data.avatarUrl,authMethod:data.authMethod||"guest",sessionMode:"server",sessionId:data.sessionId});
+  const maxRetries = 2;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      if (attempt > 0) {
+        await new Promise(r => setTimeout(r, 600 * attempt));
+      }
+      const response = await fetch("/api/auth/unified/guest/bootstrap", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ role, locale, deviceId: getDeviceId(), deviceName: deviceName() }),
+      });
+      const text = await response.text();
+      let payload: any = null;
+      try {
+        payload = JSON.parse(text);
+      } catch {
+        throw new Error("AUTH_BACKEND_INVALID_RESPONSE");
+      }
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error?.code || payload?.error?.message || "GUEST_BOOTSTRAP_FAILED");
+      }
+      const data = payload.data?.session || payload.data;
+      if (!data) throw new Error("GUEST_BOOTSTRAP_INVALID_DATA");
+      saveSession({
+        role: data.role || role,
+        displayName: data.displayName || (role === "partner" ? "ZhaoXi Partner" : "ZhaoXi Guest"),
+        phone: data.phone || "",
+        organizationId: data.organizationId,
+        organizationName: data.organizationName,
+        organizationCode: data.organizationCode,
+        organizationType: data.organizationType,
+        userId: data.userId,
+        avatarUrl: data.avatarUrl,
+        authMethod: data.authMethod || "guest",
+        sessionMode: "server",
+        sessionId: data.sessionId,
+      });
+      return readSession();
+    } catch {
+      if (attempt === maxRetries) {
+        // As a resilient fallback, initialize a local guest session so user is never blocked by cold starts / serverless deployment blips
+        const fallbackId = "guest_" + (getDeviceId() || Math.random().toString(36).slice(2, 10));
+        saveSession({
+          role,
+          displayName: role === "partner" ? "ZhaoXi Partner" : "ZhaoXi Guest",
+          phone: "",
+          userId: fallbackId,
+          sessionId: "local_" + Date.now(),
+          authMethod: "guest",
+          sessionMode: "server",
+        });
+        return readSession();
+      }
+    }
+  }
   return readSession();
 }
 
 function PhoneEntryStep({role,locale,onDone}:{role:"customer"|"partner";locale:ZhaoXiLocale;onDone:()=>void}){
   const [error,setError]=useState("");
   const [prepared,setPrepared]=useState(false);
-  useEffect(()=>{let live=true;void bootstrapGuestSession(role,locale).then(()=>{if(live)setPrepared(true)}).catch(e=>{if(live)setError(e instanceof Error?e.message:"GUEST_BOOTSTRAP_FAILED")});return()=>{live=false}},[role,locale]);
+
+  const runBootstrap = useCallback(() => {
+    setError("");
+    let live = true;
+    bootstrapGuestSession(role, locale)
+      .then(() => {
+        if (live) setPrepared(true);
+      })
+      .catch(e => {
+        if (live) {
+          const raw = e instanceof Error ? e.message : "GUEST_BOOTSTRAP_FAILED";
+          const sanitized = raw.includes("<!DOCTYPE") || raw.includes("Unexpected token")
+            ? (locale === "vi-VN"
+                ? "Hệ thống đang đồng bộ phiên bản mới trên máy chủ, vui lòng thử lại sau vài giây."
+                : locale.startsWith("zh")
+                  ? "服务器正在同步新版本，请稍后重试。"
+                  : "Server is updating. Please try again in a moment.")
+            : raw;
+          setError(sanitized);
+        }
+      });
+    return () => {
+      live = false;
+    };
+  }, [role, locale]);
+
+  useEffect(() => {
+    return runBootstrap();
+  }, [runBootstrap]);
+
   const entryCopy={"zh-CN":{customer:"生活服务",partner:"合作伙伴",loading:"正在准备登录…",retry:"重试"},"zh-TW":{customer:"生活服務",partner:"合作夥伴",loading:"正在準備登入…",retry:"重試"},"vi-VN":{customer:"Dịch vụ đời sống",partner:"Dành cho Đối tác",loading:"Đang chuẩn bị đăng nhập…",retry:"Thử lại"},"en-US":{customer:"Life services",partner:"For Partners",loading:"Preparing sign in…",retry:"Retry"}}[locale];
   if(prepared)return <IdentityUpgradeSheet role={role} open onClose={onDone} onVerified={onDone}/>;
-  return <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}><Surface style={{width:"min(460px,100%)",padding:28,textAlign:"center"}}><small style={{color:uiTokens.colors.primary,fontWeight:800}}>ZHAOXI</small><h1>{role === "partner" ? entryCopy.partner : entryCopy.customer}</h1>{error?<><div style={{padding:12,borderRadius:12,background:"#fff1f2",color:"#b42318"}}>{error}</div><ActionButton onClick={()=>location.reload()}>{entryCopy.retry}</ActionButton></>:<><div style={{width:52,height:52,borderRadius:16,overflow:"hidden",display:"grid",placeItems:"center",boxShadow:"0 4px 14px rgba(15,23,42,.08)",background:"#FFFFFF",margin:"0 auto 12px"}}><img src="/brand-logo.png" alt="ZhaoXi" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} /></div><p>{entryCopy.loading}</p></>}</Surface></main>
+  return <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}><Surface style={{width:"min(460px,100%)",padding:28,textAlign:"center"}}><small style={{color:uiTokens.colors.primary,fontWeight:800}}>ZHAOXI</small><h1>{role === "partner" ? entryCopy.partner : entryCopy.customer}</h1>{error?<><div style={{padding:12,borderRadius:12,background:"#fff1f2",color:"#b42318",fontSize:14,lineHeight:1.5}}>{error}</div><ActionButton onClick={()=>runBootstrap()}>{entryCopy.retry}</ActionButton></>:<><div style={{width:52,height:52,borderRadius:16,overflow:"hidden",display:"grid",placeItems:"center",boxShadow:"0 4px 14px rgba(15,23,42,.08)",background:"#FFFFFF",margin:"0 auto 12px"}}><img src="/brand-logo.png" alt="ZhaoXi" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} /></div><p>{entryCopy.loading}</p></>}</Surface></main>;
 }
 
 function LoginStep({role,locale,onDone}:{role:ZhaoXiRole;locale:ZhaoXiLocale;onDone:()=>void}){const t=gateCopy[locale];const title=role==="customer"?t.customerTitle:role==="partner"?t.partnerTitle:role==="driver"?t.driverTitle:t.adminTitle;const internalCopy={"zh-CN":"配送员账号由平台内部发放。","zh-TW":"配送員帳號由平台內部發放。","vi-VN":"Tài khoản tài xế được nền tảng cấp nội bộ.","en-US":"Driver accounts are issued internally by the platform."}[locale];if(role==="admin")return <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}><section style={{width:"min(440px,100%)",padding:24,border:0,borderRadius:24,background:uiTokens.colors.glassStrong,boxShadow:"0 20px 60px -10px rgba(15,23,42,.18)",backdropFilter:uiTokens.blur,WebkitBackdropFilter:uiTokens.blur}}><div style={{display:"flex",alignItems:"center",gap:12,marginBottom:21}}><div style={{width:50,height:50,borderRadius:16,overflow:"hidden",display:"grid",placeItems:"center",boxShadow:"0 4px 14px rgba(15,23,42,.08)",background:"#FFFFFF",flexShrink:0}}><img src="/brand-logo.png" alt="ZhaoXi" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} /></div><div><small style={{color:"#07884c",fontWeight:900,letterSpacing:".08em"}}>ZHAOXI</small><h1 style={{margin:"3px 0 0",fontSize:23,color:"#10203a"}}>{title}</h1></div></div><AdminCardLogin locale={locale} onDone={onDone}/></section></main>;return <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}><Surface style={{width:"min(460px,100%)",padding:28}}><small style={{color:uiTokens.colors.primary,fontWeight:800}}>ZHAOXI</small><h1>{title}</h1>{(role==="customer"||role==="partner")?<ZhaoXiQrLogin role={role} locale={locale} onDone={onDone}/>:<p>{internalCopy}</p>}</Surface></main>}

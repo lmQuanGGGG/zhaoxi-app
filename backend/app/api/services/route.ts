@@ -70,6 +70,14 @@ export async function GET(request: Request) {
         }
       }
     }
+
+    for (const row of rows) {
+      const orgMeta = (row.organizationMetadata as Record<string, unknown> | null) || {};
+      const localizedOrg = (orgMeta.localizedNames as Record<string, string> | undefined)?.[locale];
+      if (localizedOrg) {
+        row.organizationName = localizedOrg;
+      }
+    }
     return json({ ok: true, locale, module: moduleCode, data: rows });
   } catch (error) { console.error(error); return errorResponse("Unable to load services.", 500); }
 }

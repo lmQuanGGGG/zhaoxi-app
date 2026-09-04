@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback } from "react";
-import { useZhaoXiLocale } from "@zhaoxi/i18n";
+import { useZhaoXiLocale, localizeOrganizationName, localizeServiceName, localizeServiceModuleName, type ZhaoXiLocale } from "@zhaoxi/i18n";
 import { useClientSWR } from "../_lib/client-cache";
 import FavoriteServiceButton from "./FavoriteServiceButton";
 import { CustomerServiceIcon } from "./CustomerServiceIcon";
@@ -32,18 +32,18 @@ export default function PersonalizedHomeFeed(){
  return <section style={{display:"grid",gap:8,marginTop:8}}>
   {d.intentShortcuts?.length>0&&<section style={box}><b style={sectionTitle}>🔖 {t.shortcuts}</b><div style={chipRail}>{d.intentShortcuts.map((x:any)=><Link key={x.id} href={x.shortcutHref} onClick={()=>{fetch(`/api/customer-intents/${x.id}/use`,{method:"POST"}).catch(()=>{})}} style={chip}>{x.watchEnabled?"🔔 ":x.isPinned?"📌 ":"⌕ "}{x.label}</Link>)}</div></section>}
   {(r||d.recentlyViewedPartners?.length>0)&&<section style={shortcutRow}>
-   {r&&<Link href={r.publicHref} style={resumeShortcut}><b style={shortcutTitle}>▶ {t.resume}</b><div style={shortcutBody}><div style={shortcutThumb}>{r.imageUrl?<img src={r.imageUrl} alt="" style={cover}/>:<CustomerServiceIcon serviceId={r.moduleCode} size={34}/>}</div><div style={{minWidth:0}}><small style={secondary}>{r.moduleName}</small><b style={title}>{r.name}</b><small style={secondary}>{r.organizationName}</small></div></div></Link>}
-   {d.recentlyViewedPartners?.length>0&&<Link href={d.recentlyViewedPartners[0].href} style={partnerShortcut}><b style={shortcutTitle}>🏪 {t.partners}</b><div style={shortcutBody}><span style={partnerShortcutIcon}>🏪</span><div style={{minWidth:0}}><b style={title}>{d.recentlyViewedPartners[0].name}</b>{d.recentlyViewedPartners[0].verifiedBadgeCount>0&&<small style={{...secondary,color:"var(--customer-brand-strong)"}}>✓</small>}</div></div></Link>}
+   {r&&<Link href={r.publicHref} style={resumeShortcut}><b style={shortcutTitle}>▶ {t.resume}</b><div style={shortcutBody}><div style={shortcutThumb}>{r.imageUrl?<img src={r.imageUrl} alt="" style={cover}/>:<CustomerServiceIcon serviceId={r.moduleCode} size={34}/>}</div><div style={{minWidth:0}}><small style={secondary}>{localizeServiceModuleName(locale, r.moduleCode, r.moduleName)}</small><b style={title}>{localizeServiceName(locale, r.name, r.code)}</b><small style={secondary}>{localizeOrganizationName(locale, r.organizationCode, r.organizationName, r.metadata?.organizationMetadata)}</small></div></div></Link>}
+   {d.recentlyViewedPartners?.length>0&&<Link href={d.recentlyViewedPartners[0].href} style={partnerShortcut}><b style={shortcutTitle}>🏪 {t.partners}</b><div style={shortcutBody}><span style={partnerShortcutIcon}>🏪</span><div style={{minWidth:0}}><b style={title}>{localizeOrganizationName(locale, d.recentlyViewedPartners[0].code, d.recentlyViewedPartners[0].name)}</b>{d.recentlyViewedPartners[0].verifiedBadgeCount>0&&<small style={{...secondary,color:"var(--customer-brand-strong)"}}>✓</small>}</div></div></Link>}
   </section>}
-  <Feed title={`♥ ${t.favorites}`} items={d.favorites||[]} favorite/>
-  <Feed title={`✨ ${t.forYou}`} items={d.forYou||[]} layout="grid"/>
+  <Feed locale={locale} title={`♥ ${t.favorites}`} items={d.favorites||[]} favorite/>
+  <Feed locale={locale} title={`✨ ${t.forYou}`} items={d.forYou||[]} layout="grid"/>
  </section>;
 }
 
-function Feed({title,items,favorite=false,layout="rail"}:{title:string;items:any[];favorite?:boolean;layout?:"rail"|"grid"}){
+function Feed({locale,title,items,favorite=false,layout="rail"}:{locale:ZhaoXiLocale;title:string;items:any[];favorite?:boolean;layout?:"rail"|"grid"}){
  if(!items.length)return null;
  const isGrid=layout==="grid";
- return <section style={box}><b style={sectionTitle}>{title}</b><div style={isGrid?grid:scroll}>{items.slice(0,isGrid?3:8).map(x=><div key={x.id} style={isGrid?gridItem:{position:"relative",flex:"0 0 auto",scrollSnapAlign:"start"}}><Link href={x.publicHref} style={isGrid?gridCard:card}><div style={thumb}>{x.imageUrl?<img src={x.imageUrl} alt="" style={cover}/>:<CustomerServiceIcon serviceId={x.moduleCode} size={38}/>}<span style={serviceBadge}><CustomerServiceIcon serviceId={x.moduleCode} size={20}/></span></div><b style={titleStyle}>{x.name}</b><small style={cardSecondary}>{x.organizationName}</small>{x.priceFrom>0&&<small style={price}>{Math.round(x.priceFrom).toLocaleString("vi-VN")} {x.currency}</small>}</Link>{favorite&&<div style={{position:"absolute",right:4,top:4}}><FavoriteServiceButton serviceId={x.id} initial/></div>}</div>)}</div></section>;
+ return <section style={box}><b style={sectionTitle}>{title}</b><div style={isGrid?grid:scroll}>{items.slice(0,isGrid?3:8).map(x=><div key={x.id} style={isGrid?gridItem:{position:"relative",flex:"0 0 auto",scrollSnapAlign:"start"}}><Link href={x.publicHref} style={isGrid?gridCard:card}><div style={thumb}>{x.imageUrl?<img src={x.imageUrl} alt="" style={cover}/>:<CustomerServiceIcon serviceId={x.moduleCode} size={38}/>}<span style={serviceBadge}><CustomerServiceIcon serviceId={x.moduleCode} size={20}/></span></div><b style={titleStyle}>{localizeServiceName(locale, x.name, x.code)}</b><small style={cardSecondary}>{localizeOrganizationName(locale, x.organizationCode, x.organizationName, x.metadata?.organizationMetadata)}</small>{x.priceFrom>0&&<small style={price}>{Math.round(x.priceFrom).toLocaleString("vi-VN")} {x.currency}</small>}</Link>{favorite&&<div style={{position:"absolute",right:4,top:4}}><FavoriteServiceButton serviceId={x.id} initial/></div>}</div>)}</div></section>;
 }
 
 const box={padding:11,border:0,borderRadius:12,background:"#FFFFFF",color:"var(--zx-text)",boxShadow:"0 8px 22px rgba(24,33,30,.055)"}as const;

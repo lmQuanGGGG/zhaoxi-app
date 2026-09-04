@@ -110,5 +110,30 @@ export class SessionService {
     await db.update(authSessions).set({status:"revoked",revokedAt:new Date(),updatedAt:new Date()}).where(and(eq(authSessions.id,sessionId),eq(authSessions.userId,userId)));
     return {revoked:true as const,sessionId};
   }
+
+  async switchOrganization(accessToken:string, targetOrganizationId:string) {
+    const db = getDb();
+    const tokenHash = hashAuthToken(accessToken);
+    const row = (await db.select().from(authSessions).where(and(eq(authSessions.accessTokenHash, tokenHash), eq(authSessions.status, "active"))).limit(1))[0];
+    if (!row || row.refreshExpiresAt.getTime() <= Date.now()) return null;
+
+    if (row.role === "partner") {
+      const membership = (await db.select().from(organizationMembers).where(and(
+        eq(organizationMembers.organizationId, targetOrganizationId),
+        eq(organizationMembers.userId, row.userId),
+        eq(organizationMembers.isActive, true)
+      )).limit(1))[0];
+      if (!membership) throw new Error("ORGANIZATION_ACCESS_DENIED");
+    }
+
+    const [updated] = await db.update(authSessions).set({
+      organizationId: targetOrganizationId,
+      lastSeenAt: new Date(),
+      updatedAt: new Date(),
+    }).where(eq(authSessions.id, row.id)).returning();
+
+    if (!updated) return null;
+    return publicSession(updated);
+  }
 }
 export const sessionService=new SessionService();

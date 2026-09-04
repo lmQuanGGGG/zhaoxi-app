@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
-import { useZhaoXiLocale, localizeOrganizationName } from "@zhaoxi/i18n";
+import { useZhaoXiLocale, localizeOrganizationName, localizeServiceName } from "@zhaoxi/i18n";
 import { useZhaoXiCart } from "@zhaoxi/cart";
 import { useZhaoXiSession } from "@zhaoxi/auth";
 import { getCached, setCached } from "../../_lib/client-cache";
@@ -120,7 +120,7 @@ export default function RestaurantDetail({ organizationId }: { organizationId: s
         serviceId: item.id,
         organizationId: item.organizationId,
         organizationName: localizeOrganizationName(locale, item.organizationCode, item.organizationName, item.organizationMetadata),
-        name: item.name || item.code,
+        name: localizeServiceName(locale, item.name || item.code),
         imageUrl: image,
         unitPrice,
         currency: item.currency || "VND",
@@ -176,8 +176,8 @@ export default function RestaurantDetail({ organizationId }: { organizationId: s
             return (
               <article className={styles.menuItem} key={item.id} style={{ opacity: available ? 1 : 0.58 }}>
                 <div className={styles.menuMain}>
-                  {image ? <img src={image} alt={item.name || item.code} className={styles.menuImage} /> : <div className={styles.menuImage}><CustomerServiceIcon serviceId="food" size={40}/></div>}
-                  <div><h3>{item.name || item.code}</h3><p>{item.summary}</p><strong>{money(unit, item.currency)}</strong>{priceInfo?.promoActive&&<><small style={{marginLeft:6,textDecoration:"line-through",color:"#94a3b8"}}>{money(baseUnit,item.currency)}</small><em style={{display:"block",marginTop:4,color:"#c2410c",fontSize:8,fontStyle:"normal",fontWeight:850}}>{priceInfo.promotionLabel||t.promo}</em></>}{!available && <small className={styles.soldOutText}>{priceInfo?.scheduledAvailable===false?t.scheduledOff:t.soldOut}</small>}</div>
+                  {image ? <img src={image} alt={localizeServiceName(locale, item.name || item.code)} className={styles.menuImage} /> : <div className={styles.menuImage}><CustomerServiceIcon serviceId="food" size={40}/></div>}
+                  <div><h3>{localizeServiceName(locale, item.name || item.code)}</h3><p>{item.summary}</p><strong>{money(unit, item.currency)}</strong>{priceInfo?.promoActive&&<><small style={{marginLeft:6,textDecoration:"line-through",color:"#94a3b8"}}>{money(baseUnit,item.currency)}</small><em style={{display:"block",marginTop:4,color:"#c2410c",fontSize:8,fontStyle:"normal",fontWeight:850}}>{priceInfo.promotionLabel||t.promo}</em></>}{!available && <small className={styles.soldOutText}>{priceInfo?.scheduledAvailable===false?t.scheduledOff:t.soldOut}</small>}</div>
                 </div>
                 <div className={styles.menuBottom}>
                   <div className={styles.menuQuantity}><button disabled={!available || quantity === 0} onClick={(event) => change(event, item.id, -1)}>−</button><b>{quantity}</b><button disabled={!available} onClick={(event) => change(event, item.id, 1)}>+</button></div>

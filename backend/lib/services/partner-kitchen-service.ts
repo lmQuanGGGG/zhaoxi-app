@@ -46,6 +46,8 @@ export class PartnerKitchenService{
       estimatedMinutes:Number(d.estimatedMinutes||0),estimatedReadyAt:readyAt?.toISOString()||null,
       preparationStartedAt:startedAt.toISOString(),overdueMinutes,elapsedMinutes,late:overdueMinutes>0,
       courierName:String(d.courierName||""),courierReference:String(d.courierReference||""),
+      deliveryProvider:String(d.deliveryProvider||""),deliveryProviderLabel:String(d.deliveryProviderLabel||""),
+      deliveryPricingMode:String(d.deliveryPricingMode||""),
       sortScore,createdAt:row.createdAt.toISOString(),
     };
   }).filter(Boolean) as any[];

@@ -8,7 +8,7 @@ import CustomerLocationBar from "./CustomerLocationBar";
 import {CustomerServiceIcon} from "./CustomerServiceIcon";
 import {CustomerIcon} from "./CustomerIcon";
 import {readSessionPoint,subscribeSessionPoint,type SessionPoint} from "../_lib/customer-location";
-import { localizeOrganizationName, useZhaoXiLocale } from "@zhaoxi/i18n";
+import { localizeOrganizationName, localizeServiceName, useZhaoXiLocale } from "@zhaoxi/i18n";
 import { useZhaoXiCart } from "@zhaoxi/cart";
 import { useZhaoXiSession } from "@zhaoxi/auth";
 import { getCached, setCached } from "../_lib/client-cache";
@@ -166,7 +166,7 @@ export default function ServiceBrowser({ moduleCode }: { moduleCode: string }) {
         serviceId: item.id,
         organizationId: item.organizationId,
         organizationName: localizeOrganizationName(locale, item.organizationCode, item.organizationName, item.organizationMetadata),
-        name: item.name || item.code,
+        name: localizeServiceName(locale, item.name || item.code),
         imageUrl: image,
         unitPrice,
         currency: item.currency || "VND",
@@ -190,7 +190,7 @@ export default function ServiceBrowser({ moduleCode }: { moduleCode: string }) {
 
   const isFood=moduleCode==="food";const currentMeta=(moduleMeta[locale]||moduleMeta["en-US"])[moduleCode]||{title:t.services};
 
-  if(!isFood){return <main className={styles.shell}><header className={styles.header}><div className={styles.foodHeaderBar}><Link href="/" className={styles.backButton}>‹ <span>{t.back}</span></Link><div className={styles.headerTitle}><span><CustomerServiceIcon serviceId={moduleCode} size={40}/></span><div><b>{currentMeta.title}</b><small>{filtered.length} {t.results}</small></div></div></div></header><section className={styles.body}><div className={styles.locationWrap}><CustomerLocationBar inline/></div><label className={styles.search}><CustomerIcon name="search"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={t.serviceSearch}/></label>{status==="loading"&&<State text={t.loading}/>} {status==="error"&&<State text={t.error}/>} {status==="ready"&&!filtered.length&&<State text={t.empty}/>}<div className={styles.genericServiceList}>{filtered.map(item=>{const image=String(item.metadata?.imageUrl||"");return <Link href={`/service/${item.id}`} key={item.id} className={styles.genericServiceCard}>{image?<img src={image} alt=""/>:<span><CustomerServiceIcon serviceId={moduleCode} size={44}/></span>}<div><b>{item.name||item.code}</b><p>{item.summary}</p><small>{localizeOrganizationName(locale,item.organizationCode,item.organizationName,item.organizationMetadata)}</small>{item.distanceKm!==null&&item.distanceKm!==undefined&&<em className={styles.distanceBadge}>⌖ {item.distanceKm.toFixed(1)} km</em>}{Number(item.priceFrom||0)>0&&<strong>{money(Number(item.priceFrom),item.currency)}</strong>}</div><i>›</i></Link>})}</div></section><MiniTabBar/></main>}
+  if(!isFood){return <main className={styles.shell}><header className={styles.header}><div className={styles.foodHeaderBar}><Link href="/" className={styles.backButton}>‹ <span>{t.back}</span></Link><div className={styles.headerTitle}><span><CustomerServiceIcon serviceId={moduleCode} size={40}/></span><div><b>{currentMeta.title}</b><small>{filtered.length} {t.results}</small></div></div></div></header><section className={styles.body}><div className={styles.locationWrap}><CustomerLocationBar inline/></div><label className={styles.search}><CustomerIcon name="search"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={t.serviceSearch}/></label>{status==="loading"&&<State text={t.loading}/>} {status==="error"&&<State text={t.error}/>} {status==="ready"&&!filtered.length&&<State text={t.empty}/>}<div className={styles.genericServiceList}>{filtered.map(item=>{const image=String(item.metadata?.imageUrl||"");return <Link href={`/service/${item.id}`} key={item.id} className={styles.genericServiceCard}>{image?<img src={image} alt=""/>:<span><CustomerServiceIcon serviceId={moduleCode} size={44}/></span>}<div><b>{localizeServiceName(locale, item.name || item.code)}</b><p>{item.summary}</p><small>{localizeOrganizationName(locale,item.organizationCode,item.organizationName,item.organizationMetadata)}</small>{item.distanceKm!==null&&item.distanceKm!==undefined&&<em className={styles.distanceBadge}>⌖ {item.distanceKm.toFixed(1)} km</em>}{Number(item.priceFrom||0)>0&&<strong>{money(Number(item.priceFrom),item.currency)}</strong>}</div><i>›</i></Link>})}</div></section><MiniTabBar/></main>}
 
   return (
     <main className={styles.shell}>
@@ -249,8 +249,8 @@ export default function ServiceBrowser({ moduleCode }: { moduleCode: string }) {
                     return (
                       <article className={styles.menuItem} key={item.id} style={{ opacity: available ? 1 : 0.58 }}>
                         <Link href={available ? `/service/${item.id}` : "#"} onClick={(event) => { if (!available) event.preventDefault(); }} className={styles.menuMain}>
-                          {image ? <img src={image} alt={item.name || item.code} className={styles.menuImage} style={{ objectFit: "cover" }} /> : <div className={styles.menuImage}><CustomerServiceIcon serviceId="food" size={40}/></div>}
-                          <div><h3>{item.name || item.code}</h3><p>{item.summary}</p><strong>{unitPrice ? money(unitPrice, item.currency) : ""}</strong>{priceInfo?.promoActive&&<><small style={{marginLeft:6,textDecoration:"line-through",color:"#94a3b8"}}>{money(baseUnitPrice,item.currency)}</small><em style={{display:"inline-block",marginTop:4,padding:"3px 6px",borderRadius:999,background:"#fff7ed",color:"#c2410c",fontSize:8,fontStyle:"normal",fontWeight:850}}>{priceInfo.promotionLabel||t.promo}</em></>}{!available && <small style={{ display: "block", color: "#dc2626", fontWeight: 900, marginTop: 4 }}>{priceInfo?.scheduledAvailable===false?t.scheduledOff:t.soldOut}</small>}</div>
+                          {image ? <img src={image} alt={localizeServiceName(locale, item.name || item.code)} className={styles.menuImage} style={{ objectFit: "cover" }} /> : <div className={styles.menuImage}><CustomerServiceIcon serviceId="food" size={40}/></div>}
+                          <div><h3>{localizeServiceName(locale, item.name || item.code)}</h3><p>{item.summary}</p><strong>{unitPrice ? money(unitPrice, item.currency) : ""}</strong>{priceInfo?.promoActive&&<><small style={{marginLeft:6,textDecoration:"line-through",color:"#94a3b8"}}>{money(baseUnitPrice,item.currency)}</small><em style={{display:"inline-block",marginTop:4,padding:"3px 6px",borderRadius:999,background:"#fff7ed",color:"#c2410c",fontSize:8,fontStyle:"normal",fontWeight:850}}>{priceInfo.promotionLabel||t.promo}</em></>}{!available && <small style={{ display: "block", color: "#dc2626", fontWeight: 900, marginTop: 4 }}>{priceInfo?.scheduledAvailable===false?t.scheduledOff:t.soldOut}</small>}</div>
                         </Link>
                         <div className={styles.menuBottom}>
                           <div className={styles.menuQuantity}><button disabled={!available || quantity === 0} onClick={(event) => change(event, item.id, -1)}>−</button><b>{quantity}</b><button disabled={!available} onClick={(event) => change(event, item.id, 1)}>+</button></div>
