@@ -8,12 +8,14 @@ import { RuntimeGate } from "@zhaoxi/runtime-control";
 export const metadata: Metadata = {
   title: "ZhaoXi Partner",
   description: "ZhaoXi Partner Center",
+  manifest: "/manifest.webmanifest",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: "#07c160",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

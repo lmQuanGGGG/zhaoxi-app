@@ -999,3 +999,4 @@ input:-webkit-autofill:active {
   border: 0 !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+.zx-enable-order-notifications{position:fixed;right:16px;bottom:max(84px,calc(env(safe-area-inset-bottom) + 16px));z-index:90;border:0;border-radius:999px;background:#087f5b;color:#fff;padding:11px 15px;font:800 13px/1 system-ui;box-shadow:0 10px 24px rgba(6,95,70,.26);cursor:pointer}
