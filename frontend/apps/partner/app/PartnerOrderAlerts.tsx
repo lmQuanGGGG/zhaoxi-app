@@ -1,6 +1,6 @@
 "use client";
 import {useCallback,useEffect,useRef,useState} from "react";
-import {refreshServerSession,useZhaoXiSession} from "@zhaoxi/auth";
+import {useZhaoXiSession} from "@zhaoxi/auth";
 import {useZhaoXiLocale} from "@zhaoxi/i18n";
 import type{ServiceRequestRow}from"@zhaoxi/sdk";
 import {IosPersonIcon,IosPhoneIcon} from "./IosIcons";
@@ -65,7 +65,36 @@ export default function PartnerOrderAlerts(){const session=useZhaoXiSession();co
  useEffect(()=>{const unlock=()=>{try{const AudioCtx=window.AudioContext||(window as unknown as {webkitAudioContext:typeof AudioContext}).webkitAudioContext;if(AudioCtx){const c=new AudioCtx();c.resume().then(()=>c.close()).catch(()=>{})}}catch{}};window.addEventListener("click",unlock,{once:true});window.addEventListener("touchstart",unlock,{once:true});window.addEventListener("keydown",unlock,{once:true});return()=>{window.removeEventListener("click",unlock);window.removeEventListener("touchstart",unlock);window.removeEventListener("keydown",unlock)}},[]);
  function close(mark=true){if(order&&mark)seen.current.add(order.id);setOrder(null);setStep("order");setEta(15)}
  async function reject(){if(!order)return;await fetch(`/api/partner-fulfillment/${order.id}`,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({action:"cancelled",note:"partner_cancelled_before_accept"})});close()}
- async function confirm(){if(!order||confirming)return;setConfirming(true);setNotice("");try{const active=await refreshServerSession();if(!active||active.role!=="partner"){setNotice(t.authExpired);return}const response=await fetch(`/api/partner-fulfillment/${order.id}`,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({action:"accept",estimatedMinutes:eta,note:`partner_accept_eta:${eta}`})});if(response.ok){try{new Audio("data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAACAqKCgoKCgoKCgoKCgoA==").play()}catch{}close()}else{const payload=await response.json().catch(()=>null);setNotice(String(payload?.error?.message||payload?.error?.code||t.confirmFailed))}}catch{setNotice(t.confirmFailed)}finally{setConfirming(false)}}
+ async function confirm(){
+  if(!order||confirming)return;
+  const pendingOrder=order;
+  const pendingEta=eta;
+  setConfirming(true);
+  setNotice("");
+  // The order is accepted optimistically. Authentication is checked by this
+  // one mutation request instead of waiting for a separate refresh request.
+  close();
+  try{
+   const response=await fetch(`/api/partner-fulfillment/${pendingOrder.id}`,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({action:"accept",estimatedMinutes:pendingEta,note:`partner_accept_eta:${pendingEta}`})});
+   if(!response.ok){
+    const payload=await response.json().catch(()=>null);
+    seen.current.delete(pendingOrder.id);
+    setOrder(pendingOrder);
+    setStep("eta");
+    setEta(pendingEta);
+    setNotice(response.status===401||response.status===403?t.authExpired:String(payload?.error?.message||payload?.error?.code||t.confirmFailed));
+    return;
+   }
+   try{new Audio("data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAACAqKCgoKCgoKCgoKCgoA==").play()}catch{}
+   window.dispatchEvent(new CustomEvent("zhaoxi:fulfillment-updated",{detail:{id:pendingOrder.id,action:"accept",estimatedMinutes:pendingEta}}));
+  }catch{
+   seen.current.delete(pendingOrder.id);
+   setOrder(pendingOrder);
+   setStep("eta");
+   setEta(pendingEta);
+   setNotice(t.confirmFailed);
+  }finally{setConfirming(false)}
+ }
  if(!order)return null;const d=order.details||{};
  const displayPhone = (typeof d.recipientPhone === "string" && d.recipientPhone.trim()) ? d.recipientPhone.trim() : (order.customerPhone || "");
  const isFriend = Boolean(typeof d.recipientPhone === "string" && d.recipientPhone.trim() && d.recipientPhone.trim() !== order.customerPhone);
