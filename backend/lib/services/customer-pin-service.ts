@@ -24,6 +24,16 @@ function normalizePhone(value: unknown) {
   return /^\+[1-9]\d{7,14}$/.test(phone) ? phone : "";
 }
 
+function normalizeUsername(value: unknown) {
+  const username = String(value || "").trim().toLowerCase();
+  return /^[a-z0-9][a-z0-9._-]{2,31}$/.test(username) ? username : "";
+}
+
+function normalizeLegacyEmail(value: unknown) {
+  const email = String(value || "").trim().toLowerCase();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email.slice(0, 255) : "";
+}
+
 async function hashPin(pin: string) {
   const salt = crypto.randomBytes(16).toString("base64url");
   const derived = await scrypt(pin, salt, 64) as Buffer;
@@ -62,14 +72,17 @@ export class CustomerPinService {
 
   async login(input: Record<string, unknown>) {
     const phone = normalizePhone(input.phone);
-    const email = typeof input.email === "string" ? input.email.trim().toLowerCase() : "";
+    const username = normalizeUsername(input.username);
+    const legacyEmail = normalizeLegacyEmail(input.username);
     const pin = input.pin;
-    if ((!phone && !email) || !validPin(pin)) {
-      throw new CustomerPinError("LOGIN_INVALID", 422, "Email hoặc số điện thoại và mã PIN 6 số là bắt buộc.");
+    if ((!phone && !username && !legacyEmail) || !validPin(pin)) {
+      throw new CustomerPinError("LOGIN_INVALID", 422, "Tên đăng nhập hoặc số điện thoại và mã PIN 6 số là bắt buộc.");
     }
     const db = getDb();
-    const condition = email
-      ? and(eq(users.email, email), eq(users.status, "active"))
+    const condition = username
+      ? and(eq(users.username, username), eq(users.status, "active"))
+      : legacyEmail
+        ? and(eq(users.email, legacyEmail), eq(users.status, "active"))
       : and(eq(users.phone, phone), eq(users.status, "active"));
     const [user] = await db.select().from(users).where(condition).limit(1);
     if (!user || user.isGuest || !user.pinHash) {

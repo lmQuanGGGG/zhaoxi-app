@@ -568,7 +568,7 @@ export function IdentityUpgradeSheet({
   const [authTab, setAuthTab] = useState<"email" | "pin">("email");
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [usePinLogin, setUsePinLogin] = useState(false);
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -595,7 +595,7 @@ export function IdentityUpgradeSheet({
     setPinValue("");
     setPinConfirm("");
     setNameValue("");
-    setEmail("");
+    setUsername("");
     setPassword("");
     setConfirmPassword("");
     setShowPassword(false);
@@ -631,12 +631,12 @@ export function IdentityUpgradeSheet({
 
   const emailCopy = {
     "zh-CN": {
-      tabEmail: "账号密码",
+      tabEmail: "用户名与密码",
       tabPin: "6 位密码登录",
       tabSignIn: "登录",
       tabSignUp: "注册新账号",
-      email: "电子邮箱",
-      emailPlaceholder: "例如 yourname@email.com",
+      email: "登录用户名",
+      emailPlaceholder: "例如 quang.nguyen",
       password: "密码",
       passwordPlaceholder: "输入至少 6 位密码",
       confirmPassword: "确认密码",
@@ -647,7 +647,7 @@ export function IdentityUpgradeSheet({
       forgotPasswordPin: "忘记密码？使用 6 位 PIN 码快速登录",
       backToPassword: "← 返回密码登录",
       pinLoginTitle: "6 位安全码登录",
-      pinLoginHint: "输入注册邮箱与 6 位安全 PIN 码即可快速登录。",
+      pinLoginHint: "输入注册用户名与 6 位安全 PIN 码即可快速登录。",
       autoHint: "密码已加密。注册后可设置 6 位安全码以防遗忘。",
     },
     "zh-TW": {
@@ -655,8 +655,8 @@ export function IdentityUpgradeSheet({
       tabPin: "6 位密碼登入",
       tabSignIn: "登入",
       tabSignUp: "註冊新帳號",
-      email: "電子郵件",
-      emailPlaceholder: "例如 yourname@email.com",
+      email: "登入使用者名稱",
+      emailPlaceholder: "例如 quang.nguyen",
       password: "密碼",
       passwordPlaceholder: "輸入至少 6 位密碼",
       confirmPassword: "確認密碼",
@@ -667,16 +667,16 @@ export function IdentityUpgradeSheet({
       forgotPasswordPin: "忘記密碼？使用 6 位 PIN 碼快速登入",
       backToPassword: "← 返回密碼登入",
       pinLoginTitle: "6 位安全碼登入",
-      pinLoginHint: "輸入註冊信箱與 6 位安全 PIN 碼即可快速登入。",
+      pinLoginHint: "輸入註冊使用者名稱與 6 位安全 PIN 碼即可快速登入。",
       autoHint: "密碼已加密。註冊後可設定 6 位安全碼以防遺忘。",
     },
     "vi-VN": {
-      tabEmail: "Email & Mật khẩu",
+      tabEmail: "Tên đăng nhập & Mật khẩu",
       tabPin: "Mã PIN 6 số",
       tabSignIn: "Đăng nhập",
       tabSignUp: "Đăng ký mới",
-      email: "Địa chỉ Email",
-      emailPlaceholder: "Ví dụ: yourname@email.com",
+      email: "Tên đăng nhập",
+      emailPlaceholder: "Ví dụ: quang.nguyen",
       password: "Mật khẩu",
       passwordPlaceholder: "Nhập tối thiểu 6 ký tự",
       confirmPassword: "Nhập lại mật khẩu",
@@ -687,16 +687,16 @@ export function IdentityUpgradeSheet({
       forgotPasswordPin: "Quên mật khẩu? Đăng nhập bằng mã PIN 6 số",
       backToPassword: "← Quay lại đăng nhập bằng mật khẩu",
       pinLoginTitle: "Đăng nhập bằng mã PIN 6 số",
-      pinLoginHint: "Nhập email và mã PIN 6 số bạn đã tạo để đăng nhập ngay.",
+      pinLoginHint: "Nhập tên đăng nhập và mã PIN 6 số bạn đã tạo để đăng nhập ngay.",
       autoHint: "Mật khẩu được bảo mật. Bạn sẽ được tạo mã PIN 6 số để phòng quên.",
     },
     "en-US": {
-      tabEmail: "Email & Password",
+      tabEmail: "Username & Password",
       tabPin: "6-digit PIN",
       tabSignIn: "Sign In",
       tabSignUp: "Sign Up",
-      email: "Email address",
-      emailPlaceholder: "e.g. yourname@email.com",
+      email: "Username",
+      emailPlaceholder: "e.g. quang.nguyen",
       password: "Password",
       passwordPlaceholder: "At least 6 characters",
       confirmPassword: "Confirm Password",
@@ -707,7 +707,7 @@ export function IdentityUpgradeSheet({
       forgotPasswordPin: "Forgot password? Sign in with 6-digit PIN",
       backToPassword: "← Back to password sign in",
       pinLoginTitle: "Sign in with 6-digit PIN",
-      pinLoginHint: "Enter your email and 6-digit PIN to sign in quickly.",
+      pinLoginHint: "Enter your username and 6-digit PIN to sign in quickly.",
       autoHint: "Passwords are secured. You will create a 6-digit PIN as a backup.",
     },
   }[locale];
@@ -769,10 +769,10 @@ export function IdentityUpgradeSheet({
     "en-US": { title: "Set your display name", hint: "So partners and drivers know how to address you.", label: "Full name / Display name", placeholder: "e.g. Alex, John...", save: "Save and continue", skip: "Skip for now" },
   }[locale];
   const pinCopy = {
-    "zh-CN": { setup: "设置 6 位安全码", setupHint: "设置 6 位安全 PIN 码，若以后忘记密码，可直接输入该 6 位码快速登录。", confirm: "再次输入 6 位密码", save: "保存安全码并继续", login: "用 6 位密码登录", loginHint: "输入注册邮箱或手机号以及 6 位安全码快速登录。", signIn: "登录", pin: "6 位密码", mismatch: "两次输入的 6 位密码不一致。" },
-    "zh-TW": { setup: "設定 6 位安全碼", setupHint: "設定 6 位安全 PIN 碼，若以後忘記密碼，可直接輸入該 6 位碼快速登入。", confirm: "再次輸入 6 位密碼", save: "儲存安全碼並繼續", login: "使用 6 位密碼登入", loginHint: "輸入註冊信箱或手機號碼以及 6 位安全碼快速登入。", signIn: "登入", pin: "6 位密碼", mismatch: "兩次輸入的 6 位密碼不一致。" },
-    "vi-VN": { setup: "Tạo mã PIN 6 số bảo mật", setupHint: "Tạo mã PIN 6 số để sau này nếu lỡ quên mật khẩu, bạn có thể dùng mã PIN này để đăng nhập ngay.", confirm: "Nhập lại mã PIN 6 số", save: "Lưu mã PIN & Tiếp tục", login: "Đăng nhập bằng PIN 6 số", loginHint: "Nhập email hoặc số điện thoại và mã PIN 6 số của bạn.", signIn: "Đăng nhập", pin: "Mã PIN 6 số", mismatch: "Hai mã PIN 6 số chưa khớp." },
-    "en-US": { setup: "Create a 6-digit PIN", setupHint: "Create a 6-digit PIN so you can sign in anytime if you forget your password.", confirm: "Confirm 6-digit PIN", save: "Save PIN & Continue", login: "Sign in with 6-digit PIN", loginHint: "Enter your email or phone and your 6-digit PIN.", signIn: "Sign in", pin: "6-digit PIN", mismatch: "6-digit PINs do not match." },
+    "zh-CN": { setup: "设置 6 位安全码", setupHint: "设置 6 位安全 PIN 码，若以后忘记密码，可直接输入该 6 位码快速登录。", confirm: "再次输入 6 位密码", save: "保存安全码并继续", login: "用 6 位密码登录", loginHint: "输入注册用户名或手机号以及 6 位安全码快速登录。", signIn: "登录", pin: "6 位密码", mismatch: "两次输入的 6 位密码不一致。" },
+    "zh-TW": { setup: "設定 6 位安全碼", setupHint: "設定 6 位安全 PIN 碼，若以後忘記密碼，可直接輸入該 6 位碼快速登入。", confirm: "再次輸入 6 位密碼", save: "儲存安全碼並繼續", login: "使用 6 位密碼登入", loginHint: "輸入註冊使用者名稱或手機號碼以及 6 位安全碼快速登入。", signIn: "登入", pin: "6 位密碼", mismatch: "兩次輸入的 6 位密碼不一致。" },
+    "vi-VN": { setup: "Tạo mã PIN 6 số bảo mật", setupHint: "Tạo mã PIN 6 số để sau này nếu lỡ quên mật khẩu, bạn có thể dùng mã PIN này để đăng nhập ngay.", confirm: "Nhập lại mã PIN 6 số", save: "Lưu mã PIN & Tiếp tục", login: "Đăng nhập bằng PIN 6 số", loginHint: "Nhập tên đăng nhập hoặc số điện thoại và mã PIN 6 số của bạn.", signIn: "Đăng nhập", pin: "Mã PIN 6 số", mismatch: "Hai mã PIN 6 số chưa khớp." },
+    "en-US": { setup: "Create a 6-digit PIN", setupHint: "Create a 6-digit PIN so you can sign in anytime if you forget your password.", confirm: "Confirm 6-digit PIN", save: "Save PIN & Continue", login: "Sign in with 6-digit PIN", loginHint: "Enter your username or phone and your 6-digit PIN.", signIn: "Sign in", pin: "6-digit PIN", mismatch: "6-digit PINs do not match." },
   }[locale];
 
   async function startOtp() {
@@ -899,10 +899,11 @@ export function IdentityUpgradeSheet({
     }
   }
 
-  async function loginWithEmail() {
-    const trimmedEmail = email.trim().toLowerCase();
-    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      setError(locale === "vi-VN" ? "Vui lòng nhập địa chỉ email hợp lệ." : "Please enter a valid email address.");
+  async function loginWithUsername() {
+    const normalizedUsername = username.trim().toLowerCase();
+    const isLegacyEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedUsername);
+    if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(normalizedUsername) && !(authMode === "login" && isLegacyEmail)) {
+      setError(locale === "vi-VN" ? "Tên đăng nhập gồm 3–32 ký tự: chữ cái, số, dấu chấm, gạch dưới hoặc gạch ngang." : "Username must be 3–32 characters using letters, numbers, dots, underscores, or hyphens.");
       return;
     }
     if (password.length < 6) {
@@ -923,7 +924,7 @@ export function IdentityUpgradeSheet({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           role,
-          email: trimmedEmail,
+          username: normalizedUsername,
           password,
           mode: authMode,
           locale,
@@ -988,13 +989,14 @@ export function IdentityUpgradeSheet({
       setError(locale === "vi-VN" ? "Vui lòng nhập đủ 6 chữ số mã PIN." : "PIN must be 6 digits.");
       return;
     }
-    const trimmedEmail = email.trim().toLowerCase();
-    const isEmailLogin = usePinLogin || (!normalizedPhone && trimmedEmail);
-    if (isEmailLogin && (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail))) {
-      setError(locale === "vi-VN" ? "Vui lòng nhập email đã đăng ký tài khoản." : "Please enter a valid email address.");
+    const normalizedUsername = username.trim().toLowerCase();
+    const isUsernameLogin = usePinLogin || (!normalizedPhone && normalizedUsername);
+    const isLegacyEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedUsername);
+    if (isUsernameLogin && !/^[a-z0-9][a-z0-9._-]{2,31}$/.test(normalizedUsername) && !isLegacyEmail) {
+      setError(locale === "vi-VN" ? "Vui lòng nhập tên đăng nhập đã đăng ký." : "Please enter your registered username.");
       return;
     }
-    if (!isEmailLogin && !/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) {
+    if (!isUsernameLogin && !/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) {
       setError(locale === "vi-VN" ? "Vui lòng nhập số điện thoại hợp lệ." : "Please enter a valid phone number.");
       return;
     }
@@ -1006,8 +1008,8 @@ export function IdentityUpgradeSheet({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           role,
-          email: isEmailLogin ? trimmedEmail : undefined,
-          phone: !isEmailLogin ? normalizedPhone : undefined,
+          username: isUsernameLogin ? normalizedUsername : undefined,
+          phone: !isUsernameLogin ? normalizedPhone : undefined,
           pin: pinValue,
           deviceId: getDeviceId(),
           deviceName: deviceName(),
@@ -1165,7 +1167,7 @@ export function IdentityUpgradeSheet({
           : usePinLogin
           ? emailCopy.pinLoginHint
           : authMode === "register"
-          ? (locale === "vi-VN" ? "Tạo tài khoản với email và mật khẩu an toàn." : "Create an account with email and password.")
+          ? (locale === "vi-VN" ? "Tạo tài khoản với tên đăng nhập và mật khẩu an toàn." : "Create an account with a username and password.")
           : (role === "partner" && authTab === "pin")
           ? pinCopy.loginHint
           : c.body}
@@ -1566,10 +1568,12 @@ export function IdentityUpgradeSheet({
                   <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
                     {emailCopy.email}
                     <input
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      type="email"
-                      autoComplete="email"
+                      value={username}
+                      onChange={e => setUsername(e.target.value)}
+                      type="text"
+                      autoComplete="username"
+                      autoCapitalize="none"
+                      spellCheck={false}
                       placeholder={emailCopy.emailPlaceholder}
                       style={{
                         width: "100%",
@@ -1616,7 +1620,7 @@ export function IdentityUpgradeSheet({
                   </label>
                   <button
                     type="button"
-                    disabled={busy || pinValue.length !== 6 || !email.trim()}
+                    disabled={busy || pinValue.length !== 6 || !username.trim()}
                     onClick={() => void loginWithPin()}
                     style={{
                       width: "100%",
@@ -1627,8 +1631,8 @@ export function IdentityUpgradeSheet({
                       border: 0,
                       fontWeight: 800,
                       fontSize: 15,
-                      cursor: busy || pinValue.length !== 6 || !email.trim() ? "not-allowed" : "pointer",
-                      opacity: busy || pinValue.length !== 6 || !email.trim() ? 0.6 : 1,
+                      cursor: busy || pinValue.length !== 6 || !username.trim() ? "not-allowed" : "pointer",
+                      opacity: busy || pinValue.length !== 6 || !username.trim() ? 0.6 : 1,
                       boxShadow: "none",
                     }}
                   >
@@ -1658,10 +1662,12 @@ export function IdentityUpgradeSheet({
                   <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
                     {emailCopy.email}
                     <input
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      type="email"
-                      autoComplete="email"
+                      value={username}
+                      onChange={e => setUsername(e.target.value)}
+                      type="text"
+                      autoComplete="username"
+                      autoCapitalize="none"
+                      spellCheck={false}
                       placeholder={emailCopy.emailPlaceholder}
                       style={{
                         width: "100%",
@@ -1688,7 +1694,7 @@ export function IdentityUpgradeSheet({
                         type={showPassword ? "text" : "password"}
                         autoComplete={authMode === "login" ? "current-password" : "new-password"}
                         placeholder={emailCopy.passwordPlaceholder}
-                        onKeyDown={e => { if (e.key === "Enter" && authMode === "login") void loginWithEmail(); }}
+                        onKeyDown={e => { if (e.key === "Enter" && authMode === "login") void loginWithUsername(); }}
                         style={{
                           width: "100%",
                           boxSizing: "border-box",
@@ -1738,7 +1744,7 @@ export function IdentityUpgradeSheet({
                           type={showConfirmPassword ? "text" : "password"}
                           autoComplete="new-password"
                           placeholder={emailCopy.confirmPasswordPlaceholder}
-                          onKeyDown={e => { if (e.key === "Enter") void loginWithEmail(); }}
+                          onKeyDown={e => { if (e.key === "Enter") void loginWithUsername(); }}
                           style={{
                             width: "100%",
                             boxSizing: "border-box",
@@ -1781,8 +1787,8 @@ export function IdentityUpgradeSheet({
 
                   <button
                     type="button"
-                    disabled={busy || !email.trim() || password.length < 6 || (authMode === "register" && confirmPassword.length < 6)}
-                    onClick={() => void loginWithEmail()}
+                    disabled={busy || !username.trim() || password.length < 6 || (authMode === "register" && confirmPassword.length < 6)}
+                    onClick={() => void loginWithUsername()}
                     style={{
                       width: "100%",
                       height: 50,
@@ -1792,8 +1798,8 @@ export function IdentityUpgradeSheet({
                       border: 0,
                       fontWeight: 800,
                       fontSize: 15,
-                      cursor: busy || !email.trim() || password.length < 6 || (authMode === "register" && confirmPassword.length < 6) ? "not-allowed" : "pointer",
-                      opacity: busy || !email.trim() || password.length < 6 || (authMode === "register" && confirmPassword.length < 6) ? 0.6 : 1,
+                      cursor: busy || !username.trim() || password.length < 6 || (authMode === "register" && confirmPassword.length < 6) ? "not-allowed" : "pointer",
+                      opacity: busy || !username.trim() || password.length < 6 || (authMode === "register" && confirmPassword.length < 6) ? 0.6 : 1,
                       boxShadow: "none",
                       marginTop: 2,
                     }}

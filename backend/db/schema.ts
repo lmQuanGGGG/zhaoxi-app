@@ -64,6 +64,7 @@ export const users = pgTable(
     avatarUrl: text("avatar_url"),
     phone: varchar("phone", { length: 30 }),
     email: varchar("email", { length: 255 }),
+    username: varchar("username", { length: 64 }),
     preferredLocale: varchar("preferred_locale", { length: 10 })
       .notNull()
       .default("zh-CN")
@@ -84,6 +85,7 @@ export const users = pgTable(
     uniqueIndex("users_wechat_open_id_unique").on(table.wechatOpenId),
     index("users_phone_idx").on(table.phone),
     index("users_email_idx").on(table.email),
+    index("users_username_idx").on(table.username),
   ],
 );
 

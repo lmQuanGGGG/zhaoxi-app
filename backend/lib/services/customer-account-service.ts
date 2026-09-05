@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { promisify } from "node:util";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { users } from "@/db/schema";
 import { sessionService } from "@/lib/services/session-service";
@@ -13,10 +13,15 @@ export class CustomerAccountError extends Error {
   }
 }
 
-function normalizeEmail(value: unknown): string {
+function normalizeUsername(value: unknown): string {
   const s = String(value || "").trim().toLowerCase();
-  if (!s || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)) return "";
-  return s.slice(0, 255);
+  if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(s)) return "";
+  return s;
+}
+
+function normalizeLegacyEmail(value: unknown): string {
+  const email = String(value || "").trim().toLowerCase();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email.slice(0, 255) : "";
 }
 
 async function hashPassword(password: string): Promise<string> {
@@ -35,13 +40,14 @@ async function matchesPassword(password: string, stored: string): Promise<boolea
 
 export class CustomerAccountService {
   async loginOrRegister(input: Record<string, unknown>) {
-    const email = normalizeEmail(input.email);
+    const username = normalizeUsername(input.username);
+    const legacyEmail = normalizeLegacyEmail(input.username);
     const password = String(input.password || "").trim();
     const role = input.role === "partner" ? "partner" : "customer";
     const locale = String(input.locale || "vi-VN");
 
-    if (!email) {
-      throw new CustomerAccountError("EMAIL_INVALID", 422, "Email không đúng định dạng.");
+    if (!username && !legacyEmail) {
+      throw new CustomerAccountError("USERNAME_INVALID", 422, "Tên đăng nhập gồm 3–32 ký tự: chữ cái, số, dấu chấm, gạch dưới hoặc gạch ngang.");
     }
     if (password.length < 6) {
       throw new CustomerAccountError("PASSWORD_TOO_SHORT", 422, "Mật khẩu phải có ít nhất 6 ký tự.");
@@ -49,11 +55,15 @@ export class CustomerAccountService {
 
     const mode = input.mode === "register" ? "register" : input.mode === "login" ? "login" : "auto";
     const db = getDb();
-    const [existing] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const [existing] = await db
+      .select()
+      .from(users)
+      .where(username ? eq(users.username, username) : eq(users.email, legacyEmail))
+      .limit(1);
 
     if (existing) {
       if (mode === "register" && existing.passwordHash) {
-        throw new CustomerAccountError("EMAIL_EXISTS", 409, "Email này đã được đăng ký tài khoản. Vui lòng chuyển sang Đăng nhập.");
+        throw new CustomerAccountError("USERNAME_EXISTS", 409, "Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác hoặc chuyển sang Đăng nhập.");
       }
 
       if (existing.status !== "active") {
@@ -67,7 +77,7 @@ export class CustomerAccountService {
           throw new CustomerAccountError("PASSWORD_INCORRECT", 401, "Mật khẩu không chính xác.");
         }
       } else {
-        // First time setting password for this email
+        // First time setting a password for this legacy account.
         await db
           .update(users)
           .set({
@@ -100,14 +110,19 @@ export class CustomerAccountService {
     }
 
     if (mode === "login") {
-      throw new CustomerAccountError("ACCOUNT_NOT_FOUND", 404, "Tài khoản không tồn tại. Vui lòng chuyển sang Đăng ký.");
+      throw new CustomerAccountError("ACCOUNT_NOT_FOUND", 404, "Tên đăng nhập không tồn tại. Vui lòng chuyển sang Đăng ký.");
+    }
+
+    // Email stays supported only for existing accounts created before username authentication.
+    if (!username) {
+      throw new CustomerAccountError("USERNAME_INVALID", 422, "Vui lòng chọn tên đăng nhập gồm 3–32 ký tự.");
     }
 
     // Account does not exist -> Auto-create immediately!
     const [created] = await db
       .insert(users)
       .values({
-        email,
+        username,
         passwordHash: await hashPassword(password),
         nickname: "Người dùng ZhaoXi",
         preferredLocale: ["zh-CN", "zh-TW", "vi-VN", "en-US"].includes(locale) ? locale : "vi-VN",
