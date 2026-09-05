@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { promisify } from "node:util";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import { users } from "@/db/schema";
 import { sessionService } from "@/lib/services/session-service";
@@ -15,8 +15,8 @@ export class CustomerAccountError extends Error {
 
 function normalizeUsername(value: unknown): string {
   const s = String(value || "").trim().toLowerCase();
-  if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(s)) return "";
-  return s;
+  if (!/^[a-z0-9][a-z0-9._@-]{2,63}$/.test(s)) return "";
+  return s.slice(0, 64);
 }
 
 function normalizeLegacyEmail(value: unknown): string {
@@ -47,7 +47,7 @@ export class CustomerAccountService {
     const locale = String(input.locale || "vi-VN");
 
     if (!username && !legacyEmail) {
-      throw new CustomerAccountError("USERNAME_INVALID", 422, "Tên đăng nhập gồm 3–32 ký tự: chữ cái, số, dấu chấm, gạch dưới hoặc gạch ngang.");
+      throw new CustomerAccountError("USERNAME_INVALID", 422, "Tên đăng nhập gồm 3–64 ký tự: chữ cái, số, dấu chấm, @, gạch dưới hoặc gạch ngang.");
     }
     if (password.length < 6) {
       throw new CustomerAccountError("PASSWORD_TOO_SHORT", 422, "Mật khẩu phải có ít nhất 6 ký tự.");
@@ -58,7 +58,7 @@ export class CustomerAccountService {
     const [existing] = await db
       .select()
       .from(users)
-      .where(username ? eq(users.username, username) : eq(users.email, legacyEmail))
+      .where(legacyEmail ? or(eq(users.username, username), eq(users.email, legacyEmail)) : eq(users.username, username))
       .limit(1);
 
     if (existing) {
@@ -111,11 +111,6 @@ export class CustomerAccountService {
 
     if (mode === "login") {
       throw new CustomerAccountError("ACCOUNT_NOT_FOUND", 404, "Tên đăng nhập không tồn tại. Vui lòng chuyển sang Đăng ký.");
-    }
-
-    // Email stays supported only for existing accounts created before username authentication.
-    if (!username) {
-      throw new CustomerAccountError("USERNAME_INVALID", 422, "Vui lòng chọn tên đăng nhập gồm 3–32 ký tự.");
     }
 
     // Account does not exist -> Auto-create immediately!

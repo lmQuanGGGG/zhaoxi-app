@@ -902,8 +902,8 @@ export function IdentityUpgradeSheet({
   async function loginWithUsername() {
     const normalizedUsername = username.trim().toLowerCase();
     const isLegacyEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedUsername);
-    if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(normalizedUsername) && !(authMode === "login" && isLegacyEmail)) {
-      setError(locale === "vi-VN" ? "Tên đăng nhập gồm 3–32 ký tự: chữ cái, số, dấu chấm, gạch dưới hoặc gạch ngang." : "Username must be 3–32 characters using letters, numbers, dots, underscores, or hyphens.");
+    if (!/^[a-z0-9][a-z0-9._@-]{2,63}$/.test(normalizedUsername) && !(authMode === "login" && isLegacyEmail)) {
+      setError(locale === "vi-VN" ? "Tên đăng nhập gồm 3–64 ký tự: chữ cái, số, dấu chấm, @, gạch dưới hoặc gạch ngang." : "Username must be 3–64 characters using letters, numbers, dots, @, underscores, or hyphens.");
       return;
     }
     if (password.length < 6) {
@@ -992,7 +992,7 @@ export function IdentityUpgradeSheet({
     const normalizedUsername = username.trim().toLowerCase();
     const isUsernameLogin = usePinLogin || (!normalizedPhone && normalizedUsername);
     const isLegacyEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedUsername);
-    if (isUsernameLogin && !/^[a-z0-9][a-z0-9._-]{2,31}$/.test(normalizedUsername) && !isLegacyEmail) {
+    if (isUsernameLogin && !/^[a-z0-9][a-z0-9._@-]{2,63}$/.test(normalizedUsername) && !isLegacyEmail) {
       setError(locale === "vi-VN" ? "Vui lòng nhập tên đăng nhập đã đăng ký." : "Please enter your registered username.");
       return;
     }

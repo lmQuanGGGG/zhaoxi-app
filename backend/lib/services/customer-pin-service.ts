@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { promisify } from "node:util";
-import { and, eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import { users } from "@/db/schema";
 import { sessionService, type PublicAuthSession } from "@/lib/services/session-service";
@@ -26,7 +26,7 @@ function normalizePhone(value: unknown) {
 
 function normalizeUsername(value: unknown) {
   const username = String(value || "").trim().toLowerCase();
-  return /^[a-z0-9][a-z0-9._-]{2,31}$/.test(username) ? username : "";
+  return /^[a-z0-9][a-z0-9._@-]{2,63}$/.test(username) ? username : "";
 }
 
 function normalizeLegacyEmail(value: unknown) {
@@ -80,7 +80,7 @@ export class CustomerPinService {
     }
     const db = getDb();
     const condition = username
-      ? and(eq(users.username, username), eq(users.status, "active"))
+      ? and(legacyEmail ? or(eq(users.username, username), eq(users.email, legacyEmail)) : eq(users.username, username), eq(users.status, "active"))
       : legacyEmail
         ? and(eq(users.email, legacyEmail), eq(users.status, "active"))
       : and(eq(users.phone, phone), eq(users.status, "active"));
