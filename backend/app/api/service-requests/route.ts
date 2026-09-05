@@ -9,7 +9,6 @@ import {
   serviceRequestStatusHistory,
   services,
   serviceTranslations,
-  users,
 } from "@/db/schema";
 import { errorResponse, json } from "@/lib/api";
 import { localeFromRequest, normalizeLocale } from "@/lib/locale";
@@ -129,10 +128,6 @@ export async function POST(request: Request) {
     const session = await authenticatedSession(request);
     if (!session) return errorResponse("Authentication is required to create an order.", 401, { code: "AUTH_REQUIRED" });
     if (session.role !== "customer") return errorResponse("A customer session is required to create an order.", 403, { code: "CUSTOMER_SESSION_REQUIRED" });
-    if (session.authMethod === "guest") return errorResponse("Verified identity is required to create an order.", 403, { code: "IDENTITY_UPGRADE_REQUIRED" });
-    const verifiedUser=(await getDb().select({phone:users.phone}).from(users).where(eq(users.id,session.userId)).limit(1))[0];
-    const verifiedPhone=String(verifiedUser?.phone||"").trim();
-    if(!verifiedPhone)return errorResponse("Verified phone is required to create an order.",403,{code:"VERIFIED_PHONE_REQUIRED"});
     const body = asObject(await request.json());
     const details = optionalRecord(body, "details") || {};
     const recipientPhone = optionalString(body, "recipientPhone", 30) || (typeof details.recipientPhone === "string" ? details.recipientPhone.slice(0, 30) : undefined);
@@ -141,7 +136,7 @@ export async function POST(request: Request) {
       moduleCode: requiredString(body, "moduleCode", 50),
       serviceId: optionalString(body, "serviceId", 36),
       customerName: requiredString(body, "customerName", 120),
-      customerPhone: verifiedPhone,
+      customerPhone: requiredString(body, "customerPhone", 30),
       title: requiredString(body, "title", 240),
       description: optionalString(body, "description", 5000),
       locale: optionalString(body, "locale", 10),

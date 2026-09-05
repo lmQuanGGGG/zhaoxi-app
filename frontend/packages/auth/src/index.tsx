@@ -528,7 +528,12 @@ function PhoneEntryStep({role,locale,onDone}:{role:"customer"|"partner";locale:Z
     return runBootstrap();
   }, [runBootstrap]);
 
+  useEffect(() => {
+    if (prepared && role === "customer") onDone();
+  }, [prepared, role, onDone]);
+
   const entryCopy={"zh-CN":{customer:"生活服务",partner:"合作伙伴",loading:"正在准备登录…",retry:"重试"},"zh-TW":{customer:"生活服務",partner:"合作夥伴",loading:"正在準備登入…",retry:"重試"},"vi-VN":{customer:"Dịch vụ đời sống",partner:"Dành cho Đối tác",loading:"Đang chuẩn bị đăng nhập…",retry:"Thử lại"},"en-US":{customer:"Life services",partner:"For Partners",loading:"Preparing sign in…",retry:"Retry"}}[locale];
+  if(prepared&&role==="customer")return <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}>…</main>;
   if(prepared)return <IdentityUpgradeSheet role={role} open onClose={onDone} onVerified={onDone}/>;
   return <main style={{...appShellStyle,display:"grid",placeItems:"center",padding:20}}><Surface style={{width:"min(460px,100%)",padding:28,textAlign:"center"}}><small style={{color:uiTokens.colors.primary,fontWeight:800}}>ZHAOXI</small><h1>{role === "partner" ? entryCopy.partner : entryCopy.customer}</h1>{error?<><div style={{padding:12,borderRadius:12,background:"#fff1f2",color:"#b42318",fontSize:14,lineHeight:1.5}}>{error}</div><ActionButton onClick={()=>runBootstrap()}>{entryCopy.retry}</ActionButton></>:<><div style={{width:52,height:52,borderRadius:16,overflow:"hidden",display:"grid",placeItems:"center",boxShadow:"0 4px 14px rgba(15,23,42,.08)",background:"#FFFFFF",margin:"0 auto 12px"}}><img src="/brand-logo.png" alt="ZhaoXi" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} /></div><p>{entryCopy.loading}</p></>}</Surface></main>;
 }

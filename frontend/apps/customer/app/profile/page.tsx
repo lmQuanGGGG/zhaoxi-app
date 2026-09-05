@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import {useEffect,useMemo,useState,type ReactNode} from "react";
-import {IdentityUpgradeSheet,updateSession,useZhaoXiSession} from "@zhaoxi/auth";
+import {updateSession,useZhaoXiSession} from "@zhaoxi/auth";
 import {useZhaoXiLocale,type ZhaoXiLocale} from "@zhaoxi/i18n";
 import {CustomerShell} from "../_components/CustomerShell";
 import LocationPicker from "../_components/LocationPicker";
@@ -72,7 +72,7 @@ export default function Profile(){
    };
  }, [session]);
 
- const[data,setData]=useState<ProfileData>(initialData);const[editing,setEditing]=useState(false);const[saving,setSaving]=useState(false);const[msg,setMsg]=useState("");const[showAddress,setShowAddress]=useState(false);const[addressBusy,setAddressBusy]=useState(false);const[phoneLoginOpen,setPhoneLoginOpen]=useState(false);
+ const[data,setData]=useState<ProfileData>(initialData);const[editing,setEditing]=useState(false);const[saving,setSaving]=useState(false);const[msg,setMsg]=useState("");const[showAddress,setShowAddress]=useState(false);const[addressBusy,setAddressBusy]=useState(false);
  const[form,setForm]=useState(() => {
    const d = initialData;
    return {
@@ -159,7 +159,7 @@ export default function Profile(){
  async function setDefault(id:string){await fetch(`/api/customer-addresses/${id}`,{method:"PATCH"});await load()}
  async function removeAddress(id:string){await fetch(`/api/customer-addresses/${id}`,{method:"DELETE"});await load()}
 
- return <><IdentityUpgradeSheet role="customer" open={phoneLoginOpen} onClose={()=>setPhoneLoginOpen(false)} onVerified={()=>{setPhoneLoginOpen(false);void load();}}/><CustomerShell className={styles.customerShell} bare>
+ return <><CustomerShell className={styles.customerShell} bare>
   <section style={{margin:"12px 14px 0",padding:"20px 18px",borderRadius:24,background:"linear-gradient(135deg,#08a855,#07c160 58%,#43d28a)",color:"#fff",boxShadow:"0 15px 38px rgba(7,193,96,.18)"}}>
    <div style={{display:"grid",gridTemplateColumns:"62px 1fr auto",gap:12,alignItems:"center"}}>
     <div style={{width:62,height:62,borderRadius:20,background:"rgba(255,255,255,.95)",color:"#078343",display:"grid",placeItems:"center",fontSize:26,fontWeight:950,overflow:"hidden",boxShadow:"0 4px 12px rgba(0,0,0,0.1)"}}>{data.user.avatarUrl?<img src={data.user.avatarUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:displayName.slice(0,1).toUpperCase()}</div>
@@ -195,7 +195,6 @@ export default function Profile(){
 
    <section style={{padding:"13px 15px",borderRadius:18,background:data.identity.isGuest?"#fff7ed":"#ecfdf5",color:data.identity.isGuest?"#9a5b13":"#067647",fontSize:11.5,lineHeight:1.55,border:data.identity.isGuest?"1px solid #fed7aa":"1px solid #d1fae5",boxShadow:"none"}}>
     <div>{data.identity.isGuest?t.guestHint:t.accountHint}</div>
-    {data.identity.isGuest&&<button type="button" onClick={()=>setPhoneLoginOpen(true)} style={{marginTop:9,border:0,borderRadius:999,padding:"8px 14px",background:"#078343",color:"#fff",fontWeight:850,fontSize:11.5,cursor:"pointer",boxShadow:"none"}}>{t.verifyPhone}</button>}
    </section>
 
    <section className={styles.listing} style={{display:"grid",gap:12,borderRadius:20,border:"1px solid #EEF2F6",background:"#FFFFFF",boxShadow:"none"}}>

@@ -27,9 +27,7 @@ export async function GET(request:NextRequest){
 
 export async function POST(request:NextRequest){
   try{
-    const incoming=await request.json();
-    const {customerPhone:browserCustomerPhone,...payload}=incoming||{};
-    void browserCustomerPhone;
+    const payload=await request.json();
     const headers:Record<string,string>={
       "content-type":"application/json",
       ...authHeaders(request),

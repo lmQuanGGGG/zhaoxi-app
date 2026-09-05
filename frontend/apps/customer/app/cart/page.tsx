@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
-import {IdentityUpgradeSheet,useZhaoXiSession} from "@zhaoxi/auth";
 import {useState} from "react";
 import {useZhaoXiCart} from "@zhaoxi/cart";
 import {useZhaoXiLocale} from "@zhaoxi/i18n";
@@ -12,13 +11,11 @@ const copy={
 "zh-TW":{title:"購物車",empty:"購物車為空",emptyHint:"從餐廳選擇商品後會顯示在這裡。",continue:"繼續選餐",total:"商品金額",remove:"刪除",checkout:"去確認訂單",locked:"每家餐廳獨立結算",restaurant:"餐廳",items:"件",clear:"清空此購物車",summary:"購物車摘要"},
 "vi-VN":{title:"Giỏ hàng",empty:"Giỏ hàng đang trống",emptyHint:"Các món đã chọn từ nhà hàng sẽ xuất hiện tại đây.",continue:"Tiếp tục chọn món",total:"Tiền hàng",remove:"Xóa",checkout:"Xác nhận đơn",locked:"Mỗi nhà hàng được thanh toán riêng",restaurant:"Nhà hàng",items:"món",clear:"Xóa giỏ này",summary:"Tổng quan giỏ hàng"},
 "en-US":{title:"Cart",empty:"Your cart is empty",emptyHint:"Items selected from restaurants will appear here.",continue:"Continue choosing dishes",total:"Items total",remove:"Remove",checkout:"Review order",locked:"Each restaurant checks out separately",restaurant:"Restaurant",items:"items",clear:"Clear this cart",summary:"Cart summary"}} as const;
-const localTestBypass=process.env.NEXT_PUBLIC_ZHAOXI_LOCAL_TEST_BYPASS==="true";
-
 export default function CartPage(){
  const{locale}=useZhaoXiLocale();const t=copy[locale];
- const session=useZhaoXiSession();const router=useRouter();const[identityUpgradeOpen,setIdentityUpgradeOpen]=useState(false);const[pendingCheckout,setPendingCheckout]=useState<string|null>(null);
+ const router=useRouter();
  const{groups,remove,setQuantity,clearOrganization,count,total}=useZhaoXiCart();
- function checkout(href:string){if(!session||session.role!=="customer"||(!localTestBypass&&session.authMethod==="guest")){router.push(`/login?redirect=${encodeURIComponent(href)}`);return}router.push(href)}
+ function checkout(href:string){router.push(href)}
  return <main style={{width:"100%",maxWidth:680,margin:"0 auto",padding:"14px 14px calc(110px + env(safe-area-inset-bottom))",minHeight:"100dvh",background:"#f5f7fa",boxSizing:"border-box"}}>
    <header style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
      <Link href="/services/food" style={back}>‹</Link>

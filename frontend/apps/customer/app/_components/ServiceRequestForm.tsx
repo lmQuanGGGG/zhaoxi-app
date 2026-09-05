@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { IdentityUpgradeSheet, useZhaoXiSession } from "@zhaoxi/auth";
-const localTestBypass=process.env.NEXT_PUBLIC_ZHAOXI_LOCAL_TEST_BYPASS==="true";
+import { useZhaoXiSession } from "@zhaoxi/auth";
 import { localizeOrganizationName, useZhaoXiLocale } from "@zhaoxi/i18n";
 import { useRouter, useSearchParams } from "next/navigation";
 import { readZhaoXiCart, useZhaoXiCart } from "@zhaoxi/cart";
@@ -107,11 +106,9 @@ function getDefaultSchedule() {
   const [couponBusy,setCouponBusy]=useState(false);
   const defaultSchedule = useMemo(() => getDefaultSchedule(), []);
   const [form, setForm] = useState({ name:"", phone:"", address:"", date:defaultSchedule.date, time:defaultSchedule.time, quantity:"1", description:"" });
-  const [identityUpgradeOpen,setIdentityUpgradeOpen]=useState(false);
   const cartItems = useMemo(() => cartOrg ? readZhaoXiCart().filter(item => String(item.organizationId || "unknown") === cartOrg) : [], [cartOrg, serviceId]);
   const t = copy[locale];
 
-  const isGuest = !session || session.authMethod === "guest";
 
   useEffect(() => {
     const sched = getDefaultSchedule();
@@ -121,12 +118,6 @@ function getDefaultSchedule() {
       time: current.time || sched.time,
     }));
   }, []);
-
-  useEffect(() => {
-    if (session?.authMethod === "guest") {
-      router.replace(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
-    }
-  }, [session, router]);
 
 
   useEffect(() => {
@@ -294,10 +285,6 @@ function getDefaultSchedule() {
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setError("");
-    if (!localTestBypass && isGuest) {
-      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
-      return;
-    }
     if (!form.name.trim() || !form.phone.trim() || !form.address.trim()) { setError(t.required); return; }
     if (isFood && !point) { setError(t.locationRequired); return; }
     if(isFood&&foodScheduleBlocked){setError(t.scheduledOff);return}
@@ -312,6 +299,7 @@ function getDefaultSchedule() {
         moduleCode:service.moduleCode,
         serviceId:service.id,
         customerName:form.name.trim(),
+        customerPhone:form.phone.trim(),
         recipientPhone:form.phone.trim(),
         title:service.name || service.code,
         description:form.description.trim() || undefined,
@@ -378,7 +366,7 @@ function getDefaultSchedule() {
   if (!service) return <main className={styles.shell}><div className={styles.state}><Link href="/">{t.back}</Link></div></main>;
   const partnerName = localizeOrganizationName(locale, service.organization?.code, service.organization?.name);
 
-  return <><IdentityUpgradeSheet role="customer" open={identityUpgradeOpen} onClose={()=>setIdentityUpgradeOpen(false)}/><main className={styles.shell}>
+  return <main className={styles.shell}>
     <header className={styles.header}><Link href={`/service/${service.id}`} className={styles.backButton}>‹</Link><span style={{fontWeight:800,fontSize:13,color:"#059669"}}>ZHAOXI</span></header>
     <section className={styles.card}>
       <div className={styles.serviceHead}>{service.metadata?.imageUrl ? <img className={styles.serviceHeadImage} src={String(service.metadata.imageUrl)} alt={service.name || service.code} /> : <span><CustomerServiceIcon serviceId={service.moduleCode} size={48}/></span>}<div><small>{partnerName}</small><h1>{service.name || service.code}</h1><p>{service.summary}</p></div></div>
@@ -683,5 +671,5 @@ function getDefaultSchedule() {
         <button disabled={submitting || (isFood && (!point || restaurantStatus?.open===false || foodScheduleBlocked))} type="submit">{submitting ? t.sending : t.submit}</button>
       </form>
     </section>
-  </main></>;
+  </main>;
 }
