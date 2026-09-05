@@ -44,8 +44,34 @@ export default function OperationsBoard(){
  useEffect(()=>{void load();const timer=setInterval(()=>void load(),8000);return()=>clearInterval(timer)},[load]);
  useEffect(()=>{const refresh=()=>void load();window.addEventListener("zhaoxi:fulfillment-updated",refresh);return()=>window.removeEventListener("zhaoxi:fulfillment-updated",refresh)},[load]);
  const metrics=useMemo(()=>({waiting:rows.filter(r=>r.status==="assigned").length,preparing:rows.filter(r=>String(r.details?.fulfillmentStage||"")==="preparing").length,ready:rows.filter(r=>["ready_for_pickup","courier_booked"].includes(String(r.details?.fulfillmentStage||""))).length}),[rows]);
+ function optimisticFulfillment(row:ServiceRequestRow,action:string,extra:Record<string,unknown>={}){
+  const details={...(row.details||{})} as Record<string,unknown>;
+  const at=new Date().toISOString();
+  if(action==="ready_for_pickup")Object.assign(details,{fulfillmentStage:"ready_for_pickup",foodReadyAt:at,deliveryStage:"external_delivery_pending"});
+  if(action==="courier_booked")Object.assign(details,{fulfillmentStage:"courier_booked",courierBookedAt:at,courierName:String(extra.courierName||""),courierPhone:String(extra.courierPhone||""),courierReference:String(extra.courierReference||""),deliveryStage:"external_courier_booked"});
+  if(action==="handed_off")Object.assign(details,{fulfillmentStage:"handed_off",handedOffAt:at,deliveryStage:"external_handed_off"});
+  if(action==="delivered")Object.assign(details,{fulfillmentStage:"delivered",deliveredAt:at,deliveryStage:"delivered"});
+  if(action==="cancelled")Object.assign(details,{fulfillmentStage:"cancelled",cancelledAt:at,deliveryStage:"cancelled"});
+  return {...row,status:action==="delivered"?"completed":action==="cancelled"?"cancelled":row.status,details};
+ }
  async function genericUpdate(row:ServiceRequestRow,status:"accepted"|"in_progress"|"waiting_customer"|"completed"|"rejected"){setBusy(row.id+status);setError("");try{await sdk.updateStatus(row.id,status,`partner:${status}`);setRows(current=>current.map(item=>item.id===row.id?{...item,status}:item));void load()}catch(e){const msg=e instanceof Error?e.message:"UPDATE_FAILED";setError(msg.includes("<!DOCTYPE")||msg.includes("Unexpected token")?"Hệ thống đang đồng bộ. Vui lòng thử lại sau vài giây.":msg)}finally{setBusy("")}}
- async function action(row:ServiceRequestRow,action:string,extra:Record<string,unknown>={}){setBusy(row.id+action);setError("");try{const r=await fetch(`/api/partner-fulfillment/${row.id}`,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({action,...extra})});const j=await r.json().catch(()=>null);if(!r.ok||!j?.ok)throw new Error(j?.error?.code||"FULFILLMENT_FAILED");if(j.data)setRows(current=>current.map(item=>item.id===row.id?{...item,...j.data,details:j.data.details||item.details}:item));void load()}catch(e){const msg=e instanceof Error?e.message:"FULFILLMENT_FAILED";setError(msg.includes("<!DOCTYPE")||msg.includes("Unexpected token")?"Hệ thống đang đồng bộ. Vui lòng thử lại sau vài giây.":msg)}finally{setBusy("")}}
+ async function action(row:ServiceRequestRow,action:string,extra:Record<string,unknown>={}){
+  const optimistic=optimisticFulfillment(row,action,extra);
+  setRows(current=>current.map(item=>item.id===row.id?optimistic:item));
+  setBusy(row.id+action);setError("");
+  try{
+   const r=await fetch(`/api/partner-fulfillment/${row.id}`,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({action,...extra})});
+   const j=await r.json().catch(()=>null);
+   if(!r.ok||!j?.ok)throw new Error(j?.error?.code||"FULFILLMENT_FAILED");
+   if(j.data)setRows(current=>current.map(item=>item.id===row.id?{...item,...j.data,details:j.data.details||item.details}:item));
+   window.dispatchEvent(new CustomEvent("zhaoxi:fulfillment-updated",{detail:{id:row.id,action}}));
+   void load();
+  }catch(e){
+   setRows(current=>current.map(item=>item.id===row.id?row:item));
+   const msg=e instanceof Error?e.message:"FULFILLMENT_FAILED";
+   setError(msg.includes("<!DOCTYPE")||msg.includes("Unexpected token")?"Hệ thống đang đồng bộ. Vui lòng thử lại sau vài giây.":msg);
+  }finally{setBusy("")}
+ }
  async function saveCourier(){if(!courierOrder)return;await action(courierOrder,"courier_booked",courier);setCourierOrder(null);setCourier({courierName:"",courierPhone:"",courierReference:""})}
  return <main className="zx-native-workspace" style={{...appShellStyle,maxWidth:1180,margin:"0 auto",padding:"24px 18px"}}>
   <header style={{textAlign:"center",padding:"10px 0 4px"}}><small style={{color:"#07c160",fontWeight:900}}>ZHAOXI PARTNER</small><h1 style={{margin:"7px 0 6px"}}>{t.title}</h1><p style={{margin:0,color:"#64748b"}}>{t.subtitle}</p></header>
