@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import MiniTabBar from "./MiniTabBar";
 import CustomerLocationBar from "./CustomerLocationBar";
@@ -10,7 +9,6 @@ import {CustomerIcon} from "./CustomerIcon";
 import {readSessionPoint,subscribeSessionPoint,type SessionPoint} from "../_lib/customer-location";
 import { localizeOrganizationName, localizeServiceName, useZhaoXiLocale } from "@zhaoxi/i18n";
 import { useZhaoXiCart } from "@zhaoxi/cart";
-import { useZhaoXiSession } from "@zhaoxi/auth";
 import { getCached, setCached } from "../_lib/client-cache";
 import styles from "../services.module.css";
 
@@ -54,9 +52,6 @@ function money(value: number, currency = "VND") {
 }
 
 export default function ServiceBrowser({ moduleCode }: { moduleCode: string }) {
-  const router = useRouter();
-  const session = useZhaoXiSession();
-  const isGuest = !session || session.authMethod === "guest";
   const { locale } = useZhaoXiLocale();
   const t = ui[locale];
   const { add, count } = useZhaoXiCart();
@@ -144,10 +139,6 @@ export default function ServiceBrowser({ moduleCode }: { moduleCode: string }) {
   function change(event: MouseEvent, id: string, delta: number) {
     event.preventDefault();
     event.stopPropagation();
-    if (delta > 0 && isGuest) {
-      router.push(`/login?redirect=${encodeURIComponent(`/services/${moduleCode}`)}`);
-      return;
-    }
     setQuantities((current) => {
       const stored = Number(localStorage.getItem(`zhaoxi-service-quantity-${id}`)) || 0;
       const quantity = Math.max(0, Math.min(99, (current[id] ?? stored) + delta));
@@ -157,10 +148,6 @@ export default function ServiceBrowser({ moduleCode }: { moduleCode: string }) {
   }
 
   function handleAdd(item: Service, quantity: number, unitPrice: number, image: string) {
-    if (isGuest) {
-      router.push(`/login?redirect=${encodeURIComponent(`/services/${moduleCode}`)}`);
-      return;
-    }
     if (quantity > 0) {
       add({
         serviceId: item.id,
@@ -253,9 +240,9 @@ export default function ServiceBrowser({ moduleCode }: { moduleCode: string }) {
                           <div><h3>{localizeServiceName(locale, item.name || item.code)}</h3><p>{item.summary}</p><strong>{unitPrice ? money(unitPrice, item.currency) : ""}</strong>{priceInfo?.promoActive&&<><small style={{marginLeft:6,textDecoration:"line-through",color:"#94a3b8"}}>{money(baseUnitPrice,item.currency)}</small><em style={{display:"inline-block",marginTop:4,padding:"3px 6px",borderRadius:999,background:"#fff7ed",color:"#c2410c",fontSize:8,fontStyle:"normal",fontWeight:850}}>{priceInfo.promotionLabel||t.promo}</em></>}{!available && <small style={{ display: "block", color: "#dc2626", fontWeight: 900, marginTop: 4 }}>{priceInfo?.scheduledAvailable===false?t.scheduledOff:t.soldOut}</small>}</div>
                         </Link>
                         <div className={styles.menuBottom}>
-                          <div className={styles.menuQuantity}><button disabled={!available || quantity === 0} onClick={(event) => change(event, item.id, -1)}>−</button><b>{quantity}</b><button disabled={!available} onClick={(event) => change(event, item.id, 1)}>+</button></div>
+                          <div className={styles.menuQuantity}><button type="button" disabled={!available || quantity === 0} onClick={(event) => change(event, item.id, -1)}>−</button><b>{quantity}</b><button type="button" disabled={!available} onClick={(event) => change(event, item.id, 1)}>+</button></div>
                           <span>{t.subtotal}: <b>{money(lineSubtotal, item.currency)}</b></span>
-                          {available ? <><button className={styles.addToCartButton} disabled={quantity===0} onClick={(event) => { event.preventDefault(); handleAdd(item, quantity, quantity>0?lineSubtotal/quantity:unitPrice, image); }}>{t.addCart}</button><Link href={`/service/${item.id}`}>{t.detail} ›</Link></> : <b style={{ color: "#dc2626" }}>{t.soldOut}</b>}
+                          {available ? <><button type="button" className={styles.addToCartButton} disabled={quantity===0} onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleAdd(item, quantity, quantity>0?lineSubtotal/quantity:unitPrice, image); }}>{t.addCart}</button><Link href={`/service/${item.id}`}>{t.detail} ›</Link></> : <b style={{ color: "#dc2626" }}>{t.soldOut}</b>}
                         </div>
                       </article>
                     );

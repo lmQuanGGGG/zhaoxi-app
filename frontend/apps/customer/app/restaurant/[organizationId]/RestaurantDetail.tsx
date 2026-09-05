@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { useZhaoXiLocale, localizeOrganizationName, localizeServiceName } from "@zhaoxi/i18n";
 import { useZhaoXiCart } from "@zhaoxi/cart";
-import { useZhaoXiSession } from "@zhaoxi/auth";
 import { getCached, setCached } from "../../_lib/client-cache";
 import MiniTabBar from "../../_components/MiniTabBar";
 import {CustomerServiceIcon} from "../../_components/CustomerServiceIcon";
@@ -41,9 +39,6 @@ function money(value: number, currency = "VND") {
 }
 
 export default function RestaurantDetail({ organizationId }: { organizationId: string }) {
-  const router = useRouter();
-  const session = useZhaoXiSession();
-  const isGuest = !session || session.authMethod === "guest";
   const { locale } = useZhaoXiLocale();
   const t = ui[locale];
   const { add, count } = useZhaoXiCart();
@@ -103,18 +98,11 @@ export default function RestaurantDetail({ organizationId }: { organizationId: s
 
   function change(event: MouseEvent, id: string, delta: number) {
     event.preventDefault();
-    if (delta > 0 && isGuest) {
-      router.push(`/login?redirect=${encodeURIComponent(`/restaurant/${organizationId}`)}`);
-      return;
-    }
+    event.stopPropagation();
     setQuantities((current) => ({ ...current, [id]: Math.max(0, Math.min(99, (current[id] ?? 0) + delta)) }));
   }
 
   function handleAdd(item: Service, quantity: number, unitPrice: number, image: string) {
-    if (isGuest) {
-      router.push(`/login?redirect=${encodeURIComponent(`/restaurant/${organizationId}`)}`);
-      return;
-    }
     if (quantity > 0) {
       add({
         serviceId: item.id,
@@ -160,7 +148,7 @@ export default function RestaurantDetail({ organizationId }: { organizationId: s
             <p>{organization.organizationAddress}</p>{restaurantStatus&&!restaurantOpen&&<em style={{display:"block",marginTop:4,color:"#fff",fontSize:9,fontStyle:"normal"}}>{restaurantStatus.code==="closed_hours"&&restaurantStatus.businessHoursToday?.enabled?`${t.hours}: ${restaurantStatus.businessHoursToday.open}–${restaurantStatus.businessHoursToday.close}`:restaurantStatus.pauseReason||statusLabel}</em>}
           </div>
         </div>
-        {banners.length > 1 && <div className={styles.bannerDots}>{banners.map((_, index) => <button aria-label={`Banner ${index + 1}`} className={index === slide ? styles.activeDot : ""} key={index} onClick={() => setSlide(index)} />)}</div>}
+        {banners.length > 1 && <div className={styles.bannerDots}>{banners.map((_, index) => <button type="button" aria-label={`Banner ${index + 1}`} className={index === slide ? styles.activeDot : ""} key={index} onClick={() => setSlide(index)} />)}</div>}
       </section>
       <section className={styles.restaurantDetailBody}>
         <h2>{t.menu}</h2>
@@ -180,9 +168,9 @@ export default function RestaurantDetail({ organizationId }: { organizationId: s
                   <div><h3>{localizeServiceName(locale, item.name || item.code)}</h3><p>{item.summary}</p><strong>{money(unit, item.currency)}</strong>{priceInfo?.promoActive&&<><small style={{marginLeft:6,textDecoration:"line-through",color:"#94a3b8"}}>{money(baseUnit,item.currency)}</small><em style={{display:"block",marginTop:4,color:"#c2410c",fontSize:8,fontStyle:"normal",fontWeight:850}}>{priceInfo.promotionLabel||t.promo}</em></>}{!available && <small className={styles.soldOutText}>{priceInfo?.scheduledAvailable===false?t.scheduledOff:t.soldOut}</small>}</div>
                 </div>
                 <div className={styles.menuBottom}>
-                  <div className={styles.menuQuantity}><button disabled={!available || quantity === 0} onClick={(event) => change(event, item.id, -1)}>−</button><b>{quantity}</b><button disabled={!available} onClick={(event) => change(event, item.id, 1)}>+</button></div>
+                  <div className={styles.menuQuantity}><button type="button" disabled={!available || quantity === 0} onClick={(event) => change(event, item.id, -1)}>−</button><b>{quantity}</b><button type="button" disabled={!available} onClick={(event) => change(event, item.id, 1)}>+</button></div>
                   <span>{t.subtotal}: <b>{money(lineSubtotal, item.currency)}</b></span>
-                  {available && <button disabled={quantity===0} onClick={() => handleAdd(item, quantity, quantity>0?lineSubtotal/quantity:unit, image)}>{t.add}</button>}
+                  {available && <button type="button" disabled={quantity===0} onClick={() => handleAdd(item, quantity, quantity>0?lineSubtotal/quantity:unit, image)}>{t.add}</button>}
                 </div>
               </article>
             );
