@@ -8,7 +8,7 @@ import PartnerStoreSwitcher from "./PartnerStoreSwitcher";
 const copy = {
   "zh-CN": { store: "商家管理", housing: "房源库存", travel: "旅游产品", orders: "订单管理", analytics: "经营分析", settlements: "财务对账", onboarding: "资料与审核" },
   "zh-TW": { store: "商家管理", housing: "房源庫存", travel: "旅遊產品", orders: "訂單管理", analytics: "營運分析", settlements: "財務對帳", onboarding: "資料與審核" },
-  "vi-VN": { store: "Quản lý gian hàng", housing: "Kho nhà/phòng", travel: "Kho tour", orders: "Quản lý đơn hàng / dịch vụ", analytics: "Phân tích kinh doanh", settlements: "Đối soát", onboarding: "Hồ sơ & duyệt" },
+  "vi-VN": { store: "Quản lý gian hàng", housing: "Kho nhà/phòng", travel: "Kho tour", orders: "Quản lý đơn hàng / dịch vụ", analytics: "Phân tích kinh doanh", settlements: "Đối soát", onboarding: "Hồ sơ đối tác" },
   "en-US": { store: "Store management", housing: "Housing inventory", travel: "Travel inventory", orders: "Orders & services", analytics: "Analytics", settlements: "Settlement", onboarding: "Profile & approval" },
 } as const;
 
