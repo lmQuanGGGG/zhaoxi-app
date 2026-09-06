@@ -32,10 +32,20 @@ function wechatConfigured() {
 }
 
 export class PaymentService {
-  capabilities() {
+  async capabilities() {
+    // Older customer PWAs ask only for global capabilities. Keep that endpoint
+    // useful while payment ownership remains strictly per-partner in
+    // ensureForRequest: expose bank transfer as soon as at least one active
+    // partner has uploaded its own QR, rather than relying on a platform bank
+    // environment variable that we no longer use for partner orders.
+    const organizationsWithQr = await getDb().select({ metadata: organizations.metadata }).from(organizations);
+    const bankTransferAvailable = organizationsWithQr.some(({ metadata }) => {
+      const value = (metadata || {}) as Record<string, unknown>;
+      return typeof value.paymentQrUrl === "string" && value.paymentQrUrl.trim().length > 0;
+    });
     return {
       cashOnDelivery: true,
-      bankTransfer: Boolean(process.env.ZHAOXI_BANK_ACCOUNT_NUMBER),
+      bankTransfer: bankTransferAvailable,
       wechatPay: wechatConfigured(),
       wechatPayMode: wechatConfigured() ? "native_v3" : "configuration_required",
       wechatPayCurrency: "CNY",
