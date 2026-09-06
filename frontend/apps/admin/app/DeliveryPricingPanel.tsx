@@ -40,7 +40,7 @@ const fallback: Policy = {
     { start: "13:00", end: "16:00" },
   ],
   timezone: "Asia/Ho_Chi_Minh",
-  maxDeliveryRadiusKm: 15,
+  maxDeliveryRadiusKm: 12,
   distanceProvider: "google_routes",
   allowGeoFallback: true,
   enabled: true,

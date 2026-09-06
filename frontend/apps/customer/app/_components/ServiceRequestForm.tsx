@@ -108,6 +108,12 @@ function getDefaultSchedule() {
   const [form, setForm] = useState({ name:"", phone:"", address:"", date:defaultSchedule.date, time:defaultSchedule.time, quantity:"1", description:"" });
   const cartItems = useMemo(() => cartOrg ? readZhaoXiCart().filter(item => String(item.organizationId || "unknown") === cartOrg) : [], [cartOrg, serviceId]);
   const t = copy[locale];
+  const deliveryModeCopy = ({
+    "vi-VN": { tag:"Phí tính theo hệ thống", note:"💡 Phí giao hàng được tính theo chính sách ZhaoXi. Quán sẽ gọi Xanh SM hoặc Grab khi món sẵn sàng." },
+    "en-US": { tag:"System-calculated fee", note:"💡 Delivery is calculated from the ZhaoXi policy. The store will book Xanh SM or Grab once the food is ready." },
+    "zh-CN": { tag:"系统计费", note:"💡 配送费按赵喜配送政策计算。餐点准备好后，商家将呼叫 Xanh SM 或 Grab。" },
+    "zh-TW": { tag:"系統計費", note:"💡 配送費依趙喜配送政策計算。餐點準備好後，商家將呼叫 Xanh SM 或 Grab。" },
+  } as const)[locale];
 
 
   useEffect(() => {
@@ -183,15 +189,10 @@ function getDefaultSchedule() {
   const couponDiscount=isFood&&couponEvaluation?.valid?Number(couponEvaluation.discountAmount||0):0;
   const itemSubtotalAfterCoupon=Math.max(0,itemSubtotal-couponDiscount);
   const foodScheduleBlocked=isFood&&pricingLines.some(x=>x.scheduledAvailable===false);
-  // Delivery fee calculation commented out as requested.
-  // Switched to 3rd-party delivery (Xanh SM / Grab) where the customer pays the courier directly upon delivery.
-  // Preserved static markers for test verification:
-  // deliveryGrossFee deliverySubsidy deliveryCustomerFee shippingGross shippingSubsidy
-  // /api/delivery-quote outside_service_zone backend_quote_16.24 deliveryEtaMinutes
-  const shippingGross = 0;
-  const shippingSubsidy = 0;
-  const shipping = 0;
-  const total = itemSubtotalAfterCoupon;
+  const shippingGross = isFood ? Number(deliveryQuote?.grossFee || 0) : 0;
+  const shippingSubsidy = isFood ? Number(deliveryQuote?.subsidy || 0) : 0;
+  const shipping = isFood ? Number(deliveryQuote?.customerDeliveryFee || 0) : 0;
+  const total = itemSubtotalAfterCoupon + shipping;
   const currency = service?.currency || "VND";
   useEffect(()=>{
     if(!isFood||!service?.id){setFoodPricing({});return}
@@ -221,8 +222,6 @@ function getDefaultSchedule() {
     return service.organization.code ? fallbackOrigins[service.organization.code] || null : null;
   }, [service]);
 
-  // Delivery calculation commented out - direct payment to 3rd-party courier:
-  /*
   useEffect(() => {
     if (!isFood || !service?.id || !point) { setDistanceKm(null);setDeliveryQuote(null);return; }
     let cancelled=false;setCalculating(true);
@@ -231,31 +230,6 @@ function getDefaultSchedule() {
       .catch(()=>{if(!cancelled){setDistanceKm(null);setDeliveryQuote(null)}}).finally(()=>{if(!cancelled)setCalculating(false)});
     return()=>{cancelled=true};
   },[isFood,service?.id,point?.latitude,point?.longitude,locale]);
-  */
-  useEffect(() => {
-    if (!isFood || !service?.id || !point) {
-      setDistanceKm(null);
-      setDeliveryQuote(null);
-      return;
-    }
-    const syntheticQuote: DeliveryQuote = {
-      eligible: true,
-      distanceKm: 2.5,
-      fee: 0,
-      grossFee: 0,
-      subsidy: 0,
-      customerDeliveryFee: 0,
-      currency: "VND",
-      etaMinutes: 20,
-      routeDurationMinutes: 15,
-      zoneKm: 15,
-      subsidyActive: false,
-      reason: "3rd_party_customer_direct_pay",
-      fulfillmentMode: "external_manual",
-    };
-    setDeliveryQuote(syntheticQuote);
-    setDistanceKm(syntheticQuote.distanceKm);
-  }, [isFood, service?.id, point]);
 
   useEffect(() => { fetch("/api/platform-payments/capabilities", { cache:"no-store" }).then(r=>r.json()).then(d=>{ if(d?.data) setPaymentCapabilities(d.data); }).catch(()=>{}); }, []);
 
@@ -323,21 +297,21 @@ function getDefaultSchedule() {
           pricingSource:"customer_preview_16.30",
           deliveryProvider,
           deliveryProviderLabel: deliveryProvider === "grab" ? "Grab" : "Xanh SM",
-          deliveryPricingMode: "customer_direct_pay",
+          deliveryPricingMode: "platform_calculated",
           deliveryDistanceKm:distanceKm,
           deliveryGrossFee:shippingGross,
-          deliveryDistanceFee:0,
-          deliveryWeatherSurcharge:0,
-          deliveryWeatherLevel:"none",
+          deliveryDistanceFee:Number(deliveryQuote?.distanceFee||0),
+          deliveryWeatherSurcharge:Number(deliveryQuote?.weather?.surcharge||0),
+          deliveryWeatherLevel:deliveryQuote?.weather?.rainLevel||"none",
           deliverySubsidy:shippingSubsidy,
           deliveryFee:shipping,
           deliveryCustomerFee:shipping,
-          deliverySubsidyActive:false,
-          deliverySubsidyWindow:null,
-          deliveryEtaMinutes:20,
-          deliveryRouteDurationMinutes:15,
-          deliveryZoneKm:15,
-          deliveryDistanceProvider:"external_courier_booking",
+          deliverySubsidyActive:Boolean(deliveryQuote?.subsidyActive),
+          deliverySubsidyWindow:deliveryQuote?.subsidyWindow||null,
+          deliveryEtaMinutes:deliveryQuote?.etaMinutes||null,
+          deliveryRouteDurationMinutes:deliveryQuote?.routeDurationMinutes||null,
+          deliveryZoneKm:deliveryQuote?.zoneKm||12,
+          deliveryDistanceProvider:deliveryQuote?.distanceProvider||null,
           deliveryPricingSource:"backend_policy_16.25.1",
           deliveryFulfillmentMode:"external_manual",
           driverDispatchRequired:false,
@@ -382,7 +356,7 @@ function getDefaultSchedule() {
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <b style={{fontSize:13.5,fontWeight:750,color:"#1e293b"}}>🛵 {t.courierTitle}</b>
               <span style={{fontSize:11,color:"#059669",fontWeight:750,background:"#ecfdf5",padding:"3px 8px",borderRadius:99}}>
-                {t.courierTag}
+                {deliveryModeCopy.tag}
               </span>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(140px, 1fr))",gap:10}}>
@@ -451,7 +425,7 @@ function getDefaultSchedule() {
               </div>
             </div>
             <div style={{padding:"10px 12px",borderRadius:12,background:"#fffbeb",border:"1px solid #fde68a",color:"#92400e",fontSize:12,lineHeight:1.5}}>
-              {t.courierPayNote}
+              {deliveryModeCopy.note}
             </div>
           </section>
         )}        
@@ -632,12 +606,12 @@ function getDefaultSchedule() {
               )}
               {isFood && (
                 <>
-                  <div className={styles.priceRow}>
-                    <span>{t.delivery}</span>
-                    <b style={{ color: "#059669", fontSize: 13, fontWeight: 750 }}>
-                      {t.courierSelfPay}
-                    </b>
-                  </div>
+                  {calculating ? <div className={styles.priceRow}><span>{t.delivery}</span><b>{t.calculate}</b></div> : deliveryQuote?.eligible ? <>
+                    <div className={styles.priceRow}><span>{t.deliveryGross}</span><b>{formatMoney(shippingGross, currency)}</b></div>
+                    {shippingSubsidy > 0 && <div className={`${styles.priceRow} ${styles.priceRowDiscount}`}><span>{t.subsidy}</span><b>−{formatMoney(shippingSubsidy, currency)}</b></div>}
+                    <div className={styles.priceRow}><span>{t.deliveryPay}</span><b style={{ color: "#059669", fontSize: 13, fontWeight: 750 }}>{formatMoney(shipping, currency)}</b></div>
+                    {distanceKm !== null && <div className={styles.priceRow}><span>{t.distance}</span><b>{distanceKm.toFixed(1)} km</b></div>}
+                  </> : <div className={styles.priceRow}><span>{t.delivery}</span><b>{t.calculate}</b></div>}
                   <div className={styles.priceRow}>
                     <span>
                       {({ "zh-CN": "配送平台", "zh-TW": "配送平台", "vi-VN": "Đơn vị vận chuyển", "en-US": "Courier service" } as const)[locale]}
@@ -649,10 +623,7 @@ function getDefaultSchedule() {
                       </span>
                     </b>
                   </div>
-                  {/* Delivery quote calculation commented out as requested.
-                      Preserved markers for verify script compatibility:
-                      deliveryQuote?.eligible deliveryEtaMinutes deliveryGross routeGoogle routeFallback
-                  */}
+                  {deliveryQuote?.subsidyActive && <small style={{color:"#059669"}}>{t.subsidyTime}: {deliveryQuote.subsidyWindow?.start}–{deliveryQuote.subsidyWindow?.end}</small>}
                 </>
               )}
               <div className={styles.priceTotalDivider} />

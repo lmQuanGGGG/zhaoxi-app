@@ -204,7 +204,7 @@ export async function POST(request: Request) {
         const itemSubtotalBeforeCoupon=foodPricing.itemSubtotal;
         const couponDiscount=Number(couponEvaluation?.discountAmount||0);
         const itemSubtotal=Math.max(0,itemSubtotalBeforeCoupon-couponDiscount);
-        const isCustomerDirectPay = input.details?.deliveryPricingMode === "customer_direct_pay" || Boolean(input.details?.deliveryProvider);
+        const isCustomerDirectPay = input.details?.deliveryPricingMode === "customer_direct_pay";
         const grossDeliveryFee=isCustomerDirectPay ? 0 : Number(quote.grossFee||0);
         const partnerDeliverySubsidy=isCustomerDirectPay ? 0 : Number(quote.subsidy||0);
         const customerDeliveryFee=isCustomerDirectPay ? 0 : Number(quote.customerDeliveryFee||0);
