@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { paymentEvents, paymentTransactions, serviceRequests } from "@/db/schema";
+import { organizations, paymentEvents, paymentTransactions, serviceRequests } from "@/db/schema";
 
 export type PaymentMethod = "cash_on_delivery" | "bank_transfer" | "wechat_pay";
 export type PaymentStatus = "pending" | "awaiting_payment" | "cash_due" | "paid" | "cash_collected" | "failed" | "cancelled" | "refunded";
@@ -47,6 +47,10 @@ export class PaymentService {
     const request = (await db.select().from(serviceRequests).where(eq(serviceRequests.id, requestId)).limit(1))[0];
     if (!request) throw new Error("REQUEST_NOT_FOUND");
     const details = (request.details || {}) as Record<string, unknown>;
+    const organization = request.assignedOrganizationId
+      ? (await db.select().from(organizations).where(eq(organizations.id, request.assignedOrganizationId)).limit(1))[0]
+      : null;
+    const organizationMetadata = (organization?.metadata || {}) as Record<string, unknown>;
     const rawMethod = String(requestedMethod || details.paymentMethod || "cash_on_delivery") as PaymentMethod;
     const method: PaymentMethod = allowedMethods.has(rawMethod) ? rawMethod : "cash_on_delivery";
     const key = `request:${request.id}:method:${method}`;
@@ -59,10 +63,15 @@ export class PaymentService {
       checkoutPayload.mode = wechatConfigured() ? "native_v3_ready" : "configuration_required";
     }
     if (method === "bank_transfer") {
-      checkoutPayload.bankName = process.env.ZHAOXI_BANK_NAME || undefined;
-      checkoutPayload.accountNumber = process.env.ZHAOXI_BANK_ACCOUNT_NUMBER || undefined;
-      checkoutPayload.accountName = process.env.ZHAOXI_BANK_ACCOUNT_NAME || undefined;
+      // Bank details are owned by the partner. Never silently fall back to a
+      // platform account: that would route one shop's sale to the wrong owner.
+      checkoutPayload.paymentQrUrl = typeof organizationMetadata.paymentQrUrl === "string" ? organizationMetadata.paymentQrUrl : undefined;
+      checkoutPayload.bankName = typeof organizationMetadata.bankName === "string" ? organizationMetadata.bankName : undefined;
+      checkoutPayload.accountNumber = typeof organizationMetadata.bankAccountNumber === "string" ? organizationMetadata.bankAccountNumber : undefined;
+      checkoutPayload.accountName = typeof organizationMetadata.bankAccountName === "string" ? organizationMetadata.bankAccountName : undefined;
       checkoutPayload.transferContent = request.requestCode;
+      checkoutPayload.manualVerificationRequired = true;
+      if (!checkoutPayload.paymentQrUrl) throw new Error("PARTNER_PAYMENT_QR_NOT_CONFIGURED");
     }
     return db.transaction(async (tx) => {
       const rows = await tx.insert(paymentTransactions).values({

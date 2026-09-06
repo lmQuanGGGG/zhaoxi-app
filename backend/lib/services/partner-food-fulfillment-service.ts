@@ -1,6 +1,6 @@
 import {and,eq,sql} from "drizzle-orm";
 import {getDb} from "@/db";
-import {organizationMembers,serviceRequests,serviceRequestStatusHistory} from "@/db/schema";
+import {organizationMembers,paymentEvents,paymentTransactions,serviceRequests,serviceRequestStatusHistory} from "@/db/schema";
 
 export type FoodFulfillmentAction=
  "accept"|"start_preparing"|"ready_for_pickup"|"courier_booked"|"handed_off"|"delivered"|"cancelled";
@@ -36,6 +36,10 @@ export class PartnerFoodFulfillmentService{
   if(details.fulfillmentStage===targetStage)return current;
 
   if(action==="accept"){
+    if(details.paymentMethod==="bank_transfer"){
+      const payment=(await db.select().from(paymentTransactions).where(eq(paymentTransactions.requestId,requestId)).limit(1))[0];
+      if(!payment||payment.status!=="awaiting_payment"||!details.paymentCustomerReportedAt)throw new Error("BANK_TRANSFER_VERIFICATION_REQUIRED");
+    }
     if(!["assigned","accepted","in_progress"].includes(current.status))throw new Error("INVALID_FULFILLMENT_TRANSITION");
     const minutes=[10,15,20,25,30,35,40,45,60].includes(Number(input.estimatedMinutes))?Number(input.estimatedMinutes):15;
     nextStatus="in_progress";
@@ -64,6 +68,14 @@ export class PartnerFoodFulfillmentService{
   const [updated]=await db.update(serviceRequests).set({status:nextStatus as any,details:nextDetails,updatedAt:now}).where(and(eq(serviceRequests.id,requestId),sql`coalesce(${serviceRequests.details}->>'fulfillmentStage','') <> ${targetStage}`)).returning();
   if(!updated)return (await db.select().from(serviceRequests).where(eq(serviceRequests.id,requestId)).limit(1))[0]||current;
   await db.insert(serviceRequestStatusHistory).values({requestId,fromStatus:current.status,toStatus:nextStatus as any,note});
+  if(action==="accept"&&details.paymentMethod==="bank_transfer"){
+    const payment=(await db.select().from(paymentTransactions).where(eq(paymentTransactions.requestId,requestId)).limit(1))[0];
+    if(payment?.status==="awaiting_payment"){
+      await db.update(paymentTransactions).set({status:"paid",paidAt:now,updatedAt:now,metadata:{...(payment.metadata||{}),verifiedByPartner:userId,verifiedAt:now.toISOString()}}).where(and(eq(paymentTransactions.id,payment.id),eq(paymentTransactions.status,"awaiting_payment")));
+      await db.insert(paymentEvents).values({paymentId:payment.id,eventType:"PAYMENT_PARTNER_VERIFIED",payload:{partnerUserId:userId,requestCode:current.requestCode}});
+      await db.update(serviceRequests).set({details:{...nextDetails,paymentStatus:"paid",paymentVerifiedAt:now.toISOString(),paymentVerifiedBy:userId},updatedAt:now}).where(eq(serviceRequests.id,requestId));
+    }
+  }
   return updated;
  }
 }

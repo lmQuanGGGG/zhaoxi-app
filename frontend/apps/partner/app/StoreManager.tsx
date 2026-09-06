@@ -240,6 +240,7 @@ export default function StoreManager() {
   const [storeAddress, setStoreAddress] = useState(() => cachedData?.org?.address || "");
   const [contactPhone, setContactPhone] = useState(() => cachedData?.org?.phone || "");
   const [wechat, setWechat] = useState(() => cachedData?.org?.wechat || "");
+  const [paymentQrUrl, setPaymentQrUrl] = useState(() => cachedData?.org?.paymentQrUrl || "");
   const [orgMetadata, setOrgMetadata] = useState<Record<string, unknown>>(() => cachedData?.org?.metadata || {});
   const [logo, setLogo] = useState(() => cachedData?.org?.logo || "");
   const [bannerUrls, setBannerUrls] = useState<string[]>(() => cachedData?.org?.bannerUrls || []);
@@ -261,6 +262,7 @@ export default function StoreManager() {
   const logoInput = useRef<HTMLInputElement>(null);
   const bannersInput = useRef<HTMLInputElement>(null);
   const itemInput = useRef<HTMLInputElement>(null);
+  const paymentQrInput = useRef<HTMLInputElement>(null);
 
   const activeFields = useMemo(() => moduleFields[moduleCode]?.[locale] || [], [moduleCode, locale]);
   const presentation = modulePresentation[moduleCode]?.[locale] || { store: t.store, menu: t.menu, add: t.add, image: t.image, banners: t.banners };
@@ -303,6 +305,8 @@ export default function StoreManager() {
       setContactPhone(sPhone);
       const sWechat = String(metadata.wechat || "");
       setWechat(sWechat);
+      const sPaymentQrUrl = String(metadata.paymentQrUrl || "");
+      setPaymentQrUrl(sPaymentQrUrl);
       const sConfirmed = Boolean(metadata.bannerDraftConfirmed);
       setBannersConfirmed(sConfirmed);
       setCached(cacheKey, {
@@ -314,6 +318,7 @@ export default function StoreManager() {
           address: sAddr,
           phone: sPhone,
           wechat: sWechat,
+          paymentQrUrl: sPaymentQrUrl,
           metadata,
           bannersConfirmed: sConfirmed,
         }
@@ -397,6 +402,21 @@ export default function StoreManager() {
     }
   }
 
+  async function choosePaymentQr(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploading("payment-qr");
+      setPaymentQrUrl(await uploadFile(file, "payment-qr"));
+      setMsg("✓ Đã tải QR thanh toán. Bấm ‘Lưu gian hàng’ để kích hoạt cho khách.");
+    } catch (error) {
+      setMsg(error instanceof Error ? error.message : t.uploadFailed);
+    } finally {
+      setUploading(null);
+      event.target.value = "";
+    }
+  }
+
   async function chooseItemImage(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -435,6 +455,7 @@ export default function StoreManager() {
           address: trimmedAddress,
           contactPhone: trimmedPhone,
           wechat: wechat.trim(),
+          paymentQrUrl: paymentQrUrl.trim(),
           catalogSyncedAt: new Date().toISOString(),
         },
       }),
@@ -683,6 +704,7 @@ export default function StoreManager() {
             address: trimmedAddress,
             contactPhone: trimmedPhone,
             wechat: wechat.trim(),
+            paymentQrUrl: paymentQrUrl.trim(),
             catalogSyncedAt: new Date().toISOString(),
           },
         }),
@@ -814,6 +836,13 @@ export default function StoreManager() {
         <label style={{ display: "grid", gap: 6 }}>{t.contactPhone} <b style={{ color: "#dc2626" }}>* {requiredText}</b><input required value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} inputMode="tel" style={{ padding: 12 }} /></label>
         <label style={{ display: "grid", gap: 6 }}>{t.wechat} <small>({optionalText})</small><input value={wechat} onChange={(e) => setWechat(e.target.value)} style={{ padding: 12 }} /></label>
       </div>
+      {moduleCode === "food" && <section style={{ display: "grid", gap: 9, margin: "0 0 18px", padding: 14, border: "1px solid #b7e4c7", borderRadius: 14, background: "#f0fdf4" }}>
+        <div><b>{locale === "vi-VN" ? "QR nhận chuyển khoản" : locale === "en-US" ? "Bank-transfer QR" : locale === "zh-TW" ? "收款轉帳 QR" : "收款转账 QR"}</b><small style={{ display: "block", marginTop: 4, color: "#47675a" }}>{locale === "vi-VN" ? "Mỗi quán tự tải QR tài khoản công ty của mình. Khách chỉ thấy QR của quán này khi chọn chuyển khoản." : locale === "en-US" ? "Upload this store's company payment QR. Customers see only this store's QR when they choose bank transfer." : locale === "zh-TW" ? "每間店自行上傳公司的收款 QR；客戶選擇轉帳時只會看到此店的 QR。" : "每家店自行上传公司的收款 QR；顾客选择转账时只会看到此店的 QR。"}</small></div>
+        {paymentQrUrl && <ImagePreview url={paymentQrUrl} alt="Payment QR" height={180} />}
+        <input ref={paymentQrInput} type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={choosePaymentQr} />
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><ActionButton tone="neutral" onClick={() => paymentQrInput.current?.click()}>{uploading === "payment-qr" ? t.uploading : t.chooseImage}</ActionButton>{paymentQrUrl && <ActionButton tone="neutral" onClick={() => setPaymentQrUrl("")}>{t.remove}</ActionButton>}</div>
+        <input placeholder={t.urlFallback} value={paymentQrUrl} onChange={(event) => setPaymentQrUrl(event.target.value)} style={{ padding: 10 }} />
+      </section>}
       <section style={{ display: "grid", gap: 10, marginBottom: 18 }}>
         <b>{t.logo} <small>({optionalText})</small></b><ImagePreview url={visibleLogo} alt={t.logo} height={130} />
         <input ref={logoInput} type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={chooseLogo} />

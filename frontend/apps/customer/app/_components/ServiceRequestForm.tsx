@@ -335,7 +335,7 @@ function getDefaultSchedule() {
       invalidateCache("customer_orders");
       const partnerCode = data.routing?.organizationCode || service.organization?.code || "";
       const partnerName = localizeOrganizationName(locale, partnerCode, data.routing?.organizationName || service.organization?.name);
-      router.push(`/request-success?code=${encodeURIComponent(created.requestCode)}&id=${encodeURIComponent(created.id)}&partner=${encodeURIComponent(partnerName)}&partnerCode=${encodeURIComponent(partnerCode)}`);
+      router.push(`/request-success?code=${encodeURIComponent(created.requestCode)}&id=${encodeURIComponent(created.id)}&partner=${encodeURIComponent(partnerName)}&partnerCode=${encodeURIComponent(partnerCode)}&payment=${encodeURIComponent(paymentMethod)}`);
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Unable to submit"); }
     finally { setSubmitting(false); }
   }
@@ -525,7 +525,7 @@ function getDefaultSchedule() {
               const enabled =
                 method === "cash_on_delivery" ||
                 (method === "bank_transfer"
-                  ? paymentCapabilities.bankTransfer
+                  ? Boolean(service.organization?.metadata?.paymentQrUrl) || paymentCapabilities.bankTransfer
                   : paymentCapabilities.wechatPay && currency === (paymentCapabilities.wechatPayCurrency || "CNY"));
               const isSelected = paymentMethod === method;
 

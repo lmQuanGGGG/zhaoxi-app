@@ -16,4 +16,11 @@ export const partnerWebPushService={
     await Promise.all(subscriptions.map(async subscription=>{try{await webpush.sendNotification({endpoint:subscription.endpoint,keys:{p256dh:subscription.p256dh,auth:subscription.auth}},JSON.stringify({title:"🔔 Có đơn hàng mới",body:`${order.requestCode} · ${order.customerName}`,url:"/orders",tag:`zhaoxi-order-${order.id}`}));sent++;}catch(error){const code=Number((error as {statusCode?:number})?.statusCode||0);if(code===404||code===410)await getDb().delete(partnerPushSubscriptions).where(eq(partnerPushSubscriptions.id,subscription.id));}}));
     return {sent,enabled:true};
   },
+  async sendPaymentReported(organizationId:string,order:{id:string;requestCode:string;customerName:string;amount:string;currency:string}){
+    if(!enabled)return {sent:0,enabled:false};
+    const subscriptions=await getDb().select().from(partnerPushSubscriptions).where(eq(partnerPushSubscriptions.organizationId,organizationId));
+    let sent=0;
+    await Promise.all(subscriptions.map(async subscription=>{try{await webpush.sendNotification({endpoint:subscription.endpoint,keys:{p256dh:subscription.p256dh,auth:subscription.auth}},JSON.stringify({title:"💳 Khách đã báo chuyển khoản",body:`${order.customerName} · ${Number(order.amount).toLocaleString("vi-VN")} ${order.currency} · ${order.requestCode}. Kiểm tra tiền vào rồi nhận đơn.`,url:"/orders",tag:`zhaoxi-payment-${order.id}`,requireInteraction:true,renotify:true}));sent++;}catch(error){const code=Number((error as {statusCode?:number})?.statusCode||0);if(code===404||code===410)await getDb().delete(partnerPushSubscriptions).where(eq(partnerPushSubscriptions.id,subscription.id));}}));
+    return {sent,enabled:true};
+  },
 };
