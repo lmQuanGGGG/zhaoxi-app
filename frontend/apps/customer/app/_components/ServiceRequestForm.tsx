@@ -114,6 +114,10 @@ function getDefaultSchedule() {
     "zh-CN": { tag:"系统计费", note:"💡 配送费按赵喜配送政策计算。餐点准备好后，商家将呼叫 Xanh SM 或 Grab。" },
     "zh-TW": { tag:"系統計費", note:"💡 配送費依趙喜配送政策計算。餐點準備好後，商家將呼叫 Xanh SM 或 Grab。" },
   } as const)[locale];
+  const weatherLineCopy = ({
+    "vi-VN":"Phụ phí thời tiết (Open‑Meteo)", "en-US":"Weather surcharge (Open‑Meteo)",
+    "zh-CN":"天气附加费（Open‑Meteo）", "zh-TW":"天氣附加費（Open‑Meteo）",
+  } as const)[locale];
 
 
   useEffect(() => {
@@ -607,7 +611,8 @@ function getDefaultSchedule() {
               {isFood && (
                 <>
                   {calculating ? <div className={styles.priceRow}><span>{t.delivery}</span><b>{t.calculate}</b></div> : deliveryQuote?.eligible ? <>
-                    <div className={styles.priceRow}><span>{t.deliveryGross}</span><b>{formatMoney(shippingGross, currency)}</b></div>
+                    <div className={styles.priceRow}><span>{t.delivery}</span><b>{formatMoney(Number(deliveryQuote.distanceFee || 0), currency)}</b></div>
+                    {Number(deliveryQuote.weather?.surcharge || 0) > 0 && <div className={styles.priceRow}><span>{weatherLineCopy}</span><b>+{formatMoney(Number(deliveryQuote.weather?.surcharge || 0), currency)}</b></div>}
                     {shippingSubsidy > 0 && <div className={`${styles.priceRow} ${styles.priceRowDiscount}`}><span>{t.subsidy}</span><b>−{formatMoney(shippingSubsidy, currency)}</b></div>}
                     <div className={styles.priceRow}><span>{t.deliveryPay}</span><b style={{ color: "#059669", fontSize: 13, fontWeight: 750 }}>{formatMoney(shipping, currency)}</b></div>
                     {distanceKm !== null && <div className={styles.priceRow}><span>{t.distance}</span><b>{distanceKm.toFixed(1)} km</b></div>}
