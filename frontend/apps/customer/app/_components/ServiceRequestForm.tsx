@@ -118,6 +118,12 @@ function getDefaultSchedule() {
     "vi-VN":"Phụ phí thời tiết (Open‑Meteo)", "en-US":"Weather surcharge (Open‑Meteo)",
     "zh-CN":"天气附加费（Open‑Meteo）", "zh-TW":"天氣附加費（Open‑Meteo）",
   } as const)[locale];
+  const weather = deliveryQuote?.weather;
+  const weatherStatus = weather?.source === "open_meteo"
+    ? weather.rainLevel === "none"
+      ? weatherFairCopy[locale]
+      : `${rainCopy[locale][weather.rainLevel]}${weather.precipitationMm > 0 ? ` · ${weather.precipitationMm.toFixed(1)} mm` : ""}`
+    : ({"vi-VN":"Thời tiết: chưa có dữ liệu phụ phí", "en-US":"Weather: surcharge data unavailable", "zh-CN":"天气：暂无法取得附加费数据", "zh-TW":"天氣：暫無附加費資料"} as const)[locale];
 
 
   useEffect(() => {
@@ -612,7 +618,7 @@ function getDefaultSchedule() {
                 <>
                   {calculating ? <div className={styles.priceRow}><span>{t.delivery}</span><b>{t.calculate}</b></div> : deliveryQuote?.eligible ? <>
                     <div className={styles.priceRow}><span>{t.delivery}</span><b>{formatMoney(Number(deliveryQuote.distanceFee || 0), currency)}</b></div>
-                    {Number(deliveryQuote.weather?.surcharge || 0) > 0 && <div className={styles.priceRow}><span>{weatherLineCopy}</span><b>+{formatMoney(Number(deliveryQuote.weather?.surcharge || 0), currency)}</b></div>}
+                    <div className={styles.priceRow} style={{alignItems:"flex-start"}}><span>☀️ {weatherStatus}</span><b style={{whiteSpace:"nowrap",color:Number(weather?.surcharge||0)>0?"#b45309":"#059669"}}>{Number(weather?.surcharge||0)>0?`+${formatMoney(Number(weather?.surcharge||0),currency)}`:formatMoney(0,currency)}</b></div>
                     {shippingSubsidy > 0 && <div className={`${styles.priceRow} ${styles.priceRowDiscount}`}><span>{t.subsidy}</span><b>−{formatMoney(shippingSubsidy, currency)}</b></div>}
                     <div className={styles.priceRow}><span>{t.deliveryPay}</span><b style={{ color: "#059669", fontSize: 13, fontWeight: 750 }}>{formatMoney(shipping, currency)}</b></div>
                     {distanceKm !== null && <div className={styles.priceRow}><span>{t.distance}</span><b>{distanceKm.toFixed(1)} km</b></div>}
