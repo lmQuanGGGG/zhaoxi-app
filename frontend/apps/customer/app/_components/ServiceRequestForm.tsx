@@ -525,7 +525,7 @@ function getDefaultSchedule() {
               const enabled =
                 method === "cash_on_delivery" ||
                 (method === "bank_transfer"
-                  ? Boolean(service.organization?.metadata?.paymentQrUrl) || paymentCapabilities.bankTransfer
+                  ? Boolean(service.organization?.metadata?.paymentQrUrl)
                   : paymentCapabilities.wechatPay && currency === (paymentCapabilities.wechatPayCurrency || "CNY"));
               const isSelected = paymentMethod === method;
 
