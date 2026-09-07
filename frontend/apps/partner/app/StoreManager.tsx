@@ -250,6 +250,7 @@ export default function StoreManager() {
   const [msg, setMsg] = useState("");
   const [itemNotice, setItemNotice] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
+  const [migratingStaticImages, setMigratingStaticImages] = useState(false);
   const [logoPreview, setLogoPreview] = useState("");
   const [bannerPreviews, setBannerPreviews] = useState<string[]>([]);
   const [itemPreview, setItemPreview] = useState("");
@@ -358,6 +359,30 @@ export default function StoreManager() {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ organizationId: orgId, kind, keepUrls }),
     });
+  }
+
+  async function migrateStaticImages() {
+    if (!orgId || migratingStaticImages) return;
+    setMigratingStaticImages(true);
+    setMsg("");
+    let migrated = 0;
+    let failed = 0;
+    try {
+      for (let batch = 0; batch < 30; batch += 1) {
+        const response = await fetch("/api/media/migrate-static", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ organizationId: orgId }) });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok) throw new Error(String(payload?.error || "MIGRATION_FAILED"));
+        migrated += Number(payload.data?.migrated || 0);
+        failed += Array.isArray(payload.data?.failed) ? payload.data.failed.length : 0;
+        if (!Number(payload.data?.remaining || 0) || !Number(payload.data?.migrated || 0)) break;
+      }
+      await load();
+      setMsg(`✓ Đã chuyển ${migrated} ảnh sang Vercel Blob${failed ? `; ${failed} ảnh cần thử lại.` : "."}`);
+    } catch (error) {
+      setMsg(error instanceof Error ? error.message : "Không thể chuyển ảnh sang Vercel Blob.");
+    } finally {
+      setMigratingStaticImages(false);
+    }
   }
 
   async function chooseLogo(event: ChangeEvent<HTMLInputElement>) {
@@ -843,6 +868,10 @@ export default function StoreManager() {
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><ActionButton tone="neutral" onClick={() => paymentQrInput.current?.click()}>{uploading === "payment-qr" ? t.uploading : t.chooseImage}</ActionButton>{paymentQrUrl && <ActionButton tone="neutral" onClick={() => setPaymentQrUrl("")}>{t.remove}</ActionButton>}</div>
         <input placeholder={t.urlFallback} value={paymentQrUrl} onChange={(event) => setPaymentQrUrl(event.target.value)} style={{ padding: 10 }} />
       </section>}
+      <section style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", margin: "0 0 18px", padding: 14, border: "1px solid #dbe7e1", borderRadius: 14, background: "#f8fcfa" }}>
+        <div><b>Chuyển ảnh cũ sang Vercel Blob</b><small style={{ display: "block", marginTop: 4, color: "#47675a" }}>Sao chép ảnh website cũ sang kho ảnh mới; URL cũ vẫn được lưu để có thể khôi phục.</small></div>
+        <ActionButton tone="neutral" disabled={migratingStaticImages} onClick={() => void migrateStaticImages()}>{migratingStaticImages ? "Đang chuyển ảnh…" : "Chuyển ảnh cũ"}</ActionButton>
+      </section>
       <section style={{ display: "grid", gap: 10, marginBottom: 18 }}>
         <b>{t.logo} <small>({optionalText})</small></b><ImagePreview url={visibleLogo} alt={t.logo} height={130} />
         <input ref={logoInput} type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={chooseLogo} />
