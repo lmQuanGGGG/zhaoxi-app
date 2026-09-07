@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useZhaoXiLocale } from "@zhaoxi/i18n";
 import { readSessionPoint, subscribeSessionPoint, writeSessionPoint, type SessionPoint } from "../_lib/customer-location";
 import styles from "../hub.module.css";
@@ -115,10 +116,10 @@ export default function CustomerLocationBar({
       </button>
       <button type="button" className={styles.locationChooseButton} onClick={openManualLocation}>{t.manual}</button>
       {error && <em>{error}</em>}
-      {manualOpen && <div className={styles.locationModalBackdrop} role="presentation" onMouseDown={() => setManualOpen(false)}><section className={styles.locationModal} role="dialog" aria-modal="true" aria-label={t.manual} onMouseDown={(event) => event.stopPropagation()}>
+      {manualOpen && typeof document !== "undefined" && createPortal(<div className={styles.locationModalBackdrop} role="presentation" onMouseDown={() => setManualOpen(false)}><section className={styles.locationModal} role="dialog" aria-modal="true" aria-label={t.manual} onMouseDown={(event) => event.stopPropagation()}>
         <LocationPicker locale={locale} address={manualQuery} point={manualPoint} onAddress={setManualQuery} onPoint={setManualPoint}/>
         <div className={styles.locationModalActions}><button type="button" onClick={() => setManualOpen(false)}>{t.cancel}</button><button type="button" onClick={applyManualLocation} disabled={!manualPoint}>{t.apply}</button></div>
-      </section></div>}
+      </section></div>, document.body)}
     </section>
   );
 }

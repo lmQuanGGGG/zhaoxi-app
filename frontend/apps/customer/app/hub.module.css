@@ -331,10 +331,14 @@ html[data-theme="dark"] .locationBarBanner b{color:#F1F5F9!important}
 html[data-theme="dark"] .locationBarBanner .locationPin{background:rgba(255,255,255,.1)!important;color:#86EFAC!important}
 
 .locationChooseButton{
-  border:1px solid rgba(5,150,105,.25)!important;
-  background:linear-gradient(135deg,#ecfdf5,#d1fae5)!important;
+  min-height:34px!important;
+  padding:0 12px!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:rgba(236,253,245,.9)!important;
   color:#047857!important;
-  box-shadow:0 3px 10px rgba(4,120,87,.12)!important;
+  box-shadow:0 5px 14px rgba(4,120,87,.13)!important;
+  white-space:nowrap;
 }
 .locationModalBackdrop{position:fixed;z-index:1000;inset:0;display:grid;place-items:center;padding:18px;background:rgba(15,23,42,.56);backdrop-filter:blur(5px)}
 .locationModal{width:min(640px,100%);max-height:min(760px,calc(100dvh - 36px));overflow:auto;padding:18px;border-radius:24px;background:#fff;box-shadow:0 28px 70px rgba(15,23,42,.3)}
