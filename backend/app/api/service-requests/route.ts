@@ -1,4 +1,5 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
+import { after } from "next/server";
 import { getDb } from "@/db";
 import {
   modules,
@@ -297,8 +298,11 @@ export async function POST(request: Request) {
       });
       try { await paymentService.ensureForRequest(created.id, typeof input.details?.paymentMethod === "string" ? input.details.paymentMethod : "cash_on_delivery"); }
       catch (paymentError) { console.error("payment initialization failed", paymentError); }
-      try { await partnerWebPushService.sendNewOrder(serviceRow.organizationId, { id: created.id, requestCode: created.requestCode, customerName: created.customerName }); }
-      catch (pushError) { console.error("partner web push failed", pushError); }
+      const pushOrganizationId = serviceRow.organizationId;
+      after(async () => {
+        try { await partnerWebPushService.sendNewOrder(pushOrganizationId, { id: created.id, requestCode: created.requestCode, customerName: created.customerName }); }
+        catch (pushError) { console.error("partner web push failed", pushError); }
+      });
       return json({
         ok: true,
         data: created,

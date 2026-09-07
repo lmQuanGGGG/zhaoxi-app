@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { modules, organizations, services, serviceTranslations } from "@/db/schema";
 import { errorResponse, json } from "@/lib/api";
@@ -43,7 +43,14 @@ export async function GET(request: Request) {
       id: services.id, code: services.code, moduleCode: modules.code, priceFrom: services.priceFrom, isEnabled: services.isEnabled,
       currency: services.currency, metadata: services.metadata, organizationId: organizations.id,
       organizationCode: organizations.code, organizationName: organizations.name,
-      organizationAddress: organizations.addressText, organizationMetadata: organizations.metadata,
+      organizationAddress: organizations.addressText,
+      // Project inline QR bytes out in SQL, before transferring repeated rows from DB.
+      organizationMetadata: sql<Record<string, unknown>>`case
+        when ${organizations.metadata}->>'paymentQrUrl' ~ '^data:image/(png|jpeg|webp);base64,'
+        then jsonb_set(${organizations.metadata}, '{paymentQrUrl}', to_jsonb(
+          ${new URL('/api/organization-payment-qr', request.url).href}::text || '?id=' || ${organizations.id}::text
+          || '&v=' || md5(${organizations.metadata}->>'paymentQrUrl')
+        )) else ${organizations.metadata} end`,
       name: serviceTranslations.name, summary: serviceTranslations.summary, description: serviceTranslations.description,
     }).from(services)
       .innerJoin(modules, eq(services.moduleId, modules.id))

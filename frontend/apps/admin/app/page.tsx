@@ -1,5 +1,5 @@
 "use client";
-import{useEffect,useState}from"react";
+import{Activity,useEffect,useState}from"react";
 import{useZhaoXiLocale}from"@zhaoxi/i18n";
 import{logoutZhaoXiSession}from"@zhaoxi/auth";
 import OperationsBoard from"./OperationsBoard";import AnalyticsDashboard from"./AnalyticsDashboard";import CustomerExperiencePanel from"./CustomerExperiencePanel";import CustomerSupportPanel from"./CustomerSupportPanel";import DeliveryPricingPanel from"./DeliveryPricingPanel";import RestaurantOversightPanel from"./RestaurantOversightPanel";import SettlementPanel from"./SettlementPanel";import HousingOversightPanel from"./HousingOversightPanel";import TravelOversightPanel from"./TravelOversightPanel";import CustomerRelationshipHub from"./CustomerRelationshipHub";import CustomerOperationsHub from"./CustomerOperationsHub";import OperationsCommandCenter from"./OperationsCommandCenter";import OperationsRoutingPanel from"./OperationsRoutingPanel";import OperationsWorkflowCenter from"./OperationsWorkflowCenter";import PartnerPaymentGatewayOversight from"./PartnerPaymentGatewayOversight";import PaymentProviderHealthPanel from"./PaymentProviderHealthPanel";
@@ -38,25 +38,25 @@ export default function AdminHome(){
     }
   };
   return <main className={styles.shell}><aside className={styles.sidebar}><div className={styles.brand}><i>喜</i><b>ZHAOXI</b></div><nav>{groups.map(([g,items])=><section key={g||"home"}>{g&&<small>{g}</small>}{items.map(([id,icon,label])=><button key={id} className={tab===id?styles.active:""} onClick={()=>choose(id)}><i>{icon}</i><span>{label}</span><b>›</b></button>)}</section>)}</nav><div className={styles.adminId}><i>喜</i><span><b>Admin ZhaoXi</b><small>Super Administrator</small><em>● Online</em></span></div></aside><section className={styles.workspace}><header className={styles.localHead}><b>{t.title}</b><small>Customer · Partner · Admin</small></header>
-    <div style={{ display: tab === "overview" ? "block" : "none" }}><Overview t={t}/></div>
-    {visitedTabs.has("services") && <div style={{ display: tab === "services" ? "block" : "none" }}><ServiceHub t={t} choose={choose}/></div>}
-    {visitedTabs.has("payments") && <div style={{ display: tab === "payments" ? "block" : "none" }}><PaymentHub t={t} choose={choose}/></div>}
-    {visitedTabs.has("paymentGateways") && <div style={{ display: tab === "paymentGateways" ? "block" : "none" }} className={styles.module}><PartnerPaymentGatewayOversight/><PaymentProviderHealthPanel/></div>}
-    {["carRental","visa","passport","translation","otherServices"].map((tKey) => visitedTabs.has(tKey as Tab) ? <div key={tKey} style={{ display: tab === tKey ? "block" : "none" }}><GenericServicePanel tab={tKey as Tab}/></div> : null)}
-    {visitedTabs.has("workflow") && <div style={{ display: tab === "workflow" ? "block" : "none" }} className={styles.module}><OperationsWorkflowCenter/></div>}
-    {visitedTabs.has("routing") && <div style={{ display: tab === "routing" ? "block" : "none" }} className={styles.module}><OperationsRoutingPanel/></div>}
-    {visitedTabs.has("command") && <div style={{ display: tab === "command" ? "block" : "none" }} className={styles.module}><OperationsCommandCenter/></div>}
-    {visitedTabs.has("analytics") && <div style={{ display: tab === "analytics" ? "block" : "none" }} className={styles.module}><AnalyticsDashboard/></div>}
-    {visitedTabs.has("operations") && <div style={{ display: tab === "operations" ? "block" : "none" }} className={styles.module}><OperationsBoard/></div>}
-    {visitedTabs.has("restaurants") && <div style={{ display: tab === "restaurants" ? "block" : "none" }} className={styles.module}><RestaurantOversightPanel/></div>}
-    {visitedTabs.has("housing") && <div style={{ display: tab === "housing" ? "block" : "none" }} className={styles.module}><HousingOversightPanel/></div>}
-    {visitedTabs.has("travel") && <div style={{ display: tab === "travel" ? "block" : "none" }} className={styles.module}><TravelOversightPanel/></div>}
-    {visitedTabs.has("settlements") && <div style={{ display: tab === "settlements" ? "block" : "none" }} className={styles.module}><SettlementPanel/></div>}
-    {visitedTabs.has("customer") && <div style={{ display: tab === "customer" ? "block" : "none" }} className={styles.module}><CustomerExperiencePanel/></div>}
-    {visitedTabs.has("relationships") && <div style={{ display: tab === "relationships" ? "block" : "none" }} className={styles.module}><CustomerRelationshipHub/></div>}
-    {visitedTabs.has("customerOps") && <div style={{ display: tab === "customerOps" ? "block" : "none" }} className={styles.module}><CustomerOperationsHub/></div>}
-    {visitedTabs.has("support") && <div style={{ display: tab === "support" ? "block" : "none" }} className={styles.module}><CustomerSupportPanel/></div>}
-    {visitedTabs.has("delivery") && <div style={{ display: tab === "delivery" ? "block" : "none" }} className={styles.module}><DeliveryPricingPanel/></div>}
+    <Activity mode={tab === "overview" ? "visible" : "hidden"}><div><Overview t={t}/></div></Activity>
+    {visitedTabs.has("services") && <Activity mode={tab === "services" ? "visible" : "hidden"}><div><ServiceHub t={t} choose={choose}/></div></Activity>}
+    {visitedTabs.has("payments") && <Activity mode={tab === "payments" ? "visible" : "hidden"}><div><PaymentHub t={t} choose={choose}/></div></Activity>}
+    {visitedTabs.has("paymentGateways") && <Activity mode={tab === "paymentGateways" ? "visible" : "hidden"}><div className={styles.module}><PartnerPaymentGatewayOversight/><PaymentProviderHealthPanel/></div></Activity>}
+    {["carRental","visa","passport","translation","otherServices"].map((tKey) => visitedTabs.has(tKey as Tab) ? <Activity key={tKey} mode={tab === tKey ? "visible" : "hidden"}><div><GenericServicePanel tab={tKey as Tab}/></div></Activity> : null)}
+    {visitedTabs.has("workflow") && <Activity mode={tab === "workflow" ? "visible" : "hidden"}><div className={styles.module}><OperationsWorkflowCenter/></div></Activity>}
+    {visitedTabs.has("routing") && <Activity mode={tab === "routing" ? "visible" : "hidden"}><div className={styles.module}><OperationsRoutingPanel/></div></Activity>}
+    {visitedTabs.has("command") && <Activity mode={tab === "command" ? "visible" : "hidden"}><div className={styles.module}><OperationsCommandCenter/></div></Activity>}
+    {visitedTabs.has("analytics") && <Activity mode={tab === "analytics" ? "visible" : "hidden"}><div className={styles.module}><AnalyticsDashboard/></div></Activity>}
+    {visitedTabs.has("operations") && <Activity mode={tab === "operations" ? "visible" : "hidden"}><div className={styles.module}><OperationsBoard/></div></Activity>}
+    {visitedTabs.has("restaurants") && <Activity mode={tab === "restaurants" ? "visible" : "hidden"}><div className={styles.module}><RestaurantOversightPanel/></div></Activity>}
+    {visitedTabs.has("housing") && <Activity mode={tab === "housing" ? "visible" : "hidden"}><div className={styles.module}><HousingOversightPanel/></div></Activity>}
+    {visitedTabs.has("travel") && <Activity mode={tab === "travel" ? "visible" : "hidden"}><div className={styles.module}><TravelOversightPanel/></div></Activity>}
+    {visitedTabs.has("settlements") && <Activity mode={tab === "settlements" ? "visible" : "hidden"}><div className={styles.module}><SettlementPanel/></div></Activity>}
+    {visitedTabs.has("customer") && <Activity mode={tab === "customer" ? "visible" : "hidden"}><div className={styles.module}><CustomerExperiencePanel/></div></Activity>}
+    {visitedTabs.has("relationships") && <Activity mode={tab === "relationships" ? "visible" : "hidden"}><div className={styles.module}><CustomerRelationshipHub/></div></Activity>}
+    {visitedTabs.has("customerOps") && <Activity mode={tab === "customerOps" ? "visible" : "hidden"}><div className={styles.module}><CustomerOperationsHub/></div></Activity>}
+    {visitedTabs.has("support") && <Activity mode={tab === "support" ? "visible" : "hidden"}><div className={styles.module}><CustomerSupportPanel/></div></Activity>}
+    {visitedTabs.has("delivery") && <Activity mode={tab === "delivery" ? "visible" : "hidden"}><div className={styles.module}><DeliveryPricingPanel/></div></Activity>}
   </section>{menuOpen&&<div className={styles.drawerBackdrop} onClick={()=>setMenuOpen(false)}><aside className={styles.drawer} onClick={e=>e.stopPropagation()}><header><div><i>喜</i><span><b>ZHAOXI</b><small>{t.title}</small></span></div><button onClick={()=>setMenuOpen(false)}>×</button></header><nav>{groups.map(([g,items])=><section key={g||"drawer-home"}>{g&&<small>{g}</small>}{items.map(([id,icon,label])=><button key={id} className={tab===id?styles.active:""} onClick={()=>choose(id)}><i>{icon}</i><span>{label}</span><b>›</b></button>)}</section>)}</nav><button className={styles.drawerLogout} onClick={()=>void logoutZhaoXiSession().finally(()=>{window.location.href="/"})}>↪ {t.logout}</button></aside></div>}</main>}
 function GenericServicePanel({tab}:{tab:Tab}){const map:any={carRental:["🚗","Thuê xe","Quản lý nhà cung cấp xe, sản phẩm thuê xe, giá và trạng thái dịch vụ."],visa:["▣","Gia hạn Visa","Quản lý yêu cầu gia hạn visa, Partner xử lý và trạng thái hồ sơ."],passport:["▤","Làm mới hộ chiếu","Quản lý yêu cầu hộ chiếu, hồ sơ và tiến trình xử lý."],translation:["◌","Phiên dịch","Quản lý dịch vụ phiên dịch, Partner và yêu cầu khách hàng."],otherServices:["＋","Dịch vụ khác","Quản lý các nhóm dịch vụ đời sống mở rộng của ZhaoXi."]};const x=map[tab];return <section className="zx-native-workspace zx-generic-service-admin"><header><i>{x[0]}</i><div><small>ZHAOXI SERVICES</small><h1>{x[1]}</h1><p>{x[2]}</p></div></header><div className="zx-generic-service-grid"><article><b>Danh mục dịch vụ</b><small>Service catalog</small></article><article><b>Đối tác cung cấp</b><small>Partner providers</small></article><article><b>Yêu cầu khách hàng</b><small>Customer requests</small></article><article><b>Cấu hình & trạng thái</b><small>Configuration & status</small></article></div><p className="zx-service-note">Giao diện quản trị đã được tách đúng nhóm dịch vụ; API nghiệp vụ chuyên biệt sẽ tiếp tục dùng/được mở rộng theo từng module thay vì chuyển sang màn quản lý nhà hàng cũ.</p></section>}
 function ServiceHub({t,choose}:{t:any;choose:(id:Tab)=>void}){const items=[
