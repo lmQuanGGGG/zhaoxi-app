@@ -172,6 +172,16 @@ export async function POST(request: Request) {
       }
       if (!input.addressText?.trim()) return errorResponse("A delivery or service address is required.", 422);
       let requestDetails=input.details ?? {};
+      if (requestDetails.paymentMethod === "bank_transfer") {
+        if (requestDetails.paymentCustomerConfirmed !== true) {
+          return errorResponse("Confirm the bank transfer before placing this order.", 422, { code: "BANK_TRANSFER_CONFIRMATION_REQUIRED" });
+        }
+        requestDetails = {
+          ...requestDetails,
+          paymentCustomerReportedAt: new Date().toISOString(),
+          paymentVerificationStatus: "customer_reported",
+        };
+      }
       let couponEvaluation:CouponEvaluation|null=null;
       if (input.moduleCode === "food") {
         const restaurantStatus=await restaurantAvailabilityService.status(serviceRow.organizationId);
@@ -209,7 +219,7 @@ export async function POST(request: Request) {
         const partnerDeliverySubsidy=isCustomerDirectPay ? 0 : Number(quote.subsidy||0);
         const customerDeliveryFee=isCustomerDirectPay ? 0 : Number(quote.customerDeliveryFee||0);
         requestDetails={
-          ...input.details,
+          ...requestDetails,
           items:foodPricing.lines.map(line=>{
             const submitted=submittedItems.find(x=>String(x.serviceId||"")===line.serviceId)||{};
             return{...submitted,serviceId:line.serviceId,quantity:line.quantity,baseUnitPrice:line.baseUnitPrice,unitPrice:line.effectiveUnitPrice,baseSubtotal:line.baseSubtotal,discount:line.discount,subtotal:line.finalSubtotal,promotionType:line.promotionType,promotionLabel:line.promotionLabel};
@@ -285,10 +295,10 @@ export async function POST(request: Request) {
         toStatus: "assigned",
         note: `Request routed directly to partner: ${serviceRow.organizationName ?? serviceRow.organizationId}`,
       });
-      try { await partnerWebPushService.sendNewOrder(serviceRow.organizationId, { id: created.id, requestCode: created.requestCode, customerName: created.customerName }); }
-      catch (pushError) { console.error("partner web push failed", pushError); }
       try { await paymentService.ensureForRequest(created.id, typeof input.details?.paymentMethod === "string" ? input.details.paymentMethod : "cash_on_delivery"); }
       catch (paymentError) { console.error("payment initialization failed", paymentError); }
+      try { await partnerWebPushService.sendNewOrder(serviceRow.organizationId, { id: created.id, requestCode: created.requestCode, customerName: created.customerName }); }
+      catch (pushError) { console.error("partner web push failed", pushError); }
       return json({
         ok: true,
         data: created,

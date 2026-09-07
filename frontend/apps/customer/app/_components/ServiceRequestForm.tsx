@@ -82,6 +82,7 @@ export default function ServiceRequestForm({ serviceId }: { serviceId: string })
   const [calculating, setCalculating] = useState(false);
   const [error, setError] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash_on_delivery");
+  const [bankTransferConfirmed, setBankTransferConfirmed] = useState(false);
   const [paymentCapabilities, setPaymentCapabilities] = useState<PaymentCapabilities>({cashOnDelivery:true,bankTransfer:false,wechatPay:false,wechatPayMode:"configuration_required",wechatPayCurrency:"CNY"});
   const [point, setPoint] = useState<Point | null>(null);
   const [savedAddresses,setSavedAddresses]=useState<SavedAddress[]>([]);
@@ -108,6 +109,12 @@ function getDefaultSchedule() {
   const [form, setForm] = useState({ name:"", phone:"", address:"", date:defaultSchedule.date, time:defaultSchedule.time, quantity:"1", description:"" });
   const cartItems = useMemo(() => cartOrg ? readZhaoXiCart().filter(item => String(item.organizationId || "unknown") === cartOrg) : [], [cartOrg, serviceId]);
   const t = copy[locale];
+  const bankTransferCopy = ({
+    "vi-VN": { title: "Chuyển khoản cho quán", instruction: "Quét QR để chuyển khoản. Chuyển xong hãy bấm nút bên dưới để mở khóa đặt đơn.", confirm: "Tôi đã chuyển khoản", confirmed: "Đã xác nhận chuyển khoản", required: "Hãy xác nhận đã chuyển khoản trước khi đặt đơn." },
+    "en-US": { title: "Transfer to the store", instruction: "Scan the QR to transfer, then confirm below to unlock order placement.", confirm: "I have transferred", confirmed: "Transfer confirmed", required: "Confirm your transfer before placing the order." },
+    "zh-CN": { title: "向商家转账", instruction: "请扫码转账，完成后点击下方按钮以解锁下单。", confirm: "我已转账", confirmed: "已确认转账", required: "请先确认已转账，再提交订单。" },
+    "zh-TW": { title: "向商家轉帳", instruction: "請掃碼轉帳，完成後點擊下方按鈕以解鎖下單。", confirm: "我已轉帳", confirmed: "已確認轉帳", required: "請先確認已轉帳，再提交訂單。" },
+  } as const)[locale];
   const deliveryModeCopy = ({
     "vi-VN": { tag:"Phí tính theo hệ thống", note:"💡 Phí giao hàng được tính theo chính sách ZhaoXi. Quán sẽ gọi Xanh SM hoặc Grab khi món sẵn sàng." },
     "en-US": { tag:"System-calculated fee", note:"💡 Delivery is calculated from the ZhaoXi policy. The store will book Xanh SM or Grab once the food is ready." },
@@ -269,6 +276,7 @@ function getDefaultSchedule() {
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setError("");
+    if (paymentMethod === "bank_transfer" && !bankTransferConfirmed) { setError(bankTransferCopy.required); return; }
     if (!form.name.trim() || !form.phone.trim() || !form.address.trim()) { setError(t.required); return; }
     if (isFood && !point) { setError(t.locationRequired); return; }
     if(isFood&&foodScheduleBlocked){setError(t.scheduledOff);return}
@@ -328,6 +336,7 @@ function getDefaultSchedule() {
           totalAmount:total,
           currency,
           paymentMethod,
+          paymentCustomerConfirmed: paymentMethod === "bank_transfer" && bankTransferConfirmed,
         },
       };
       const response = await fetch("/api/platform-requests", { method:"POST", headers:{ "content-type":"application/json" }, body:JSON.stringify(payload) });
@@ -341,7 +350,7 @@ function getDefaultSchedule() {
       invalidateCache("customer_orders");
       const partnerCode = data.routing?.organizationCode || service.organization?.code || "";
       const partnerName = localizeOrganizationName(locale, partnerCode, data.routing?.organizationName || service.organization?.name);
-      router.push(`/request-success?code=${encodeURIComponent(created.requestCode)}&id=${encodeURIComponent(created.id)}&partner=${encodeURIComponent(partnerName)}&partnerCode=${encodeURIComponent(partnerCode)}&payment=${encodeURIComponent(paymentMethod)}`);
+      router.push(`/request-success?code=${encodeURIComponent(created.requestCode)}&id=${encodeURIComponent(created.id)}&partner=${encodeURIComponent(partnerName)}&partnerCode=${encodeURIComponent(partnerCode)}&payment=${encodeURIComponent(paymentMethod)}&paymentReported=${paymentMethod === "bank_transfer" && bankTransferConfirmed ? "1" : "0"}`);
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Unable to submit"); }
     finally { setSubmitting(false); }
   }
@@ -569,7 +578,7 @@ function getDefaultSchedule() {
                     value={method}
                     checked={isSelected}
                     disabled={!enabled}
-                    onChange={() => setPaymentMethod(method)}
+                    onChange={() => { setPaymentMethod(method); setBankTransferConfirmed(false); }}
                     style={{ display: "none" }}
                   />
                   <div className={`${styles.paymentRadioIndicator} ${isSelected ? styles.paymentRadioIndicatorActive : ""}`}>
@@ -592,6 +601,16 @@ function getDefaultSchedule() {
               );
             })}
           </div>
+          {paymentMethod === "bank_transfer" && (
+            <div className={styles.bankTransferPanel}>
+              <b>💳 {bankTransferCopy.title}</b>
+              {typeof service.organization?.metadata?.paymentQrUrl === "string" && <img src={service.organization.metadata.paymentQrUrl} alt={bankTransferCopy.title} className={styles.paymentQr}/>}
+              <p>{bankTransferCopy.instruction}</p>
+              <button type="button" className={bankTransferConfirmed ? styles.bankTransferConfirmed : ""} onClick={() => { setBankTransferConfirmed(true); setError(""); }}>
+                {bankTransferConfirmed ? `✓ ${bankTransferCopy.confirmed}` : bankTransferCopy.confirm}
+              </button>
+            </div>
+          )}
         </section>
 
         <section className={styles.priceSummarySection}>
@@ -650,7 +669,7 @@ function getDefaultSchedule() {
 
         {error && <div className={styles.error}>{error}</div>}
         <p className={styles.privacy}>{t.privacy}</p>
-        <button disabled={submitting || (isFood && (!point || restaurantStatus?.open===false || foodScheduleBlocked))} type="submit">{submitting ? t.sending : t.submit}</button>
+        <button disabled={submitting || (paymentMethod === "bank_transfer" && !bankTransferConfirmed) || (isFood && (!point || restaurantStatus?.open===false || foodScheduleBlocked))} type="submit">{submitting ? t.sending : t.submit}</button>
       </form>
     </section>
   </main>;

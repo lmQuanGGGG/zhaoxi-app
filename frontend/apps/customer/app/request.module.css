@@ -397,6 +397,22 @@
   border-color: #E2E8F0 !important;
 }
 
+.bankTransferPanel {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 16px;
+  border: 1px solid #86efac;
+  border-radius: 14px;
+  background: #f0fdf4;
+  text-align: center;
+}
+
+.bankTransferPanel p { margin: 0; color: #475569; font-size: 13px; }
+.bankTransferPanel button { width: 100%; margin: 0; }
+.bankTransferConfirmed { background: #047857 !important; }
+
 .paymentRadioIndicator {
   width: 20px !important;
   height: 20px !important;
