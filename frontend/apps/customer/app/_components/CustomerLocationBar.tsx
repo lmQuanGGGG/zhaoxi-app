@@ -112,7 +112,7 @@ export default function CustomerLocationBar({
         <b>{busy ? t.using : manualLabel || context?.addressText || t.savedHint}</b>
       </div>
       <button type="button" className={styles.locationPin} aria-label={t.useCurrent} onClick={locate}>
-        <CustomerIcon name="location" />
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z"/><path d="M9 3v15m6-12v15"/></svg>
       </button>
       <button type="button" className={styles.locationChooseButton} onClick={openManualLocation}>{t.manual}</button>
       {error && <em>{error}</em>}

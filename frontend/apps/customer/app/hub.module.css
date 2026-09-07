@@ -331,8 +331,8 @@ html[data-theme="dark"] .locationBarBanner b{color:#F1F5F9!important}
 html[data-theme="dark"] .locationBarBanner .locationPin{background:rgba(255,255,255,.1)!important;color:#86EFAC!important}
 
 .locationChooseButton{
-  min-height:34px!important;
-  padding:0 12px!important;
+  min-height:40px!important;
+  padding:0 16px!important;
   border:0!important;
   border-radius:999px!important;
   background:rgba(236,253,245,.9)!important;
@@ -340,6 +340,7 @@ html[data-theme="dark"] .locationBarBanner .locationPin{background:rgba(255,255,
   box-shadow:0 5px 14px rgba(4,120,87,.13)!important;
   white-space:nowrap;
 }
+.locationPin svg{fill:none!important;stroke:currentColor!important;stroke-width:1.85!important;stroke-linecap:round!important;stroke-linejoin:round!important}
 .locationModalBackdrop{position:fixed;z-index:1000;inset:0;display:grid;place-items:center;padding:18px;background:rgba(15,23,42,.56);backdrop-filter:blur(5px)}
 .locationModal{width:min(640px,100%);max-height:min(760px,calc(100dvh - 36px));overflow:auto;padding:18px;border-radius:24px;background:#fff;box-shadow:0 28px 70px rgba(15,23,42,.3)}
 .locationModalActions{display:grid;grid-template-columns:1fr 1.3fr;gap:10px;margin-top:14px}.locationModalActions button{min-height:46px;border:0;border-radius:13px;background:#eef2f7;color:#334155;font-weight:800}.locationModalActions button:last-child{background:#079b68;color:#fff}.locationModalActions button:disabled{opacity:.45}
