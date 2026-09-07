@@ -3,7 +3,10 @@ import { put } from "@vercel/blob";
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
-const BATCH_SIZE = 6;
+// Blob upload + the database update can take a few seconds per source image.
+// Keep an Edge invocation to one image; the Partner UI immediately calls the
+// route again until no legacy URL remains, avoiding a function timeout.
+const BATCH_SIZE = 1;
 const MAX_FILE_SIZE = 8 * 1024 * 1024;
 
 function backendUrl() {
