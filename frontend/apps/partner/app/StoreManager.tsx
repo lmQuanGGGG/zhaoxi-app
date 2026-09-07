@@ -251,6 +251,7 @@ export default function StoreManager() {
   const [itemNotice, setItemNotice] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
   const [migratingStaticImages, setMigratingStaticImages] = useState(false);
+  const [migrationProgress, setMigrationProgress] = useState<{ migrated: number; total: number } | null>(null);
   const [logoPreview, setLogoPreview] = useState("");
   const [bannerPreviews, setBannerPreviews] = useState<string[]>([]);
   const [itemPreview, setItemPreview] = useState("");
@@ -364,6 +365,7 @@ export default function StoreManager() {
   async function migrateStaticImages() {
     if (!orgId || migratingStaticImages) return;
     setMigratingStaticImages(true);
+    setMigrationProgress({ migrated: 0, total: 0 });
     setMsg("");
     let migrated = 0;
     let failed = 0;
@@ -374,7 +376,9 @@ export default function StoreManager() {
         if (!response.ok || !payload?.ok) throw new Error(String(payload?.error || "MIGRATION_FAILED"));
         migrated += Number(payload.data?.migrated || 0);
         failed += Array.isArray(payload.data?.failed) ? payload.data.failed.length : 0;
-        if (!Number(payload.data?.remaining || 0) || !Number(payload.data?.migrated || 0)) break;
+        const remaining = Number(payload.data?.remaining || 0);
+        setMigrationProgress({ migrated, total: migrated + remaining });
+        if (!remaining || !Number(payload.data?.migrated || 0)) break;
       }
       await load();
       setMsg(`✓ Đã chuyển ${migrated} ảnh sang Vercel Blob${failed ? `; ${failed} ảnh cần thử lại.` : "."}`);
@@ -869,7 +873,7 @@ export default function StoreManager() {
         <input placeholder={t.urlFallback} value={paymentQrUrl} onChange={(event) => setPaymentQrUrl(event.target.value)} style={{ padding: 10 }} />
       </section>}
       <section style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", margin: "0 0 18px", padding: 14, border: "1px solid #dbe7e1", borderRadius: 14, background: "#f8fcfa" }}>
-        <div><b>Chuyển ảnh cũ sang Vercel Blob</b><small style={{ display: "block", marginTop: 4, color: "#47675a" }}>Sao chép ảnh website cũ sang kho ảnh mới; URL cũ vẫn được lưu để có thể khôi phục.</small></div>
+        <div><b>Chuyển ảnh cũ sang Vercel Blob</b><small style={{ display: "block", marginTop: 4, color: "#47675a" }}>Sao chép ảnh website cũ sang kho ảnh mới; URL cũ vẫn được lưu để có thể khôi phục.</small>{migrationProgress && <small role="status" aria-live="polite" style={{ display: "block", marginTop: 5, color: "#087a3e", fontWeight: 800 }}>{migratingStaticImages ? `Đang chuyển ${migrationProgress.migrated}/${migrationProgress.total || "…"} ảnh` : `Đã chuyển ${migrationProgress.migrated}/${migrationProgress.total || migrationProgress.migrated} ảnh`}</small>}</div>
         <ActionButton tone="neutral" disabled={migratingStaticImages} onClick={() => void migrateStaticImages()}>{migratingStaticImages ? "Đang chuyển ảnh…" : "Chuyển ảnh cũ"}</ActionButton>
       </section>
       <section style={{ display: "grid", gap: 10, marginBottom: 18 }}>
