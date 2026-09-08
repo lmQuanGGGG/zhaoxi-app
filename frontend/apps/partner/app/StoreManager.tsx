@@ -14,6 +14,7 @@ import PartnerOrderAlerts from "./PartnerOrderAlerts";
 import RestaurantOperationsPanel from "./RestaurantOperationsPanel";
 import FoodCommercialEditor from "./FoodCommercialEditor";
 import CouponManager from "./CouponManager";
+import { LocationPicker, type LocationPoint } from "@zhaoxi/onboarding";
 
 type Item = {
   id: string;
@@ -238,6 +239,12 @@ export default function StoreManager() {
   const [items, setItems] = useState<Item[]>(() => cachedData?.items || []);
   const [storeName, setStoreName] = useState(() => cachedData?.org?.name || session?.organizationName || "");
   const [storeAddress, setStoreAddress] = useState(() => cachedData?.org?.address || "");
+  const [storePoint, setStorePoint] = useState<LocationPoint | null>(() => {
+    const metadata = cachedData?.org?.metadata || {};
+    const latitude = Number(metadata.latitude);
+    const longitude = Number(metadata.longitude);
+    return Number.isFinite(latitude) && Number.isFinite(longitude) ? { latitude, longitude } : null;
+  });
   const [contactPhone, setContactPhone] = useState(() => cachedData?.org?.phone || "");
   const [wechat, setWechat] = useState(() => cachedData?.org?.wechat || "");
   const [paymentQrUrl, setPaymentQrUrl] = useState(() => cachedData?.org?.paymentQrUrl || "");
@@ -303,6 +310,9 @@ export default function StoreManager() {
       setBannerUrls(sBanners);
       const sAddr = String(metadata.address || org.addressText || org.address || "");
       setStoreAddress(sAddr);
+      const latitude = Number(metadata.latitude);
+      const longitude = Number(metadata.longitude);
+      setStorePoint(Number.isFinite(latitude) && Number.isFinite(longitude) ? { latitude, longitude } : null);
       const sPhone = String(metadata.contactPhone || metadata.phone || org.phone || "");
       setContactPhone(sPhone);
       const sWechat = String(metadata.wechat || "");
@@ -318,6 +328,7 @@ export default function StoreManager() {
           logo: sLogo,
           bannerUrls: sBanners,
           address: sAddr,
+          location: Number.isFinite(latitude) && Number.isFinite(longitude) ? { latitude, longitude } : null,
           phone: sPhone,
           wechat: sWechat,
           paymentQrUrl: sPaymentQrUrl,
@@ -473,6 +484,8 @@ export default function StoreManager() {
         name: trimmedName,
         phone: trimmedPhone,
         addressText: trimmedAddress,
+        latitude: storePoint?.latitude,
+        longitude: storePoint?.longitude,
         metadata: {
           ...orgMetadata,
           localizedNames: { ...((orgMetadata.localizedNames || {}) as Record<string, unknown>), [locale]: trimmedName },
@@ -722,6 +735,8 @@ export default function StoreManager() {
           name: trimmedName,
           phone: trimmedPhone,
           addressText: trimmedAddress,
+          latitude: storePoint?.latitude,
+          longitude: storePoint?.longitude,
           metadata: {
             ...orgMetadata,
             localizedNames: { ...((orgMetadata.localizedNames || {}) as Record<string, unknown>), [locale]: trimmedName },
@@ -860,8 +875,10 @@ export default function StoreManager() {
       <h2>{presentation.store}</h2>
       <p style={{ margin: "0 0 12px", color: "#64748b", fontSize: 14 }}><b style={{ color: "#dc2626" }}>*</b> {requiredText} · ({optionalText})</p>
       <label style={{ display: "grid", gap: 6, marginBottom: 16 }}>{t.storeName} <b style={{ color: "#dc2626" }}>* {requiredText}</b><input required value={storeName} onChange={(e) => setStoreName(e.target.value)} style={{ padding: 12 }} /></label>
+      <section style={{ marginBottom: 18 }}>
+        <LocationPicker locale={locale} address={storeAddress} point={storePoint} onAddress={setStoreAddress} onPoint={setStorePoint} />
+      </section>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12, marginBottom: 18 }}>
-        <label style={{ display: "grid", gap: 6 }}>{t.address} <b style={{ color: "#dc2626" }}>* {requiredText}</b><input required value={storeAddress} onChange={(e) => setStoreAddress(e.target.value)} style={{ padding: 12 }} /></label>
         <label style={{ display: "grid", gap: 6 }}>{t.contactPhone} <b style={{ color: "#dc2626" }}>* {requiredText}</b><input required value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} inputMode="tel" style={{ padding: 12 }} /></label>
         <label style={{ display: "grid", gap: 6 }}>{t.wechat} <small>({optionalText})</small><input value={wechat} onChange={(e) => setWechat(e.target.value)} style={{ padding: 12 }} /></label>
       </div>

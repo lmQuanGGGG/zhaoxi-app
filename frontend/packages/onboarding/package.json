@@ -8,5 +8,8 @@
   },
   "peerDependencies": {
     "react": "^19.0.0"
+  },
+  "dependencies": {
+    "@zhaoxi/i18n": "1.0.0"
   }
 }

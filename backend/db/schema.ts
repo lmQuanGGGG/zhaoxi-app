@@ -1000,7 +1000,7 @@ export const onboardingApplications = pgTable("onboarding_applications", {
   role: varchar("role",{length:24}).notNull(),
   status: varchar("status",{length:24}).notNull().default("draft"),
   displayName: varchar("display_name",{length:120}), phone: varchar("phone",{length:30}), city: varchar("city",{length:120}),
-  businessName: varchar("business_name",{length:180}), businessType: varchar("business_type",{length:40}), addressText: text("address_text"),
+  businessName: varchar("business_name",{length:180}), businessType: varchar("business_type",{length:40}), addressText: text("address_text"), latitude: numeric("latitude",{precision:10,scale:7}), longitude: numeric("longitude",{precision:10,scale:7}),
   vehicleType: varchar("vehicle_type",{length:40}), plateNumber: varchar("plate_number",{length:32}), notes: text("notes"),
   reviewNote: text("review_note"), reviewedBy: uuid("reviewed_by").references(()=>users.id,{onDelete:"set null"}),
   submittedAt: timestamp("submitted_at",{withTimezone:true}), reviewedAt: timestamp("reviewed_at",{withTimezone:true}),

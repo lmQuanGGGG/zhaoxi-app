@@ -12,20 +12,24 @@ export async function PATCH(request: Request, context: Context) {
     if (!gate.ok) return gate.response;
     const { id } = await context.params;
     if (!(await mayManageOrganization(gate.session, id))) return errorResponse("Organization not found.", 404);
-    const body = await request.json() as { name?: string; description?: string; phone?: string; addressText?: string; metadata?: Record<string, unknown> };
+    const body = await request.json() as { name?: string; description?: string; phone?: string; addressText?: string; latitude?: number; longitude?: number; metadata?: Record<string, unknown> };
     const [current] = await getDb().select().from(organizations).where(eq(organizations.id, id)).limit(1);
     if (!current) return errorResponse("Organization not found.", 404);
     const addressText = body.addressText?.trim() ?? current.addressText;
     const addressChanged = Boolean(body.addressText?.trim()) && addressText !== current.addressText;
-    const geocoded = addressChanged && addressText ? await addressGeocodingService.lookup(addressText) : null;
+    const latitude = Number(body.latitude), longitude = Number(body.longitude);
+    const selectedPoint = Number.isFinite(latitude) && latitude >= -90 && latitude <= 90 && Number.isFinite(longitude) && longitude >= -180 && longitude <= 180 ? { latitude, longitude } : null;
+    const geocoded = !selectedPoint && addressChanged && addressText ? await addressGeocodingService.lookup(addressText) : null;
     const metadata = body.metadata ? { ...(current.metadata || {}), ...body.metadata } : { ...(current.metadata || {}) };
-    if (addressChanged) {
-      if (geocoded) Object.assign(metadata, {
-        latitude: geocoded.latitude,
-        longitude: geocoded.longitude,
-        geocodedAddress: geocoded.formattedAddress,
+    if (addressChanged || selectedPoint) {
+      const location = selectedPoint || geocoded;
+      if (location) Object.assign(metadata, {
+        latitude: location.latitude,
+        longitude: location.longitude,
+        geocodedAddress: selectedPoint ? addressText : geocoded?.formattedAddress,
         geocodedAt: new Date().toISOString(),
         geocodingStatus: "resolved",
+        geocodingSource: selectedPoint ? "partner-map-selection" : "address-geocoder",
       });
       else Object.assign(metadata, { latitude: null, longitude: null, geocodingStatus: "unresolved" });
     }
@@ -37,6 +41,6 @@ export async function PATCH(request: Request, context: Context) {
       metadata,
       updatedAt: new Date(),
     }).where(eq(organizations.id, id)).returning();
-    return json({ ok: true, data: updated, geocoding: addressChanged ? { status: geocoded ? "resolved" : "unresolved" } : undefined });
+    return json({ ok: true, data: updated, geocoding: addressChanged || selectedPoint ? { status: selectedPoint || geocoded ? "resolved" : "unresolved" } : undefined });
   } catch (error) { console.error(error); return errorResponse("Unable to update organization.", 500); }
 }

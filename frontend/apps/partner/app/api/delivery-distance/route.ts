@@ -1,8 +1,9 @@
 import { NextResponse as EdgeNextResponse } from "next/server";
 export const runtime="edge";
 type Coordinate = { latitude: number; longitude: number };
+type GeocodeResult = { coordinate: Coordinate; label: string };
 
-const geocodeCache = new Map<string, Coordinate>();
+const geocodeCache = new Map<string, GeocodeResult[]>();
 
 function parseCoordinate(value: string): Coordinate | null {
   const match = value.trim().match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
@@ -13,28 +14,28 @@ function parseCoordinate(value: string): Coordinate | null {
   return { latitude, longitude };
 }
 
-function completeDaNangAddress(value: string) {
-  if (parseCoordinate(value) || /đà\s*nẵng|da\s*nang/i.test(value)) return value;
-  return `${value}, Đà Nẵng, Việt Nam`;
-}
-
-async function geocode(value: string): Promise<Coordinate | null> {
+async function geocodeMany(value: string, limit = 1): Promise<GeocodeResult[]> {
   const direct = parseCoordinate(value);
-  if (direct) return direct;
-  const query = completeDaNangAddress(value).trim();
+  if (direct) return [{ coordinate: direct, label: `${direct.latitude}, ${direct.longitude}` }];
+  const query = value.trim();
   const cached = geocodeCache.get(query);
-  if (cached) return cached;
-  const response = await fetch(`https://photon.komoot.io/api/?limit=1&countrycode=VN&bbox=108.0,15.85,108.4,16.2&lat=16.0544&lon=108.2022&location_bias_scale=0.1&q=${encodeURIComponent(query)}`, {
+  if (cached && cached.length >= limit) return cached.slice(0, limit);
+  const response = await fetch(`https://photon.komoot.io/api/?limit=${limit}&countrycode=VN&q=${encodeURIComponent(query)}`, {
     headers: { Accept: "application/json" },
   });
-  if (!response.ok) return null;
-  const payload = (await response.json().catch(() => null)) as { features?: Array<{ geometry?: { coordinates?: [number, number] } }> } | null;
-  const coordinates = payload?.features?.[0]?.geometry?.coordinates;
-  if (!coordinates || !Number.isFinite(coordinates[0]) || !Number.isFinite(coordinates[1])) return null;
-  const result = { longitude: coordinates[0], latitude: coordinates[1] };
-  geocodeCache.set(query, result);
-  return result;
+  if (!response.ok) return [];
+  const payload = (await response.json().catch(() => null)) as { features?: Array<{ geometry?: { coordinates?: [number, number] }; properties?: Record<string, unknown> }> } | null;
+  const results = (payload?.features || []).flatMap((feature) => {
+    const coordinates = feature.geometry?.coordinates;
+    if (!coordinates || !Number.isFinite(coordinates[0]) || !Number.isFinite(coordinates[1])) return [];
+    const coordinate = { longitude: coordinates[0], latitude: coordinates[1] };
+    return [{ coordinate, label: geocodeLabel(feature.properties || {}) || `${coordinate.latitude}, ${coordinate.longitude}` }];
+  });
+  geocodeCache.set(query, results);
+  return results.slice(0, limit);
 }
+
+async function geocode(value: string): Promise<Coordinate | null> { return (await geocodeMany(value, 1))[0]?.coordinate || null; }
 
 async function routeDistance(origin: Coordinate, destination: Coordinate) {
   const coordinates = `${origin.longitude},${origin.latitude};${destination.longitude},${destination.latitude}`;
@@ -96,10 +97,11 @@ export async function GET(request: Request) {
     }
 
     const address = searchParams.get("address")?.trim() || "";
+    const limit = Math.min(5, Math.max(1, Number.parseInt(searchParams.get("limit") || "1", 10) || 1));
     if (!address || address.length > 300) return EdgeNextResponse.json({ error: "invalid-address" }, { status: 400 });
-    const coordinate = await geocode(address);
-    if (!coordinate) return EdgeNextResponse.json({ error: "address-not-found" }, { status: 404 });
-    return EdgeNextResponse.json({ coordinate }, { headers: { "Cache-Control": "no-store" } });
+    const results = await geocodeMany(address, limit);
+    if (!results.length) return EdgeNextResponse.json({ error: "address-not-found" }, { status: 404 });
+    return EdgeNextResponse.json({ coordinate: results[0].coordinate, results }, { headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=86400" } });
   } catch {
     return EdgeNextResponse.json({ error: "geocode-service-unavailable" }, { status: 502 });
   }
