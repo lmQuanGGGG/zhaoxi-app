@@ -4,6 +4,7 @@ import { paymentEvents, paymentTransactions, serviceRequestStatusHistory, servic
 import { failure, success } from "@/lib/core/api-response";
 import { mayAccessPayment, requireSession } from "@/lib/security/route-authorization";
 import { partnerWebPushService } from "@/lib/services/partner-web-push-service";
+import { after } from "next/server";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       await tx.insert(paymentEvents).values({ paymentId: id, eventType: "PAYMENT_CUSTOMER_REPORTED", payload: { customerId: gate.session.userId, requestCode: order.requestCode, amount: payment.amount, currency: payment.currency } });
       await tx.insert(serviceRequestStatusHistory).values({ requestId: order.id, fromStatus: order.status, toStatus: order.status, changedByUserId: gate.session.userId, note: "CUSTOMER_REPORTED_BANK_TRANSFER_PAYMENT" });
     });
-    if (order.assignedOrganizationId) void partnerWebPushService.sendPaymentReported(order.assignedOrganizationId, { id: order.id, requestCode: order.requestCode, customerName: order.customerName, amount: String(payment.amount), currency: payment.currency });
+    if (order.assignedOrganizationId) {
+      const organizationId = order.assignedOrganizationId;
+      after(async () => {
+        try { await partnerWebPushService.sendPaymentReported(organizationId, { id: order.id, requestCode: order.requestCode, customerName: order.customerName, amount: String(payment.amount), currency: payment.currency }); }
+        catch (error) { console.error("partner payment report push failed", error); }
+      });
+    }
   }
   return success({ reported: true, alreadyReported, requestId: order.id });
 }

@@ -299,9 +299,14 @@ export async function POST(request: Request) {
       try { await paymentService.ensureForRequest(created.id, typeof input.details?.paymentMethod === "string" ? input.details.paymentMethod : "cash_on_delivery"); }
       catch (paymentError) { console.error("payment initialization failed", paymentError); }
       const pushOrganizationId = serviceRow.organizationId;
+      const bankTransferReported = requestDetails.paymentMethod === "bank_transfer" && requestDetails.paymentCustomerConfirmed === true;
       after(async () => {
         try { await partnerWebPushService.sendNewOrder(pushOrganizationId, { id: created.id, requestCode: created.requestCode, customerName: created.customerName }); }
         catch (pushError) { console.error("partner web push failed", pushError); }
+        if (bankTransferReported) {
+          try { await partnerWebPushService.sendPaymentReported(pushOrganizationId, { id: created.id, requestCode: created.requestCode, customerName: created.customerName, amount: String(requestDetails.totalAmount || 0), currency: String(requestDetails.currency || "VND") }); }
+          catch (pushError) { console.error("partner payment report push failed", pushError); }
+        }
       });
       return json({
         ok: true,
