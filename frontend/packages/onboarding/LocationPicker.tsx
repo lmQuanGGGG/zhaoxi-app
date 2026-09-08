@@ -8,7 +8,6 @@ type Suggestion = { coordinate: LocationPoint; label: string };
 type Map = { flyTo: (o: { center: [number, number]; zoom?: number }) => void; on: (n: string, cb: (e: { lngLat: { lat: number; lng: number } }) => void) => void; addControl: (c: unknown, p?: string) => void; remove: () => void };
 type Marker = { setLngLat: (p: [number, number]) => Marker; addTo: (m: Map) => Marker };
 type MapLibre = { Map: new (o: Record<string, unknown>) => Map; Marker: new (o?: Record<string, unknown>) => Marker; NavigationControl: new (o?: Record<string, unknown>) => unknown };
-declare global { interface Window { maplibregl?: MapLibre } }
 
 const words = {
   "vi-VN": { title: "Vị trí trên bản đồ", locate: "Dùng vị trí hiện tại", locating: "Đang định vị…", placeholder: "Tìm đường, số nhà hoặc địa điểm", search: "Tìm", searching: "Đang tìm địa chỉ…", hint: "Chọn kết quả tìm kiếm hoặc chạm bản đồ để chỉnh chính xác vị trí.", missing: "Không tìm thấy địa chỉ. Hãy nhập chi tiết hơn.", unavailable: "Không lấy được vị trí hiện tại. Hãy kiểm tra quyền định vị." },
@@ -19,12 +18,13 @@ const words = {
 const DEFAULT: LocationPoint = { latitude: 16.047079, longitude: 108.20623 };
 
 function loadMap() {
-  if (window.maplibregl) return Promise.resolve(window.maplibregl);
+  const loaded = () => (window as unknown as { maplibregl?: MapLibre }).maplibregl;
+  if (loaded()) return Promise.resolve(loaded()!);
   return new Promise<MapLibre>((resolve, reject) => {
     if (!document.querySelector("link[data-zx-maplibre]")) { const link = document.createElement("link"); link.rel = "stylesheet"; link.href = "https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css"; link.dataset.zxMaplibre = "true"; document.head.appendChild(link); }
     const existing = document.querySelector<HTMLScriptElement>("script[data-zx-maplibre]");
-    if (existing) { existing.addEventListener("load", () => window.maplibregl ? resolve(window.maplibregl) : reject(), { once: true }); existing.addEventListener("error", reject, { once: true }); return; }
-    const script = document.createElement("script"); script.src = "https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"; script.async = true; script.dataset.zxMaplibre = "true"; script.onload = () => window.maplibregl ? resolve(window.maplibregl) : reject(); script.onerror = reject; document.body.appendChild(script);
+    if (existing) { existing.addEventListener("load", () => loaded() ? resolve(loaded()!) : reject(), { once: true }); existing.addEventListener("error", reject, { once: true }); return; }
+    const script = document.createElement("script"); script.src = "https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"; script.async = true; script.dataset.zxMaplibre = "true"; script.onload = () => loaded() ? resolve(loaded()!) : reject(); script.onerror = reject; document.body.appendChild(script);
   });
 }
 
