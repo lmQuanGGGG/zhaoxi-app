@@ -1056,7 +1056,8 @@ html[data-theme="dark"] [data-customer-architecture="18.4.0"] .zx-role-bottom-na
 
 /* The customer dock owns both pieces, so their visual gap is always 4px. Always visible on all screens. */
 .zx-customer-dock{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));z-index:900;display:flex;align-items:center;gap:4px;width:min(calc(100vw - 88px),400px);transform:translateX(-50%)}
-.zx-customer-dock [data-customer-architecture="18.4.0"] .zx-role-bottom-nav,.zx-customer-dock .zx-role-bottom-nav{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;width:auto!important;min-width:0;flex:1 1 auto;display:grid!important}
+.zx-customer-dock [data-customer-architecture="18.4.0"] .zx-role-bottom-nav,.zx-customer-dock .zx-role-bottom-nav{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;width:auto!important;min-width:0;flex:1 1 auto;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;justify-items:stretch!important}
+.zx-customer-dock .zx-role-bottom-nav>a{width:100%!important;justify-self:stretch!important;place-self:stretch!important;display:grid!important;place-items:center!important}
 .zx-customer-dock .zx-customer-services-trigger{position:relative!important;right:auto!important;bottom:auto!important;z-index:1;flex:0 0 66px;display:grid!important}
 [data-customer-architecture="18.4.0"] .zx-role-bottom-nav a.active span{isolation:isolate}
 [data-customer-architecture="18.4.0"] .zx-role-bottom-nav a.active span:after{content:"";position:absolute;inset:-11px;border-radius:50%;background:radial-gradient(circle,rgba(111,229,178,.66) 0%,rgba(111,229,178,.27) 38%,rgba(111,229,178,0) 74%);filter:blur(6px);z-index:-1;pointer-events:none}
