@@ -306,6 +306,12 @@ export const customerSupportSettings = pgTable("customer_support_settings", {
   paidHumanFee: integer("paid_human_fee").notNull().default(50000),
   paidHumanCurrency: varchar("paid_human_currency", { length: 8 }).notNull().default("VND"),
   emergencyPriority: boolean("emergency_priority").notNull().default(true),
+  // Public, platform-level order-support QR codes.  These are deliberately
+  // separate from a partner's payment QR, which belongs to that partner only.
+  zaloQrUrl: text("zalo_qr_url"),
+  wechatQrUrl: text("wechat_qr_url"),
+  zaloChatUrl: text("zalo_chat_url"),
+  wechatChatUrl: text("wechat_chat_url"),
   updatedByUserId: uuid("updated_by_user_id").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

@@ -12,6 +12,14 @@ import {playCustomerOrderChime,registerAudioUnlock,type OrderStageType} from "..
 import {GrabLogo, XanhSMLogo} from "../../_components/DeliveryCourierLogos";
 
 type Data={requestCode:string;status:string;details?:Record<string,unknown>;title:string;serviceName?:string;moduleName?:string;description?:string;addressText?:string;createdAt:string;history:Array<{id:string;toStatus:string;note?:string;createdAt:string}>};
+type SupportConfig={zaloQrUrl?:string|null;wechatQrUrl?:string|null;zaloChatUrl?:string|null;wechatChatUrl?:string|null};
+
+const supportCopy={
+ "zh-CN":{title:"订单联系支持",hint:"扫码添加客服，或打开应用后直接粘贴已复制的订单信息。",zalo:"打开 Zalo",wechat:"打开微信",scan:"扫码联系",copied:"订单信息已复制，可直接粘贴到聊天窗口。",copy:"复制订单信息",message:"我需要协助处理订单",order:"订单号",items:"菜品"},
+ "zh-TW":{title:"訂單聯絡支援",hint:"掃碼新增客服，或開啟應用程式後直接貼上已複製的訂單資訊。",zalo:"開啟 Zalo",wechat:"開啟 WeChat",scan:"掃碼聯絡",copied:"訂單資訊已複製，可直接貼到聊天視窗。",copy:"複製訂單資訊",message:"我需要協助處理訂單",order:"訂單編號",items:"餐點"},
+ "vi-VN":{title:"Liên hệ hỗ trợ đơn hàng",hint:"Quét QR để liên hệ, hoặc mở ứng dụng — nội dung mã đơn và món sẽ được sao chép sẵn để gửi.",zalo:"Mở Zalo",wechat:"Mở WeChat",scan:"Quét mã để liên hệ",copied:"Đã sao chép nội dung đơn, bạn chỉ cần dán vào khung chat.",copy:"Sao chép nội dung đơn",message:"Tôi cần hỗ trợ về đơn hàng",order:"Mã đơn",items:"Món"},
+ "en-US":{title:"Contact order support",hint:"Scan the QR code, or open the app — the order code and items are copied ready to paste into chat.",zalo:"Open Zalo",wechat:"Open WeChat",scan:"Scan to contact",copied:"Order details copied. Paste them directly into the chat.",copy:"Copy order details",message:"I need help with my order",order:"Order code",items:"Items"},
+} as const;
 
 const copy={
 "zh-CN":{loading:"加载中…",confirmed:"商家已确认订单",soon:"即将完成",auto:"时间结束后自动完成",completed:"订单已完成",finding:"正在寻找配送员",progress:"订单进度",updated:"每4秒自动更新位置",step:"步骤",autoDone:"订单已完成，正在寻找配送员",deliveryTimeline:"配送进度",toPickup:"前往取货点",toDropoff:"前往送达点",gpsStale:"位置更新较慢",externalPending:"餐品已准备，等待外部配送安排",grossDelivery:"配送费原价",subsidy:"商家配送补贴",deliveryPay:"实际配送费",readyPickup:"餐品已备好，等待取餐",courierBooked:"已安排外部配送",handedOff:"餐品已交给配送员",deliveredFood:"已送达客户",itemOriginal:"商品原价",itemDiscount:"菜品优惠",itemPay:"商品实际金额",couponDiscount:"优惠券优惠"},
@@ -74,6 +82,8 @@ export default function OrderDetail(){
  const t=copy[locale];
  const[data,setData]=useState<Data|null>(null);
  const[tracking,setTracking]=useState<DeliveryTracking|null>(null);
+ const[supportConfig,setSupportConfig]=useState<SupportConfig|null>(null);
+ const[supportCopied,setSupportCopied]=useState(false);
  const[now,setNow]=useState(Date.now());
 
  const load=useCallback(()=>{
@@ -86,6 +96,13 @@ export default function OrderDetail(){
   const timer=setInterval(()=>{setNow(Date.now());load()},4000);
   return()=>clearInterval(timer);
  },[load]);
+
+ useEffect(()=>{
+  let live=true;
+  fetch("/api/customer-support-config",{cache:"force-cache"})
+   .then(r=>r.json()).then(j=>{if(live&&j?.ok)setSupportConfig(j.data||{})}).catch(()=>{});
+  return()=>{live=false};
+ },[]);
 
  const lastStageKeyRef = useRef<string | null>(null);
 
@@ -136,6 +153,18 @@ export default function OrderDetail(){
  const external=details.deliveryFulfillmentMode==='external_manual'||details.driverDispatchRequired===false;
  const fulfillmentStage=String(details.fulfillmentStage||'');
  const externalStage=fulfillmentStage==='ready_for_pickup'?t.readyPickup:fulfillmentStage==='courier_booked'?t.courierBooked:fulfillmentStage==='handed_off'?t.handedOff:fulfillmentStage==='delivered'?arrivalCopy[locale]:t.externalPending;
+ const support=supportCopy[locale];
+ const supportItems=Array.isArray(details.items)?details.items.map((item:any)=>`${String(item?.name||"").trim()}${Number(item?.quantity||0)>1?` ×${Number(item.quantity)}`:""}`).filter(Boolean):[];
+ const supportMessage=[support.message,`${support.order}: ${data.requestCode}`,supportItems.length?`${support.items}: ${supportItems.join(", ")}`:""].filter(Boolean).join("\n");
+ const copySupportMessage=()=>{
+  setSupportCopied(true);
+  window.setTimeout(()=>setSupportCopied(false),3500);
+  return navigator.clipboard?.writeText(supportMessage).catch(()=>{});
+ };
+ const openSupport=(url:string)=>{
+  void copySupportMessage();
+  window.location.href=url;
+ };
 
  return (
   <CustomerShell>
@@ -237,6 +266,18 @@ export default function OrderDetail(){
       </div>
      )}
 
+     {supportConfig&&(
+      <OrderSupport
+       labels={support}
+       zaloQrUrl={supportConfig.zaloQrUrl||"/support-qr/zalo.png"}
+       wechatQrUrl={supportConfig.wechatQrUrl||"/support-qr/wechat.png"}
+       onOpenZalo={()=>openSupport(supportConfig.zaloChatUrl||"zalo://")}
+       onOpenWechat={()=>openSupport(supportConfig.wechatChatUrl||"weixin://")}
+       onCopy={()=>void copySupportMessage()}
+       copied={supportCopied}
+      />
+     )}
+
      {details.deliveryDistanceKm!=null&&(
       <div style={{display:"grid",gap:7,margin:"12px 0 0",padding:"12px 14px",borderRadius:16,background:"#F8FAFC",border:"1px solid #EEF2F6",fontSize:12.5}}>
        <div style={{display:"flex",gap:12,flexWrap:"wrap",color:"#475569",fontWeight:600}}>
@@ -323,4 +364,26 @@ export default function OrderDetail(){
    </section>
   </CustomerShell>
  );
+}
+
+function OrderSupport({labels,zaloQrUrl,wechatQrUrl,onOpenZalo,onOpenWechat,onCopy,copied}:{labels:(typeof supportCopy)[keyof typeof supportCopy];zaloQrUrl:string;wechatQrUrl:string;onOpenZalo:()=>void;onOpenWechat:()=>void;onCopy:()=>void;copied:boolean}){
+ const card={border:"1px solid #DDE9E4",borderRadius:16,padding:12,background:"linear-gradient(145deg,#FFFFFF,#F0FDFA)",display:"grid",gap:9} as const;
+ const button={minHeight:38,border:0,borderRadius:11,padding:"8px 10px",fontWeight:800,fontSize:12,cursor:"pointer",background:"#064E3B",color:"#fff"} as const;
+ return <section style={{margin:"14px 0 0",padding:"14px",borderRadius:18,background:"#F8FAFC",border:"1px solid #E2E8F0"}}>
+  <b style={{display:"block",fontSize:13,color:"#0F172A"}}>💬 {labels.title}</b>
+  <p style={{margin:"5px 0 12px",fontSize:11.5,lineHeight:1.45,color:"#64748B"}}>{labels.hint}</p>
+  <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10}}>
+   <article style={card}>
+    <b style={{fontSize:12,color:"#075E54"}}>Zalo</b>
+    <a href={zaloQrUrl} target="_blank" rel="noreferrer" title={labels.scan} style={{display:"grid",placeItems:"center",borderRadius:11,overflow:"hidden",background:"#fff"}}><img src={zaloQrUrl} alt={`Zalo — ${labels.scan}`} style={{display:"block",width:"100%",aspectRatio:"1",objectFit:"contain",background:"#fff"}}/></a>
+    <button type="button" onClick={onOpenZalo} style={button}>{labels.zalo}</button>
+   </article>
+   <article style={card}>
+    <b style={{fontSize:12,color:"#0F7D42"}}>WeChat</b>
+    <a href={wechatQrUrl} target="_blank" rel="noreferrer" title={labels.scan} style={{display:"grid",placeItems:"center",borderRadius:11,overflow:"hidden",background:"#fff"}}><img src={wechatQrUrl} alt={`WeChat — ${labels.scan}`} style={{display:"block",width:"100%",aspectRatio:"1",objectFit:"contain",background:"#fff"}}/></a>
+    <button type="button" onClick={onOpenWechat} style={button}>{labels.wechat}</button>
+   </article>
+  </div>
+  <button type="button" onClick={onCopy} style={{marginTop:10,width:"100%",minHeight:38,border:"1px solid #B7D7CC",borderRadius:11,padding:"8px 10px",fontWeight:750,fontSize:12,cursor:"pointer",background:"#FFFFFF",color:"#065F46"}}>{copied?`✓ ${labels.copied}`:`📋 ${labels.copy}`}</button>
+ </section>;
 }
