@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
 import { useZhaoXiLocale, localizeOrganizationName, localizeServiceName } from "@zhaoxi/i18n";
 import { useZhaoXiCart } from "@zhaoxi/cart";
-import { getCached, setCached } from "../../_lib/client-cache";
+import { getCached, isCachedFresh, setCached } from "../../_lib/client-cache";
+import { useVisiblePolling } from "@zhaoxi/hooks";
 import MiniTabBar from "../../_components/MiniTabBar";
 import {CustomerServiceIcon} from "../../_components/CustomerServiceIcon";
 import VerifiedPartnerIdentity from "../../_components/VerifiedPartnerIdentity";
@@ -66,8 +67,8 @@ export default function RestaurantDetail({ organizationId }: { organizationId: s
         .finally(() => {
           if (!cancelled) setLoading(false);
         });
-    void load();
-    const onFocus = () => void load();
+    if (!isCachedFresh(cacheKey)) void load();
+    const onFocus = () => { if (!isCachedFresh(cacheKey)) void load(); };
     window.addEventListener("focus", onFocus);
     return () => {
       cancelled = true;
@@ -75,7 +76,8 @@ export default function RestaurantDetail({ organizationId }: { organizationId: s
     };
   }, [organizationId, locale]);
 
-  useEffect(()=>{let alive=true;const load=()=>fetch(`/api/restaurant-status/${encodeURIComponent(organizationId)}`,{cache:"no-store"}).then(r=>r.json().catch(()=>null)).then(j=>{if(alive&&j?.ok){setRestaurantStatus(j.data);setCached(`restaurant_status_${organizationId}`, j.data);}}).catch(()=>{});void load();const timer=setInterval(load,15000);return()=>{alive=false;clearInterval(timer)}},[organizationId]);
+  const refreshStatus=useCallback(()=>fetch(`/api/restaurant-status/${encodeURIComponent(organizationId)}`,{cache:"no-store"}).then(r=>r.json().catch(()=>null)).then(j=>{if(j?.ok){setRestaurantStatus(j.data);setCached(`restaurant_status_${organizationId}`,j.data);}}).catch(()=>{}),[organizationId]);
+  useVisiblePolling(refreshStatus,{intervalMs:30_000});
 
   const organization = items[0];
   const banners = useMemo(() => {

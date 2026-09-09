@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import {useZhaoXiLocale} from "@zhaoxi/i18n";
+import {useVisiblePolling} from "@zhaoxi/hooks";
 
 type Day={enabled:boolean;open:string;close:string};
 type Config={
@@ -18,7 +19,8 @@ const copy={
 export default function RestaurantOperationsPanel({organizationId}:{organizationId:string}){
  const{locale}=useZhaoXiLocale();const t=copy[locale];const[config,setConfig]=useState<Config>(defaultConfig);const[status,setStatus]=useState<Status|null>(null);const[msg,setMsg]=useState("");const[busy,setBusy]=useState(false);
  async function load(syncConfig=true){if(!organizationId)return;try{const r=await fetch(`/api/partner-restaurant-operations?organizationId=${encodeURIComponent(organizationId)}`,{cache:"no-store"});const j=await r.json().catch(()=>null);if(j?.ok){setStatus(j.data);if(syncConfig)setConfig({...defaultConfig,...j.data.config,weeklyHours:{...defaultConfig.weeklyHours,...(j.data.config?.weeklyHours||{})}})}}catch{}}
- useEffect(()=>{void load(true);const timer=setInterval(()=>void load(false),10000);return()=>clearInterval(timer)},[organizationId]);
+ useEffect(()=>{void load(true)},[organizationId]);
+ useVisiblePolling(()=>load(false),{enabled:Boolean(organizationId),intervalMs:30_000,immediate:false});
  function dayPatch(day:string,patch:Partial<Day>){setConfig(v=>({...v,weeklyHours:{...v.weeklyHours,[day]:{...v.weeklyHours[day],...patch}}}))}
  async function save(){setBusy(true);setMsg("");try{const r=await fetch("/api/partner-restaurant-operations",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({organizationId,config})});const j=await r.json().catch(()=>null);if(!r.ok||!j?.ok)throw new Error(j?.error?.code||"SAVE_FAILED");setStatus(j.data.status);setConfig(j.data.config);setMsg(t.saved)}catch(e){const msg=e instanceof Error?e.message:"SAVE_FAILED";setMsg(msg.includes("<!DOCTYPE")||msg.includes("Unexpected token")?"Hệ thống đang đồng bộ. Vui lòng thử lại sau vài giây.":msg)}finally{setBusy(false)}}
  const statusText=status?t[status.code as keyof typeof t]||status.code:t.open;

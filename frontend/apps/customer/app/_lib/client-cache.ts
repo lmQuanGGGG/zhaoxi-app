@@ -48,6 +48,13 @@ export function getCached<T>(key: string): T | null {
   return null;
 }
 
+/** True only when the cached value is recent enough to safely skip a refetch. */
+export function isCachedFresh(key: string, ttlMs = 5 * 60_000): boolean {
+  if (!memoryCache.has(key)) getCached(key);
+  const entry = memoryCache.get(key);
+  return Boolean(entry && Date.now() - entry.timestamp < ttlMs);
+}
+
 /**
  * Store data in cache and notify subscribers
  */

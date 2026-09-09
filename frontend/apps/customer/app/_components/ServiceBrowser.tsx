@@ -9,7 +9,7 @@ import {CustomerIcon} from "./CustomerIcon";
 import {readSessionPoint,subscribeSessionPoint,type SessionPoint} from "../_lib/customer-location";
 import { localizeOrganizationName, localizeServiceName, useZhaoXiLocale } from "@zhaoxi/i18n";
 import { useZhaoXiCart } from "@zhaoxi/cart";
-import { getCached, setCached } from "../_lib/client-cache";
+import { getCached, isCachedFresh, setCached } from "../_lib/client-cache";
 import styles from "../services.module.css";
 
 type Service = {
@@ -55,14 +55,15 @@ export default function ServiceBrowser({ moduleCode }: { moduleCode: string }) {
   const { locale } = useZhaoXiLocale();
   const t = ui[locale];
   const { add, count } = useZhaoXiCart();
-  const cacheKey = `service_browser_${moduleCode}_${locale}`;
+  const [sessionPoint,setSessionPoint]=useState<SessionPoint|null>(null);
+  const locationKey=sessionPoint?`${sessionPoint.latitude.toFixed(4)}_${sessionPoint.longitude.toFixed(4)}`:"no-location";
+  const cacheKey = `service_browser_${moduleCode}_${locale}_${locationKey}`;
   const initialCached = getCached<Service[]>(cacheKey);
   const [items, setItems] = useState<Service[]>(() => initialCached || []);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(() => initialCached && initialCached.length > 0 ? "ready" : "loading");
   const [query, setQuery] = useState("");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [slides, setSlides] = useState<Record<string, number>>({});
-  const [sessionPoint,setSessionPoint]=useState<SessionPoint|null>(null);
   const [restaurantStatuses,setRestaurantStatuses]=useState<Record<string,RestaurantStatus>>(() => getCached<Record<string,RestaurantStatus>>(`restaurant_statuses_${moduleCode}`) || {});
   const [foodPricing,setFoodPricing]=useState<Record<string,FoodPrice>>({});
 
@@ -100,8 +101,8 @@ export default function ServiceBrowser({ moduleCode }: { moduleCode: string }) {
           if (!cancelled && (!initialCached || initialCached.length === 0)) setStatus("error");
         });
     };
-    load(false);
-    const onFocus = () => load(false);
+    if (!isCachedFresh(cacheKey)) load(false);
+    const onFocus = () => { if (!isCachedFresh(cacheKey)) load(false); };
     window.addEventListener("focus", onFocus);
     return () => {
       cancelled = true;

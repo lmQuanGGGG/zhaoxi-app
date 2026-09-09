@@ -2,6 +2,7 @@
 import Link from "next/link";
 import {useCallback,useEffect,useState} from "react";
 import {useZhaoXiLocale,statusLabels} from "@zhaoxi/i18n";
+import {useVisiblePolling} from "@zhaoxi/hooks";
 import {playCustomerOrderChime,registerAudioUnlock,type OrderStageType} from "./_lib/customer-audio";
 type Alert={id:string;requestId:string;requestCode:string;status:string;note?:string;serviceName?:string;moduleName?:string;createdAt:string};
 const housingEvent=(x:Alert)=>String(x.note||"").startsWith("HOUSING_MESSAGE:")||String(x.note||"").startsWith("HOUSING_APPOINTMENT_REMINDER:");
@@ -59,7 +60,7 @@ export default function CustomerOrderAlerts(){
     }catch{}
   },[locale,item]);
 
-  useEffect(()=>{void poll();const timer=setInterval(()=>void poll(),5000);return()=>clearInterval(timer)},[poll]);
+  useVisiblePolling(poll,{intervalMs:30_000});
   function close(){if(!item)return;const values=JSON.parse(localStorage.getItem("zhaoxi-dismissed-alert-stages")||"[]") as string[];localStorage.setItem("zhaoxi-dismissed-alert-stages",JSON.stringify(Array.from(new Set([...values,keyFor(item)])).slice(-200)));setItem(null)}
   if(!item)return null;
   const eta=/ETA\s+(\d+)\s+minutes/i.exec(item.note||"");

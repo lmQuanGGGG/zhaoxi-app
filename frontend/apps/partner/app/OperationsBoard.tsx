@@ -3,6 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from "react";
 import {useZhaoXiSession} from "@zhaoxi/auth";
 import {createZhaoXiSdk,type ServiceRequestRow} from "@zhaoxi/sdk";
 import {statusLabels,useZhaoXiLocale} from "@zhaoxi/i18n";
+import {useVisiblePolling} from "@zhaoxi/hooks";
 import {ActionButton,EmptyState,MetricCard,StatusBadge,Surface,appShellStyle} from "@zhaoxi/ui";
 import {getCached,setCached} from "./_lib/client-cache";
 import PartnerWorkspaceNav from "./PartnerWorkspaceNav";
@@ -41,7 +42,7 @@ export default function OperationsBoard(){
  const[loading,setLoading]=useState(()=>getCached<ServiceRequestRow[]>(cacheKey)===null);
  const[busy,setBusy]=useState("");const[error,setError]=useState("");const[courierOrder,setCourierOrder]=useState<ServiceRequestRow|null>(null);const[courier,setCourier]=useState({courierName:"",courierPhone:"",courierReference:""});
  const load=useCallback(async()=>{if(!orgId){setLoading(false);return}try{const r=await sdk.listRequests({scope:"operations",organizationId:orgId,locale});const next=r.data||[];setRows(next);setCached(cacheKey,next);setError("")}catch(e){const msg=e instanceof Error?e.message:"ERROR";setError(msg.includes("<!DOCTYPE")||msg.includes("Unexpected token")?"Hệ thống đang đồng bộ. Vui lòng thử lại sau vài giây.":msg)}finally{setLoading(false)}},[orgId,locale,cacheKey]);
- useEffect(()=>{void load();const timer=setInterval(()=>void load(),8000);return()=>clearInterval(timer)},[load]);
+ useVisiblePolling(load,{enabled:Boolean(orgId),intervalMs:30_000});
  useEffect(()=>{const refresh=()=>void load();window.addEventListener("zhaoxi:fulfillment-updated",refresh);return()=>window.removeEventListener("zhaoxi:fulfillment-updated",refresh)},[load]);
  const metrics=useMemo(()=>({waiting:rows.filter(r=>r.status==="assigned").length,preparing:rows.filter(r=>String(r.details?.fulfillmentStage||"")==="preparing").length,ready:rows.filter(r=>["ready_for_pickup","courier_booked"].includes(String(r.details?.fulfillmentStage||""))).length}),[rows]);
  function optimisticFulfillment(row:ServiceRequestRow,action:string,extra:Record<string,unknown>={}){

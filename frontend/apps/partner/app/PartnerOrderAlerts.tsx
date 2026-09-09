@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useRef,useState} from "react";
 import {useZhaoXiSession} from "@zhaoxi/auth";
 import {useZhaoXiLocale} from "@zhaoxi/i18n";
+import {useVisiblePolling} from "@zhaoxi/hooks";
 import type{ServiceRequestRow}from"@zhaoxi/sdk";
 import {IosPersonIcon,IosPhoneIcon} from "./IosIcons";
 const copy={
@@ -60,7 +61,8 @@ function playLoudOrderChime() {
 
 export default function PartnerOrderAlerts(){const session=useZhaoXiSession();const{locale}=useZhaoXiLocale();const t=copy[locale];const orgId=session?.organizationId||"";const[order,setOrder]=useState<ServiceRequestRow|null>(null);const[step,setStep]=useState<"order"|"eta">("order");const[eta,setEta]=useState(15);const[confirming,setConfirming]=useState(false);const[notice,setNotice]=useState("");const seen=useRef(new Set<string>());
  const poll=useCallback(async()=>{if(!orgId)return;try{const r=await fetch(`/api/platform-requests?scope=operations&organizationId=${encodeURIComponent(orgId)}&locale=${locale}`,{cache:"no-store"});const p=await r.json().catch(()=>null);const next=(Array.isArray(p?.data)?p.data:[]).find((x:ServiceRequestRow)=>x.status==="assigned"&&x.details?.deliveryFulfillmentMode==="external_manual"&&(x.details?.paymentMethod!=="bank_transfer"||Boolean(x.details?.paymentCustomerReportedAt))&&!seen.current.has(x.id));if(next&&!order){setOrder(next);window.dispatchEvent(new CustomEvent("zhaoxi:new-order",{detail:next}))}}catch{}},[orgId,locale,order]);
- useEffect(()=>{let timer:number;let stopped=false;const schedule=()=>{void poll().finally(()=>{if(!stopped)timer=window.setTimeout(schedule,document.visibilityState==="visible"?2500:12000)})};schedule();const open=(event:Event)=>{const next=(event as CustomEvent<ServiceRequestRow>).detail;if(next){setOrder(next);setStep("eta")}};window.addEventListener("zhaoxi-open-order",open);return()=>{stopped=true;window.clearTimeout(timer);window.removeEventListener("zhaoxi-open-order",open)}},[poll]);
+ useVisiblePolling(poll,{enabled:Boolean(orgId),intervalMs:15_000});
+ useEffect(()=>{const open=(event:Event)=>{const next=(event as CustomEvent<ServiceRequestRow>).detail;if(next){setOrder(next);setStep("eta")}};window.addEventListener("zhaoxi-open-order",open);return()=>window.removeEventListener("zhaoxi-open-order",open)},[]);
  useEffect(()=>{if(!order)return;playLoudOrderChime();const chimeTimer=setInterval(()=>playLoudOrderChime(),3200);return()=>clearInterval(chimeTimer)},[order]);
  useEffect(()=>{const unlock=()=>{try{const AudioCtx=window.AudioContext||(window as unknown as {webkitAudioContext:typeof AudioContext}).webkitAudioContext;if(AudioCtx){const c=new AudioCtx();c.resume().then(()=>c.close()).catch(()=>{})}}catch{}};window.addEventListener("click",unlock,{once:true});window.addEventListener("touchstart",unlock,{once:true});window.addEventListener("keydown",unlock,{once:true});return()=>{window.removeEventListener("click",unlock);window.removeEventListener("touchstart",unlock);window.removeEventListener("keydown",unlock)}},[]);
  function close(mark=true){if(order&&mark)seen.current.add(order.id);setOrder(null);setStep("order");setEta(15)}

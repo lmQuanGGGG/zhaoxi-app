@@ -1,6 +1,7 @@
 "use client";
 import {useCallback,useEffect,useMemo,useState} from "react";
 import {useZhaoXiLocale} from "@zhaoxi/i18n";
+import {useVisiblePolling} from "@zhaoxi/hooks";
 import {getCached,setCached} from "./_lib/client-cache";
 import {IosPersonIcon,IosPhoneIcon} from "./IosIcons";
 
@@ -18,7 +19,7 @@ export default function KitchenQueue({organizationId}:{organizationId:string}){
  const[data,setData]=useState<Data>(()=>getCached<Data>(cacheKey)||{counts:{waiting:0,preparing:0,ready:0,courier:0,late:0},items:[]});
  const[busy,setBusy]=useState("");
  const load=useCallback(async()=>{if(!organizationId)return;try{const r=await fetch(`/api/partner-kitchen?organizationId=${encodeURIComponent(organizationId)}&locale=${encodeURIComponent(locale)}`,{cache:"no-store"});const j=await r.json().catch(()=>null);if(j?.ok){setData(j.data);setCached(cacheKey,j.data)}}catch{}},[organizationId,locale,cacheKey]);
- useEffect(()=>{void load();const timer=setInterval(()=>void load(),5000);return()=>clearInterval(timer)},[load]);
+ useVisiblePolling(load,{enabled:Boolean(organizationId),intervalMs:20_000});
  async function patch(item:Item,payload:Record<string,unknown>){setBusy(item.requestId+String(payload.action));try{await fetch("/api/partner-kitchen",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({organizationId,requestId:item.requestId,...payload})});await load()}finally{setBusy("")}}
  const columns=useMemo(()=>[
   {key:"waiting",title:t.waiting,items:data.items.filter(x=>x.stage==="assigned")},
