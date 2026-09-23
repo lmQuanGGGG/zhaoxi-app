@@ -4,7 +4,7 @@ import * as Application from "expo-application";
 import * as Notifications from "expo-notifications";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, AppState, Image, Linking, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, AppState, Image, Keyboard, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { getOrderHistory, getPartnerOrganizations, getQueue, fulfill, loadAuth, login, loginWithPhone, logout, registerPush, switchPartnerOrganization, updateKitchen } from "./src/api";
 import { configureNotifications, getPushToken, notifyNewOrder } from "./src/notifications";
@@ -34,14 +34,14 @@ function Login({ onDone }: { onDone: (value: AuthState) => void }) {
     setBusy(true); setError("");
     try { const id = await deviceId(); onDone(mode === "phone" ? await loginWithPhone(`+84${digits}`, pin, id) : await login(username, password, id)); } catch (e) { setError(e instanceof Error ? e.message : "Không thể đăng nhập."); } finally { setBusy(false); }
   }
-  return <View style={s.login}><StatusBar style="light"/><View style={s.loginCard}>
+  return <KeyboardAvoidingView style={s.login} behavior={Platform.OS === "ios" ? "padding" : "height"}><StatusBar style="light"/><TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}><ScrollView style={s.flex} contentContainerStyle={s.loginScroll} keyboardShouldPersistTaps="handled" keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}><View style={s.loginCard}>
     <Image source={require("./assets/icon.png")} style={s.logo}/><Text style={s.loginTitle}>ZhaoXi Partner</Text><Text style={s.loginSub}>Nhận đơn, xác nhận và theo dõi bếp ngay trên điện thoại.</Text>
     <View style={s.loginTabs}><Pressable onPress={() => { setMode("phone"); setError(""); }} style={[s.loginTab, mode === "phone" && s.loginTabOn]}><Text style={[s.loginTabText, mode === "phone" && s.loginTabTextOn]}>Số điện thoại</Text></Pressable><Pressable onPress={() => { setMode("account"); setError(""); }} style={[s.loginTab, mode === "account" && s.loginTabOn]}><Text style={[s.loginTabText, mode === "account" && s.loginTabTextOn]}>Tài khoản</Text></Pressable></View>
     {mode === "phone" ? <><Text style={s.label}>Số điện thoại</Text><View style={s.phoneRow}><View style={s.dialCode}><Text style={s.dialCodeText}>🇻🇳 +84</Text></View><TextInput value={phone} onChangeText={value => setPhone(value.replace(/\D/g, ""))} style={[s.input, s.phoneInput]} keyboardType="phone-pad" placeholder="094 241 1045" maxLength={11}/></View>
       <Text style={s.label}>Mã PIN 6 số</Text><TextInput value={pin} onChangeText={value => setPin(value.replace(/\D/g, "").slice(0, 6))} style={s.input} secureTextEntry keyboardType="number-pad" placeholder="••••••" maxLength={6} onSubmitEditing={() => void submit()}/><Text style={s.loginHint}>Dùng mã PIN 6 số đã thiết lập trên ZhaoXi Partner.</Text></> : <><Text style={s.label}>Tài khoản partner</Text><TextInput value={username} onChangeText={setUsername} style={s.input} autoCapitalize="none" autoCorrect={false} placeholder="Tên đăng nhập"/>
       <Text style={s.label}>Mật khẩu</Text><TextInput value={password} onChangeText={setPassword} style={s.input} secureTextEntry placeholder="Tối thiểu 6 ký tự" onSubmitEditing={() => void submit()}/></>}
     {!!error && <Text style={s.error}>{error}</Text>}<Pressable style={[s.button, s.buttonGreen]} disabled={busy} onPress={() => void submit()}>{busy ? <ActivityIndicator color="white"/> : <Text style={s.buttonText}>Đăng nhập cửa hàng</Text>}</Pressable>
-  </View></View>;
+  </View></ScrollView></TouchableWithoutFeedback></KeyboardAvoidingView>;
 }
 
 function OrderCard({ order, onOpen, onAction, onCancel, busy = false, onPriority, onEta, interactive = true }: { order: Order; onOpen: () => void; onAction?: () => void; onCancel?: () => void; busy?: boolean; onPriority: (priority: Order["priority"]) => void; onEta: (minutes: number) => void; interactive?: boolean }) {
