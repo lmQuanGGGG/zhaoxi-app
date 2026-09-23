@@ -11,6 +11,8 @@ import { configureNotifications, getPushToken, notifyNewOrder } from "./src/noti
 import { C, s } from "./src/styles";
 import type { AnalyticsData, AuthState, Order, OrderStage, PartnerOrganization, QueueData } from "./src/types";
 import { Language, LANGUAGES, LANGUAGE_STORAGE_KEY, I18N } from "./src/i18n";
+import { WebView } from "react-native-webview";
+import { THREE_SPHERE_HTML } from "./src/threeJsHtml";
 
 const EMPTY: QueueData = { generatedAt: "", counts: { waiting: 0, preparing: 0, ready: 0, courier: 0, late: 0 }, items: [] };
 const money = (value: number) => `${Number(value || 0).toLocaleString("vi-VN")} ₫`;
@@ -422,158 +424,7 @@ function extractOrderId(data: unknown): string {
 }
 
 function GreenSphereAnalysisLoader({ visible, title, desc }: { visible: boolean; title: string; desc: string }) {
-  const floatAnim = useRef(new Animated.Value(0)).current;
-  const tiltAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(0)).current;
-  const flashAnim = useRef(new Animated.Value(0)).current;
-  const sparkAnim1 = useRef(new Animated.Value(0)).current;
-  const sparkAnim2 = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (!visible) return;
-
-    // Bobbing / Floating loop
-    const floatLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: 1,
-          duration: 1500,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 1500,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-
-    // Liquid wave tilting loop (sloshing effect)
-    const tiltLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(tiltAnim, {
-          toValue: 1,
-          duration: 2200,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(tiltAnim, {
-          toValue: 0,
-          duration: 2200,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-
-    // Outer radar glow
-    const pulseLoop = Animated.loop(
-      Animated.timing(pulseAnim, {
-        toValue: 1,
-        duration: 2000,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      })
-    );
-
-    // "Chớp chớp phân tích" core flashing loop
-    const flashLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(flashAnim, {
-          toValue: 1,
-          duration: 350,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(flashAnim, {
-          toValue: 0.25,
-          duration: 350,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(flashAnim, {
-          toValue: 0.9,
-          duration: 250,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(flashAnim, {
-          toValue: 0.1,
-          duration: 450,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-
-    // Blinking sparkle node 1
-    const sparkLoop1 = Animated.loop(
-      Animated.sequence([
-        Animated.timing(sparkAnim1, { toValue: 1, duration: 300, useNativeDriver: true }),
-        Animated.timing(sparkAnim1, { toValue: 0, duration: 400, useNativeDriver: true }),
-        Animated.delay(250),
-      ])
-    );
-
-    // Blinking sparkle node 2
-    const sparkLoop2 = Animated.loop(
-      Animated.sequence([
-        Animated.delay(350),
-        Animated.timing(sparkAnim2, { toValue: 1, duration: 250, useNativeDriver: true }),
-        Animated.timing(sparkAnim2, { toValue: 0, duration: 450, useNativeDriver: true }),
-      ])
-    );
-
-    floatLoop.start();
-    tiltLoop.start();
-    pulseLoop.start();
-    flashLoop.start();
-    sparkLoop1.start();
-    sparkLoop2.start();
-
-    return () => {
-      floatLoop.stop();
-      tiltLoop.stop();
-      pulseLoop.stop();
-      flashLoop.stop();
-      sparkLoop1.stop();
-      sparkLoop2.stop();
-    };
-  }, [visible, floatAnim, tiltAnim, pulseAnim, flashAnim, sparkAnim1, sparkAnim2]);
-
   if (!visible) return null;
-
-  const translateY = floatAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-10, 10],
-  });
-
-  const rotate = tiltAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["-3.5deg", "3.5deg"],
-  });
-
-  const shadowScale = floatAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.82, 1.18],
-  });
-
-  const shadowOpacity = floatAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.18, 0.42],
-  });
-
-  const radarScale = pulseAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.95, 1.45],
-  });
-
-  const radarOpacity = pulseAnim.interpolate({
-    inputRange: [0, 0.6, 1],
-    outputRange: [0.7, 0.35, 0],
-  });
 
   return (
     <Modal visible={visible} transparent animationType="fade">
@@ -581,106 +432,35 @@ function GreenSphereAnalysisLoader({ visible, title, desc }: { visible: boolean;
         <View style={s.analysisCard}>
           <View style={s.analysisBadge}>
             <Ionicons name="sparkles" size={13} color={C.green} />
-            <Text style={s.analysisBadgeText}>ZHAOXI ANALYTICS AI</Text>
+            <Text style={s.analysisBadgeText}>ZHAOXI 3D AI ENGINE</Text>
           </View>
 
-          {/* 3D Translucent Glass Liquid Cyber Orb */}
-          <View style={s.sphereWrapper}>
-            {/* Glowing outer radar pulse */}
-            <Animated.View
-              style={[
-                s.spherePulseRing1,
-                {
-                  transform: [{ scale: radarScale }],
-                  opacity: radarOpacity,
-                },
-              ]}
-            />
-
-            {/* Floating & Tilting 3D Cyber Sphere */}
-            <Animated.View
-              style={{
-                width: 146,
-                height: 146,
-                borderRadius: 73,
-                transform: [{ translateY }, { rotate }],
-                alignItems: "center",
-                justifyContent: "center",
-                position: "relative",
-                shadowColor: "#10b981",
-                shadowOpacity: 0.6,
-                shadowRadius: 24,
-                shadowOffset: { width: 0, height: 10 },
-                elevation: 10,
-              }}
-            >
-              {/* Ultra-realistic 3D Cyber Glass Sphere Image */}
-              <Image
-                source={require("./assets/green_cyber_glass_sphere.jpg")}
-                style={{ width: 146, height: 146, borderRadius: 73 }}
-                resizeMode="cover"
-              />
-
-              {/* Glowing animated core overlay ("chớp chớp phân tích") */}
-              <Animated.View
-                pointerEvents="none"
-                style={{
-                  position: "absolute",
-                  width: 110,
-                  height: 75,
-                  bottom: 12,
-                  borderRadius: 45,
-                  backgroundColor: "rgba(52, 211, 153, 0.35)",
-                  opacity: flashAnim,
-                }}
-              />
-
-              {/* Sparkling data nodes chớp chớp 1 */}
-              <Animated.View
-                pointerEvents="none"
-                style={{
-                  position: "absolute",
-                  width: 9,
-                  height: 9,
-                  borderRadius: 5,
-                  backgroundColor: "#ffffff",
-                  bottom: 38,
-                  left: 46,
-                  opacity: sparkAnim1,
-                  shadowColor: "#34d399",
-                  shadowRadius: 8,
-                  shadowOpacity: 1,
-                }}
-              />
-
-              {/* Sparkling data nodes chớp chớp 2 */}
-              <Animated.View
-                pointerEvents="none"
-                style={{
-                  position: "absolute",
-                  width: 8,
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor: "#ffffff",
-                  bottom: 52,
-                  right: 42,
-                  opacity: sparkAnim2,
-                  shadowColor: "#34d399",
-                  shadowRadius: 8,
-                  shadowOpacity: 1,
-                }}
-              />
-            </Animated.View>
-
-            {/* Ground Shadow */}
-            <Animated.View
-              style={[
-                s.sphereShadow,
-                {
-                  transform: [{ scale: shadowScale }],
-                  opacity: shadowOpacity,
-                },
-              ]}
+          {/* Real 3D Three.js Glass Liquid Cyber Sphere */}
+          <View
+            style={{
+              width: 190,
+              height: 190,
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+              marginVertical: 4,
+              borderRadius: 95,
+              backgroundColor: "transparent",
+            }}
+          >
+            <WebView
+              originWhitelist={["*"]}
+              source={{ html: THREE_SPHERE_HTML }}
+              style={{ width: 190, height: 190, backgroundColor: "transparent" }}
+              containerStyle={{ backgroundColor: "transparent" }}
+              opaque={false}
+              scrollEnabled={false}
+              bounces={false}
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
+              pointerEvents="none"
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
             />
           </View>
 
