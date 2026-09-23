@@ -74,7 +74,7 @@ export class PartnerFoodFulfillmentService{
       update service_requests
       set status=${nextStatus}::request_status,
           details=${JSON.stringify(nextDetails)}::jsonb,
-          updated_at=${now}
+          updated_at=now()
       where id=${requestId}::uuid
         and coalesce(details->>'fulfillmentStage','') <> ${targetStage}
       returning id,status,details,updated_at
@@ -90,7 +90,7 @@ export class PartnerFoodFulfillmentService{
     from updated
   `) as unknown as Array<{status:typeof current.status;details:Record<string,unknown>;updated_at:Date}>;
   const row=rows[0];
-  const updated=row?{...current,status:row.status,details:row.details,updatedAt:row.updated_at}:undefined;
+  const updated=row?{...current,status:row.status,details:row.details,updatedAt:new Date(row.updated_at)}:undefined;
   if(!updated)return (await db.select().from(serviceRequests).where(eq(serviceRequests.id,requestId)).limit(1))[0]||current;
   if(action==="accept"&&details.paymentMethod==="bank_transfer"){
     const payment=(await db.select().from(paymentTransactions).where(eq(paymentTransactions.requestId,requestId)).limit(1))[0];
