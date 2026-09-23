@@ -430,10 +430,6 @@ function GreenSphereAnalysisLoader({ visible, title, desc }: { visible: boolean;
     <Modal visible={visible} transparent animationType="fade">
       <View style={s.analysisBackdrop}>
         <View style={s.analysisCard}>
-          <View style={s.analysisBadge}>
-            <Text style={s.analysisBadgeText}>ZHAOXI 3D AI ENGINE</Text>
-          </View>
-
           {/* Real 3D Three.js Glass Liquid Cyber Sphere - 100% Transparent Background */}
           <View
             style={{
