@@ -11,10 +11,17 @@ async function sendMobilePush(organizationId:string,message:{title:string;body:s
   const devices=await getDb().select().from(partnerMobilePushDevices).where(eq(partnerMobilePushDevices.organizationId,organizationId));
   const active=devices.filter(device=>device.enabled);
   if(!active.length)return {sent:0,enabled:true};
+  const seenTokens = new Set<string>();
+  const uniqueActive = active.filter(device => {
+    if (!device.expoPushToken || seenTokens.has(device.expoPushToken)) return false;
+    seenTokens.add(device.expoPushToken);
+    return true;
+  });
+  if(!uniqueActive.length)return {sent:0,enabled:true};
   const response=await fetch("https://exp.host/--/api/v2/push/send",{
     method:"POST",
     headers:{"content-type":"application/json","accept":"application/json","accept-encoding":"gzip, deflate"},
-    body:JSON.stringify(active.map(device=>({
+    body:JSON.stringify(uniqueActive.map(device=>({
       to:device.expoPushToken,title:message.title,body:message.body,
       sound:"order_alert.wav",priority:"high",channelId:"new-orders",
       data:{orderId:message.orderId,kind:message.kind,screen:"orders"},
@@ -25,8 +32,8 @@ async function sendMobilePush(organizationId:string,message:{title:string;body:s
   const payload=await response.json().catch(()=>null) as {data?:Array<{status?:string;details?:{error?:string}}> }|null;
   const receipts=Array.isArray(payload?.data)?payload.data:[];
   await Promise.all(receipts.map(async(receipt,index)=>{
-    if(receipt?.details?.error==="DeviceNotRegistered"&&active[index]){
-      await getDb().update(partnerMobilePushDevices).set({enabled:false,updatedAt:new Date()}).where(eq(partnerMobilePushDevices.id,active[index].id));
+    if(receipt?.details?.error==="DeviceNotRegistered"&&uniqueActive[index]){
+      await getDb().update(partnerMobilePushDevices).set({enabled:false,updatedAt:new Date()}).where(eq(partnerMobilePushDevices.id,uniqueActive[index].id));
     }
   }));
   return {sent:receipts.filter(x=>x.status==="ok").length,enabled:true};

@@ -141,7 +141,7 @@ function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => voi
   const selectedRef = useRef<Order | null>(null); selectedRef.current = selected;
   const [successOrder, setSuccessOrder] = useState<Order | null>(null); const [loading, setLoading] = useState(true); const [historyLoading, setHistoryLoading] = useState(false); const [orderView, setOrderView] = useState<"new" | "history">("new"); const [activeStage, setActiveStage] = useState<"waiting" | "preparing" | "ready">("waiting"); const [historyFilter, setHistoryFilter] = useState<"all" | "completed" | "cancelled">("all"); const [tab, setTab] = useState<"orders" | "settings">("orders"); const [pushStatus, setPushStatus] = useState("Đang thiết lập thông báo…"); const [actionError, setActionError] = useState(""); const [actionBusy, setActionBusy] = useState(""); const [confirmAction, setConfirmAction] = useState<{ order: Order; kind: "advance" | "cancel" } | null>(null);
   const [organizations, setOrganizations] = useState<PartnerOrganization[]>([]); const [storeModal, setStoreModal] = useState(false); const [switchingStore, setSwitchingStore] = useState(false);
-  const initialized = useRef(false); const seen = useRef(new Set<string>()); const pushToken = useRef<string | undefined>(undefined); const pushReady = useRef(false); const pendingOrderId = useRef("");
+  const initialized = useRef(false); const seen = useRef(new Set<string>()); const notified = useRef(new Set<string>()); const pushToken = useRef<string | undefined>(undefined); const pushReady = useRef(false); const pendingOrderId = useRef("");
   useEffect(() => { void getPartnerOrganizations().then(x => setOrganizations(x.organizations || [])).catch(() => undefined); }, []);
   async function switchStore(id: string) { if (id === orgId || switchingStore) return; setSwitchingStore(true); try { const next = await switchPartnerOrganization(id); setStoreModal(false); onAuth(next); } catch (e) { setPushStatus(e instanceof Error ? e.message : "Không thể đổi gian hàng."); } finally { setSwitchingStore(false); } }
   const load = useCallback(async () => {
@@ -154,7 +154,13 @@ function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => voi
       if (firstIncoming) {
         setTab("orders"); setOrderView("new"); setActiveStage("waiting");
         if (!selectedRef.current) setSelected(firstIncoming);
-        void notifyNewOrder(firstIncoming);
+        if (!notified.current.has(firstIncoming.requestId) && !notified.current.has(firstIncoming.requestCode)) {
+          notified.current.add(firstIncoming.requestId);
+          notified.current.add(firstIncoming.requestCode);
+          if (!pushReady.current) {
+            void notifyNewOrder(firstIncoming);
+          }
+        }
       } else if (!initialized.current && firstWaiting) {
         setTab("orders"); setOrderView("new"); setActiveStage("waiting");
         if (!selectedRef.current) setSelected(firstWaiting);
@@ -195,7 +201,11 @@ function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => voi
   }, [orgId]);
   const handleNotificationTarget = useCallback(async (targetId?: string) => {
     setTab("orders"); setOrderView("new"); setActiveStage("waiting");
-    if (targetId) pendingOrderId.current = targetId;
+    if (targetId) {
+      pendingOrderId.current = targetId;
+      seen.current.add(targetId);
+      notified.current.add(targetId);
+    }
     const currentQueue = await load();
     let items = currentQueue?.items || [];
     if (targetId) {
@@ -229,6 +239,10 @@ function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => voi
         void Notifications.getLastNotificationResponseAsync().then(resp => {
           if (resp) {
             const id = extractOrderId(resp.notification.request.content.data);
+            if (id) {
+              seen.current.add(id);
+              notified.current.add(id);
+            }
             void handleNotificationTarget(id);
           }
         });
@@ -242,11 +256,19 @@ function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => voi
     const onResponse = (response: Notifications.NotificationResponse | null) => {
       if (!response) return;
       const id = extractOrderId(response.notification.request.content.data);
+      if (id) {
+        seen.current.add(id);
+        notified.current.add(id);
+      }
       void handleNotificationTarget(id);
     };
     const onReceived = (notification: Notifications.Notification) => {
+      const id = extractOrderId(notification.request.content.data);
+      if (id) {
+        seen.current.add(id);
+        notified.current.add(id);
+      }
       if (!selectedRef.current) {
-        const id = extractOrderId(notification.request.content.data);
         void handleNotificationTarget(id);
       } else {
         void load();
