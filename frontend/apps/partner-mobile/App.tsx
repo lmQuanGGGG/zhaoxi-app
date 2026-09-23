@@ -65,14 +65,47 @@ function OrderCard({ order, onOpen, onAction, onCancel, busy = false, onPriority
   </View>;
 }
 
-function OrderModal({ order, onClose, onRefresh }: { order: Order | null; onClose: () => void; onRefresh: () => Promise<unknown> }) {
+function OrderModal({
+  order,
+  onClose,
+  onRefresh,
+  waitingCount = 1,
+  waitingIndex = 1,
+  onSelectOrder,
+}: {
+  order: Order | null;
+  onClose: () => void;
+  onRefresh: () => Promise<QueueData | null>;
+  waitingCount?: number;
+  waitingIndex?: number;
+  onSelectOrder?: (order: Order) => void;
+}) {
   const [eta, setEta] = useState(15); const [error, setError] = useState(""); const [submitting, setSubmitting] = useState(false);
   useEffect(() => { if (order) { setEta(order.estimatedMinutes || 15); setError(""); } }, [order]);
-  async function run(payload: Record<string, unknown>) { if (!order || submitting) return; setSubmitting(true); setError(""); try { await fulfill(order.requestId, payload); await onRefresh(); onClose(); } catch (e) { setError(e instanceof Error ? e.message : "Không thể cập nhật đơn."); } finally { setSubmitting(false); } }
+  async function run(payload: Record<string, unknown>) {
+    if (!order || submitting) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      await fulfill(order.requestId, payload);
+      const nextQueue = await onRefresh();
+      const remaining = (nextQueue?.items || []).filter(x => x.stage === "assigned" && x.requestId !== order.requestId);
+      const nextWaiting = remaining[0];
+      if (nextWaiting && onSelectOrder) {
+        onSelectOrder(nextWaiting);
+      } else {
+        onClose();
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Không thể cập nhật đơn.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
   if (!order) return null;
   const next = nextAction[order.stage];
   return <Modal visible transparent animationType="fade" onRequestClose={onClose}><View style={s.centerModalBackdrop}><ScrollView style={s.centerModal} contentContainerStyle={{ paddingBottom: 34 }}><View style={s.modalHandle}/>
-    {order.stage === "assigned" && <View style={[s.pill, { alignSelf: "flex-start", backgroundColor: "#fee2e2", marginBottom: 10 }]}><Text style={{ color: "#b91c1c", fontWeight: "900", fontSize: 13 }}>🔔 ĐƠN HÀNG MỚI CẦN NHẬN</Text></View>}
+    {order.stage === "assigned" && <View style={[s.pill, { alignSelf: "flex-start", backgroundColor: "#fee2e2", marginBottom: 10 }]}><Text style={{ color: "#b91c1c", fontWeight: "900", fontSize: 13 }}>{waitingCount > 1 ? `🔔 ĐƠN MỚI (${waitingIndex}/${waitingCount}) · CÒN ${waitingCount - 1} ĐƠN KHÁC` : "🔔 ĐƠN HÀNG MỚI CẦN NHẬN"}</Text></View>}
     <View style={s.between}><View style={{ flex: 1, paddingRight: 8 }}><Text style={s.code}>{order.requestCode}</Text><Text style={s.modalTitle}>{order.serviceName} · ×{order.quantity}</Text></View><Pressable onPress={onClose} hitSlop={10}><Ionicons name="close-circle" size={32} color={C.muted}/></Pressable></View>
     <View style={s.row}><Ionicons name="person-outline" size={16} color={C.muted}/><Text style={s.meta}>{order.customerName}</Text></View>{!!order.customerPhone && <Pressable style={s.row} onPress={() => Linking.openURL(`tel:${order.customerPhone}`)}><Ionicons name="call-outline" size={16} color={C.green}/><Text style={[s.meta, { color: C.green, fontWeight: "900" }]}>{order.customerPhone}</Text></Pressable>}
     {!!order.addressText && <View style={s.row}><Ionicons name="location-outline" size={16} color={C.muted}/><Text style={s.meta}>{order.addressText}</Text></View>}{order.deliveryProvider && <View style={[s.providerBadge, order.deliveryProvider === "grab" && { backgroundColor: "#dcfce7" }]}><Image source={order.deliveryProvider === "grab" ? require("./assets/grab.png") : require("./assets/green-sm.png")} style={s.providerLogo}/><Text style={s.providerText}>{order.deliveryProvider === "grab" ? "Grab" : "Xanh SM"} · Khách tự trả ship</Text></View>}<View style={s.detailGrid}><View style={s.detailTile}><Text style={s.detailLabel}>Số lượng:</Text><Text style={s.detailValue}>{order.quantity}</Text></View><View style={s.detailTile}><Text style={s.detailLabel}>Tiền món:</Text><Text style={s.detailValue}>{money(order.itemSubtotal || order.totalAmount)}</Text></View><View style={s.detailTile}><Text style={s.detailLabel}>Phí giao hàng gốc:</Text><Text style={s.detailValue}>{money(order.deliveryGrossFee || 0)}</Text></View><View style={s.detailTile}><Text style={s.detailLabel}>Khách trả phí giao:</Text><Text style={s.detailValue}>{money(order.customerDeliveryFee || 0)}</Text></View><View style={s.detailTile}><Text style={s.detailLabel}>Quãng đường:</Text><Text style={s.detailValue}>{order.deliveryDistanceKm ? `${order.deliveryDistanceKm.toFixed(1)} km` : "—"}</Text></View><View style={s.detailTile}><Text style={[s.detailLabel, s.detailValueGreen]}>Tổng đơn:</Text><Text style={[s.detailValue, s.detailValueGreen]}>{money(order.totalAmount)}</Text></View>{order.paymentMethod && <View style={s.detailTile}><Text style={s.detailLabel}>Thanh toán:</Text><Text style={s.detailValue}>{order.paymentMethod === "bank_transfer" ? "Chuyển khoản" : "Tiền mặt"}{order.paymentStatus === "paid" ? " · Đã thanh toán" : ""}</Text></View>}</View>
@@ -283,7 +316,14 @@ function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => voi
     </>}
   </ScrollView></> : <ScrollView style={s.flex} contentContainerStyle={s.page}><Text style={s.sectionTitle}>Cài đặt cửa hàng</Text><View style={s.card}><Text style={s.itemName}>{auth.session.displayName}</Text><Text style={s.meta}>{auth.session.organizationName}</Text><Text style={[s.meta, { color: C.green, fontWeight: "800" }]}>{pushStatus}</Text></View>{organizations.length > 1 && <Pressable style={[s.button, s.buttonGhost, { marginBottom: 10 }]} onPress={() => setStoreModal(true)}><Text style={s.buttonGhostText}>⌂  Đổi gian hàng đang quản lý</Text></Pressable>}<Pressable style={[s.button, s.buttonGhost, { marginBottom: 10 }]} onPress={() => void configureNotifications()}><Text style={s.buttonGhostText}>Kiểm tra kênh thông báo</Text></Pressable><Pressable style={[s.button, s.buttonRed]} onPress={() => void logout(pushToken.current).finally(onLogout)}><Text style={s.buttonRedText}>Đăng xuất</Text></Pressable></ScrollView>}
     <View style={s.tabs}><Pressable style={s.tab} onPress={() => setTab("orders")}><Ionicons name={tab === "orders" ? "receipt" : "receipt-outline"} size={23} color={tab === "orders" ? C.green : C.muted}/><Text style={[s.tabText, tab === "orders" && s.tabOn]}>Đơn hàng</Text></Pressable><Pressable style={s.tab} onPress={() => setTab("settings")}><Ionicons name={tab === "settings" ? "settings" : "settings-outline"} size={23} color={tab === "settings" ? C.green : C.muted}/><Text style={[s.tabText, tab === "settings" && s.tabOn]}>Cài đặt</Text></Pressable></View>
-    <OrderModal order={selected} onClose={() => setSelected(null)} onRefresh={load}/>
+    <OrderModal
+      order={selected}
+      onClose={() => setSelected(null)}
+      onRefresh={load}
+      waitingCount={waiting.length}
+      waitingIndex={selected ? Math.max(1, waiting.findIndex(x => x.requestId === selected.requestId) + 1) : 1}
+      onSelectOrder={setSelected}
+    />
     <Modal visible={Boolean(confirmAction)} transparent animationType="fade" onRequestClose={() => setConfirmAction(null)}><View style={s.confirmBackdrop}><View style={s.confirmCard}><View style={s.confirmIcon}><Ionicons name={confirmAction?.kind === "cancel" ? "alert-outline" : "checkmark-circle-outline"} size={28} color={confirmAction?.kind === "cancel" ? C.red : C.green}/></View><Text style={s.confirmTitle}>{confirmAction?.kind === "cancel" ? "Hủy đơn này?" : "Chuyển trạng thái đơn?"}</Text><Text style={s.confirmText}>{confirmAction?.kind === "cancel" ? "Đơn sẽ được chuyển sang trạng thái đã hủy." : `Xác nhận: ${confirmAction?.order.stage === "assigned" ? "Nhận đơn" : nextAction[confirmAction?.order.stage || "assigned"]?.label || "cập nhật đơn"}?`}</Text><View style={s.confirmActions}><Pressable style={s.confirmCancel} onPress={() => setConfirmAction(null)}><Text style={s.confirmCancelText}>{confirmAction?.kind === "cancel" ? "Không" : "Để sau"}</Text></Pressable><Pressable style={[s.confirmOk, confirmAction?.kind === "cancel" && s.confirmDanger]} onPress={() => { const pending = confirmAction; setConfirmAction(null); if (pending) void (pending.kind === "cancel" ? cancelOrder(pending.order) : advanceOrder(pending.order)); }}><Text style={s.confirmOkText}>{confirmAction?.kind === "cancel" ? "Hủy đơn" : "Xác nhận"}</Text></Pressable></View></View></View></Modal>
     <Modal visible={Boolean(successOrder)} transparent animationType="fade" onRequestClose={() => setSuccessOrder(null)}><View style={s.successBackdrop}><View style={s.successToast}><View style={s.successBurst}><Text style={s.partyPopper}>🎉</Text></View><Text style={s.successTitle}>Đơn hàng đã hoàn thành</Text><Text style={s.successText}>{successOrder?.requestCode}</Text></View></View></Modal>
     <Modal visible={storeModal} transparent animationType="slide" onRequestClose={() => setStoreModal(false)}><View style={s.modalBackdrop}><View style={s.modal}><View style={s.modalHandle}/><Text style={s.modalTitle}>Đổi gian hàng</Text><Text style={s.meta}>Chọn gian hàng mà tài khoản này được cấp quyền quản lý.</Text>{organizations.map(org => <Pressable key={org.id} style={s.storeRow} disabled={switchingStore} onPress={() => void switchStore(org.id)}><Text style={s.storeName}>{org.name}</Text>{org.id === orgId ? <Text style={s.storeActive}>Đang chọn</Text> : <Ionicons name="chevron-forward" size={20} color={C.muted}/>}</Pressable>)}<Pressable style={[s.button, s.buttonGhost, { marginTop: 18 }]} onPress={() => setStoreModal(false)}><Text style={s.buttonGhostText}>Đóng</Text></Pressable></View></View></Modal>
