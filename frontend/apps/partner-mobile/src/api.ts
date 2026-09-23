@@ -116,7 +116,7 @@ export async function switchPartnerOrganization(organizationId: string) {
 function mapServiceRequest(row: Record<string, unknown>): Order {
   const d = (row.details && typeof row.details === "object" ? row.details : {}) as Record<string, unknown>;
   const status = String(row.status || "");
-  const stage = String(d.fulfillmentStage || (status === "assigned" ? "assigned" : status === "completed" ? "handed_off" : "preparing")) as Order["stage"];
+  const stage = String(d.fulfillmentStage || (status === "assigned" || status === "new" ? "assigned" : status === "completed" ? "handed_off" : "preparing")) as Order["stage"];
   const createdAt = String(row.createdAt || "");
   const elapsedMinutes = createdAt ? Math.max(0, Math.floor((Date.now() - new Date(createdAt).getTime()) / 60000)) : 0;
   const readyAt = typeof d.estimatedReadyAt === "string" ? d.estimatedReadyAt : null;
@@ -136,7 +136,7 @@ export async function getQueue(organizationId: string) {
   const rows = await request<Array<Record<string, unknown>>>(`/api/service-requests?scope=operations&organizationId=${encodeURIComponent(organizationId)}&locale=vi-VN`);
   const items = rows.filter(row => {
     const details = row.details && typeof row.details === "object" ? row.details as Record<string, unknown> : {};
-    return details.deliveryFulfillmentMode === "external_manual" && ["assigned", "accepted", "in_progress", "waiting_customer"].includes(String(row.status));
+    return details.deliveryFulfillmentMode === "external_manual" && ["new", "assigned", "accepted", "in_progress", "waiting_customer"].includes(String(row.status));
   }).map(mapServiceRequest);
   return { generatedAt: new Date().toISOString(), counts: { waiting: items.filter(x => x.stage === "assigned").length, preparing: items.filter(x => x.stage === "preparing").length, ready: items.filter(x => x.stage === "ready_for_pickup").length, courier: items.filter(x => ["courier_booked", "handed_off"].includes(x.stage)).length, late: items.filter(x => x.late).length }, items } satisfies QueueData;
 }
