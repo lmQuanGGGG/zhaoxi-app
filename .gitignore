@@ -17,4 +17,5 @@ backend/*D:*
 !**/.env.example
 backend/test-unimatrix*.js
 test-*.js
+*.apk
 
