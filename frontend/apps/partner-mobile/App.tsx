@@ -431,27 +431,37 @@ function GreenSphereAnalysisLoader({ visible, title, desc }: { visible: boolean;
       <View style={s.analysisBackdrop}>
         <View style={s.analysisCard}>
           <View style={s.analysisBadge}>
-            <Ionicons name="sparkles" size={13} color={C.green} />
+            <Ionicons name="sparkles" size={13} color="#34d399" />
             <Text style={s.analysisBadgeText}>ZHAOXI 3D AI ENGINE</Text>
           </View>
 
           {/* Real 3D Three.js Glass Liquid Cyber Sphere */}
           <View
             style={{
-              width: 190,
-              height: 190,
+              width: 220,
+              height: 220,
               alignItems: "center",
               justifyContent: "center",
-              overflow: "hidden",
+              position: "relative",
               marginVertical: 4,
-              borderRadius: 95,
-              backgroundColor: "transparent",
             }}
           >
+            {/* Soft emerald radial glow behind sphere */}
+            <View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                width: 200,
+                height: 200,
+                borderRadius: 100,
+                backgroundColor: "rgba(16, 185, 129, 0.18)",
+              }}
+            />
+
             <WebView
               originWhitelist={["*"]}
               source={{ html: THREE_SPHERE_HTML }}
-              style={{ width: 190, height: 190, backgroundColor: "transparent" }}
+              style={{ width: 220, height: 220, backgroundColor: "transparent" }}
               containerStyle={{ backgroundColor: "transparent" }}
               opaque={false}
               scrollEnabled={false}
@@ -468,9 +478,21 @@ function GreenSphereAnalysisLoader({ visible, title, desc }: { visible: boolean;
           <Text style={s.analysisDesc}>{desc}</Text>
 
           {/* Clean status pill instead of progress bar */}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 7, backgroundColor: "#f0fdf4", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16 }}>
-            <ActivityIndicator size="small" color={C.green} />
-            <Text style={{ color: C.green, fontSize: 13, fontWeight: "800" }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 8,
+              backgroundColor: "rgba(16, 185, 129, 0.12)",
+              borderWidth: 1,
+              borderColor: "rgba(16, 185, 129, 0.3)",
+              paddingHorizontal: 16,
+              paddingVertical: 9,
+              borderRadius: 20,
+            }}
+          >
+            <ActivityIndicator size="small" color="#34d399" />
+            <Text style={{ color: "#34d399", fontSize: 13, fontWeight: "800" }}>
               Đang phân tích số liệu kinh doanh…
             </Text>
           </View>

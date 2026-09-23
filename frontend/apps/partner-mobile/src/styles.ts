@@ -87,16 +87,16 @@ export const s = StyleSheet.create({
   storeDropdownActiveText: { color: C.green, fontSize: 11, fontWeight: "900" },
 
   // 3D Green Sphere Analysis Modal / Splash
-  analysisBackdrop: { flex: 1, backgroundColor: "rgba(3, 20, 14, 0.72)", alignItems: "center", justifyContent: "center", padding: 24 },
-  analysisCard: { width: "100%", maxWidth: 360, backgroundColor: C.white, borderRadius: 28, padding: 26, alignItems: "center", shadowColor: "#001d12", shadowOpacity: 0.28, shadowRadius: 30, shadowOffset: { width: 0, height: 14 }, elevation: 12 },
-  sphereWrapper: { width: 200, height: 185, alignItems: "center", justifyContent: "center", position: "relative", marginVertical: 4 },
+  analysisBackdrop: { flex: 1, backgroundColor: "rgba(3, 15, 10, 0.85)", alignItems: "center", justifyContent: "center", padding: 24 },
+  analysisCard: { width: "100%", maxWidth: 360, backgroundColor: "#0d1a15", borderRadius: 32, padding: 26, alignItems: "center", borderWidth: 1, borderColor: "rgba(16, 185, 129, 0.25)", shadowColor: "#000000", shadowOpacity: 0.6, shadowRadius: 36, shadowOffset: { width: 0, height: 16 }, elevation: 14 },
+  sphereWrapper: { width: 220, height: 220, alignItems: "center", justifyContent: "center", position: "relative", marginVertical: 6 },
   spherePulseRing1: { position: "absolute", width: 170, height: 170, borderRadius: 85, borderWidth: 1.5, borderColor: "rgba(52, 211, 153, 0.45)", backgroundColor: "rgba(16, 185, 129, 0.05)" },
   spherePulseRing2: { position: "absolute", width: 195, height: 195, borderRadius: 97.5, borderWidth: 1, borderColor: "rgba(16, 185, 129, 0.25)", backgroundColor: "rgba(5, 150, 105, 0.03)" },
   sphereShadow: { width: 84, height: 14, borderRadius: 42, backgroundColor: "rgba(6, 78, 59, 0.28)", marginTop: 12 },
-  analysisBadge: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: C.mint, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginTop: 4, marginBottom: 12 },
-  analysisBadgeText: { color: C.green, fontSize: 11, fontWeight: "900", letterSpacing: 0.8 },
-  analysisTitle: { color: C.ink, fontSize: 19, fontWeight: "900", textAlign: "center", marginBottom: 6 },
-  analysisDesc: { color: C.muted, fontSize: 13, textAlign: "center", lineHeight: 18, paddingHorizontal: 8, marginBottom: 16 },
+  analysisBadge: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "rgba(16, 185, 129, 0.15)", borderWidth: 1, borderColor: "rgba(52, 211, 153, 0.35)", paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, marginTop: 4, marginBottom: 10 },
+  analysisBadgeText: { color: "#34d399", fontSize: 11, fontWeight: "900", letterSpacing: 0.9 },
+  analysisTitle: { color: "#ffffff", fontSize: 20, fontWeight: "900", textAlign: "center", marginBottom: 6, letterSpacing: -0.2 },
+  analysisDesc: { color: "#94a3b8", fontSize: 13, textAlign: "center", lineHeight: 18, paddingHorizontal: 8, marginBottom: 18 },
 
   // Custom Date Modal & Active Badge
   customDateBadge: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: C.mint, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, marginTop: 4, alignSelf: "flex-start" },
