@@ -49,6 +49,6 @@ export async function notifyNewOrder(order: { requestId: string; requestCode: st
       categoryIdentifier: "ORDER_ACTIONS",
       data: { orderId: order.requestId, screen: "orders" },
     },
-    trigger: null,
+    trigger: Platform.OS === "android" ? { channelId: "new-orders" } : null,
   });
 }
