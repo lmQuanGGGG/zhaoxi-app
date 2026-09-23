@@ -89,13 +89,15 @@ function OrderModal({
     try {
       await fulfill(order.requestId, payload);
       const nextQueue = await onRefresh();
-      const remaining = (nextQueue?.items || []).filter(x => x.stage === "assigned" && x.requestId !== order.requestId);
-      const nextWaiting = remaining[0];
-      if (nextWaiting && onSelectOrder) {
-        onSelectOrder(nextWaiting);
-      } else {
-        onClose();
+      if (order.stage === "assigned") {
+        const remaining = (nextQueue?.items || []).filter(x => x.stage === "assigned" && x.requestId !== order.requestId);
+        const nextWaiting = remaining[0];
+        if (nextWaiting && onSelectOrder) {
+          onSelectOrder(nextWaiting);
+          return;
+        }
       }
+      onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không thể cập nhật đơn.");
     } finally {
@@ -104,8 +106,9 @@ function OrderModal({
   }
   if (!order) return null;
   const next = nextAction[order.stage];
+  const remainingBehind = Math.max(0, waitingCount - waitingIndex);
   return <Modal visible transparent animationType="fade" onRequestClose={onClose}><View style={s.centerModalBackdrop}><ScrollView style={s.centerModal} contentContainerStyle={{ paddingBottom: 34 }}><View style={s.modalHandle}/>
-    {order.stage === "assigned" && <View style={[s.pill, { alignSelf: "flex-start", backgroundColor: "#fee2e2", marginBottom: 10 }]}><Text style={{ color: "#b91c1c", fontWeight: "900", fontSize: 13 }}>{waitingCount > 1 ? `🔔 ĐƠN MỚI (${waitingIndex}/${waitingCount}) · CÒN ${waitingCount - 1} ĐƠN KHÁC` : "🔔 ĐƠN HÀNG MỚI CẦN NHẬN"}</Text></View>}
+    {order.stage === "assigned" && <View style={[s.pill, { alignSelf: "flex-start", backgroundColor: "#fee2e2", marginBottom: 10 }]}><Text style={{ color: "#b91c1c", fontWeight: "900", fontSize: 13 }}>{waitingCount > 1 ? `🔔 ĐƠN MỚI (${waitingIndex}/${waitingCount})${remainingBehind > 0 ? ` · CÒN ${remainingBehind} ĐƠN TIẾP THEO` : " · ĐƠN CUỐI CẦN DUYỆT"}` : "🔔 ĐƠN HÀNG MỚI CẦN NHẬN"}</Text></View>}
     <View style={s.between}><View style={{ flex: 1, paddingRight: 8 }}><Text style={s.code}>{order.requestCode}</Text><Text style={s.modalTitle}>{order.serviceName} · ×{order.quantity}</Text></View><Pressable onPress={onClose} hitSlop={10}><Ionicons name="close-circle" size={32} color={C.muted}/></Pressable></View>
     <View style={s.row}><Ionicons name="person-outline" size={16} color={C.muted}/><Text style={s.meta}>{order.customerName}</Text></View>{!!order.customerPhone && <Pressable style={s.row} onPress={() => Linking.openURL(`tel:${order.customerPhone}`)}><Ionicons name="call-outline" size={16} color={C.green}/><Text style={[s.meta, { color: C.green, fontWeight: "900" }]}>{order.customerPhone}</Text></Pressable>}
     {!!order.addressText && <View style={s.row}><Ionicons name="location-outline" size={16} color={C.muted}/><Text style={s.meta}>{order.addressText}</Text></View>}{order.deliveryProvider && <View style={[s.providerBadge, order.deliveryProvider === "grab" && { backgroundColor: "#dcfce7" }]}><Image source={order.deliveryProvider === "grab" ? require("./assets/grab.png") : require("./assets/green-sm.png")} style={s.providerLogo}/><Text style={s.providerText}>{order.deliveryProvider === "grab" ? "Grab" : "Xanh SM"} · Khách tự trả ship</Text></View>}<View style={s.detailGrid}><View style={s.detailTile}><Text style={s.detailLabel}>Số lượng:</Text><Text style={s.detailValue}>{order.quantity}</Text></View><View style={s.detailTile}><Text style={s.detailLabel}>Tiền món:</Text><Text style={s.detailValue}>{money(order.itemSubtotal || order.totalAmount)}</Text></View><View style={s.detailTile}><Text style={s.detailLabel}>Phí giao hàng gốc:</Text><Text style={s.detailValue}>{money(order.deliveryGrossFee || 0)}</Text></View><View style={s.detailTile}><Text style={s.detailLabel}>Khách trả phí giao:</Text><Text style={s.detailValue}>{money(order.customerDeliveryFee || 0)}</Text></View><View style={s.detailTile}><Text style={s.detailLabel}>Quãng đường:</Text><Text style={s.detailValue}>{order.deliveryDistanceKm ? `${order.deliveryDistanceKm.toFixed(1)} km` : "—"}</Text></View><View style={s.detailTile}><Text style={[s.detailLabel, s.detailValueGreen]}>Tổng đơn:</Text><Text style={[s.detailValue, s.detailValueGreen]}>{money(order.totalAmount)}</Text></View>{order.paymentMethod && <View style={s.detailTile}><Text style={s.detailLabel}>Thanh toán:</Text><Text style={s.detailValue}>{order.paymentMethod === "bank_transfer" ? "Chuyển khoản" : "Tiền mặt"}{order.paymentStatus === "paid" ? " · Đã thanh toán" : ""}</Text></View>}</View>
@@ -134,7 +137,9 @@ function extractOrderId(data: unknown): string {
 }
 
 function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => void; onAuth: (value: AuthState) => void }) {
-  const orgId = auth.session.organizationId!; const [data, setData] = useState(EMPTY); const [history, setHistory] = useState<Order[]>([]); const [selected, setSelected] = useState<Order | null>(null); const [successOrder, setSuccessOrder] = useState<Order | null>(null); const [loading, setLoading] = useState(true); const [historyLoading, setHistoryLoading] = useState(false); const [orderView, setOrderView] = useState<"new" | "history">("new"); const [activeStage, setActiveStage] = useState<"waiting" | "preparing" | "ready">("waiting"); const [historyFilter, setHistoryFilter] = useState<"all" | "completed" | "cancelled">("all"); const [tab, setTab] = useState<"orders" | "settings">("orders"); const [pushStatus, setPushStatus] = useState("Đang thiết lập thông báo…"); const [actionError, setActionError] = useState(""); const [actionBusy, setActionBusy] = useState(""); const [confirmAction, setConfirmAction] = useState<{ order: Order; kind: "advance" | "cancel" } | null>(null);
+  const orgId = auth.session.organizationId!; const [data, setData] = useState(EMPTY); const [history, setHistory] = useState<Order[]>([]); const [selected, setSelected] = useState<Order | null>(null);
+  const selectedRef = useRef<Order | null>(null); selectedRef.current = selected;
+  const [successOrder, setSuccessOrder] = useState<Order | null>(null); const [loading, setLoading] = useState(true); const [historyLoading, setHistoryLoading] = useState(false); const [orderView, setOrderView] = useState<"new" | "history">("new"); const [activeStage, setActiveStage] = useState<"waiting" | "preparing" | "ready">("waiting"); const [historyFilter, setHistoryFilter] = useState<"all" | "completed" | "cancelled">("all"); const [tab, setTab] = useState<"orders" | "settings">("orders"); const [pushStatus, setPushStatus] = useState("Đang thiết lập thông báo…"); const [actionError, setActionError] = useState(""); const [actionBusy, setActionBusy] = useState(""); const [confirmAction, setConfirmAction] = useState<{ order: Order; kind: "advance" | "cancel" } | null>(null);
   const [organizations, setOrganizations] = useState<PartnerOrganization[]>([]); const [storeModal, setStoreModal] = useState(false); const [switchingStore, setSwitchingStore] = useState(false);
   const initialized = useRef(false); const seen = useRef(new Set<string>()); const pushToken = useRef<string | undefined>(undefined); const pushReady = useRef(false); const pendingOrderId = useRef("");
   useEffect(() => { void getPartnerOrganizations().then(x => setOrganizations(x.organizations || [])).catch(() => undefined); }, []);
@@ -147,10 +152,17 @@ function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => voi
       const firstIncoming = incoming[0];
       const firstWaiting = waiting[0];
       if (firstIncoming) {
-        setTab("orders"); setOrderView("new"); setActiveStage("waiting"); setSelected(firstIncoming);
+        setTab("orders"); setOrderView("new"); setActiveStage("waiting");
+        if (!selectedRef.current) setSelected(firstIncoming);
         void notifyNewOrder(firstIncoming);
       } else if (!initialized.current && firstWaiting) {
-        setTab("orders"); setOrderView("new"); setActiveStage("waiting"); setSelected(firstWaiting);
+        setTab("orders"); setOrderView("new"); setActiveStage("waiting");
+        if (!selectedRef.current) setSelected(firstWaiting);
+      }
+      if (selectedRef.current) {
+        const curId = selectedRef.current.requestId;
+        const fresh = next.items.find(x => x.requestId === curId);
+        if (fresh) setSelected(fresh);
       }
       next.items.forEach(x => seen.current.add(x.requestId));
       initialized.current = true;
@@ -233,8 +245,12 @@ function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => voi
       void handleNotificationTarget(id);
     };
     const onReceived = (notification: Notifications.Notification) => {
-      const id = extractOrderId(notification.request.content.data);
-      void handleNotificationTarget(id);
+      if (!selectedRef.current) {
+        const id = extractOrderId(notification.request.content.data);
+        void handleNotificationTarget(id);
+      } else {
+        void load();
+      }
     };
     void Notifications.getLastNotificationResponseAsync().then(onResponse);
     const responseSub = Notifications.addNotificationResponseReceivedListener(onResponse);
