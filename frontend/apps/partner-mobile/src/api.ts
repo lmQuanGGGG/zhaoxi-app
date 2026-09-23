@@ -151,4 +151,13 @@ export async function getOrderHistory(organizationId: string) {
 export const fulfill = (requestId: string, payload: Record<string, unknown>) => request(`/api/partner-fulfillment/${requestId}`, { method: "PATCH", body: JSON.stringify(payload) });
 export const updateKitchen = (organizationId: string, requestId: string, payload: Record<string, unknown>) => request("/api/partner-kitchen", { method: "PATCH", body: JSON.stringify({ organizationId, requestId, ...payload }) });
 export const registerPush = (organizationId: string, expoPushToken: string, platform: string, deviceId: string) => request("/api/partner-push/mobile", { method: "POST", body: JSON.stringify({ organizationId, expoPushToken, platform, deviceId }) });
-export const getRestaurantAnalytics = (organizationId: string, days: 7 | 30 | 90 = 30) => request<AnalyticsData>(`/api/partner-restaurant-analytics?organizationId=${encodeURIComponent(organizationId)}&days=${days}&timezone=Asia%2FHo_Chi_Minh`);
+export const getRestaurantAnalytics = (organizationId: string, days = 30, from?: string, to?: string) => {
+  const query = new URLSearchParams({ organizationId, timezone: "Asia/Ho_Chi_Minh" });
+  if (from && to) {
+    query.set("from", from);
+    query.set("to", to);
+  } else {
+    query.set("days", String(days));
+  }
+  return request<AnalyticsData>(`/api/partner-restaurant-analytics?${query.toString()}`);
+};

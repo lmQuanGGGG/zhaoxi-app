@@ -4,7 +4,7 @@ import * as Application from "expo-application";
 import * as Notifications from "expo-notifications";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, AppState, Image, Keyboard, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, Animated, AppState, Easing, Image, Keyboard, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { getOrderHistory, getPartnerOrganizations, getQueue, getRestaurantAnalytics, fulfill, loadAuth, login, loginWithPhone, logout, registerPush, switchPartnerOrganization, updateKitchen } from "./src/api";
 import { configureNotifications, getPushToken, notifyNewOrder } from "./src/notifications";
@@ -421,6 +421,190 @@ function extractOrderId(data: unknown): string {
   return "";
 }
 
+function GreenSphereAnalysisLoader({ visible, title, desc }: { visible: boolean; title: string; desc: string }) {
+  const floatAnim = useRef(new Animated.Value(0)).current;
+  const pulse1Anim = useRef(new Animated.Value(0)).current;
+  const pulse2Anim = useRef(new Animated.Value(0)).current;
+  const progressAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!visible) return;
+
+    const floatLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: 1,
+          duration: 1300,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 1300,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    const pulse1Loop = Animated.loop(
+      Animated.timing(pulse1Anim, {
+        toValue: 1,
+        duration: 1800,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      })
+    );
+
+    const pulse2Loop = Animated.loop(
+      Animated.sequence([
+        Animated.delay(450),
+        Animated.timing(pulse2Anim, {
+          toValue: 1,
+          duration: 1800,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    const progressLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(progressAnim, {
+          toValue: 1,
+          duration: 1600,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: false,
+        }),
+        Animated.timing(progressAnim, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: false,
+        }),
+      ])
+    );
+
+    floatLoop.start();
+    pulse1Loop.start();
+    pulse2Loop.start();
+    progressLoop.start();
+
+    return () => {
+      floatLoop.stop();
+      pulse1Loop.stop();
+      pulse2Loop.stop();
+      progressLoop.stop();
+    };
+  }, [visible, floatAnim, pulse1Anim, pulse2Anim, progressAnim]);
+
+  if (!visible) return null;
+
+  const translateY = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-9, 9],
+  });
+
+  const shadowScale = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.85, 1.15],
+  });
+
+  const shadowOpacity = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.18, 0.35],
+  });
+
+  const ring1Scale = pulse1Anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.95, 1.45],
+  });
+
+  const ring1Opacity = pulse1Anim.interpolate({
+    inputRange: [0, 0.7, 1],
+    outputRange: [0.6, 0.3, 0],
+  });
+
+  const ring2Scale = pulse2Anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.95, 1.6],
+  });
+
+  const ring2Opacity = pulse2Anim.interpolate({
+    inputRange: [0, 0.7, 1],
+    outputRange: [0.5, 0.25, 0],
+  });
+
+  const progressWidth = progressAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["15%", "95%"],
+  });
+
+  return (
+    <Modal visible={visible} transparent animationType="fade">
+      <View style={s.analysisBackdrop}>
+        <View style={s.analysisCard}>
+          <View style={s.analysisBadge}>
+            <Ionicons name="sparkles" size={13} color={C.green} />
+            <Text style={s.analysisBadgeText}>ZHAOXI ANALYTICS AI</Text>
+          </View>
+
+          <View style={s.sphereWrapper}>
+            <Animated.View
+              style={[
+                s.spherePulseRing2,
+                { transform: [{ scale: ring2Scale }], opacity: ring2Opacity },
+              ]}
+            />
+            <Animated.View
+              style={[
+                s.spherePulseRing1,
+                { transform: [{ scale: ring1Scale }], opacity: ring1Opacity },
+              ]}
+            />
+
+            <Animated.View
+              style={[
+                s.sphereBody,
+                { transform: [{ translateY }] },
+              ]}
+            >
+              <View style={s.sphereShadeMid} />
+              <View style={s.sphereShadeBright} />
+              <View style={s.sphereShadeHighlight} />
+              <View style={s.sphereRimBottom} />
+
+              <View style={s.sphereSpecularShine} />
+              <View style={s.sphereSpecularSmall} />
+            </Animated.View>
+
+            <Animated.View
+              style={[
+                s.sphereShadow,
+                {
+                  transform: [{ scale: shadowScale }],
+                  opacity: shadowOpacity,
+                },
+              ]}
+            />
+          </View>
+
+          <Text style={s.analysisTitle}>{title}</Text>
+          <Text style={s.analysisDesc}>{desc}</Text>
+
+          <View style={s.analysisProgressTrack}>
+            <Animated.View
+              style={[
+                s.analysisProgressBar,
+                { width: progressWidth },
+              ]}
+            />
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 function Main({
   auth,
   onLogout,
@@ -449,10 +633,18 @@ function Main({
   const [activeStage, setActiveStage] = useState<"waiting" | "preparing" | "ready">("waiting");
   const [historyFilter, setHistoryFilter] = useState<"all" | "completed" | "cancelled">("all");
   const [tab, setTab] = useState<"orders" | "revenue" | "settings">("orders");
-  const [analyticsDays, setAnalyticsDays] = useState<7 | 30 | 90>(30);
+  type PeriodType = 1 | 7 | 30 | 90 | "custom";
+  const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>(30);
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+  const [customModalVisible, setCustomModalVisible] = useState(false);
+  const [customInputFrom, setCustomInputFrom] = useState("");
+  const [customInputTo, setCustomInputTo] = useState("");
+  const [customError, setCustomError] = useState("");
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [analyticsError, setAnalyticsError] = useState("");
+  const analyticsCacheRef = useRef<Map<string, { data: AnalyticsData; fetchedAt: number }>>(new Map());
   const [pushStatus, setPushStatus] = useState(t.pushSettingUp);
   const [actionError, setActionError] = useState("");
   const [actionBusy, setActionBusy] = useState("");
@@ -462,6 +654,7 @@ function Main({
   const [storeDropdownOpen, setStoreDropdownOpen] = useState(false);
   const [languageModal, setLanguageModal] = useState(false);
   const [switchingStore, setSwitchingStore] = useState(false);
+  const [switchedStoreName, setSwitchedStoreName] = useState<string | null>(null);
   const initialized = useRef(false);
   const seen = useRef(new Set<string>());
   const notified = useRef(new Set<string>());
@@ -478,8 +671,12 @@ function Main({
     setSwitchingStore(true);
     try {
       const next = await switchPartnerOrganization(id);
+      const targetStoreName = next?.session?.organizationName || organizations.find(x => x.id === id)?.name || "Gian hàng mới";
       setStoreModal(false);
+      setStoreDropdownOpen(false);
       onAuth(next);
+      setSwitchedStoreName(targetStoreName);
+      setTimeout(() => setSwitchedStoreName(null), 3000);
     } catch (e) {
       setPushStatus(e instanceof Error ? e.message : "Không thể đổi gian hàng.");
     } finally {
@@ -497,6 +694,7 @@ function Main({
       const firstIncoming = incoming[0];
       const firstWaiting = waiting[0];
       if (firstIncoming) {
+        analyticsCacheRef.current.clear();
         setTab("orders");
         setOrderView("new");
         setActiveStage("waiting");
@@ -554,6 +752,7 @@ function Main({
   }, [orgId]);
 
   const handleNotificationTarget = useCallback(async (targetId?: string) => {
+    analyticsCacheRef.current.clear();
     setTab("orders");
     setOrderView("new");
     setActiveStage("waiting");
@@ -614,25 +813,61 @@ function Main({
     void getOrderHistory(orgId).then(setHistory).catch(() => setHistory([])).finally(() => setHistoryLoading(false));
   }, [orgId, orderView]);
 
-  const loadAnalytics = useCallback(async (period = analyticsDays) => {
+  const getAnalyticsCacheKey = useCallback((org: string, period: PeriodType, from?: string, to?: string) => {
+    return `${org}:${period}:${from || ""}:${to || ""}`;
+  }, []);
+
+  const loadAnalytics = useCallback(async (
+    period: PeriodType = analyticsPeriod,
+    from = customFrom,
+    to = customTo,
+    forceRefresh = false
+  ) => {
     if (!orgId) return;
-    setAnalyticsLoading(true);
+    const key = getAnalyticsCacheKey(orgId, period, from, to);
+    const cached = analyticsCacheRef.current.get(key);
+
+    if (cached && !forceRefresh) {
+      // 0ms instant display from cache
+      setAnalyticsData(cached.data);
+      if (Date.now() - cached.fetchedAt < 60000) {
+        return;
+      }
+      // Silently revalidate in background without blocking screen
+    } else {
+      setAnalyticsLoading(true);
+    }
+
     setAnalyticsError("");
     try {
-      const res = await getRestaurantAnalytics(orgId, period);
+      const daysNum = period === "custom" ? 30 : period;
+      const res = await getRestaurantAnalytics(
+        orgId,
+        daysNum,
+        period === "custom" ? from : undefined,
+        period === "custom" ? to : undefined
+      );
+      analyticsCacheRef.current.set(key, { data: res, fetchedAt: Date.now() });
       setAnalyticsData(res);
     } catch (e) {
-      setAnalyticsError(e instanceof Error ? e.message : "ANALYTICS_FAILED");
+      if (!cached) setAnalyticsError(e instanceof Error ? e.message : "ANALYTICS_FAILED");
     } finally {
       setAnalyticsLoading(false);
     }
-  }, [orgId, analyticsDays]);
+  }, [orgId, analyticsPeriod, customFrom, customTo, getAnalyticsCacheKey]);
+
+  const invalidateAnalyticsCache = useCallback(() => {
+    analyticsCacheRef.current.clear();
+    if (tab === "revenue") {
+      void loadAnalytics(analyticsPeriod, customFrom, customTo, true);
+    }
+  }, [tab, analyticsPeriod, customFrom, customTo, loadAnalytics]);
 
   useEffect(() => {
     if (tab === "revenue") {
-      void loadAnalytics(analyticsDays);
+      void loadAnalytics(analyticsPeriod, customFrom, customTo);
     }
-  }, [tab, analyticsDays, loadAnalytics]);
+  }, [tab, analyticsPeriod, customFrom, customTo, loadAnalytics]);
 
   useEffect(() => {
     let alive = true;
@@ -721,6 +956,7 @@ function Main({
     try {
       await fulfill(order.requestId, action === "accept" ? { action, estimatedMinutes: 15, note: "partner_mobile_accept" } : { action });
       void load();
+      invalidateAnalyticsCache();
     } catch (e) {
       await load();
       setActionError(e instanceof Error ? e.message : "Không thể chuyển trạng thái đơn.");
@@ -749,6 +985,7 @@ function Main({
     try {
       await fulfill(order.requestId, { action: "cancelled", note: "partner_mobile_cancelled" });
       void load();
+      invalidateAnalyticsCache();
     } catch (e) {
       await load();
       setActionError(e instanceof Error ? e.message : "Không thể hủy đơn.");
@@ -1000,34 +1237,86 @@ function Main({
         <ScrollView
           style={s.flex}
           contentContainerStyle={s.page}
-          refreshControl={<RefreshControl refreshing={analyticsLoading} onRefresh={() => void loadAnalytics(analyticsDays)} tintColor={C.green}/>}
+          refreshControl={<RefreshControl refreshing={analyticsLoading} onRefresh={() => void loadAnalytics(analyticsPeriod, customFrom, customTo, true)} tintColor={C.green}/>}
         >
           {/* Period Selector */}
           <View style={s.periodRow}>
-            {([7, 30, 90] as const).map(d => (
-              <Pressable
-                key={d}
-                style={[s.periodBtn, analyticsDays === d && s.periodBtnOn]}
-                onPress={() => {
-                  setAnalyticsDays(d);
-                  void loadAnalytics(d);
-                }}
-              >
-                <Text style={[s.periodBtnText, analyticsDays === d && s.periodBtnTextOn]}>
-                  {d === 7 ? t.d7 : d === 30 ? t.d30 : t.d90}
-                </Text>
-              </Pressable>
-            ))}
+            {(
+              [
+                { key: 1 as const, label: t.d1 },
+                { key: 7 as const, label: t.d7 },
+                { key: 30 as const, label: t.d30 },
+                { key: 90 as const, label: t.d90 },
+                { key: "custom" as const, label: t.customPeriod },
+              ] as const
+            ).map(item => {
+              const active = analyticsPeriod === item.key;
+              return (
+                <Pressable
+                  key={String(item.key)}
+                  style={[s.periodBtn, active && s.periodBtnOn]}
+                  onPress={() => {
+                    if (item.key === "custom") {
+                      if (!customFrom || !customTo) {
+                        const now = new Date();
+                        const past7 = new Date(Date.now() - 7 * 86400000);
+                        setCustomInputFrom(past7.toISOString().slice(0, 10));
+                        setCustomInputTo(now.toISOString().slice(0, 10));
+                      } else {
+                        setCustomInputFrom(customFrom);
+                        setCustomInputTo(customTo);
+                      }
+                      setCustomError("");
+                      setCustomModalVisible(true);
+                    } else {
+                      setAnalyticsPeriod(item.key);
+                      void loadAnalytics(item.key, customFrom, customTo);
+                    }
+                  }}
+                >
+                  <Text style={[s.periodBtnText, active && s.periodBtnTextOn]}>
+                    {item.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
+
+          {/* Active Custom Range Badge */}
+          {analyticsPeriod === "custom" && Boolean(customFrom && customTo) && (
+            <Pressable
+              style={[s.customDateBadge, { marginBottom: 14 }]}
+              onPress={() => {
+                setCustomInputFrom(customFrom);
+                setCustomInputTo(customTo);
+                setCustomError("");
+                setCustomModalVisible(true);
+              }}
+            >
+              <Ionicons name="calendar-outline" size={14} color={C.green} />
+              <Text style={s.customDateBadgeText}>{t.customRangeBadge(customFrom, customTo)}</Text>
+              <Ionicons name="create-outline" size={13} color={C.green} />
+            </Pressable>
+          )}
 
           {/* Key Revenue & Operations Card (Shadow Card, No Border) */}
           <View style={s.shadowCard}>
             <View style={s.cardHeader}>
               <View style={{ flex: 1, paddingRight: 8 }}>
                 <Text style={s.cardTitle}>{t.revenueTitle}</Text>
-                <Text style={s.cardSub}>{t.revenueSubtitle}</Text>
+                <Text style={s.cardSub}>
+                  {analyticsPeriod === 1
+                    ? t.d1
+                    : analyticsPeriod === 7
+                    ? t.d7
+                    : analyticsPeriod === 30
+                    ? t.d30
+                    : analyticsPeriod === 90
+                    ? t.d90
+                    : t.customRangeBadge(analyticsData?.from || customFrom, analyticsData?.to || customTo)}
+                </Text>
               </View>
-              <Pressable onPress={() => void loadAnalytics(analyticsDays)} style={{ padding: 6 }}>
+              <Pressable onPress={() => void loadAnalytics(analyticsPeriod, customFrom, customTo, true)} style={{ padding: 6 }}>
                 <Ionicons name="refresh-outline" size={20} color={C.green}/>
               </Pressable>
             </View>
@@ -1107,7 +1396,15 @@ function Main({
             <View style={s.shadowCard}>
               <Text style={s.cardTitle}>{t.dailyTrend}</Text>
               <Text style={s.cardSub}>
-                {analyticsDays === 7 ? t.d7 : analyticsDays === 30 ? t.d30 : t.d90}
+                {analyticsPeriod === 1
+                  ? t.d1
+                  : analyticsPeriod === 7
+                  ? t.d7
+                  : analyticsPeriod === 30
+                  ? t.d30
+                  : analyticsPeriod === 90
+                  ? t.d90
+                  : t.customRangeBadge(analyticsData?.from || customFrom, analyticsData?.to || customTo)}
               </Text>
               {(() => {
                 const list = analyticsData!.daily.slice(-14);
@@ -1294,6 +1591,25 @@ function Main({
           </View>
         </View>
       </Modal>
+      <Modal visible={Boolean(switchedStoreName)} transparent animationType="fade" onRequestClose={() => setSwitchedStoreName(null)}>
+        <View style={s.successBackdrop}>
+          <View style={s.successToast}>
+            <View style={[s.confirmIcon, { width: 68, height: 68, borderRadius: 34, marginBottom: 14 }]}>
+              <Ionicons name="storefront" size={36} color={C.green} />
+            </View>
+            <Text style={s.successTitle}>{t.switchStoreSuccessTitle}</Text>
+            <Text style={[s.meta, { textAlign: "center", marginTop: 8, fontSize: 15, color: C.ink }]}>
+              {t.switchStoreSuccessDesc(switchedStoreName || "")}
+            </Text>
+            <Pressable
+              style={[s.button, s.buttonGreen, { marginTop: 18, width: "100%" }]}
+              onPress={() => setSwitchedStoreName(null)}
+            >
+              <Text style={s.buttonText}>{t.close}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
       <Modal visible={storeModal} transparent animationType="slide" onRequestClose={() => setStoreModal(false)}>
         <View style={s.modalBackdrop}>
           <View style={s.modal}>
@@ -1342,6 +1658,124 @@ function Main({
             <Pressable style={[s.button, s.buttonGhost, { width: "100%" }]} onPress={() => setLanguageModal(false)}>
               <Text style={s.buttonGhostText}>{t.close}</Text>
             </Pressable>
+          </View>
+        </View>
+      </Modal>
+      <GreenSphereAnalysisLoader
+        visible={analyticsLoading}
+        title={t.analyzingTitle}
+        desc={t.analyzingDesc}
+      />
+      <Modal visible={customModalVisible} transparent animationType="slide" onRequestClose={() => setCustomModalVisible(false)}>
+        <View style={s.centerModalBackdrop}>
+          <View style={s.centerModal}>
+            <View style={s.modalHandle}/>
+            <Text style={s.modalTitle}>{t.selectDateRange}</Text>
+
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 7, marginTop: 14, marginBottom: 8 }}>
+              {[
+                {
+                  label: t.d1,
+                  action: () => {
+                    const d = new Date().toISOString().slice(0, 10);
+                    setCustomInputFrom(d);
+                    setCustomInputTo(d);
+                  },
+                },
+                {
+                  label: "7 ngày",
+                  action: () => {
+                    const to = new Date().toISOString().slice(0, 10);
+                    const from = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+                    setCustomInputFrom(from);
+                    setCustomInputTo(to);
+                  },
+                },
+                {
+                  label: "30 ngày",
+                  action: () => {
+                    const to = new Date().toISOString().slice(0, 10);
+                    const from = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+                    setCustomInputFrom(from);
+                    setCustomInputTo(to);
+                  },
+                },
+                {
+                  label: "Tháng này",
+                  action: () => {
+                    const now = new Date();
+                    const from = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+                    const to = now.toISOString().slice(0, 10);
+                    setCustomInputFrom(from);
+                    setCustomInputTo(to);
+                  },
+                },
+              ].map(preset => (
+                <Pressable
+                  key={preset.label}
+                  style={{ backgroundColor: "#f0f5f2", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 }}
+                  onPress={preset.action}
+                >
+                  <Text style={{ color: C.green, fontSize: 12, fontWeight: "800" }}>{preset.label}</Text>
+                </Pressable>
+              ))}
+            </View>
+
+            <Text style={s.dateInputLabel}>{t.fromDate}</Text>
+            <TextInput
+              style={s.dateInput}
+              value={customInputFrom}
+              onChangeText={setCustomInputFrom}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor={C.muted}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="numbers-and-punctuation"
+            />
+
+            <Text style={s.dateInputLabel}>{t.toDate}</Text>
+            <TextInput
+              style={s.dateInput}
+              value={customInputTo}
+              onChangeText={setCustomInputTo}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor={C.muted}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="numbers-and-punctuation"
+            />
+
+            {Boolean(customError) && (
+              <Text style={[s.error, { marginTop: 10 }]}>{customError}</Text>
+            )}
+
+            <View style={{ flexDirection: "row", gap: 10, marginTop: 18 }}>
+              <Pressable
+                style={[s.button, s.buttonGhost, { flex: 1 }]}
+                onPress={() => setCustomModalVisible(false)}
+              >
+                <Text style={s.buttonGhostText}>{t.btnNo}</Text>
+              </Pressable>
+              <Pressable
+                style={[s.button, s.buttonGreen, { flex: 1.5 }]}
+                onPress={() => {
+                  const f = customInputFrom.trim();
+                  const tVal = customInputTo.trim();
+                  if (!/^\d{4}-\d{2}-\d{2}$/.test(f) || !/^\d{4}-\d{2}-\d{2}$/.test(tVal) || f > tVal) {
+                    setCustomError(t.invalidDateRange);
+                    return;
+                  }
+                  setCustomError("");
+                  setCustomFrom(f);
+                  setCustomTo(tVal);
+                  setAnalyticsPeriod("custom");
+                  setCustomModalVisible(false);
+                  void loadAnalytics("custom", f, tVal, true);
+                }}
+              >
+                <Text style={s.buttonText}>{t.apply}</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </Modal>

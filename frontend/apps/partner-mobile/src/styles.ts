@@ -85,4 +85,31 @@ export const s = StyleSheet.create({
   storeDropdownNameActive: { color: C.green, fontWeight: "900" },
   storeDropdownActiveBadge: { backgroundColor: C.mint, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginRight: 8 },
   storeDropdownActiveText: { color: C.green, fontSize: 11, fontWeight: "900" },
+
+  // 3D Green Sphere Analysis Modal / Splash
+  analysisBackdrop: { flex: 1, backgroundColor: "rgba(3, 20, 14, 0.7)", alignItems: "center", justifyContent: "center", padding: 24 },
+  analysisCard: { width: "100%", maxWidth: 360, backgroundColor: C.white, borderRadius: 28, padding: 24, alignItems: "center", shadowColor: "#001d12", shadowOpacity: 0.28, shadowRadius: 30, shadowOffset: { width: 0, height: 14 }, elevation: 12 },
+  sphereWrapper: { width: 170, height: 155, alignItems: "center", justifyContent: "center", position: "relative" },
+  spherePulseRing1: { position: "absolute", width: 130, height: 130, borderRadius: 65, borderWidth: 1.5, borderColor: "rgba(52, 211, 153, 0.45)", backgroundColor: "rgba(16, 185, 129, 0.06)" },
+  spherePulseRing2: { position: "absolute", width: 160, height: 160, borderRadius: 80, borderWidth: 1, borderColor: "rgba(16, 185, 129, 0.22)", backgroundColor: "rgba(5, 150, 105, 0.03)" },
+  sphereBody: { width: 88, height: 88, borderRadius: 44, backgroundColor: "#064e3b", position: "relative", overflow: "hidden", shadowColor: "#059669", shadowOpacity: 0.5, shadowRadius: 18, shadowOffset: { width: 0, height: 6 }, elevation: 8 },
+  sphereShadeMid: { position: "absolute", width: 80, height: 80, borderRadius: 40, top: 4, left: 4, backgroundColor: "#059669" },
+  sphereShadeBright: { position: "absolute", width: 62, height: 62, borderRadius: 31, top: 7, left: 7, backgroundColor: "#10b981" },
+  sphereShadeHighlight: { position: "absolute", width: 42, height: 42, borderRadius: 21, top: 11, left: 11, backgroundColor: "#34d399" },
+  sphereSpecularShine: { position: "absolute", width: 18, height: 11, borderRadius: 9, top: 14, left: 16, backgroundColor: "#ffffff", opacity: 0.92, transform: [{ rotate: "-35deg" }] },
+  sphereSpecularSmall: { position: "absolute", width: 5, height: 5, borderRadius: 3, top: 28, left: 14, backgroundColor: "#ffffff", opacity: 0.75 },
+  sphereRimBottom: { position: "absolute", width: 76, height: 26, borderRadius: 38, bottom: -8, alignSelf: "center", backgroundColor: "#047857", opacity: 0.4 },
+  sphereShadow: { width: 68, height: 12, borderRadius: 34, backgroundColor: "rgba(6, 78, 59, 0.28)", marginTop: 8 },
+  analysisBadge: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: C.mint, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginTop: 12, marginBottom: 10 },
+  analysisBadgeText: { color: C.green, fontSize: 11, fontWeight: "900", letterSpacing: 0.8 },
+  analysisTitle: { color: C.ink, fontSize: 18, fontWeight: "900", textAlign: "center", marginBottom: 6 },
+  analysisDesc: { color: C.muted, fontSize: 13, textAlign: "center", lineHeight: 18, paddingHorizontal: 6, marginBottom: 18 },
+  analysisProgressTrack: { width: "100%", height: 5, borderRadius: 3, backgroundColor: "#e8f0ec", overflow: "hidden" },
+  analysisProgressBar: { height: "100%", borderRadius: 3, backgroundColor: C.green },
+
+  // Custom Date Modal & Active Badge
+  customDateBadge: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: C.mint, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, marginTop: 4, alignSelf: "flex-start" },
+  customDateBadgeText: { color: C.green, fontSize: 12, fontWeight: "800" },
+  dateInputLabel: { color: C.ink, fontSize: 13, fontWeight: "800", marginBottom: 6, marginTop: 12 },
+  dateInput: { height: 48, borderRadius: 14, backgroundColor: "#f1f6f3", paddingHorizontal: 14, color: C.ink, fontSize: 14, fontWeight: "700" },
 });

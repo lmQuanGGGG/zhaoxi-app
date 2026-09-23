@@ -87,6 +87,8 @@ export type CampaignAnalytics = {
 
 export type AnalyticsData = {
   periodDays: number;
+  from?: string;
+  to?: string;
   generatedAt: string;
   orders: {
     total: number;
