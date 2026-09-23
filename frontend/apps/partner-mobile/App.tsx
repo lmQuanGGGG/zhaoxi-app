@@ -6,10 +6,10 @@ import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, AppState, Image, Keyboard, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { getOrderHistory, getPartnerOrganizations, getQueue, fulfill, loadAuth, login, loginWithPhone, logout, registerPush, switchPartnerOrganization, updateKitchen } from "./src/api";
+import { getOrderHistory, getPartnerOrganizations, getQueue, getRestaurantAnalytics, fulfill, loadAuth, login, loginWithPhone, logout, registerPush, switchPartnerOrganization, updateKitchen } from "./src/api";
 import { configureNotifications, getPushToken, notifyNewOrder } from "./src/notifications";
 import { C, s } from "./src/styles";
-import type { AuthState, Order, OrderStage, PartnerOrganization, QueueData } from "./src/types";
+import type { AnalyticsData, AuthState, Order, OrderStage, PartnerOrganization, QueueData } from "./src/types";
 import { Language, LANGUAGES, LANGUAGE_STORAGE_KEY, I18N } from "./src/i18n";
 
 const EMPTY: QueueData = { generatedAt: "", counts: { waiting: 0, preparing: 0, ready: 0, courier: 0, late: 0 }, items: [] };
@@ -448,7 +448,11 @@ function Main({
   const [orderView, setOrderView] = useState<"new" | "history">("new");
   const [activeStage, setActiveStage] = useState<"waiting" | "preparing" | "ready">("waiting");
   const [historyFilter, setHistoryFilter] = useState<"all" | "completed" | "cancelled">("all");
-  const [tab, setTab] = useState<"orders" | "settings">("orders");
+  const [tab, setTab] = useState<"orders" | "revenue" | "settings">("orders");
+  const [analyticsDays, setAnalyticsDays] = useState<7 | 30 | 90>(30);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState("");
   const [pushStatus, setPushStatus] = useState(t.pushSettingUp);
   const [actionError, setActionError] = useState("");
   const [actionBusy, setActionBusy] = useState("");
@@ -609,6 +613,26 @@ function Main({
     void getOrderHistory(orgId).then(setHistory).catch(() => setHistory([])).finally(() => setHistoryLoading(false));
   }, [orgId, orderView]);
 
+  const loadAnalytics = useCallback(async (period = analyticsDays) => {
+    if (!orgId) return;
+    setAnalyticsLoading(true);
+    setAnalyticsError("");
+    try {
+      const res = await getRestaurantAnalytics(orgId, period);
+      setAnalyticsData(res);
+    } catch (e) {
+      setAnalyticsError(e instanceof Error ? e.message : "ANALYTICS_FAILED");
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  }, [orgId, analyticsDays]);
+
+  useEffect(() => {
+    if (tab === "revenue") {
+      void loadAnalytics(analyticsDays);
+    }
+  }, [tab, analyticsDays, loadAnalytics]);
+
   useEffect(() => {
     let alive = true;
     void (async () => {
@@ -755,30 +779,28 @@ function Main({
   return (
     <SafeAreaView style={s.safe} edges={["top"]}>
       <StatusBar style="dark"/>
-      {tab === "orders" ? (
-        <>
-          <View style={s.webHeader}>
-            <View style={s.row}>
-              <Image source={require("./assets/icon.png")} style={s.brandMark}/>
-              <View style={{ marginLeft: 10 }}>
-                <Text style={s.brandName}>ZHAOXI</Text>
-                <Text style={s.brandSub}>{t.orders} · {auth.session.displayName || "Partner"}</Text>
-              </View>
-            </View>
-            <View style={s.headerActions}>
-              <Pressable style={s.headerAction} onPress={() => setLanguageModal(true)}>
-                <Text style={{ color: C.green, fontWeight: "900", fontSize: 13 }}>
-                  {LANGUAGES.find(x => x.code === lang)?.sub || "VI"}
-                </Text>
-              </Pressable>
-              <Pressable style={s.headerAction} onPress={() => setPushStatus(t.pushReady)}>
-                <Ionicons name="notifications-outline" size={25} color={C.ink}/>
-              </Pressable>
-              <Pressable style={s.headerAction} onPress={() => void logout(pushToken.current).finally(onLogout)}>
-                <Ionicons name="log-out-outline" size={26} color="#ef4444"/>
-              </Pressable>
-            </View>
+      <View style={s.webHeader}>
+        <View style={s.row}>
+          <Image source={require("./assets/icon.png")} style={s.brandMark}/>
+          <View style={{ marginLeft: 10 }}>
+            <Text style={s.brandName}>ZHAOXI</Text>
+            <Text style={s.brandSub}>
+              {(tab === "orders" ? t.orders : tab === "revenue" ? t.revenue : t.settings)} · {auth.session.displayName || "Partner"}
+            </Text>
           </View>
+        </View>
+        <View style={s.headerActions}>
+          <Pressable style={s.headerAction} onPress={() => setLanguageModal(true)}>
+            <Text style={{ color: C.green, fontWeight: "900", fontSize: 13 }}>
+              {LANGUAGES.find(x => x.code === lang)?.sub || "VI"}
+            </Text>
+          </Pressable>
+          <Pressable style={s.headerAction} onPress={() => void logout(pushToken.current).finally(onLogout)}>
+            <Ionicons name="log-out-outline" size={26} color="#ef4444"/>
+          </Pressable>
+        </View>
+      </View>
+      {tab === "orders" ? (
           <ScrollView
             style={s.flex}
             contentContainerStyle={s.page}
@@ -973,7 +995,161 @@ function Main({
               </>
             )}
           </ScrollView>
-        </>
+      ) : tab === "revenue" ? (
+        <ScrollView
+          style={s.flex}
+          contentContainerStyle={s.page}
+          refreshControl={<RefreshControl refreshing={analyticsLoading} onRefresh={() => void loadAnalytics(analyticsDays)} tintColor={C.green}/>}
+        >
+          {/* Period Selector */}
+          <View style={s.periodRow}>
+            {([7, 30, 90] as const).map(d => (
+              <Pressable
+                key={d}
+                style={[s.periodBtn, analyticsDays === d && s.periodBtnOn]}
+                onPress={() => {
+                  setAnalyticsDays(d);
+                  void loadAnalytics(d);
+                }}
+              >
+                <Text style={[s.periodBtnText, analyticsDays === d && s.periodBtnTextOn]}>
+                  {d === 7 ? t.d7 : d === 30 ? t.d30 : t.d90}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {/* Key Revenue & Operations Card (Shadow Card, No Border) */}
+          <View style={s.shadowCard}>
+            <View style={s.cardHeader}>
+              <View style={{ flex: 1, paddingRight: 8 }}>
+                <Text style={s.cardTitle}>{t.revenueTitle}</Text>
+                <Text style={s.cardSub}>{t.revenueSubtitle}</Text>
+              </View>
+              <Pressable onPress={() => void loadAnalytics(analyticsDays)} style={{ padding: 6 }}>
+                <Ionicons name="refresh-outline" size={20} color={C.green}/>
+              </Pressable>
+            </View>
+
+            <View style={s.metricHero}>
+              <Text style={s.metricHeroLabel}>{t.revenueFood}</Text>
+              <Text style={s.metricHeroValue}>{money(analyticsData?.revenue?.foodRevenue || 0)}</Text>
+            </View>
+
+            <View style={s.metricGrid}>
+              <View style={s.metricBox}>
+                <Text style={s.metricBoxLabel}>{t.revenueGmv}</Text>
+                <Text style={s.metricBoxValue}>{money(analyticsData?.revenue?.gmv || 0)}</Text>
+              </View>
+              <View style={s.metricBox}>
+                <Text style={s.metricBoxLabel}>{t.revenueAov}</Text>
+                <Text style={s.metricBoxValue}>{money(analyticsData?.revenue?.averageOrderValue || 0)}</Text>
+              </View>
+              <View style={s.metricBox}>
+                <Text style={s.metricBoxLabel}>{t.ordersTotal}</Text>
+                <Text style={s.metricBoxValue}>{analyticsData?.orders?.total || 0}</Text>
+              </View>
+              <View style={s.metricBox}>
+                <Text style={s.metricBoxLabel}>{t.completionRate}</Text>
+                <Text style={[s.metricBoxValue, { color: C.green }]}>
+                  {analyticsData?.orders?.completionRate || 0}% ({analyticsData?.orders?.completed || 0})
+                </Text>
+              </View>
+              <View style={s.metricBox}>
+                <Text style={s.metricBoxLabel}>{t.cancellationRate}</Text>
+                <Text style={[s.metricBoxValue, (analyticsData?.orders?.cancelled || 0) > 0 && { color: C.red }]}>
+                  {analyticsData?.orders?.cancellationRate || 0}% ({analyticsData?.orders?.cancelled || 0})
+                </Text>
+              </View>
+              <View style={s.metricBox}>
+                <Text style={s.metricBoxLabel}>{t.avgPrepMinutes}</Text>
+                <Text style={s.metricBoxValue}>
+                  {analyticsData?.operations?.averagePreparationMinutes || 0} {t.minutesSuffix}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Financial Breakdown Card (Shadow Card, No Border) */}
+          <View style={s.shadowCard}>
+            <Text style={[s.cardTitle, { marginBottom: 12 }]}>{t.financialBreakdown}</Text>
+            <View style={s.metricGrid}>
+              <View style={s.metricBox}>
+                <Text style={s.metricBoxLabel}>{t.itemPromotionDiscount}</Text>
+                <Text style={[s.metricBoxValue, { color: "#c2410c" }]}>
+                  −{money(analyticsData?.revenue?.itemPromotionDiscount || 0)}
+                </Text>
+              </View>
+              <View style={s.metricBox}>
+                <Text style={s.metricBoxLabel}>{t.couponDiscount}</Text>
+                <Text style={[s.metricBoxValue, { color: "#c2410c" }]}>
+                  −{money(analyticsData?.revenue?.couponDiscount || 0)}
+                </Text>
+              </View>
+              <View style={s.metricBox}>
+                <Text style={s.metricBoxLabel}>{t.deliverySubsidy}</Text>
+                <Text style={[s.metricBoxValue, { color: "#c2410c" }]}>
+                  −{money(analyticsData?.revenue?.deliverySubsidy || 0)}
+                </Text>
+              </View>
+              <View style={s.metricBox}>
+                <Text style={s.metricBoxLabel}>{t.analyticsCustomerShipping}</Text>
+                <Text style={s.metricBoxValue}>
+                  {money(analyticsData?.revenue?.customerDeliveryFee || 0)}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Daily Revenue Trend Card (Shadow Card, No Border) */}
+          {Boolean(analyticsData?.daily?.length) && (
+            <View style={s.shadowCard}>
+              <Text style={s.cardTitle}>{t.dailyTrend}</Text>
+              <Text style={s.cardSub}>
+                {analyticsDays === 7 ? t.d7 : analyticsDays === 30 ? t.d30 : t.d90}
+              </Text>
+              {(() => {
+                const list = analyticsData!.daily.slice(-14);
+                const maxVal = Math.max(1, ...list.map(x => x.gmv));
+                return (
+                  <View style={s.chartRow}>
+                    {list.map(day => {
+                      const h = Math.max(4, Math.round((day.gmv / maxVal) * 90));
+                      const label = day.date.length >= 10 ? `${day.date.slice(8, 10)}/${day.date.slice(5, 7)}` : day.date;
+                      return (
+                        <View key={day.date} style={s.chartCol}>
+                          <View style={[s.chartBar, { height: h }, day.gmv === 0 && { backgroundColor: "#d1ddd6" }]}/>
+                          <Text style={s.chartLabel} numberOfLines={1}>{label}</Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                );
+              })()}
+            </View>
+          )}
+
+          {/* Top Selling Items (Shadow Card, No Border) */}
+          <View style={s.shadowCard}>
+            <Text style={[s.cardTitle, { marginBottom: 8 }]}>{t.topItems}</Text>
+            {!analyticsData?.topItems?.length ? (
+              <Text style={[s.meta, { paddingVertical: 12 }]}>{t.emptyAnalytics}</Text>
+            ) : (
+              analyticsData.topItems.map((item, idx) => (
+                <View key={item.serviceId || idx} style={[s.topItemRow, idx === analyticsData.topItems.length - 1 && { borderBottomWidth: 0 }]}>
+                  <View style={s.topItemRank}>
+                    <Text style={s.topItemRankText}>{idx + 1}</Text>
+                  </View>
+                  <View style={{ flex: 1, paddingRight: 8 }}>
+                    <Text style={s.topItemName} numberOfLines={1}>{item.name}</Text>
+                    <Text style={s.topItemMeta}>{t.quantitySold(item.quantity, item.orders)}</Text>
+                  </View>
+                  <Text style={s.topItemRevenue}>{money(item.revenue)}</Text>
+                </View>
+              ))
+            )}
+          </View>
+        </ScrollView>
       ) : (
         <ScrollView style={s.flex} contentContainerStyle={s.page}>
           <Text style={s.sectionTitle}>{t.storeSettings}</Text>
@@ -1015,6 +1191,10 @@ function Main({
         <Pressable style={s.tab} onPress={() => setTab("orders")}>
           <Ionicons name={tab === "orders" ? "receipt" : "receipt-outline"} size={23} color={tab === "orders" ? C.green : C.muted}/>
           <Text style={[s.tabText, tab === "orders" && s.tabOn]}>{t.orders}</Text>
+        </Pressable>
+        <Pressable style={s.tab} onPress={() => setTab("revenue")}>
+          <Ionicons name={tab === "revenue" ? "bar-chart" : "bar-chart-outline"} size={23} color={tab === "revenue" ? C.green : C.muted}/>
+          <Text style={[s.tabText, tab === "revenue" && s.tabOn]}>{t.revenue}</Text>
         </Pressable>
         <Pressable style={s.tab} onPress={() => setTab("settings")}>
           <Ionicons name={tab === "settings" ? "settings" : "settings-outline"} size={23} color={tab === "settings" ? C.green : C.muted}/>

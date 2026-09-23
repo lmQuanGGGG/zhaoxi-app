@@ -48,3 +48,70 @@ export type QueueData = {
   counts: { waiting: number; preparing: number; ready: number; courier: number; late: number };
   items: Order[];
 };
+
+export type DailyAnalytics = {
+  date: string;
+  orders: number;
+  completed: number;
+  gmv: number;
+  foodRevenue: number;
+  promotionDiscount: number;
+  couponDiscount: number;
+  deliverySubsidy: number;
+};
+
+export type TopItemAnalytics = {
+  serviceId: string;
+  name: string;
+  quantity: number;
+  revenue: number;
+  discount: number;
+  orders: number;
+};
+
+export type CampaignAnalytics = {
+  id: string;
+  code: string;
+  title: string;
+  enabled: boolean;
+  usedCount: number;
+  totalUsageLimit: number | null;
+  completedOrders: number;
+  completedDiscount: number;
+  completedRevenue: number;
+  periodRedemptions: number;
+  periodRedeemedDiscount: number;
+  discountType: string;
+  discountValue: number;
+};
+
+export type AnalyticsData = {
+  periodDays: number;
+  generatedAt: string;
+  orders: {
+    total: number;
+    completed: number;
+    cancelled: number;
+    inProgress: number;
+    completionRate: number;
+    cancellationRate: number;
+  };
+  revenue: {
+    gmv: number;
+    itemBaseRevenue: number;
+    itemPromotionDiscount: number;
+    couponDiscount: number;
+    foodRevenue: number;
+    deliveryGrossFee: number;
+    deliverySubsidy: number;
+    customerDeliveryFee: number;
+    averageOrderValue: number;
+  };
+  operations: {
+    averagePreparationMinutes: number;
+    preparationSamples: number;
+  };
+  daily: DailyAnalytics[];
+  topItems: TopItemAnalytics[];
+  campaignPerformance: CampaignAnalytics[];
+};
