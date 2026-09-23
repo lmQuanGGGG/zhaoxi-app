@@ -459,6 +459,7 @@ function Main({
   const [confirmAction, setConfirmAction] = useState<{ order: Order; kind: "advance" | "cancel" } | null>(null);
   const [organizations, setOrganizations] = useState<PartnerOrganization[]>([]);
   const [storeModal, setStoreModal] = useState(false);
+  const [storeDropdownOpen, setStoreDropdownOpen] = useState(false);
   const [languageModal, setLanguageModal] = useState(false);
   const [switchingStore, setSwitchingStore] = useState(false);
   const initialized = useRef(false);
@@ -1175,9 +1176,53 @@ function Main({
             </View>
           </View>
           {organizations.length > 1 && (
-            <Pressable style={[s.button, s.buttonGhost, { marginBottom: 10 }]} onPress={() => setStoreModal(true)}>
-              <Text style={s.buttonGhostText}>{t.switchStore}</Text>
-            </Pressable>
+            <>
+              <Pressable
+                style={s.storeDropdownBtn}
+                onPress={() => setStoreDropdownOpen(prev => !prev)}
+              >
+                <Text style={s.storeDropdownText}>{t.switchStore}</Text>
+                <Ionicons
+                  name={storeDropdownOpen ? "chevron-up" : "chevron-down"}
+                  size={20}
+                  color={C.ink}
+                />
+              </Pressable>
+              {storeDropdownOpen && (
+                <View style={s.storeDropdownList}>
+                  {organizations.map(org => {
+                    const isSelected = org.id === orgId;
+                    return (
+                      <Pressable
+                        key={org.id}
+                        style={[s.storeDropdownItem, isSelected && s.storeDropdownItemActive]}
+                        disabled={switchingStore}
+                        onPress={() => {
+                          void switchStore(org.id);
+                          setStoreDropdownOpen(false);
+                        }}
+                      >
+                        <View style={{ flex: 1, paddingRight: 8 }}>
+                          <Text style={[s.storeDropdownName, isSelected && s.storeDropdownNameActive]}>
+                            {org.name}
+                          </Text>
+                        </View>
+                        {isSelected ? (
+                          <View style={{ flexDirection: "row", alignItems: "center" }}>
+                            <View style={s.storeDropdownActiveBadge}>
+                              <Text style={s.storeDropdownActiveText}>{t.currentStore}</Text>
+                            </View>
+                            <Ionicons name="checkmark-circle" size={20} color={C.green} />
+                          </View>
+                        ) : (
+                          <Ionicons name="chevron-forward" size={18} color={C.muted} />
+                        )}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
+            </>
           )}
           <Pressable style={[s.button, s.buttonGhost, { marginBottom: 10 }]} onPress={() => void configureNotifications()}>
             <Text style={s.buttonGhostText}>{t.testPushChannel}</Text>

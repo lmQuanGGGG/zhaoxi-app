@@ -74,4 +74,15 @@ export const s = StyleSheet.create({
   topItemName: { color: C.ink, fontSize: 14, fontWeight: "800" },
   topItemMeta: { color: C.muted, fontSize: 12, marginTop: 2 },
   topItemRevenue: { color: C.ink, fontSize: 14, fontWeight: "900", marginLeft: "auto" },
+
+  // Store Dropdown Selector
+  storeDropdownBtn: { minHeight: 52, borderRadius: 16, backgroundColor: "#eef3f0", flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 10 },
+  storeDropdownText: { color: C.ink, fontWeight: "900", fontSize: 14 },
+  storeDropdownList: { backgroundColor: C.white, borderRadius: 18, padding: 8, marginBottom: 12, borderWidth: 0, shadowColor: "#0f172a", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.06, shadowRadius: 14, elevation: 3 },
+  storeDropdownItem: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 13, paddingHorizontal: 14, borderRadius: 13, marginBottom: 2 },
+  storeDropdownItemActive: { backgroundColor: "#f0fdf4" },
+  storeDropdownName: { color: C.ink, fontSize: 14, fontWeight: "800" },
+  storeDropdownNameActive: { color: C.green, fontWeight: "900" },
+  storeDropdownActiveBadge: { backgroundColor: C.mint, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginRight: 8 },
+  storeDropdownActiveText: { color: C.green, fontSize: 11, fontWeight: "900" },
 });
