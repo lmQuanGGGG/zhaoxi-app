@@ -48,7 +48,17 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     if (await refreshAuth()) response = await raw(path, init);
   }
   const body = await response.json().catch(() => null);
-  if (!response.ok || !body?.ok) throw new Error(body?.error?.message || body?.error?.code || `API ${response.status}`);
+  if (!response.ok || !body?.ok) {
+    const code = String(body?.error?.code || "");
+    const localizedErrors: Record<string, string> = {
+      EXTERNAL_FULFILLMENT_REQUIRED: "Đơn hàng cũ này không hỗ trợ cập nhật trạng thái trên ứng dụng.",
+      INVALID_FULFILLMENT_TRANSITION: "Trạng thái đơn đã thay đổi. Vui lòng tải lại danh sách.",
+      REQUEST_NOT_FOUND: "Không tìm thấy đơn hàng này.",
+      PARTNER_FORBIDDEN: "Bạn không có quyền cập nhật đơn của gian hàng này.",
+      BANK_TRANSFER_VERIFICATION_REQUIRED: "Cần xác nhận thanh toán chuyển khoản trước khi nhận đơn.",
+    };
+    throw new Error(localizedErrors[code] || body?.error?.message || code || `API ${response.status}`);
+  }
   return body.data as T;
 }
 
@@ -124,13 +134,19 @@ function mapServiceRequest(row: Record<string, unknown>): Order {
 
 export async function getQueue(organizationId: string) {
   const rows = await request<Array<Record<string, unknown>>>(`/api/service-requests?scope=operations&organizationId=${encodeURIComponent(organizationId)}&locale=vi-VN`);
-  const items = rows.filter(row => ["assigned", "accepted", "in_progress", "waiting_customer"].includes(String(row.status))).map(mapServiceRequest);
+  const items = rows.filter(row => {
+    const details = row.details && typeof row.details === "object" ? row.details as Record<string, unknown> : {};
+    return details.deliveryFulfillmentMode === "external_manual" && ["assigned", "accepted", "in_progress", "waiting_customer"].includes(String(row.status));
+  }).map(mapServiceRequest);
   return { generatedAt: new Date().toISOString(), counts: { waiting: items.filter(x => x.stage === "assigned").length, preparing: items.filter(x => x.stage === "preparing").length, ready: items.filter(x => x.stage === "ready_for_pickup").length, courier: items.filter(x => ["courier_booked", "handed_off"].includes(x.stage)).length, late: items.filter(x => x.late).length }, items } satisfies QueueData;
 }
 
 export async function getOrderHistory(organizationId: string) {
   const rows = await request<Array<Record<string, unknown>>>(`/api/service-requests?scope=operations&organizationId=${encodeURIComponent(organizationId)}&locale=vi-VN`);
-  return rows.filter(row => ["completed", "cancelled", "rejected"].includes(String(row.status))).map(mapServiceRequest);
+  return rows.filter(row => {
+    const details = row.details && typeof row.details === "object" ? row.details as Record<string, unknown> : {};
+    return details.deliveryFulfillmentMode === "external_manual" && ["completed", "cancelled", "rejected"].includes(String(row.status));
+  }).map(mapServiceRequest);
 }
 export const fulfill = (requestId: string, payload: Record<string, unknown>) => request(`/api/partner-fulfillment/${requestId}`, { method: "PATCH", body: JSON.stringify(payload) });
 export const updateKitchen = (organizationId: string, requestId: string, payload: Record<string, unknown>) => request("/api/partner-kitchen", { method: "PATCH", body: JSON.stringify({ organizationId, requestId, ...payload }) });
