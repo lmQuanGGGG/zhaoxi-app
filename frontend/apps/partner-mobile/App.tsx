@@ -101,7 +101,7 @@ function extractOrderId(data: unknown): string {
 }
 
 function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => void; onAuth: (value: AuthState) => void }) {
-  const orgId = auth.session.organizationId!; const [data, setData] = useState(EMPTY); const [history, setHistory] = useState<Order[]>([]); const [selected, setSelected] = useState<Order | null>(null); const [successOrder, setSuccessOrder] = useState<Order | null>(null); const [loading, setLoading] = useState(true); const [historyLoading, setHistoryLoading] = useState(false); const [orderView, setOrderView] = useState<"new" | "history">("new"); const [historyFilter, setHistoryFilter] = useState<"all" | "completed" | "cancelled">("all"); const [tab, setTab] = useState<"orders" | "settings">("orders"); const [pushStatus, setPushStatus] = useState("Đang thiết lập thông báo…"); const [actionError, setActionError] = useState(""); const [actionBusy, setActionBusy] = useState(""); const [confirmAction, setConfirmAction] = useState<{ order: Order; kind: "advance" | "cancel" } | null>(null);
+  const orgId = auth.session.organizationId!; const [data, setData] = useState(EMPTY); const [history, setHistory] = useState<Order[]>([]); const [selected, setSelected] = useState<Order | null>(null); const [successOrder, setSuccessOrder] = useState<Order | null>(null); const [loading, setLoading] = useState(true); const [historyLoading, setHistoryLoading] = useState(false); const [orderView, setOrderView] = useState<"new" | "history">("new"); const [activeStage, setActiveStage] = useState<"waiting" | "preparing" | "ready">("waiting"); const [historyFilter, setHistoryFilter] = useState<"all" | "completed" | "cancelled">("all"); const [tab, setTab] = useState<"orders" | "settings">("orders"); const [pushStatus, setPushStatus] = useState("Đang thiết lập thông báo…"); const [actionError, setActionError] = useState(""); const [actionBusy, setActionBusy] = useState(""); const [confirmAction, setConfirmAction] = useState<{ order: Order; kind: "advance" | "cancel" } | null>(null);
   const [organizations, setOrganizations] = useState<PartnerOrganization[]>([]); const [storeModal, setStoreModal] = useState(false); const [switchingStore, setSwitchingStore] = useState(false);
   const initialized = useRef(false); const seen = useRef(new Set<string>()); const pushToken = useRef<string | undefined>(undefined); const pushReady = useRef(false); const pendingOrderId = useRef("");
   useEffect(() => { void getPartnerOrganizations().then(x => setOrganizations(x.organizations || [])).catch(() => undefined); }, []);
@@ -114,10 +114,10 @@ function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => voi
       const firstIncoming = incoming[0];
       const firstWaiting = waiting[0];
       if (firstIncoming) {
-        setTab("orders"); setOrderView("new"); setSelected(firstIncoming);
+        setTab("orders"); setOrderView("new"); setActiveStage("waiting"); setSelected(firstIncoming);
         void notifyNewOrder(firstIncoming);
       } else if (!initialized.current && firstWaiting) {
-        setTab("orders"); setOrderView("new"); setSelected(firstWaiting);
+        setTab("orders"); setOrderView("new"); setActiveStage("waiting"); setSelected(firstWaiting);
       }
       next.items.forEach(x => seen.current.add(x.requestId));
       initialized.current = true;
@@ -126,9 +126,13 @@ function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => voi
         pendingOrderId.current = "";
         const tapped = next.items.find(x => x.requestId === id || x.requestCode === id);
         if (tapped) {
-          setTab("orders"); setOrderView("new"); setSelected(tapped);
+          setTab("orders"); setOrderView("new");
+          if (tapped.stage === "assigned") setActiveStage("waiting");
+          else if (tapped.stage === "preparing") setActiveStage("preparing");
+          else setActiveStage("ready");
+          setSelected(tapped);
         } else if (firstWaiting) {
-          setTab("orders"); setOrderView("new"); setSelected(firstWaiting);
+          setTab("orders"); setOrderView("new"); setActiveStage("waiting"); setSelected(firstWaiting);
         }
       }
       return next;
@@ -145,7 +149,7 @@ function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => voi
     }
   }, [orgId]);
   const handleNotificationTarget = useCallback(async (targetId?: string) => {
-    setTab("orders"); setOrderView("new");
+    setTab("orders"); setOrderView("new"); setActiveStage("waiting");
     if (targetId) pendingOrderId.current = targetId;
     const currentQueue = await load();
     let items = currentQueue?.items || [];
@@ -158,12 +162,16 @@ function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => voi
         match = items.find(x => x.requestId === targetId || x.requestCode === targetId);
       }
       if (match) {
+        if (match.stage === "assigned") setActiveStage("waiting");
+        else if (match.stage === "preparing") setActiveStage("preparing");
+        else setActiveStage("ready");
         setSelected(match);
         return;
       }
     }
     const waiting = items.find(x => x.stage === "assigned");
     if (waiting) {
+      setActiveStage("waiting");
       setSelected(waiting);
     }
   }, [load]);
@@ -209,18 +217,69 @@ function Main({ auth, onLogout, onAuth }: { auth: AuthState; onLogout: () => voi
   const waiting = data.items.filter(order => order.stage === "assigned");
   const preparing = data.items.filter(order => order.stage === "preparing");
   const readyOrCourier = data.items.filter(order => ["ready_for_pickup", "courier_booked", "handed_off"].includes(order.stage));
+  const statsTabs = [
+    { key: "waiting" as const, count: waiting.length, label: "Chờ nhận", alert: waiting.length > 0 },
+    { key: "preparing" as const, count: preparing.length, label: "Đang làm", alert: false },
+    { key: "ready" as const, count: readyOrCourier.length, label: "Chờ lấy", alert: false },
+  ];
   return <SafeAreaView style={s.safe} edges={["top"]}><StatusBar style="dark"/>{tab === "orders" ? <><View style={s.webHeader}><View style={s.row}><Image source={require("./assets/icon.png")} style={s.brandMark}/><View style={{ marginLeft: 10 }}><Text style={s.brandName}>ZHAOXI</Text><Text style={s.brandSub}>Đối tác · {auth.session.displayName || "Partner"}</Text></View></View><View style={s.headerActions}><Pressable style={s.headerAction}><Text style={{ color: C.ink, fontWeight: "900" }}>VI</Text></Pressable><Pressable style={s.headerAction} onPress={() => setPushStatus("Thông báo đơn hàng đang bật")}><Ionicons name="notifications-outline" size={25} color={C.ink}/></Pressable><Pressable style={s.headerAction} onPress={() => void logout(pushToken.current).finally(onLogout)}><Ionicons name="log-out-outline" size={26} color="#ef4444"/></Pressable></View></View><ScrollView style={s.flex} contentContainerStyle={s.page} refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void load()} tintColor={C.green}/> }>
-    <View style={s.stats}>{[[data.counts.waiting, "Chờ nhận"], [data.counts.preparing, "Đang làm"], [data.counts.ready, "Chờ lấy"]].map(([value, label]) => <View key={String(label)} style={s.stat}><Text style={s.statNumber}>{value}</Text><Text style={s.statLabel}>{label}</Text></View>)}</View>
-    <View style={s.segment}><Pressable style={[s.segmentButton, orderView === "new" && s.segmentOn]} onPress={() => setOrderView("new")}><Text style={[s.segmentText, orderView === "new" && s.segmentTextOn]}>Đơn mới</Text></Pressable><Pressable style={[s.segmentButton, orderView === "history" && s.segmentOn]} onPress={() => setOrderView("history")}><Text style={[s.segmentText, orderView === "history" && s.segmentTextOn]}>Đã xử lý</Text></Pressable></View>
+    <View style={s.stats}>
+      {statsTabs.map(tabItem => {
+        const isSelected = orderView === "new" && activeStage === tabItem.key;
+        const isAlert = tabItem.alert && isSelected;
+        return (
+          <Pressable
+            key={tabItem.key}
+            style={[
+              s.stat,
+              isSelected && s.statActive,
+              isAlert && s.statAlert,
+            ]}
+            onPress={() => {
+              setOrderView("new");
+              setActiveStage(tabItem.key);
+            }}
+          >
+            <Text
+              style={[
+                s.statNumber,
+                isSelected && s.statNumberActive,
+                isAlert && { color: C.red },
+              ]}
+            >
+              {tabItem.count}
+            </Text>
+            <Text
+              style={[
+                s.statLabel,
+                isSelected && s.statLabelActive,
+                isAlert && { color: C.red, fontWeight: "900" },
+              ]}
+            >
+              {tabItem.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+    <View style={s.segment}><Pressable style={[s.segmentButton, orderView === "new" && s.segmentOn]} onPress={() => setOrderView("new")}><Text style={[s.segmentText, orderView === "new" && s.segmentTextOn]}>Đang xử lý</Text></Pressable><Pressable style={[s.segmentButton, orderView === "history" && s.segmentOn]} onPress={() => setOrderView("history")}><Text style={[s.segmentText, orderView === "history" && s.segmentTextOn]}>Đã xử lý</Text></Pressable></View>
     {!!actionError && <Text style={s.error}>{actionError}</Text>}
     {orderView === "history" ? <><View style={s.historyFilter}>{([['all', 'Tất cả'], ['completed', 'Đã hoàn thành'], ['cancelled', 'Đã hủy']] as const).map(([value, label]) => <Pressable key={value} style={[s.historyFilterButton, historyFilter === value && s.historyFilterOn]} onPress={() => setHistoryFilter(value)}><Text style={[s.historyFilterText, historyFilter === value && s.historyFilterTextOn]}>{label}</Text></Pressable>)}</View>{historyLoading ? <ActivityIndicator color={C.green}/> : !history.filter(order => historyFilter === "all" || (historyFilter === "completed" ? order.status === "completed" : ["cancelled", "rejected"].includes(order.status))).length ? <View style={s.empty}><Ionicons name="archive-outline" size={38} color={C.green}/><Text style={s.emptyTitle}>Chưa có đơn {historyFilter === "completed" ? "hoàn thành" : historyFilter === "cancelled" ? "đã hủy" : "lịch sử"}</Text><Text style={s.emptyText}>Các đơn đã xử lý sẽ xuất hiện ở đây.</Text></View> : history.filter(order => historyFilter === "all" || (historyFilter === "completed" ? order.status === "completed" : ["cancelled", "rejected"].includes(order.status))).map(order => <OrderCard key={order.requestId} order={order} interactive={false} onOpen={() => undefined} onPriority={() => undefined} onEta={() => undefined}/>)}</> : <>
-      {waiting.length > 0 && <><View style={s.between}><View style={s.row}><Ionicons name="alert-circle" size={22} color={C.red} style={{ marginRight: 6 }}/><Text style={[s.webSection, { color: C.red, marginBottom: 0 }]}>Đơn mới chờ nhận</Text></View><View style={[s.pill, { backgroundColor: "#fee2e2" }]}><Text style={{ color: C.red, fontWeight: "900", fontSize: 13 }}>{waiting.length} đơn cần nhận</Text></View></View>
-      {waiting.map(order => <OrderCard key={order.requestId} order={order} onOpen={() => setSelected(order)} onAction={() => setSelected(order)} onCancel={() => confirmCancel(order)} busy={actionBusy === order.requestId} onPriority={priority => void setPriority(order, priority)} onEta={() => setEta(order)}/>)}</>}
-      <View style={[s.between, { marginTop: waiting.length ? 18 : 0 }]}><Text style={s.webSection}>Đang chuẩn bị</Text><View style={s.pill}><Text style={s.pillText}>{preparing.length}</Text></View></View>
-      {preparing.map(order => <OrderCard key={order.requestId} order={order} onOpen={() => setSelected(order)} onAction={() => confirmAdvance(order)} onCancel={() => confirmCancel(order)} busy={actionBusy === order.requestId} onPriority={priority => void setPriority(order, priority)} onEta={() => setEta(order)}/>)}
-      <View style={[s.between, { marginTop: 18 }]}><Text style={s.webSection}>Chờ giao & Đang giao</Text>{data.counts.late > 0 && <Text style={{ color: C.red, fontWeight: "900" }}>{data.counts.late} đơn trễ</Text>}</View>
-      {readyOrCourier.map(order => <OrderCard key={order.requestId} order={order} onOpen={() => setSelected(order)} onAction={() => confirmAdvance(order)} onCancel={() => confirmCancel(order)} busy={actionBusy === order.requestId} onPriority={priority => void setPriority(order, priority)} onEta={() => setEta(order)}/>)}
-      {!data.items.length && <View style={s.empty}><Ionicons name="receipt-outline" size={38} color={C.green}/><Text style={s.emptyTitle}>Chưa có đơn đang xử lý</Text><Text style={s.emptyText}>Đơn mới sẽ xuất hiện ở đây và phát chuông thông báo.</Text></View>}
+      {activeStage === "waiting" && <>
+        <View style={s.between}><View style={s.row}><Ionicons name="alert-circle" size={22} color={waiting.length ? C.red : C.green} style={{ marginRight: 6 }}/><Text style={[s.webSection, { color: waiting.length ? C.red : C.ink, marginBottom: 0 }]}>Đơn mới chờ nhận</Text></View><View style={[s.pill, { backgroundColor: waiting.length ? "#fee2e2" : C.mint }]}><Text style={{ color: waiting.length ? C.red : C.green, fontWeight: "900", fontSize: 13 }}>{waiting.length} đơn cần nhận</Text></View></View>
+        {waiting.map(order => <OrderCard key={order.requestId} order={order} onOpen={() => setSelected(order)} onAction={() => setSelected(order)} onCancel={() => confirmCancel(order)} busy={actionBusy === order.requestId} onPriority={priority => void setPriority(order, priority)} onEta={() => setEta(order)}/>)}
+        {!waiting.length && <View style={s.empty}><Ionicons name="checkmark-done-circle-outline" size={42} color={C.green}/><Text style={s.emptyTitle}>Chưa có đơn chờ nhận</Text><Text style={s.emptyText}>Khi khách đặt món, đơn mới sẽ xuất hiện ở đây và phát chuông thông báo.</Text></View>}
+      </>}
+      {activeStage === "preparing" && <>
+        <View style={s.between}><View style={s.row}><Ionicons name="flame" size={22} color={C.amber} style={{ marginRight: 6 }}/><Text style={[s.webSection, { marginBottom: 0 }]}>Đang chuẩn bị</Text></View><View style={s.pill}><Text style={s.pillText}>{preparing.length} đơn</Text></View></View>
+        {preparing.map(order => <OrderCard key={order.requestId} order={order} onOpen={() => setSelected(order)} onAction={() => confirmAdvance(order)} onCancel={() => confirmCancel(order)} busy={actionBusy === order.requestId} onPriority={priority => void setPriority(order, priority)} onEta={() => setEta(order)}/>)}
+        {!preparing.length && <View style={s.empty}><Ionicons name="restaurant-outline" size={42} color={C.green}/><Text style={s.emptyTitle}>Chưa có món đang làm</Text><Text style={s.emptyText}>Nhận đơn ở mục "Chờ nhận" để chuyển đơn sang khu vực bếp.</Text></View>}
+      </>}
+      {activeStage === "ready" && <>
+        <View style={s.between}><View style={s.row}><Ionicons name="bicycle" size={22} color={C.green} style={{ marginRight: 6 }}/><Text style={[s.webSection, { marginBottom: 0 }]}>Chờ giao & Đang giao</Text></View>{data.counts.late > 0 ? <Text style={{ color: C.red, fontWeight: "900" }}>{data.counts.late} đơn trễ</Text> : <View style={s.pill}><Text style={s.pillText}>{readyOrCourier.length} đơn</Text></View>}</View>
+        {readyOrCourier.map(order => <OrderCard key={order.requestId} order={order} onOpen={() => setSelected(order)} onAction={() => confirmAdvance(order)} onCancel={() => confirmCancel(order)} busy={actionBusy === order.requestId} onPriority={priority => void setPriority(order, priority)} onEta={() => setEta(order)}/>)}
+        {!readyOrCourier.length && <View style={s.empty}><Ionicons name="cube-outline" size={42} color={C.green}/><Text style={s.emptyTitle}>Chưa có đơn chờ lấy</Text><Text style={s.emptyText}>Khi làm xong món, bấm "Sẵn sàng giao" để chuyển đơn sang đây chờ tài xế.</Text></View>}
+      </>}
     </>}
   </ScrollView></> : <ScrollView style={s.flex} contentContainerStyle={s.page}><Text style={s.sectionTitle}>Cài đặt cửa hàng</Text><View style={s.card}><Text style={s.itemName}>{auth.session.displayName}</Text><Text style={s.meta}>{auth.session.organizationName}</Text><Text style={[s.meta, { color: C.green, fontWeight: "800" }]}>{pushStatus}</Text></View>{organizations.length > 1 && <Pressable style={[s.button, s.buttonGhost, { marginBottom: 10 }]} onPress={() => setStoreModal(true)}><Text style={s.buttonGhostText}>⌂  Đổi gian hàng đang quản lý</Text></Pressable>}<Pressable style={[s.button, s.buttonGhost, { marginBottom: 10 }]} onPress={() => void configureNotifications()}><Text style={s.buttonGhostText}>Kiểm tra kênh thông báo</Text></Pressable><Pressable style={[s.button, s.buttonRed]} onPress={() => void logout(pushToken.current).finally(onLogout)}><Text style={s.buttonRedText}>Đăng xuất</Text></Pressable></ScrollView>}
     <View style={s.tabs}><Pressable style={s.tab} onPress={() => setTab("orders")}><Ionicons name={tab === "orders" ? "receipt" : "receipt-outline"} size={23} color={tab === "orders" ? C.green : C.muted}/><Text style={[s.tabText, tab === "orders" && s.tabOn]}>Đơn hàng</Text></Pressable><Pressable style={s.tab} onPress={() => setTab("settings")}><Ionicons name={tab === "settings" ? "settings" : "settings-outline"} size={23} color={tab === "settings" ? C.green : C.muted}/><Text style={[s.tabText, tab === "settings" && s.tabOn]}>Cài đặt</Text></Pressable></View>
