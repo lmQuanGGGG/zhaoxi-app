@@ -11,7 +11,10 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: "vn.zhaoxi.partner",
-    infoPlist: { UIBackgroundModes: ["remote-notification"] },
+    infoPlist: {
+      UIBackgroundModes: ["remote-notification"],
+      ITSAppUsesNonExemptEncryption: false,
+    },
   },
   android: {
     package: "vn.zhaoxi.partner",
@@ -24,7 +27,7 @@ const config: ExpoConfig = {
   ],
   extra: {
     apiUrl: process.env.EXPO_PUBLIC_API_URL || "https://zhaoxi-app-puce.vercel.app",
-    eas: { projectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID || "" },
+    eas: { projectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID || "ae9f8d76-c519-4c20-afc3-4c7e6b1c0ea2" },
   },
 };
 
