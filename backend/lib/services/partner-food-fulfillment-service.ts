@@ -1,6 +1,6 @@
 import {and,eq,sql} from "drizzle-orm";
 import {getDb} from "@/db";
-import {organizationMembers,paymentEvents,paymentTransactions,serviceRequests,serviceRequestStatusHistory} from "@/db/schema";
+import {organizationMembers,paymentEvents,paymentTransactions,serviceRequests} from "@/db/schema";
 
 export type FoodFulfillmentAction=
  "accept"|"start_preparing"|"ready_for_pickup"|"courier_booked"|"handed_off"|"delivered"|"cancelled";
@@ -8,16 +8,19 @@ export type FoodFulfillmentAction=
 export class PartnerFoodFulfillmentService{
  async authorize(userId:string,requestId:string){
   const db=getDb();
+  // Keep the common authorized path to one database round trip. The fallback
+  // query only runs for missing/forbidden requests so we can preserve the
+  // existing error contract without slowing successful partner actions.
+  const authorized=(await db.select({request:serviceRequests}).from(serviceRequests).innerJoin(organizationMembers,and(
+    eq(organizationMembers.organizationId,serviceRequests.assignedOrganizationId),
+    eq(organizationMembers.userId,userId),
+    eq(organizationMembers.isActive,true)
+  )).where(eq(serviceRequests.id,requestId)).limit(1))[0];
+  if(authorized)return authorized.request;
   const request=(await db.select().from(serviceRequests).where(eq(serviceRequests.id,requestId)).limit(1))[0];
   if(!request)throw new Error("REQUEST_NOT_FOUND");
   if(!request.assignedOrganizationId)throw new Error("REQUEST_NOT_ASSIGNED");
-  const membership=(await db.select().from(organizationMembers).where(and(
-    eq(organizationMembers.organizationId,request.assignedOrganizationId),
-    eq(organizationMembers.userId,userId),
-    eq(organizationMembers.isActive,true)
-  )).limit(1))[0];
-  if(!membership)throw new Error("PARTNER_FORBIDDEN");
-  return request;
+  throw new Error("PARTNER_FORBIDDEN");
  }
  async update(userId:string,requestId:string,input:{action:FoodFulfillmentAction;estimatedMinutes?:number;courierName?:string;courierPhone?:string;courierReference?:string;note?:string}){
   const db=getDb(),current=await this.authorize(userId,requestId),now=new Date();
@@ -64,10 +67,31 @@ export class PartnerFoodFulfillmentService{
     nextStatus="cancelled";Object.assign(nextDetails,{fulfillmentStage:"cancelled",cancelledAt:now.toISOString(),deliveryStage:"cancelled"});
   }
 
-  // This guard makes the transition atomic: only the first identical request wins.
-  const [updated]=await db.update(serviceRequests).set({status:nextStatus as any,details:nextDetails,updatedAt:now}).where(and(eq(serviceRequests.id,requestId),sql`coalesce(${serviceRequests.details}->>'fulfillmentStage','') <> ${targetStage}`)).returning();
+  // Update the request and append its history in one SQL statement. This keeps
+  // the transition atomic and avoids another Neon network round trip.
+  const rows=await db.execute(sql`
+    with updated as (
+      update service_requests
+      set status=${nextStatus}::request_status,
+          details=${JSON.stringify(nextDetails)}::jsonb,
+          updated_at=${now}
+      where id=${requestId}::uuid
+        and coalesce(details->>'fulfillmentStage','') <> ${targetStage}
+      returning id,status,details,updated_at
+    ), history as (
+      insert into service_request_status_history
+        (request_id,from_status,to_status,changed_by_user_id,note)
+      select id,${current.status}::request_status,status,${userId}::uuid,${note}
+      from updated
+      returning id
+    )
+    select updated.status,updated.details,updated.updated_at,
+           (select count(*)::int from history) as history_count
+    from updated
+  `) as unknown as Array<{status:typeof current.status;details:Record<string,unknown>;updated_at:Date}>;
+  const row=rows[0];
+  const updated=row?{...current,status:row.status,details:row.details,updatedAt:row.updated_at}:undefined;
   if(!updated)return (await db.select().from(serviceRequests).where(eq(serviceRequests.id,requestId)).limit(1))[0]||current;
-  await db.insert(serviceRequestStatusHistory).values({requestId,fromStatus:current.status,toStatus:nextStatus as any,note});
   if(action==="accept"&&details.paymentMethod==="bank_transfer"){
     const payment=(await db.select().from(paymentTransactions).where(eq(paymentTransactions.requestId,requestId)).limit(1))[0];
     if(payment?.status==="awaiting_payment"){
