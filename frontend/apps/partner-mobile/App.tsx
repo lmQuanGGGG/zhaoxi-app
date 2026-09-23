@@ -15,6 +15,22 @@ import { Language, LANGUAGES, LANGUAGE_STORAGE_KEY, I18N } from "./src/i18n";
 const EMPTY: QueueData = { generatedAt: "", counts: { waiting: 0, preparing: 0, ready: 0, courier: 0, late: 0 }, items: [] };
 const money = (value: number) => `${Number(value || 0).toLocaleString("vi-VN")} ₫`;
 
+function formatOrderTime(dateStr?: string): string {
+  if (!dateStr) return "—";
+  try {
+    const normalized = dateStr.includes(" ") && !dateStr.includes("T") ? dateStr.replace(" ", "T") : dateStr;
+    const d = new Date(normalized);
+    if (isNaN(d.getTime())) return "—";
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mo = String(d.getMonth() + 1).padStart(2, "0");
+    return `${hh}:${mm} · ${dd}/${mo}`;
+  } catch {
+    return "—";
+  }
+}
+
 async function deviceId() {
   return (Platform.OS === "android" ? Application.getAndroidId() : await Application.getIosIdForVendorAsync()) || `partner-${Platform.OS}`;
 }
@@ -197,15 +213,17 @@ function OrderCard({
         <View style={s.detailTile}><Text style={s.detailLabel}>{t.customerDeliveryFee}</Text><Text style={s.detailValue}>{money(order.customerDeliveryFee || 0)}</Text></View>
         <View style={s.detailTile}><Text style={s.detailLabel}>{t.deliveryDistance}</Text><Text style={s.detailValue}>{order.deliveryDistanceKm ? `${order.deliveryDistanceKm.toFixed(1)} km` : "—"}</Text></View>
         <View style={s.detailTile}><Text style={[s.detailLabel, s.detailValueGreen]}>{t.totalAmount}</Text><Text style={[s.detailValue, s.detailValueGreen]}>{money(order.totalAmount)}</Text></View>
-        {order.paymentMethod && (
-          <View style={s.detailTile}>
-            <Text style={s.detailLabel}>{t.payment}</Text>
-            <Text style={s.detailValue}>
-              {order.paymentMethod === "bank_transfer" ? t.bankTransfer : t.cashOnDelivery}
-              {order.paymentStatus === "paid" ? ` · ${t.paid}` : ""}
-            </Text>
-          </View>
-        )}
+        <View style={s.detailTile}>
+          <Text style={s.detailLabel}>{t.payment}</Text>
+          <Text style={s.detailValue}>
+            {order.paymentMethod === "bank_transfer" ? t.bankTransfer : t.cashOnDelivery}
+            {order.paymentStatus === "paid" ? ` · ${t.paid}` : ""}
+          </Text>
+        </View>
+        <View style={s.detailTile}>
+          <Text style={s.detailLabel}>{t.orderTime}</Text>
+          <Text style={s.detailValue} numberOfLines={1} adjustsFontSizeToFit>{formatOrderTime(order.createdAt)}</Text>
+        </View>
       </View>
       {interactive && (
         <View style={s.priorityRow}>
@@ -338,16 +356,18 @@ function OrderModal({
             <View style={s.detailTile}><Text style={s.detailLabel}>{t.customerDeliveryFee}</Text><Text style={s.detailValue}>{money(order.customerDeliveryFee || 0)}</Text></View>
             <View style={s.detailTile}><Text style={s.detailLabel}>{t.deliveryDistance}</Text><Text style={s.detailValue}>{order.deliveryDistanceKm ? `${order.deliveryDistanceKm.toFixed(1)} km` : "—"}</Text></View>
             <View style={s.detailTile}><Text style={[s.detailLabel, s.detailValueGreen]}>{t.totalAmount}</Text><Text style={[s.detailValue, s.detailValueGreen]}>{money(order.totalAmount)}</Text></View>
-            {order.paymentMethod && (
-              <View style={s.detailTile}>
-                <Text style={s.detailLabel}>{t.payment}</Text>
-                <Text style={s.detailValue}>
-                  {order.paymentMethod === "bank_transfer" ? t.bankTransfer : t.cashOnDelivery}
-                  {order.paymentStatus === "paid" ? ` · ${t.paid}` : ""}
-                </Text>
-              </View>
-            )}
-          </View>
+        <View style={s.detailTile}>
+          <Text style={s.detailLabel}>{t.payment}</Text>
+          <Text style={s.detailValue}>
+            {order.paymentMethod === "bank_transfer" ? t.bankTransfer : t.cashOnDelivery}
+            {order.paymentStatus === "paid" ? ` · ${t.paid}` : ""}
+          </Text>
+        </View>
+        <View style={s.detailTile}>
+          <Text style={s.detailLabel}>{t.orderTime}</Text>
+          <Text style={s.detailValue} numberOfLines={1} adjustsFontSizeToFit>{formatOrderTime(order.createdAt)}</Text>
+        </View>
+      </View>
           {order.stage === "assigned" && (
             <>
               <Text style={[s.sectionTitle, { marginTop: 22, marginBottom: 0 }]}>{t.prepTimeSection}</Text>

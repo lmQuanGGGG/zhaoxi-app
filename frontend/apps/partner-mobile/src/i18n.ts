@@ -97,6 +97,7 @@ export const I18N = {
     bankTransfer: "Chuyển khoản",
     cashOnDelivery: "Tiền mặt",
     paid: "Đã thanh toán",
+    orderTime: "Thời gian đặt:",
 
     // OrderModal
     modalSingleNewOrder: "🔔 ĐƠN HÀNG MỚI CẦN NHẬN",
@@ -225,6 +226,7 @@ export const I18N = {
     bankTransfer: "Bank transfer",
     cashOnDelivery: "Cash on delivery",
     paid: "Paid",
+    orderTime: "Order time:",
 
     // OrderModal
     modalSingleNewOrder: "🔔 NEW ORDER REQUIRES ACCEPTANCE",
@@ -353,6 +355,7 @@ export const I18N = {
     bankTransfer: "转账",
     cashOnDelivery: "货到付款",
     paid: "已支付",
+    orderTime: "下单时间：",
 
     // OrderModal
     modalSingleNewOrder: "🔔 有新订单待接单",
