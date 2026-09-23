@@ -8,7 +8,7 @@ const cookieOptions=(maxAge:number)=>({httpOnly:true,secure:process.env.NODE_ENV
 async function safeJsonResponse(res:Response,refreshed?:any){try{const text=await res.text();const response=EdgeNextResponse.json(JSON.parse(text),{status:res.status});if(refreshed?.accessToken)response.cookies.set(ACCESS_COOKIE,String(refreshed.accessToken),cookieOptions(15*60));if(refreshed?.refreshToken){const expires=Date.parse(String(refreshed?.session?.refreshExpiresAt||""));response.cookies.set(REFRESH_COOKIE,String(refreshed.refreshToken),cookieOptions(Number.isFinite(expires)?Math.max(60,Math.floor((expires-Date.now())/1000)):86400))}return response}catch{return EdgeNextResponse.json({ok:false,error:{code:"UPSTREAM_UNAVAILABLE",upstreamStatus:res.status}},{status:res.status>=400?res.status:502});}}
 async function patchFulfillment(id:string,body:string,access?:string){return fetch(`${backend()}/api/partner-fulfillment/${encodeURIComponent(id)}`,{method:"PATCH",headers:{"content-type":"application/json",...(access?{authorization:`Bearer ${access}`}:{})},body,cache:"no-store"});}
 export async function PATCH(request:NextRequest,{params}:{params:Promise<{id:string}>}){
- const{id}=await params;const body=await request.text();const access=request.cookies.get(ACCESS_COOKIE)?.value;
+ const{id}=await params;const body=await request.text();const access=request.cookies.get(ACCESS_COOKIE)?.value||((request.headers.get("authorization")||"").toLowerCase().startsWith("bearer ")?request.headers.get("authorization")!.slice(7).trim():"");
  try{
   let upstream=await patchFulfillment(id,body,access);
   if(upstream.status!==401)return safeJsonResponse(upstream);

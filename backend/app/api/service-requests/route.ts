@@ -34,7 +34,10 @@ function makeRequestCode() {
 
 export async function GET(request: Request) {
   try {
-    await completeExpiredOrders();
+    // Do not block the partner queue on the maintenance sweep. The queue query
+    // can return immediately while the timer reconciles expired orders after
+    // the response has been sent.
+    after(() => completeExpiredOrders().catch((error) => console.error("order timer sweep failed", error)));
     const url = new URL(request.url);
     const locale = localeFromRequest(request);
     const session = await authenticatedSession(request);

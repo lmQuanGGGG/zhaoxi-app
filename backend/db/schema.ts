@@ -134,6 +134,21 @@ export const partnerPushSubscriptions = pgTable("partner_push_subscriptions", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [index("partner_push_subscriptions_org_idx").on(table.organizationId)]);
 
+export const partnerMobilePushDevices = pgTable("partner_mobile_push_devices", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  organizationId: uuid("organization_id").notNull(),
+  expoPushToken: text("expo_push_token").notNull().unique(),
+  platform: varchar("platform", { length: 16 }).notNull(),
+  deviceId: varchar("device_id", { length: 180 }),
+  enabled: boolean("enabled").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index("partner_mobile_push_devices_org_idx").on(table.organizationId),
+  index("partner_mobile_push_devices_user_idx").on(table.userId),
+]);
+
 
 export const customerProfiles = pgTable(
   "customer_profiles",
@@ -667,6 +682,7 @@ export const serviceRequests = pgTable(
   },
   (table) => [
     index("service_requests_status_idx").on(table.status),
+    index("service_requests_assigned_org_status_created_idx").on(table.assignedOrganizationId, table.status, table.createdAt),
     index("service_requests_module_idx").on(table.moduleId),
     index("service_requests_customer_idx").on(table.customerId),
     index("service_requests_created_at_idx").on(table.createdAt),

@@ -9,12 +9,14 @@
   "scripts": {
     "dev:customer": "npm run dev --workspace=zhaoxi-customer -- --webpack -p 3001",
     "dev:partner": "npm run dev --workspace=zhaoxi-partner -- -p 3002",
+    "dev:partner-mobile": "npm run start --workspace=zhaoxi-partner-mobile",
     "dev:admin": "npm run dev --workspace=zhaoxi-admin -- -p 3003",
     "build:customer": "npm run build --workspace=zhaoxi-customer",
     "build:partner": "npm run build --workspace=zhaoxi-partner",
     "build:admin": "npm run build --workspace=zhaoxi-admin",
     "build:all": "npm run build:customer && npm run build:partner && npm run build:admin",
     "typecheck:all": "npm run typecheck --workspaces --if-present",
+    "typecheck:partner-mobile": "npm run typecheck --workspace=zhaoxi-partner-mobile",
     "verify:current": "node scripts/verify-current-architecture.mjs",
     "verify:12.5": "node scripts/verify-sprint-12-5.mjs",
     "verify:12.5.1": "node scripts/verify-sprint-12-5-1.mjs",
@@ -192,6 +194,9 @@
     "verify:19.0.0:sprint-m": "node scripts/verify-release-19-0-0-sprint-m-auth-replay-compatibility.mjs"
   },
   "packageManager": "npm@10.9.2",
+  "devDependencies": {
+    "react-native": "0.86.3"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
