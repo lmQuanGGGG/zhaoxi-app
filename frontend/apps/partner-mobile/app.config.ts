@@ -14,6 +14,17 @@ const config: ExpoConfig = {
     infoPlist: {
       UIBackgroundModes: ["remote-notification"],
       ITSAppUsesNonExemptEncryption: false,
+      UIApplicationSceneManifest: {
+        UIApplicationSupportsMultipleScenes: false,
+        UISceneConfigurations: {
+          UIWindowSceneSessionRoleApplication: [
+            {
+              UISceneConfigurationName: "Default Configuration",
+              UISceneDelegateClassName: "EXExpoAppSceneDelegate",
+            },
+          ],
+        },
+      },
     },
   },
   android: {
@@ -24,6 +35,7 @@ const config: ExpoConfig = {
   plugins: [
     "expo-secure-store",
     ["expo-notifications", { sounds: ["./assets/order_alert.wav"], color: "#0b8f55", defaultChannel: "new-orders" }],
+    "./plugins/with-ios-scene-lifecycle",
   ],
   extra: {
     apiUrl: process.env.EXPO_PUBLIC_API_URL || "https://zhaoxi-app-puce.vercel.app",
