@@ -423,120 +423,156 @@ function extractOrderId(data: unknown): string {
 
 function GreenSphereAnalysisLoader({ visible, title, desc }: { visible: boolean; title: string; desc: string }) {
   const floatAnim = useRef(new Animated.Value(0)).current;
-  const pulse1Anim = useRef(new Animated.Value(0)).current;
-  const pulse2Anim = useRef(new Animated.Value(0)).current;
-  const progressAnim = useRef(new Animated.Value(0)).current;
+  const tiltAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(0)).current;
+  const flashAnim = useRef(new Animated.Value(0)).current;
+  const sparkAnim1 = useRef(new Animated.Value(0)).current;
+  const sparkAnim2 = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!visible) return;
 
+    // Bobbing / Floating loop
     const floatLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(floatAnim, {
           toValue: 1,
-          duration: 1300,
+          duration: 1500,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
         }),
         Animated.timing(floatAnim, {
           toValue: 0,
-          duration: 1300,
+          duration: 1500,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
         }),
       ])
     );
 
-    const pulse1Loop = Animated.loop(
-      Animated.timing(pulse1Anim, {
+    // Liquid wave tilting loop (sloshing effect)
+    const tiltLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(tiltAnim, {
+          toValue: 1,
+          duration: 2200,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(tiltAnim, {
+          toValue: 0,
+          duration: 2200,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    // Outer radar glow
+    const pulseLoop = Animated.loop(
+      Animated.timing(pulseAnim, {
         toValue: 1,
-        duration: 1800,
+        duration: 2000,
         easing: Easing.out(Easing.ease),
         useNativeDriver: true,
       })
     );
 
-    const pulse2Loop = Animated.loop(
+    // "Chớp chớp phân tích" core flashing loop
+    const flashLoop = Animated.loop(
       Animated.sequence([
-        Animated.delay(450),
-        Animated.timing(pulse2Anim, {
+        Animated.timing(flashAnim, {
           toValue: 1,
-          duration: 1800,
-          easing: Easing.out(Easing.ease),
+          duration: 350,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(flashAnim, {
+          toValue: 0.25,
+          duration: 350,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(flashAnim, {
+          toValue: 0.9,
+          duration: 250,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(flashAnim, {
+          toValue: 0.1,
+          duration: 450,
+          easing: Easing.inOut(Easing.quad),
           useNativeDriver: true,
         }),
       ])
     );
 
-    const progressLoop = Animated.loop(
+    // Blinking sparkle node 1
+    const sparkLoop1 = Animated.loop(
       Animated.sequence([
-        Animated.timing(progressAnim, {
-          toValue: 1,
-          duration: 1600,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: false,
-        }),
-        Animated.timing(progressAnim, {
-          toValue: 0,
-          duration: 0,
-          useNativeDriver: false,
-        }),
+        Animated.timing(sparkAnim1, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(sparkAnim1, { toValue: 0, duration: 400, useNativeDriver: true }),
+        Animated.delay(250),
+      ])
+    );
+
+    // Blinking sparkle node 2
+    const sparkLoop2 = Animated.loop(
+      Animated.sequence([
+        Animated.delay(350),
+        Animated.timing(sparkAnim2, { toValue: 1, duration: 250, useNativeDriver: true }),
+        Animated.timing(sparkAnim2, { toValue: 0, duration: 450, useNativeDriver: true }),
       ])
     );
 
     floatLoop.start();
-    pulse1Loop.start();
-    pulse2Loop.start();
-    progressLoop.start();
+    tiltLoop.start();
+    pulseLoop.start();
+    flashLoop.start();
+    sparkLoop1.start();
+    sparkLoop2.start();
 
     return () => {
       floatLoop.stop();
-      pulse1Loop.stop();
-      pulse2Loop.stop();
-      progressLoop.stop();
+      tiltLoop.stop();
+      pulseLoop.stop();
+      flashLoop.stop();
+      sparkLoop1.stop();
+      sparkLoop2.stop();
     };
-  }, [visible, floatAnim, pulse1Anim, pulse2Anim, progressAnim]);
+  }, [visible, floatAnim, tiltAnim, pulseAnim, flashAnim, sparkAnim1, sparkAnim2]);
 
   if (!visible) return null;
 
   const translateY = floatAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-9, 9],
+    outputRange: [-10, 10],
+  });
+
+  const rotate = tiltAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["-3.5deg", "3.5deg"],
   });
 
   const shadowScale = floatAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0.85, 1.15],
+    outputRange: [0.82, 1.18],
   });
 
   const shadowOpacity = floatAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0.18, 0.35],
+    outputRange: [0.18, 0.42],
   });
 
-  const ring1Scale = pulse1Anim.interpolate({
+  const radarScale = pulseAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [0.95, 1.45],
   });
 
-  const ring1Opacity = pulse1Anim.interpolate({
-    inputRange: [0, 0.7, 1],
-    outputRange: [0.6, 0.3, 0],
-  });
-
-  const ring2Scale = pulse2Anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.95, 1.6],
-  });
-
-  const ring2Opacity = pulse2Anim.interpolate({
-    inputRange: [0, 0.7, 1],
-    outputRange: [0.5, 0.25, 0],
-  });
-
-  const progressWidth = progressAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["15%", "95%"],
+  const radarOpacity = pulseAnim.interpolate({
+    inputRange: [0, 0.6, 1],
+    outputRange: [0.7, 0.35, 0],
   });
 
   return (
@@ -548,35 +584,95 @@ function GreenSphereAnalysisLoader({ visible, title, desc }: { visible: boolean;
             <Text style={s.analysisBadgeText}>ZHAOXI ANALYTICS AI</Text>
           </View>
 
+          {/* 3D Translucent Glass Liquid Cyber Orb */}
           <View style={s.sphereWrapper}>
-            <Animated.View
-              style={[
-                s.spherePulseRing2,
-                { transform: [{ scale: ring2Scale }], opacity: ring2Opacity },
-              ]}
-            />
+            {/* Glowing outer radar pulse */}
             <Animated.View
               style={[
                 s.spherePulseRing1,
-                { transform: [{ scale: ring1Scale }], opacity: ring1Opacity },
+                {
+                  transform: [{ scale: radarScale }],
+                  opacity: radarOpacity,
+                },
               ]}
             />
 
+            {/* Floating & Tilting 3D Cyber Sphere */}
             <Animated.View
-              style={[
-                s.sphereBody,
-                { transform: [{ translateY }] },
-              ]}
+              style={{
+                width: 146,
+                height: 146,
+                borderRadius: 73,
+                transform: [{ translateY }, { rotate }],
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                shadowColor: "#10b981",
+                shadowOpacity: 0.6,
+                shadowRadius: 24,
+                shadowOffset: { width: 0, height: 10 },
+                elevation: 10,
+              }}
             >
-              <View style={s.sphereShadeMid} />
-              <View style={s.sphereShadeBright} />
-              <View style={s.sphereShadeHighlight} />
-              <View style={s.sphereRimBottom} />
+              {/* Ultra-realistic 3D Cyber Glass Sphere Image */}
+              <Image
+                source={require("./assets/green_cyber_glass_sphere.jpg")}
+                style={{ width: 146, height: 146, borderRadius: 73 }}
+                resizeMode="cover"
+              />
 
-              <View style={s.sphereSpecularShine} />
-              <View style={s.sphereSpecularSmall} />
+              {/* Glowing animated core overlay ("chớp chớp phân tích") */}
+              <Animated.View
+                pointerEvents="none"
+                style={{
+                  position: "absolute",
+                  width: 110,
+                  height: 75,
+                  bottom: 12,
+                  borderRadius: 45,
+                  backgroundColor: "rgba(52, 211, 153, 0.35)",
+                  opacity: flashAnim,
+                }}
+              />
+
+              {/* Sparkling data nodes chớp chớp 1 */}
+              <Animated.View
+                pointerEvents="none"
+                style={{
+                  position: "absolute",
+                  width: 9,
+                  height: 9,
+                  borderRadius: 5,
+                  backgroundColor: "#ffffff",
+                  bottom: 38,
+                  left: 46,
+                  opacity: sparkAnim1,
+                  shadowColor: "#34d399",
+                  shadowRadius: 8,
+                  shadowOpacity: 1,
+                }}
+              />
+
+              {/* Sparkling data nodes chớp chớp 2 */}
+              <Animated.View
+                pointerEvents="none"
+                style={{
+                  position: "absolute",
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: "#ffffff",
+                  bottom: 52,
+                  right: 42,
+                  opacity: sparkAnim2,
+                  shadowColor: "#34d399",
+                  shadowRadius: 8,
+                  shadowOpacity: 1,
+                }}
+              />
             </Animated.View>
 
+            {/* Ground Shadow */}
             <Animated.View
               style={[
                 s.sphereShadow,
@@ -591,13 +687,12 @@ function GreenSphereAnalysisLoader({ visible, title, desc }: { visible: boolean;
           <Text style={s.analysisTitle}>{title}</Text>
           <Text style={s.analysisDesc}>{desc}</Text>
 
-          <View style={s.analysisProgressTrack}>
-            <Animated.View
-              style={[
-                s.analysisProgressBar,
-                { width: progressWidth },
-              ]}
-            />
+          {/* Clean status pill instead of progress bar */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 7, backgroundColor: "#f0fdf4", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16 }}>
+            <ActivityIndicator size="small" color={C.green} />
+            <Text style={{ color: C.green, fontSize: 13, fontWeight: "800" }}>
+              Đang phân tích số liệu kinh doanh…
+            </Text>
           </View>
         </View>
       </View>
