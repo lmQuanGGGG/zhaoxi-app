@@ -19,3 +19,4 @@ backend/test-unimatrix*.js
 test-*.js
 *.apk
 
+.vercel
