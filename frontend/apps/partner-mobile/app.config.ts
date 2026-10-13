@@ -31,6 +31,11 @@ const config: ExpoConfig = {
     package: "vn.zhaoxi.partner",
     adaptiveIcon: { foregroundImage: "./assets/adaptive-icon.png", backgroundColor: "#063c2b" },
     permissions: ["POST_NOTIFICATIONS", "VIBRATE", "WAKE_LOCK", "RECEIVE_BOOT_COMPLETED"],
+    blockedPermissions: [
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.SYSTEM_ALERT_WINDOW",
+    ],
   },
   plugins: [
     "expo-secure-store",

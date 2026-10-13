@@ -18,5 +18,6 @@ backend/*D:*
 backend/test-unimatrix*.js
 test-*.js
 *.apk
+*.aab
 
 .vercel
