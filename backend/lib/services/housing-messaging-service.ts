@@ -1,6 +1,7 @@
 import {and,eq} from "drizzle-orm";
 import {getDb} from "@/db";
 import {organizationMembers,serviceRequests,serviceRequestStatusHistory} from "@/db/schema";
+import {customerMobilePushService} from "@/lib/services/customer-mobile-push-service";
 
 type ActorRole="customer"|"partner";
 type Message={id:string;senderRole:ActorRole;senderUserId:string;body:string;createdAt:string;customerReadAt?:string|null;partnerReadAt?:string|null};
@@ -41,6 +42,7 @@ export class HousingMessagingService{
   const housingFollowupHistory=this.followup(details,senderRole,"message",body.slice(0,300));
   const[updated]=await db.update(serviceRequests).set({details:{...details,housingMessages,housingFollowupHistory,housingLastMessageAt:now,housingLastFollowupAt:now},updatedAt:new Date()}).where(eq(serviceRequests.id,row.id)).returning();
   await db.insert(serviceRequestStatusHistory).values({requestId:row.id,toStatus:row.status,note:`HOUSING_MESSAGE:${senderRole}`});
+  customerMobilePushService.notifyRequestEventAfterResponse({requestId:row.id,toStatus:row.status,note:`HOUSING_MESSAGE:${senderRole}`});
   return{request:updated,message};
  }
  async customerRead(userId:string,requestId:string){

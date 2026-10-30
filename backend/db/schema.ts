@@ -1544,3 +1544,19 @@ export const operationsApprovalRequests = pgTable("operations_approval_requests"
 export const operationsWorkflowEvents = pgTable("operations_workflow_events",{
  id:uuid("id").primaryKey().defaultRandom(),workflowRunId:uuid("workflow_run_id").notNull().references(()=>operationsWorkflowRuns.id,{onDelete:"cascade"}),actorAdminUserId:uuid("actor_admin_user_id").references(()=>users.id,{onDelete:"set null"}),eventType:varchar("event_type",{length:60}).notNull(),metadata:jsonb("metadata").$type<Record<string,unknown>>().notNull().default({}),createdAt:timestamp("created_at",{withTimezone:true}).notNull().defaultNow()
 },t=>[index("operations_workflow_events_run_idx").on(t.workflowRunId,t.createdAt)]);
+
+export const customerMobilePushDevices = pgTable("customer_mobile_push_devices", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  expoPushToken: text("expo_push_token").notNull().unique(),
+  platform: varchar("platform", { length: 16 }).notNull(),
+  deviceId: varchar("device_id", { length: 180 }),
+  locale: varchar("locale", { length: 10 }),
+  promotionsEnabled: boolean("promotions_enabled").notNull().default(true),
+  enabled: boolean("enabled").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index("customer_mobile_push_devices_user_idx").on(table.userId),
+  index("customer_mobile_push_devices_promotions_idx").on(table.promotionsEnabled, table.enabled),
+]);

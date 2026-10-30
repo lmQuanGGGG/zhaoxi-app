@@ -1,0 +1,15 @@
+.expo/
+dist/
+android/
+ios/
+.env
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+*.apk
+*.aab
+*.ipa
+credentials.json
+credentials/
+expo-env.d.ts

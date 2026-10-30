@@ -1,6 +1,7 @@
 import {and,eq} from "drizzle-orm";
 import {getDb} from "@/db";
 import {organizationMembers,serviceRequests,serviceRequestStatusHistory} from "@/db/schema";
+import {customerMobilePushService} from "@/lib/services/customer-mobile-push-service";
 
 type ActorRole="customer"|"partner";
 type Message={id:string;senderRole:ActorRole;senderUserId:string;body:string;createdAt:string;customerReadAt?:string|null;partnerReadAt?:string|null};
@@ -22,6 +23,7 @@ export class TravelMessagingService{
   const next={...details,travelMessages:[...this.messages(details),message],travelTimeline:timeline(details,role,"message",body.slice(0,300)),travelLastMessageAt:now};
   const[updated]=await db.update(serviceRequests).set({details:next,updatedAt:new Date()}).where(eq(serviceRequests.id,row.id)).returning();
   await db.insert(serviceRequestStatusHistory).values({requestId:row.id,toStatus:row.status,note:`TRAVEL_MESSAGE:${role}`});
+  customerMobilePushService.notifyRequestEventAfterResponse({requestId:row.id,toStatus:row.status,note:`TRAVEL_MESSAGE:${role}`});
   return{request:updated,message};
  }
  async customerSend(userId:string,id:string,body:unknown){const row=await this.lead(id);if(row.customerId!==userId)throw new Error("TRAVEL_BOOKING_FORBIDDEN");return this.send(row,"customer",userId,body)}

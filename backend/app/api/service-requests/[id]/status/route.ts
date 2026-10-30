@@ -5,6 +5,7 @@ import { errorResponse, json } from "@/lib/api";
 import { asObject, optionalString, requiredString, ValidationError } from "@/lib/validation";
 import { canManageRequestStatus } from "@/lib/security/access-policy";
 import { mayAccessRequest, requireSession } from "@/lib/security/route-authorization";
+import { customerMobilePushService } from "@/lib/services/customer-mobile-push-service";
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +76,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     if (!updated) {
       return errorResponse("Service request state changed concurrently. Reload and retry.", 409, { code: "REQUEST_STATE_CONFLICT" });
     }
+    customerMobilePushService.notifyRequestEventAfterResponse({ requestId: id, toStatus: status, note, actorUserId: gate.session.userId });
 
     return json({ ok: true, data: updated });
   } catch (error) {
