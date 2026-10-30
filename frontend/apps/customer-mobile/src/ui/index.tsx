@@ -1,168 +1,126 @@
 import { Ionicons } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
-import * as Haptics from "expo-haptics";
 import { Image, type ImageProps } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
 import { useEffect, type ComponentProps, type ReactNode } from "react";
-import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, TextInput, View, type PressableProps, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, type PressableProps, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle } from "react-native";
 import Animated, { Easing, FadeInDown, interpolate, useAnimatedStyle, useSharedValue, withRepeat, withSpring, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, font, radius, serviceColors, shadow, space } from "../theme";
+import { PageHeader, TopBar } from "./chrome";
+import { haptic } from "./haptics";
+import { ZxIcon, type ZxIconName } from "./icons";
 
 export type IconName = ComponentProps<typeof Ionicons>["name"];
-export { Ionicons };
-
-export const haptic = {
-  tap: () => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined); },
-  select: () => { void Haptics.selectionAsync().catch(() => undefined); },
-  success: () => { void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined); },
-  warn: () => { void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => undefined); },
-};
+export { Ionicons, haptic, ZxIcon, type ZxIconName };
+export { BackButton, DOCK_SPACE, PageHeader, ServicesGem, TopBar } from "./chrome";
 
 // ---------------------------------------------------------------------------
 // Layout
 // ---------------------------------------------------------------------------
-export function Backdrop() {
-  return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <LinearGradient colors={["#E9F7F1", colors.bg, colors.bg]} locations={[0, 0.35, 1]} style={StyleSheet.absoluteFill} />
-      <View style={[styles.orb, { top: -120, right: -90, backgroundColor: "rgba(15,175,122,0.14)" }]} />
-      <View style={[styles.orb, { top: 160, left: -140, width: 260, height: 260, backgroundColor: "rgba(56,133,184,0.08)" }]} />
-    </View>
-  );
-}
-
-export function Screen({ children, style, edges = ["top"] }: { children: ReactNode; style?: StyleProp<ViewStyle>; edges?: Array<"top" | "bottom"> }) {
+/** Page shell: PWA top bar + white (or soft grey) page background. */
+export function Screen({ children, style, topbar = true, soft = false, edges = [] }: { children: ReactNode; style?: StyleProp<ViewStyle>; topbar?: boolean; soft?: boolean; edges?: Array<"top" | "bottom"> }) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[{ flex: 1, backgroundColor: colors.bg, paddingTop: edges.includes("top") ? insets.top : 0, paddingBottom: edges.includes("bottom") ? insets.bottom : 0 }, style]}>
-      <Backdrop />
+    <View style={[{ flex: 1, backgroundColor: soft ? colors.bgSoft : colors.bg, paddingTop: !topbar && edges.includes("top") ? insets.top : 0, paddingBottom: edges.includes("bottom") ? insets.bottom : 0 }, style]}>
+      {topbar ? <TopBar /> : null}
       {children}
     </View>
   );
 }
 
-export function Header({ title, subtitle, eyebrow = "ZHAOXI", back = true, right, onBack }: { title: string; subtitle?: string; eyebrow?: string | null; back?: boolean; right?: ReactNode; onBack?: () => void }) {
-  return (
-    <View style={styles.header}>
-      {back && (
-        <PressableScale accessibilityLabel="Back" onPress={() => (onBack ? onBack() : router.canGoBack() ? router.back() : router.replace("/"))} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={22} color={colors.text} />
-        </PressableScale>
-      )}
-      <View style={{ flex: 1, minWidth: 0 }}>
-        {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
-        <Text style={[font.h1, { fontSize: 24 }]} numberOfLines={1}>{title}</Text>
-        {subtitle ? <Text style={[font.small, { marginTop: 2 }]} numberOfLines={1}>{subtitle}</Text> : null}
-      </View>
-      {right ? <View style={{ flexDirection: "row", gap: 8 }}>{right}</View> : null}
-    </View>
-  );
-}
+/** Kept for existing screens: same as the PWA `CustomerPageHeader`. */
+export const Header = PageHeader;
 
 // ---------------------------------------------------------------------------
 // Surfaces
 // ---------------------------------------------------------------------------
-export function GlassCard({ children, style, padded = true, blur = false }: { children: ReactNode; style?: StyleProp<ViewStyle>; padded?: boolean; blur?: boolean }) {
-  return (
-    <View style={[styles.card, padded && { padding: space.lg }, shadow(1), style]}>
-      {blur && Platform.OS === "ios" ? <BlurView intensity={30} tint="light" style={[StyleSheet.absoluteFill, { borderRadius: radius.lg }]} /> : null}
-      {children}
-    </View>
-  );
+export function GlassCard({ children, style, padded = true, muted = false }: { children: ReactNode; style?: StyleProp<ViewStyle>; padded?: boolean; muted?: boolean; blur?: boolean }) {
+  return <View style={[styles.card, muted && styles.cardMuted, padded && { padding: 16 }, !muted && shadow("card"), style]}>{children}</View>;
 }
-
-export function GlassBar({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
-  return (
-    <View style={[styles.glassBar, style]}>
-      {Platform.OS === "ios" ? <BlurView intensity={60} tint="light" style={StyleSheet.absoluteFill} /> : <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(255,255,255,0.96)" }]} />}
-      {children}
-    </View>
-  );
-}
+export const Card = GlassCard;
 
 // ---------------------------------------------------------------------------
 // Interaction
 // ---------------------------------------------------------------------------
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export function PressableScale({ children, style, onPress, scaleTo = 0.96, hapticOnPress = true, disabled, ...rest }: PressableProps & { style?: StyleProp<ViewStyle>; scaleTo?: number; hapticOnPress?: boolean; children?: ReactNode }) {
+export function PressableScale({ children, style, onPress, scaleTo = 0.97, hapticOnPress = true, disabled, ...rest }: PressableProps & { style?: StyleProp<ViewStyle>; scaleTo?: number; hapticOnPress?: boolean; children?: ReactNode }) {
   const pressed = useSharedValue(0);
-  const animated = useAnimatedStyle(() => ({ transform: [{ scale: interpolate(pressed.value, [0, 1], [1, scaleTo]) }], opacity: interpolate(pressed.value, [0, 1], [1, 0.92]) }));
+  const animated = useAnimatedStyle(() => ({ transform: [{ scale: interpolate(pressed.value, [0, 1], [1, scaleTo]) }] }));
   return (
     <AnimatedPressable
       {...rest}
       disabled={disabled}
-      onPressIn={(event) => { pressed.value = withSpring(1, { damping: 20, stiffness: 400 }); rest.onPressIn?.(event); }}
+      onPressIn={(event) => { pressed.value = withSpring(1, { damping: 20, stiffness: 420 }); rest.onPressIn?.(event); }}
       onPressOut={(event) => { pressed.value = withSpring(0, { damping: 15, stiffness: 300 }); rest.onPressOut?.(event); }}
       onPress={(event) => { if (hapticOnPress) haptic.tap(); onPress?.(event); }}
-      style={[style, animated, disabled && { opacity: 0.5 }]}
+      style={[style, animated, disabled && { opacity: 0.55 }]}
     >
       {children}
     </AnimatedPressable>
   );
 }
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "dark" | "soft";
 export function Button({ title, onPress, variant = "primary", icon, loading, disabled, style, small }: { title: string; onPress?: () => void; variant?: ButtonVariant; icon?: IconName; loading?: boolean; disabled?: boolean; style?: StyleProp<ViewStyle>; small?: boolean }) {
   const palette = {
-    primary: { bg: colors.brand, fg: colors.white, border: colors.brand },
-    secondary: { bg: colors.white, fg: colors.brandStrong, border: colors.border },
+    primary: { bg: colors.wechat, fg: colors.white, border: colors.wechat },
+    secondary: { bg: colors.white, fg: "#475569", border: colors.border },
     ghost: { bg: "transparent", fg: colors.brandStrong, border: "transparent" },
-    danger: { bg: colors.dangerSoft, fg: colors.danger, border: colors.dangerSoft },
+    danger: { bg: colors.dangerSoft, fg: colors.dangerText, border: colors.dangerSoft },
+    dark: { bg: colors.brandDeep, fg: colors.white, border: colors.brandDeep },
+    soft: { bg: colors.brandSoft, fg: colors.brandStrong, border: "#DCFCE7" },
   }[variant];
   return (
-    <PressableScale disabled={disabled || loading} onPress={onPress} style={[styles.button, small && styles.buttonSmall, { backgroundColor: palette.bg, borderColor: palette.border }, variant === "primary" && shadow(2), style]}>
-      {variant === "primary" && <LinearGradient colors={["#19C08A", colors.brandStrong]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: small ? radius.md : radius.lg }]} />}
+    <PressableScale disabled={disabled || loading} onPress={onPress} style={[styles.button, small && styles.buttonSmall, variant === "dark" && { borderRadius: 9 }, { backgroundColor: palette.bg, borderColor: palette.border }, style]}>
       {loading ? <ActivityIndicator color={palette.fg} /> : (
         <>
-          {icon ? <Ionicons name={icon} size={small ? 15 : 18} color={palette.fg} /> : null}
-          <Text style={[styles.buttonText, small && { fontSize: 13 }, { color: palette.fg }]} numberOfLines={1}>{title}</Text>
+          {icon ? <Ionicons name={icon} size={small ? 14 : 17} color={palette.fg} /> : null}
+          <Text style={[styles.buttonText, small && { fontSize: 12 }, { color: palette.fg }]} numberOfLines={1}>{title}</Text>
         </>
       )}
     </PressableScale>
   );
 }
 
-export function IconButton({ icon, onPress, badge, color = colors.text, style, label }: { icon: IconName; onPress?: () => void; badge?: number; color?: string; style?: StyleProp<ViewStyle>; label?: string }) {
+export function IconButton({ icon, zx, onPress, badge, color = colors.ink, style, label }: { icon?: IconName; zx?: ZxIconName; onPress?: () => void; badge?: number; color?: string; style?: StyleProp<ViewStyle>; label?: string }) {
   return (
     <PressableScale accessibilityLabel={label} onPress={onPress} style={[styles.iconButton, style]}>
-      <Ionicons name={icon} size={20} color={color} />
-      {badge ? <Badge value={badge} style={{ position: "absolute", top: -3, right: -3 }} /> : null}
+      {zx ? <ZxIcon name={zx} size={19} color={color} /> : icon ? <Ionicons name={icon} size={19} color={color} /> : null}
+      {badge ? <Badge value={badge} style={{ position: "absolute", top: -5, right: -5 }} /> : null}
     </PressableScale>
   );
 }
 
-export function Badge({ value, style }: { value: number; style?: StyleProp<ViewStyle> }) {
+export function Badge({ value, style, green }: { value: number; style?: StyleProp<ViewStyle>; green?: boolean }) {
   if (!value) return null;
-  return (
-    <View style={[styles.badge, style]}>
-      <Text style={styles.badgeText}>{value > 99 ? "99+" : value}</Text>
-    </View>
-  );
+  return <View style={[styles.badge, green && { backgroundColor: "#22C55E" }, style]}><Text style={styles.badgeText}>{value > 99 ? "99+" : value}</Text></View>;
 }
 
-export function Chip({ label, active, onPress, count, icon }: { label: string; active?: boolean; onPress?: () => void; count?: number; icon?: IconName }) {
+/** Filter chip. `green` = services/notifications chips, `dark` = orders chips (with count). */
+export function Chip({ label, active, onPress, count, icon, tone = "green", image }: { label: string; active?: boolean; onPress?: () => void; count?: number; icon?: IconName; tone?: "green" | "dark" | "soft"; image?: ReactNode }) {
+  const dark = tone === "dark";
+  const soft = tone === "soft";
+  const activeBg = dark ? colors.brandDeep : colors.wechat;
   return (
-    <PressableScale onPress={() => { haptic.select(); onPress?.(); }} hapticOnPress={false} style={[styles.chip, active && styles.chipActive]}>
-      {icon ? <Ionicons name={icon} size={14} color={active ? colors.white : colors.textSecondary} /> : null}
-      <Text style={[styles.chipText, active && { color: colors.white }]}>{label}</Text>
-      {count ? <Text style={[styles.chipCount, active && { color: "rgba(255,255,255,0.85)" }]}>{count}</Text> : null}
+    <PressableScale onPress={() => { haptic.select(); onPress?.(); }} hapticOnPress={false} style={[styles.chip, dark && styles.chipDark, soft && styles.chipSoft, active && { backgroundColor: activeBg, borderColor: activeBg }, active && !dark && shadow("card")]}>
+      {image}
+      {icon ? <Ionicons name={icon} size={14} color={active ? colors.white : "#475569"} /> : null}
+      <Text style={[styles.chipText, dark && { fontSize: 11, fontWeight: "500", color: colors.textSecondary }, active && { color: colors.white }]}>{label}</Text>
+      {count !== undefined ? <View style={[styles.chipCount, active && { backgroundColor: "rgba(255,255,255,0.2)" }]}><Text style={[styles.chipCountText, active && { color: colors.white }]}>{count}</Text></View> : null}
     </PressableScale>
   );
 }
 
-export function QuantityStepper({ value, onChange, min = 0, max = 99, disabled, compact }: { value: number; onChange: (next: number) => void; min?: number; max?: number; disabled?: boolean; compact?: boolean }) {
-  const size = compact ? 28 : 34;
+/** PWA `menuQuantity`: round − / value / green + */
+export function QuantityStepper({ value, onChange, min = 0, max = 99, disabled }: { value: number; onChange: (next: number) => void; min?: number; max?: number; disabled?: boolean; compact?: boolean }) {
   return (
     <View style={styles.stepper}>
-      <PressableScale disabled={disabled || value <= min} onPress={() => { haptic.select(); onChange(Math.max(min, value - 1)); }} hapticOnPress={false} style={[styles.stepperButton, { width: size, height: size }]}>
-        <Ionicons name="remove" size={18} color={colors.brandStrong} />
+      <PressableScale disabled={disabled || value <= min} onPress={() => { haptic.select(); onChange(Math.max(min, value - 1)); }} hapticOnPress={false} style={styles.stepMinus}>
+        <ZxIcon name="minus" size={14} color="#334155" strokeWidth={2.4} />
       </PressableScale>
       <Text style={styles.stepperValue}>{value}</Text>
-      <PressableScale disabled={disabled || value >= max} onPress={() => { haptic.select(); onChange(Math.min(max, value + 1)); }} hapticOnPress={false} style={[styles.stepperButton, styles.stepperPlus, { width: size, height: size }]}>
-        <Ionicons name="add" size={18} color={colors.white} />
+      <PressableScale disabled={disabled || value >= max} onPress={() => { haptic.select(); onChange(Math.min(max, value + 1)); }} hapticOnPress={false} style={styles.stepPlus}>
+        <ZxIcon name="plus" size={14} color={colors.white} strokeWidth={2.6} />
       </PressableScale>
     </View>
   );
@@ -170,9 +128,9 @@ export function QuantityStepper({ value, onChange, min = 0, max = 99, disabled, 
 
 export function Field({ label, style, ...props }: TextInputProps & { label?: string; style?: StyleProp<TextStyle> }) {
   return (
-    <View style={{ gap: 6 }}>
+    <View style={{ gap: 8 }}>
       {label ? <Text style={styles.fieldLabel}>{label}</Text> : null}
-      <TextInput placeholderTextColor={colors.textMuted} {...props} style={[styles.field, props.multiline && { minHeight: 84, textAlignVertical: "top", paddingTop: 12 }, style]} />
+      <TextInput placeholderTextColor="#94A3B8" {...props} style={[styles.field, props.multiline && { minHeight: 88, textAlignVertical: "top", paddingTop: 14 }, style]} />
     </View>
   );
 }
@@ -195,29 +153,29 @@ const serviceAssets: Record<string, number> = {
 
 export function ServiceIcon({ code, size = 44 }: { code?: string | null; size?: number }) {
   const asset = serviceAssets[code || ""];
-  if (!asset) return <Ionicons name="grid" size={size * 0.6} color={colors.brand} />;
+  if (!asset) return <ZxIcon name="services" size={size * 0.6} color={colors.brand} />;
   return <Image source={asset} style={{ width: size, height: size }} contentFit="contain" />;
 }
 
-export function ServiceBadge({ code, size = 52 }: { code?: string | null; size?: number }) {
+/** Icon tile with the PWA's soft green gradient frame (services hub cards). */
+export function ServiceBadge({ code, size = 52, mint = true }: { code?: string | null; size?: number; mint?: boolean }) {
   const palette = serviceColors[code || ""] || { accent: colors.brand, tint: colors.brandSoft };
   return (
-    <View style={{ width: size, height: size, borderRadius: size * 0.34, backgroundColor: palette.tint, alignItems: "center", justifyContent: "center" }}>
-      <ServiceIcon code={code} size={size * 0.72} />
+    <View style={{ width: size, height: size, borderRadius: size * 0.29, backgroundColor: mint ? "#E0FAEC" : palette.tint, borderWidth: 1, borderColor: "rgba(7,193,96,0.12)", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+      <ServiceIcon code={code} size={size * 0.86} />
     </View>
   );
 }
 
 export function AppImage({ uri, style, fallbackCode, ...props }: Omit<ImageProps, "source"> & { uri?: string; fallbackCode?: string | null }) {
   if (!uri) {
-    const palette = serviceColors[fallbackCode || ""] || { accent: colors.brand, tint: colors.brandSoft };
     return (
-      <View style={[{ backgroundColor: palette.tint, alignItems: "center", justifyContent: "center", overflow: "hidden" }, style as StyleProp<ViewStyle>]}>
-        <ServiceIcon code={fallbackCode} size={36} />
+      <View style={[{ backgroundColor: "#E2E8F0", alignItems: "center", justifyContent: "center", overflow: "hidden" }, style as StyleProp<ViewStyle>]}>
+        <ServiceIcon code={fallbackCode} size={34} />
       </View>
     );
   }
-  return <Image source={{ uri }} cachePolicy="memory-disk" transition={220} contentFit="cover" recyclingKey={uri} placeholder={{ blurhash: "L6PZfSi_.AyE_3t7t7R**0o#DgR4" }} style={style} {...props} />;
+  return <Image source={{ uri }} cachePolicy="memory-disk" transition={200} contentFit="cover" recyclingKey={uri} placeholder={{ blurhash: "L6PZfSi_.AyE_3t7t7R**0o#DgR4" }} style={style} {...props} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -229,13 +187,13 @@ export function Skeleton({ width = "100%", height = 16, radius: r = 10, style }:
     progress.value = withRepeat(withTiming(1, { duration: 1100, easing: Easing.inOut(Easing.ease) }), -1, true);
   }, [progress]);
   const animated = useAnimatedStyle(() => ({ opacity: interpolate(progress.value, [0, 1], [0.45, 1]) }));
-  return <Animated.View style={[{ width, height, borderRadius: r, backgroundColor: "#E4ECE9" }, animated, style]} />;
+  return <Animated.View style={[{ width, height, borderRadius: r, backgroundColor: "#E9EEF2" }, animated, style]} />;
 }
 
 export function SkeletonCard({ lines = 2, image = true }: { lines?: number; image?: boolean }) {
   return (
     <GlassCard style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
-      {image ? <Skeleton width={64} height={64} radius={16} /> : null}
+      {image ? <Skeleton width={56} height={56} radius={15} /> : null}
       <View style={{ flex: 1, gap: 8 }}>
         <Skeleton width="70%" height={14} />
         {Array.from({ length: lines }).map((_, index) => <Skeleton key={index} width={`${85 - index * 20}%`} height={11} />)}
@@ -248,15 +206,16 @@ export function SkeletonList({ count = 4, image = true }: { count?: number; imag
   return <View style={{ gap: 12 }}>{Array.from({ length: count }).map((_, index) => <SkeletonCard key={index} image={image} />)}</View>;
 }
 
-export function EmptyState({ icon = "sparkles-outline", title, body, action, onAction }: { icon?: IconName; title: string; body?: string; action?: string; onAction?: () => void }) {
+/** PWA empty state (`orders.module.css .empty`). */
+export function EmptyState({ icon, zx = "orders", title, body, action, onAction }: { icon?: IconName; zx?: ZxIconName; title: string; body?: string; action?: string; onAction?: () => void }) {
   return (
-    <Animated.View entering={FadeInDown.duration(320)}>
-      <GlassCard style={{ alignItems: "center", paddingVertical: 36, gap: 10 }}>
-        <View style={styles.emptyIcon}><Ionicons name={icon} size={30} color={colors.brand} /></View>
-        <Text style={[font.h2, { textAlign: "center" }]}>{title}</Text>
-        {body ? <Text style={[font.small, { textAlign: "center", lineHeight: 18 }]}>{body}</Text> : null}
-        {action ? <Button title={action} onPress={onAction} style={{ marginTop: 8, alignSelf: "stretch" }} /> : null}
-      </GlassCard>
+    <Animated.View entering={FadeInDown.duration(280)}>
+      <View style={[styles.empty, shadow("card")]}>
+        <View style={styles.emptyIcon}>{icon ? <Ionicons name={icon} size={20} color={colors.brandDeep} /> : <ZxIcon name={zx} size={20} color={colors.brandDeep} />}</View>
+        <Text style={styles.emptyTitle}>{title}</Text>
+        {body ? <Text style={styles.emptyBody}>{body}</Text> : null}
+        {action ? <Button variant="dark" small title={action} onPress={onAction} style={{ marginTop: 14, alignSelf: "center", minHeight: 36 }} /> : null}
+      </View>
     </Animated.View>
   );
 }
@@ -265,13 +224,11 @@ export function ErrorState({ message, onRetry, retryLabel }: { message: string; 
   return <EmptyState icon="cloud-offline-outline" title={message} action={onRetry ? retryLabel : undefined} onAction={onRetry} />;
 }
 
-export function SectionTitle({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
+export function SectionTitle({ title, action, onAction, style }: { title: string; action?: string; onAction?: () => void; style?: StyleProp<ViewStyle> }) {
   return (
-    <View style={styles.sectionRow}>
-      <Text style={font.h2}>{title}</Text>
-      {action ? (
-        <Pressable hitSlop={10} onPress={onAction}><Text style={styles.sectionAction}>{action} ›</Text></Pressable>
-      ) : null}
+    <View style={[styles.sectionRow, style]}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {action ? <Pressable hitSlop={10} onPress={onAction}><Text style={styles.sectionAction}>{action} ›</Text></Pressable> : null}
     </View>
   );
 }
@@ -279,59 +236,63 @@ export function SectionTitle({ title, action, onAction }: { title: string; actio
 export function Row({ label, value, strong, color }: { label: string; value: string; strong?: boolean; color?: string }) {
   return (
     <View style={styles.row}>
-      <Text style={[font.small, strong && { color: colors.text, fontWeight: "700", fontSize: 14 }]}>{label}</Text>
-      <Text style={[{ fontSize: 13, color: color || colors.text, fontWeight: strong ? "800" : "600" }, strong && { fontSize: 17 }]}>{value}</Text>
+      <Text style={[{ fontSize: 13, color: colors.slate }, strong && { color: colors.ink, fontWeight: "700", fontSize: 14 }]}>{label}</Text>
+      <Text style={[{ fontSize: 13, color: color || colors.ink, fontWeight: strong ? "800" : "600" }, strong && { fontSize: 18 }]}>{value}</Text>
     </View>
   );
 }
 
 export function StatusPill({ label, tone = "brand" }: { label: string; tone?: "brand" | "warning" | "danger" | "muted" }) {
-  const palette = { brand: [colors.brandSoft, colors.brandStrong], warning: [colors.warningSoft, colors.warning], danger: [colors.dangerSoft, colors.danger], muted: ["#EEF2F1", colors.textSecondary] }[tone];
+  const palette = { brand: ["#D1FAE5", "#065F46"], warning: [colors.warningSoft, colors.warning], danger: [colors.dangerSoft, colors.dangerText], muted: ["#F1F5F9", colors.slate] }[tone];
   return <View style={[styles.pill, { backgroundColor: palette[0] }]}><Text style={[styles.pillText, { color: palette[1] }]}>{label}</Text></View>;
 }
 
-export function ListRow({ icon, title, subtitle, onPress, right, tint = colors.brand }: { icon: IconName; title: string; subtitle?: string; onPress?: () => void; right?: ReactNode; tint?: string }) {
+/** PWA profile menu row: white card, emoji/icon, label, chevron. */
+export function ListRow({ icon, emoji, title, subtitle, onPress, right, tint = colors.brand }: { icon?: IconName; emoji?: string; title: string; subtitle?: string; onPress?: () => void; right?: ReactNode; tint?: string }) {
   return (
-    <PressableScale onPress={onPress} scaleTo={0.98} style={styles.listRow}>
-      <View style={[styles.listIcon, { backgroundColor: `${tint}1A` }]}><Ionicons name={icon} size={19} color={tint} /></View>
+    <PressableScale onPress={onPress} scaleTo={0.985} style={styles.listRow}>
+      {emoji ? <Text style={{ fontSize: 18, width: 26, textAlign: "center" }}>{emoji}</Text> : icon ? <Ionicons name={icon} size={19} color={tint} style={{ width: 26, textAlign: "center" }} /> : null}
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={font.h3} numberOfLines={1}>{title}</Text>
-        {subtitle ? <Text style={[font.tiny, { marginTop: 2 }]} numberOfLines={1}>{subtitle}</Text> : null}
+        <Text style={{ fontSize: 14, fontWeight: "600", color: colors.ink }} numberOfLines={1}>{title}</Text>
+        {subtitle ? <Text style={[font.tiny, { marginTop: 2, fontSize: 11 }]} numberOfLines={1}>{subtitle}</Text> : null}
       </View>
-      {right ?? <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />}
+      {right ?? <Text style={{ fontSize: 20, color: "#94A3B8" }}>›</Text>}
     </PressableScale>
   );
 }
 
 export const styles = StyleSheet.create({
-  orb: { position: "absolute", width: 320, height: 320, borderRadius: 999 },
-  header: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: space.lg, paddingTop: space.sm, paddingBottom: space.md },
-  eyebrow: { fontSize: 11, fontWeight: "800", letterSpacing: 1.4, color: colors.brand },
-  backButton: { width: 40, height: 40, borderRadius: 14, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft, alignItems: "center", justifyContent: "center", ...shadow(1) },
-  card: { backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.glassBorder, overflow: Platform.OS === "android" ? "hidden" : "visible" },
-  glassBar: { overflow: "hidden", borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
-  button: { minHeight: 50, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingHorizontal: 18, overflow: "hidden" },
-  buttonSmall: { minHeight: 36, borderRadius: radius.md, paddingHorizontal: 12 },
+  card: { backgroundColor: colors.white, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.borderSoft },
+  cardMuted: { backgroundColor: colors.surfaceMuted },
+  button: { minHeight: 48, borderRadius: radius.pill, borderWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, paddingHorizontal: 18 },
+  buttonSmall: { minHeight: 34, paddingHorizontal: 13 },
   buttonText: { fontSize: 15, fontWeight: "800" },
-  iconButton: { width: 42, height: 42, borderRadius: 15, backgroundColor: colors.white, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: colors.borderSoft, ...shadow(1) },
-  badge: { minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 5, backgroundColor: colors.danger, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: colors.white },
-  badgeText: { color: colors.white, fontSize: 10, fontWeight: "800" },
-  chip: { flexDirection: "row", alignItems: "center", gap: 6, height: 36, paddingHorizontal: 14, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
-  chipActive: { backgroundColor: colors.brand, borderColor: colors.brand },
-  chipText: { fontSize: 13, fontWeight: "700", color: colors.textSecondary },
-  chipCount: { fontSize: 12, fontWeight: "700", color: colors.textMuted },
-  stepper: { flexDirection: "row", alignItems: "center", gap: 10 },
-  stepperButton: { borderRadius: 11, alignItems: "center", justifyContent: "center", backgroundColor: colors.brandSoft },
-  stepperPlus: { backgroundColor: colors.brand },
-  stepperValue: { minWidth: 20, textAlign: "center", fontWeight: "800", fontSize: 15, color: colors.text },
-  fieldLabel: { fontSize: 13, fontWeight: "700", color: colors.textSecondary },
-  field: { minHeight: 48, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, paddingHorizontal: 14, fontSize: 15, color: colors.text },
-  emptyIcon: { width: 64, height: 64, borderRadius: 22, backgroundColor: colors.brandSoft, alignItems: "center", justifyContent: "center" },
-  sectionRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: space.xl, marginBottom: space.md },
-  sectionAction: { color: colors.brandStrong, fontWeight: "700", fontSize: 13 },
+  iconButton: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.white, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: colors.border },
+  badge: { minWidth: 17, height: 17, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.danger, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: colors.white },
+  badgeText: { color: colors.white, fontSize: 8, fontWeight: "900" },
+  chip: { flexDirection: "row", alignItems: "center", gap: 5, height: 34, paddingHorizontal: 14, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
+  chipDark: { height: 30, paddingHorizontal: 9, gap: 6, borderColor: colors.borderWarm },
+  chipSoft: { borderColor: "transparent", backgroundColor: "#F1F5F4" },
+  chipText: { fontSize: 12, fontWeight: "600", color: "#475569" },
+  chipCount: { minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 4, backgroundColor: "#EEF0EE", alignItems: "center", justifyContent: "center" },
+  chipCountText: { fontSize: 9, color: colors.textSecondary },
+  stepper: { flexDirection: "row", alignItems: "center", gap: 6 },
+  stepMinus: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" },
+  stepPlus: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.wechat, alignItems: "center", justifyContent: "center" },
+  stepperValue: { minWidth: 18, textAlign: "center", fontWeight: "700", fontSize: 13, color: colors.ink },
+  fieldLabel: { fontSize: 13, color: colors.ink },
+  field: { minHeight: 52, borderRadius: 18, backgroundColor: "#F2F5F8", paddingHorizontal: 16, fontSize: 15, color: colors.text, ...shadow("card") },
+  empty: { alignItems: "center", paddingVertical: 22, paddingHorizontal: 16, borderRadius: 12, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderWarm },
+  emptyIcon: { width: 38, height: 38, borderRadius: 11, backgroundColor: colors.brandMint, alignItems: "center", justifyContent: "center", marginBottom: 10 },
+  emptyTitle: { fontSize: 16, fontWeight: "700", color: colors.text, textAlign: "center" },
+  emptyBody: { fontSize: 12, color: colors.textMuted, textAlign: "center", marginTop: 4, lineHeight: 17 },
+  sectionRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 22, marginBottom: 12 },
+  sectionTitle: { fontSize: 18, fontWeight: "700", color: colors.ink },
+  sectionAction: { color: "#2E7D63", fontWeight: "600", fontSize: 13 },
   row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 6 },
-  pill: { alignSelf: "flex-start", paddingHorizontal: 9, paddingVertical: 4, borderRadius: radius.pill },
-  pillText: { fontSize: 11, fontWeight: "800" },
-  listRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12, paddingHorizontal: 4 },
-  listIcon: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  pill: { alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.pill },
+  pillText: { fontSize: 10, fontWeight: "700" },
+  listRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 14, paddingHorizontal: 16, borderRadius: 18, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
 });
+
+void space;

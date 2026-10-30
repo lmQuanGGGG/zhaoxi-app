@@ -1,27 +1,27 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { logout } from "../../src/api/client";
 import { getProfile } from "../../src/api/endpoints";
 import { APP_VERSION } from "../../src/config";
 import { TAB_BAR_SPACE } from "../../src/constants";
-import { useSession, useUnread } from "../../src/hooks";
+import { str } from "../../src/format";
+import { useSession } from "../../src/hooks";
 import { localeLabels, useI18n } from "../../src/i18n";
-import { getPromotionsPreference, pushPermissionGranted, registerForPush, setPromotionsPreference, unregisterPush } from "../../src/notifications";
+import { getPromotionsPreference, pushPermissionGranted, registerForPush, setPromotionsPreference } from "../../src/notifications";
+import { profileCopy } from "../../src/profile-copy";
 import { keys } from "../../src/query";
-import { colors, font, radius, shadow, space } from "../../src/theme";
-import { Badge, GlassCard, Ionicons, ListRow, PressableScale, Screen, haptic } from "../../src/ui";
+import { colors, shadow } from "../../src/theme";
+import { ListRow, PressableScale, Screen } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
 
 export default function ProfileScreen() {
   const { t, locale } = useI18n();
-  const { session, guest, userId } = useSession();
-  const client = useQueryClient();
-  const unread = useUnread();
-  const profile = useQuery({ queryKey: keys.profile(userId), queryFn: getProfile, enabled: Boolean(userId) && !guest });
+  const c = profileCopy[locale];
+  const { session, userId } = useSession();
+  const profile = useQuery({ queryKey: keys.profile(userId), queryFn: getProfile, enabled: Boolean(userId) });
   const [push, setPush] = useState(false);
   const [promotions, setPromotions] = useState(true);
 
@@ -30,84 +30,87 @@ export default function ProfileScreen() {
     void getPromotionsPreference().then(setPromotions);
   }, []));
 
-  const name = guest ? t.profile.guest : profile.data?.user?.displayName || session?.displayName || t.profile.guest;
-  const phone = guest ? t.profile.guestHint : profile.data?.user?.phone || session?.phone || "";
-
-  const signOut = () => Alert.alert(t.profile.signOut, "", [
-    { text: t.common.cancel, style: "cancel" },
-    { text: t.profile.signOut, style: "destructive", onPress: async () => {
-      await logout(locale, unregisterPush);
-      client.clear();
-      haptic.success();
-    } },
-  ]);
+  const data = profile.data;
+  const isGuest = data?.identity?.isGuest ?? session?.authMethod === "guest";
+  const name = str(data?.user?.displayName || session?.displayName, "ZhaoXi Guest");
+  const unnamed = !data?.user?.displayName || /guest/i.test(name);
+  const fields = [data?.user?.displayName, data?.user?.phone, data?.profile?.nationality, data?.profile?.cityName, data?.profile?.addressText];
+  const completion = Math.round((fields.filter((x) => Boolean(x && String(x).trim())).length / fields.length) * 100);
+  const menu: Array<[string, string, string]> = [
+    ["📦", c.orders, "/orders"], ["☆", c.favorites, "/favorites"], ["◷", c.history, "/history"], ["🎟️", c.coupons, "/coupons"],
+    ["◌", c.notifications, "/notifications"], ["文", c.language, "/language"], ["🛡️", c.security, "/account/security"], ["🆘", c.emergency, "/emergency"],
+  ];
+  const info: Array<[string, string]> = [
+    [c.phone, str(data?.user?.phone)], [c.nationality, str(data?.profile?.nationality)], [c.city, str(data?.profile?.cityName)],
+    [c.address, str(data?.profile?.addressText)], [c.whatsapp, str(data?.profile?.whatsapp)], [c.wechat, str(data?.profile?.wechatContactId)],
+  ];
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={{ padding: space.lg, gap: space.lg, paddingBottom: TAB_BAR_SPACE }}>
-        <Animated.View entering={FadeInDown.duration(320)}>
-          <PressableScale scaleTo={0.98} onPress={() => router.push(guest ? "/login" : "/account/edit")} style={[styles.hero, shadow(2)]}>
-            <LinearGradient colors={["#19C08A", colors.brandStrong]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
-            <View style={styles.heroOrb} />
-            <View style={styles.avatar}><Text style={styles.avatarText}>{(name || "喜").slice(0, 1).toUpperCase()}</Text></View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.name} numberOfLines={1}>{name}</Text>
-              <Text style={styles.phone} numberOfLines={2}>{phone}</Text>
-              {guest ? <View style={styles.signIn}><Text style={styles.signInText}>{t.profile.signIn}</Text></View> : null}
+      <ScrollView contentContainerStyle={{ padding: 14, gap: 12, paddingBottom: TAB_BAR_SPACE }}>
+        <Animated.View entering={FadeInDown.duration(300)} style={[styles.hero, { shadowColor: "#07C160", shadowOpacity: 0.2, shadowRadius: 18, shadowOffset: { width: 0, height: 15 } }]}>
+          <LinearGradient colors={["#08A855", "#07C160", "#43D28A"]} locations={[0, 0.58, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 24 }]} />
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+            <View style={styles.avatar}><Text style={styles.avatarText}>{name.slice(0, 1).toUpperCase()}</Text></View>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={styles.heroSmall}>{isGuest ? c.guest : c.persistent}</Text>
+              <Text style={styles.heroName} numberOfLines={1}>{name}</Text>
+              <Text style={styles.heroId} numberOfLines={1}>{c.identity}: {data?.identity?.zhaoxiId || "—"}</Text>
+              {unnamed ? <PressableScale onPress={() => router.push("/account/edit")} style={styles.namePill}><Text style={styles.namePillText}>✏️ {c.nameNow}</Text></PressableScale> : null}
             </View>
-            {guest ? null : <Ionicons name="chevron-forward" size={20} color={colors.white} />}
-          </PressableScale>
+            <PressableScale onPress={() => router.push(isGuest ? "/login" : "/account/edit")} style={styles.editButton}><Text style={styles.editText}>{isGuest ? t.common.signIn : c.edit}</Text></PressableScale>
+          </View>
+          <View style={styles.completionRow}><Text style={styles.completionText}>{c.completion}</Text><Text style={styles.completionText}>{completion}%</Text></View>
+          <View style={styles.track}><View style={[styles.trackFill, { width: `${completion}%` }]} /></View>
         </Animated.View>
 
-        <View style={styles.quick}>
-          {([
-            ["receipt-outline", t.tabs.orders, "/orders"],
-            ["heart-outline", t.profile.favorites, "/favorites"],
-            ["pricetags-outline", t.profile.coupons, "/coupons"],
-            ["notifications-outline", t.profile.notifications, "/notifications"],
-          ] as const).map(([icon, label, href]) => (
-            <PressableScale key={href} onPress={() => router.push(href)} style={styles.quickItem}>
-              <View style={styles.quickIcon}>
-                <Ionicons name={icon} size={22} color={colors.brandStrong} />
-                {href === "/notifications" ? <Badge value={unread.data?.notifications || 0} style={{ position: "absolute", top: -4, right: -6 }} /> : null}
-              </View>
-              <Text style={styles.quickLabel} numberOfLines={1}>{label}</Text>
-            </PressableScale>
+        {unnamed ? (
+          <View style={styles.nameCard}>
+            <LinearGradient colors={["#FFFBEB", "#FEF3C7"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 18 }]} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.nameTitle}>👋 {c.nameTitle}</Text>
+              <Text style={styles.nameHint}>{c.nameHint}</Text>
+            </View>
+            <PressableScale onPress={() => router.push("/account/edit")} style={styles.nameButton}><Text style={styles.nameButtonText}>{c.nameNow}</Text></PressableScale>
+          </View>
+        ) : null}
+
+        {isGuest ? (
+          <PressableScale onPress={() => router.push("/login")} scaleTo={0.99} style={styles.guestNotice}><Text style={styles.guestText}>{c.guestHint}</Text></PressableScale>
+        ) : null}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{c.profile}</Text>
+          {info.map(([label, value]) => (
+            <View key={label} style={styles.infoRow}><Text style={styles.infoLabel}>{label}</Text><Text style={styles.infoValue} numberOfLines={2}>{value || "—"}</Text></View>
           ))}
         </View>
 
-        <GlassCard padded={false} style={styles.group}>
-          <Text style={styles.groupTitle}>{t.profile.account}</Text>
-          {!guest ? <ListRow icon="person-outline" title={t.profile.edit} subtitle={t.profile.addresses} onPress={() => router.push("/account/edit")} /> : null}
-          {!guest ? <ListRow icon="shield-checkmark-outline" title={t.profile.security} onPress={() => router.push("/account/security")} /> : null}
-          <ListRow icon="card-outline" title={t.profile.payments} onPress={() => router.push("/payments")} />
-          <ListRow icon="time-outline" title={t.profile.history} onPress={() => router.push("/history")} />
-        </GlassCard>
+        <View style={styles.section}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <Text style={styles.sectionTitle}>{c.addressBook}</Text>
+            <PressableScale onPress={() => router.push("/account/edit")} style={styles.addButton}><Text style={styles.addText}>{c.addAddress}</Text></PressableScale>
+          </View>
+          {data?.addresses?.length ? data.addresses.map((address) => (
+            <Text key={address.id} style={styles.infoValue} numberOfLines={2}>{address.isDefault ? "★ " : ""}{address.label} · {address.addressText}</Text>
+          )) : <Text style={[styles.infoLabel, { width: "auto" }]}>{c.noAddress}</Text>}
+        </View>
 
-        <GlassCard padded={false} style={styles.group}>
-          <Text style={styles.groupTitle}>{t.profile.app}</Text>
-          <ListRow icon="language-outline" title={t.profile.language} subtitle={`${localeLabels[locale].flag} ${localeLabels[locale].native}`} onPress={() => router.push("/language")} />
-          <ListRow icon="notifications-circle-outline" title={t.profile.push} subtitle={push ? t.profile.pushOn : t.profile.pushOff} onPress={async () => {
+        <Text style={styles.groupTitle}>{c.personal}</Text>
+        <View style={{ gap: 8 }}>
+          {menu.map(([emoji, label, href]) => <ListRow key={href} emoji={emoji} title={label} subtitle={href === "/language" ? `${localeLabels[locale].flag} ${localeLabels[locale].native}` : undefined} onPress={() => router.push(href as never)} />)}
+        </View>
+
+        <Text style={styles.groupTitle}>{c.app}</Text>
+        <View style={{ gap: 8 }}>
+          <ListRow emoji="🔔" title={c.push} subtitle={push ? t.profile.pushOn : t.profile.pushOff} onPress={async () => {
             const status = await registerForPush(locale, true);
             setPush(await pushPermissionGranted());
             if (!status.enabled && status.reason === "simulator") toast(t.profile.pushDevice, "info");
-          }} right={<Ionicons name={push ? "checkmark-circle" : "ellipse-outline"} size={22} color={push ? colors.brand : colors.textMuted} />} />
-          <ListRow icon="megaphone-outline" title={t.profile.promotions} right={<Switch value={promotions} trackColor={{ true: colors.brand }} onValueChange={(value) => { setPromotions(value); void setPromotionsPreference(value, locale); }} />} />
-        </GlassCard>
-
-        <GlassCard padded={false} style={styles.group}>
-          <Text style={styles.groupTitle}>{t.profile.services}</Text>
-          <ListRow icon="help-buoy-outline" title={t.profile.help} onPress={() => router.push("/help")} />
-          <ListRow icon="headset-outline" title={t.profile.support} onPress={() => router.push("/support")} />
-          <ListRow icon="medkit-outline" title={t.profile.emergency} tint={colors.danger} onPress={() => router.push("/emergency")} />
-        </GlassCard>
-
-        {guest ? null : (
-          <PressableScale onPress={signOut} style={styles.signOut}>
-            <Ionicons name="log-out-outline" size={18} color={colors.danger} />
-            <Text style={{ color: colors.danger, fontWeight: "800" }}>{t.profile.signOut}</Text>
-          </PressableScale>
-        )}
+          }} right={<Text style={{ color: push ? colors.wechat : colors.textMuted, fontSize: 16 }}>{push ? "✓" : "○"}</Text>} />
+          <ListRow emoji="📣" title={c.promotions} right={<Switch value={promotions} trackColor={{ true: colors.wechat }} onValueChange={(value) => { setPromotions(value); void setPromotionsPreference(value, locale); }} />} />
+          <ListRow emoji="❓" title={t.profile.help} onPress={() => router.push("/help")} />
+        </View>
         <Text style={styles.version}>ZhaoXi · {t.profile.version} {APP_VERSION}</Text>
       </ScrollView>
     </Screen>
@@ -115,20 +118,34 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: { flexDirection: "row", alignItems: "center", gap: 14, padding: 18, borderRadius: radius.xl, overflow: "hidden", minHeight: 110 },
-  heroOrb: { position: "absolute", right: -40, top: -60, width: 180, height: 180, borderRadius: 90, backgroundColor: "rgba(255,255,255,0.12)" },
-  avatar: { width: 62, height: 62, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.22)", alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "rgba(255,255,255,0.5)" },
-  avatarText: { color: colors.white, fontSize: 26, fontWeight: "900" },
-  name: { color: colors.white, fontSize: 20, fontWeight: "900" },
-  phone: { color: "rgba(255,255,255,0.86)", fontSize: 13, marginTop: 3 },
-  signIn: { alignSelf: "flex-start", marginTop: 10, backgroundColor: colors.white, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
-  signInText: { color: colors.brandStrong, fontWeight: "800", fontSize: 12 },
-  quick: { flexDirection: "row", justifyContent: "space-between", padding: 12, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.glassBorder, ...shadow(1) },
-  quickItem: { flex: 1, alignItems: "center", gap: 6 },
-  quickIcon: { width: 46, height: 46, borderRadius: 16, backgroundColor: colors.brandSoft, alignItems: "center", justifyContent: "center" },
-  quickLabel: { fontSize: 12, fontWeight: "700", color: colors.text },
-  group: { paddingHorizontal: 12, paddingVertical: 6 },
-  groupTitle: { fontSize: 12, fontWeight: "800", color: colors.textMuted, letterSpacing: 0.6, marginTop: 8, marginLeft: 4, textTransform: "uppercase" },
-  signOut: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, height: 50, borderRadius: radius.lg, backgroundColor: colors.dangerSoft },
-  version: { textAlign: "center", color: colors.textMuted, fontSize: 12 },
+  hero: { paddingVertical: 20, paddingHorizontal: 18, borderRadius: 24 },
+  avatar: { width: 62, height: 62, borderRadius: 18, backgroundColor: colors.white, alignItems: "center", justifyContent: "center" },
+  avatarText: { color: "#078343", fontSize: 26, fontWeight: "800" },
+  heroSmall: { fontSize: 12, color: "rgba(255,255,255,0.9)" },
+  heroName: { fontSize: 21, fontWeight: "800", color: colors.white, marginTop: 2 },
+  heroId: { fontSize: 11, color: "rgba(255,255,255,0.92)", marginTop: 3 },
+  namePill: { alignSelf: "flex-start", marginTop: 6, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 999, backgroundColor: colors.white },
+  namePillText: { fontSize: 11, fontWeight: "800", color: "#078343" },
+  editButton: { paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.24)" },
+  editText: { fontSize: 12, fontWeight: "800", color: colors.white },
+  completionRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
+  completionText: { fontSize: 11, color: "rgba(255,255,255,0.92)", fontWeight: "600" },
+  track: { height: 7, borderRadius: 4, backgroundColor: "rgba(255,255,255,0.28)", marginTop: 6, overflow: "hidden" },
+  trackFill: { height: 7, borderRadius: 4, backgroundColor: colors.white },
+  nameCard: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 14, paddingHorizontal: 16, borderRadius: 18, borderWidth: 1, borderColor: "#FDE68A" },
+  nameTitle: { fontSize: 13.5, fontWeight: "800", color: "#78350F" },
+  nameHint: { fontSize: 11, color: "#92400E", marginTop: 3, lineHeight: 15 },
+  nameButton: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: "#D97706" },
+  nameButtonText: { fontSize: 11.5, fontWeight: "800", color: colors.white },
+  guestNotice: { paddingVertical: 13, paddingHorizontal: 15, borderRadius: 18, backgroundColor: "#FFF7ED", borderWidth: 1, borderColor: "#FED7AA" },
+  guestText: { fontSize: 11.5, color: "#9A5B13", lineHeight: 17 },
+  section: { padding: 16, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft, gap: 10 },
+  sectionTitle: { fontSize: 14.5, fontWeight: "700", color: colors.text },
+  infoRow: { flexDirection: "row", gap: 12 },
+  infoLabel: { width: 120, fontSize: 12.5, color: colors.textSecondary },
+  infoValue: { flex: 1, fontSize: 12.5, color: colors.text },
+  addButton: { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 999, backgroundColor: colors.brandSoft },
+  addText: { fontSize: 11, fontWeight: "800", color: "#078343" },
+  groupTitle: { fontSize: 16, fontWeight: "800", color: colors.ink, marginTop: 4, marginLeft: 2 },
+  version: { textAlign: "center", color: colors.textMuted, fontSize: 11, marginTop: 6 },
 });

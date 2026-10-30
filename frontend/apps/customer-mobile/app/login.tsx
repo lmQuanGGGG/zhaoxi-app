@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { LinearGradient } from "expo-linear-gradient";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -96,34 +96,32 @@ export default function LoginScreen() {
   const resendSeconds = Math.max(0, Math.ceil((resendAt - now) / 1000));
 
   return (
-    <Screen edges={["top", "bottom"]}>
+    <Screen topbar={false} edges={["top", "bottom"]} style={{ backgroundColor: "rgba(15,23,42,0.55)" }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <ScrollView contentContainerStyle={{ padding: space.lg, gap: space.lg }} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center", padding: 16 }} keyboardShouldPersistTaps="handled">
+          <View style={styles.sheet}>
           <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
             <IconButton icon="close" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} />
           </View>
           <Animated.View entering={FadeInDown.duration(400)} style={{ alignItems: "center", gap: 10 }}>
-            <View style={[styles.logo, shadow(3)]}>
-              <LinearGradient colors={["#19C08A", colors.brandStrong]} style={StyleSheet.absoluteFill} />
-              <Text style={styles.logoText}>喜</Text>
-            </View>
+            <Image source={require("../assets/brand-logo.png")} style={styles.logo} contentFit="cover" />
             <Text style={[font.h1, { textAlign: "center" }]}>{stage === "setupPin" ? t.login.setupPin : t.login.title}</Text>
             <Text style={[font.small, { textAlign: "center" }]}>{stage === "setupPin" ? t.login.setupPinHint : t.login.subtitle}</Text>
           </Animated.View>
 
           {stage === "setupPin" ? (
             <Animated.View entering={FadeInDown}>
-              <GlassCard style={{ gap: 12 }}>
+              <View style={{ gap: 12 }}>
                 <Field label={t.security.newPin} value={pin} onChangeText={(v) => setPinValue(v.replace(/\D/g, "").slice(0, 6))} keyboardType="number-pad" secureTextEntry maxLength={6} />
                 <Field label={t.security.confirmPin} value={pinConfirm} onChangeText={(v) => setPinConfirm(v.replace(/\D/g, "").slice(0, 6))} keyboardType="number-pad" secureTextEntry maxLength={6} />
                 {error ? <Text style={styles.error}>{error}</Text> : null}
                 <Button title={t.security.savePin} icon="lock-closed" loading={busy} onPress={savePin} />
                 <Button title={t.login.skip} variant="ghost" onPress={() => void finish()} />
-              </GlassCard>
+              </View>
             </Animated.View>
           ) : (
             <Animated.View entering={FadeInDown.delay(100)} layout={LinearTransition}>
-              <GlassCard style={{ gap: 14 }}>
+              <View style={{ gap: 14 }}>
                 <View style={styles.segment}>
                   {(["otp", "pin", "password"] as const).map((key) => (
                     <Chip key={key} label={key === "otp" ? t.login.otp : key === "pin" ? t.login.pinTab : t.login.passwordTab} active={mode === key} onPress={() => setMode(key)} />
@@ -170,10 +168,11 @@ export default function LoginScreen() {
                 ) : null}
 
                 {error ? <Animated.View entering={FadeIn} style={styles.errorBox}><Ionicons name="alert-circle" size={16} color={colors.danger} /><Text style={styles.error}>{error}</Text></Animated.View> : null}
-              </GlassCard>
+              </View>
             </Animated.View>
           )}
           {stage === "form" ? <Button title={t.login.guest} variant="ghost" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} /> : null}
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>
@@ -181,8 +180,8 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  logo: { width: 84, height: 84, borderRadius: 28, overflow: "hidden", alignItems: "center", justifyContent: "center" },
-  logoText: { color: colors.white, fontSize: 40, fontWeight: "900" },
+  sheet: { width: "100%", maxWidth: 440, alignSelf: "center", padding: 24, paddingTop: 20, borderRadius: 28, backgroundColor: colors.white, gap: 16, shadowColor: "#0F172A", shadowOpacity: 0.25, shadowRadius: 32, shadowOffset: { width: 0, height: 24 } },
+  logo: { width: 64, height: 64, borderRadius: 20 },
   segment: { flexDirection: "row", gap: 8 },
   label: { fontSize: 13, fontWeight: "700", color: colors.textSecondary },
   code: { fontSize: 24, letterSpacing: 8, textAlign: "center", fontWeight: "800" },

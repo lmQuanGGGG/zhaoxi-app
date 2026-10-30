@@ -1,52 +1,84 @@
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
 import { getModules } from "../../src/api/endpoints";
+import { TAB_BAR_SPACE } from "../../src/constants";
 import { useI18n } from "../../src/i18n";
 import { moduleRoute, resolveModules, type ServiceGroup } from "../../src/modules";
 import { keys } from "../../src/query";
-import { colors, font, radius, serviceColors, shadow, space } from "../../src/theme";
-import { Chip, Header, Ionicons, PressableScale, Screen, ServiceIcon } from "../../src/ui";
+import { colors, shadow } from "../../src/theme";
+import { Chip, Header, PressableScale, Screen, ServiceBadge, ZxIcon, type ZxIconName } from "../../src/ui";
 
-const groups: Array<"all" | ServiceGroup> = ["all", "food", "housing", "travel", "transport", "life", "community", "finance", "support"];
+const groups: Array<{ key: "all" | ServiceGroup; icon: ZxIconName }> = [
+  { key: "all", icon: "services" },
+  { key: "life", icon: "home" },
+  { key: "food", icon: "food" },
+  { key: "housing", icon: "housing" },
+  { key: "travel", icon: "travel" },
+  { key: "transport", icon: "car" },
+  { key: "community", icon: "community" },
+  { key: "finance", icon: "payment" },
+  { key: "support", icon: "support" },
+];
+
+const copy = {
+  "vi-VN": { title: "Trung tâm dịch vụ", subtitle: "Chọn nhóm và tìm dịch vụ phù hợp.", search: "Trung tâm dịch vụ…" },
+  "en-US": { title: "Service center", subtitle: "Choose a group and find the right service.", search: "Service center…" },
+  "zh-CN": { title: "服务中心", subtitle: "选择分类，找到合适的服务。", search: "服务中心…" },
+  "zh-TW": { title: "服務中心", subtitle: "選擇分類，找到合適的服務。", search: "服務中心…" },
+} as const;
 
 export default function ServicesHub() {
   const { t, locale } = useI18n();
+  const c = copy[locale];
   const [group, setGroup] = useState<"all" | ServiceGroup>("all");
+  const [query, setQuery] = useState("");
   const modules = useQuery({ queryKey: keys.modules(locale), queryFn: () => getModules(locale), staleTime: 5 * 60_000 });
-  const items = useMemo(() => resolveModules(modules.data, locale).filter((item) => group === "all" || item.group === group), [modules.data, locale, group]);
+  const items = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return resolveModules(modules.data, locale).filter((item) => (group === "all" || item.group === group) && (!needle || `${item.name} ${item.description}`.toLowerCase().includes(needle)));
+  }, [modules.data, locale, group, query]);
 
   return (
     <Screen>
-      <Header title={t.services.title} subtitle={t.services.subtitle} />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: space.lg, paddingBottom: space.md }} style={{ flexGrow: 0 }}>
-        {groups.map((key) => <Chip key={key} label={t.services[key]} active={group === key} onPress={() => setGroup(key)} />)}
-      </ScrollView>
-      <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 4, gap: 12, paddingBottom: 48 }}>
-        {items.map((item, index) => {
-          const palette = serviceColors[item.code] || { accent: colors.brand, tint: colors.brandSoft };
-          return (
-            <Animated.View key={item.code} entering={FadeInDown.delay(index * 40).duration(300)} layout={LinearTransition.springify().damping(18)}>
-              <PressableScale onPress={() => router.push(moduleRoute(item.code))} scaleTo={0.98} style={[styles.card, shadow(1)]}>
-                <View style={[styles.icon, { backgroundColor: palette.tint }]}><ServiceIcon code={item.code} size={44} /></View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={font.h2} numberOfLines={1}>{item.name}</Text>
-                  <Text style={[font.small, { marginTop: 3 }]} numberOfLines={2}>{item.description}</Text>
-                </View>
-                <View style={[styles.arrow, { backgroundColor: palette.tint }]}><Ionicons name="arrow-forward" size={16} color={palette.accent} /></View>
-              </PressableScale>
-            </Animated.View>
-          );
-        })}
+      <ScrollView contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }} keyboardShouldPersistTaps="handled">
+        <Header title={c.title} subtitle={c.subtitle} back={false} />
+        <View style={{ paddingHorizontal: 14, gap: 14, paddingTop: 6 }}>
+          <View style={[styles.search, shadow("card")]}>
+            <ZxIcon name="search" size={17} color="#64748B" />
+            <TextInput value={query} onChangeText={setQuery} placeholder={c.search} placeholderTextColor="#94A3B8" style={styles.input} clearButtonMode="while-editing" />
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 14 }} style={{ marginRight: -14 }}>
+            {groups.map(({ key, icon }) => (
+              <Chip key={key} label={t.services[key]} active={group === key} onPress={() => setGroup(key)} image={<ZxIcon name={icon} size={15} color={group === key ? colors.white : "#475569"} />} />
+            ))}
+          </ScrollView>
+          <View style={{ gap: 10 }}>
+            {items.map((item, index) => (
+              <Animated.View key={item.code} entering={FadeInDown.delay(index * 35).duration(260)} layout={LinearTransition.springify().damping(18)}>
+                <PressableScale onPress={() => router.push(moduleRoute(item.code))} scaleTo={0.98} style={[styles.card, shadow("card")]}>
+                  <ServiceBadge code={item.code} size={52} />
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.cardDesc} numberOfLines={2}>{item.description}</Text>
+                  </View>
+                  <ZxIcon name="chevron" size={18} color="#64748B" />
+                </PressableScale>
+              </Animated.View>
+            ))}
+          </View>
+        </View>
       </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { flexDirection: "row", alignItems: "center", gap: 14, padding: 14, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.glassBorder },
-  icon: { width: 62, height: 62, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  arrow: { width: 32, height: 32, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  search: { height: 44, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
+  input: { flex: 1, fontSize: 14, color: colors.text },
+  card: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12, paddingHorizontal: 14, minHeight: 78, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  cardTitle: { fontSize: 15, fontWeight: "700", color: colors.ink },
+  cardDesc: { fontSize: 12, color: colors.slate, marginTop: 3 },
 });

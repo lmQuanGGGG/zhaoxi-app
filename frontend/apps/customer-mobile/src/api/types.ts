@@ -152,8 +152,9 @@ export type PaymentCapabilities = { cashOnDelivery: boolean; bankTransfer: boole
 
 export type SavedAddress = { id: string; label: string; recipientName?: string | null; recipientPhone?: string | null; addressText: string; latitude?: number | null; longitude?: number | null; isDefault: boolean };
 export type CustomerProfile = {
-  user?: { id?: string; displayName?: string | null; phone?: string | null; avatarUrl?: string | null };
-  profile?: { addressText?: string | null; latitude?: number | null; longitude?: number | null } | null;
+  user?: { id?: string; displayName?: string | null; phone?: string | null; email?: string | null; avatarUrl?: string | null };
+  identity?: { isGuest?: boolean; zhaoxiId?: string | null };
+  profile?: { addressText?: string | null; latitude?: number | null; longitude?: number | null; nationality?: string | null; cityName?: string | null; whatsapp?: string | null; wechatContactId?: string | null } | null;
   addresses?: SavedAddress[];
 };
 
@@ -204,7 +205,7 @@ export type ChatMessage = { id: string; body: string; createdAt: string; senderR
 export type MessageThread = { thread: { id: string; kind: ThreadKind; title: string; status?: string }; messages: ChatMessage[] };
 
 export type DiscoveryService = { id: string; name: string; moduleCode: string; moduleName?: string; organizationName?: string; organizationId?: string; imageUrl?: string | null; priceFrom?: number | string | null; currency?: string; publicHref?: string };
-export type DiscoveryPartner = { id: string; name: string; moduleCode?: string; serviceCount?: number; verifiedBadgeCount?: number; href?: string; imageUrl?: string | null };
+export type DiscoveryPartner = { organizationId: string; name: string; code?: string; description?: string | null; serviceCount?: number; badgeCount?: number; href?: string };
 export type DiscoveryResult = { services?: DiscoveryService[]; partners?: DiscoveryPartner[] };
 
 export type FavoriteItem = { id: string; code?: string; name?: string | null; summary?: string | null; priceFrom?: string | null; currency?: string; metadata?: Record<string, unknown>; moduleCode?: string };

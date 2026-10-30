@@ -5,7 +5,6 @@ const WEB_URL = String(process.env.EXPO_PUBLIC_WEB_URL || "https://zhaoxi-custom
 export function money(value: number | string | null | undefined, currency = "VND") {
   const number = Number(value || 0);
   if (!Number.isFinite(number)) return "";
-  if (currency === "VND") return `${Math.round(number).toLocaleString("vi-VN")}đ`;
   return `${Math.round(number).toLocaleString("vi-VN")} ${currency}`;
 }
 

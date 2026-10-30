@@ -14,6 +14,7 @@ import { configureNotificationChannels, registerForPush, useNotificationRouting 
 import { CACHE_BUSTER, persister, queryClient } from "../src/query";
 import { ONBOARDING_KEY } from "../src/constants";
 import { colors } from "../src/theme";
+import { Dock } from "../src/ui/chrome";
 import { ToastHost } from "../src/ui/toast";
 
 void SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -73,14 +74,15 @@ function AppNavigator({ onboarded, locale }: { onboarded: boolean; locale: ZhaoX
   return (
     <>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: "default", gestureEnabled: true }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: "slide_from_right", gestureEnabled: true }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="onboarding" options={{ animation: "fade", gestureEnabled: false }} />
-        <Stack.Screen name="login" options={{ presentation: "modal" }} />
+        <Stack.Screen name="login" options={{ presentation: "transparentModal", animation: "fade" }} />
         <Stack.Screen name="cart" options={{ presentation: "card" }} />
         <Stack.Screen name="request-success" options={{ animation: "fade_from_bottom", gestureEnabled: false }} />
         <Stack.Screen name="language" options={{ presentation: "formSheet", sheetAllowedDetents: [0.55, 0.9], sheetGrabberVisible: true, sheetCornerRadius: 28 }} />
       </Stack>
+      <Dock />
       <ToastHost />
     </>
   );

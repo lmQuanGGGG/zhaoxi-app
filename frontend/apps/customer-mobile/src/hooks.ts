@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { isGuest, useAuth } from "./api/client";
 import { getFavoriteState, getService, getUnreadSummary, setFavorite } from "./api/endpoints";
 import type { RestaurantStatus, Service, ServiceDetail } from "./api/types";
 import { useI18n } from "./i18n";
 import { keys } from "./query";
-import { haptic } from "./ui";
+import { haptic } from "./ui/haptics";
 import { toast } from "./ui/toast";
 
 export function useSession() {
@@ -94,4 +94,19 @@ export function useServiceDetail(id: string) {
       return undefined;
     },
   });
+}
+
+/** Pull-to-refresh state that only spins for user-initiated refreshes (not background refetches). */
+export function usePullRefresh(...refetchers: Array<() => Promise<unknown>>) {
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all(refetchers.map((refetch) => refetch()));
+    } finally {
+      setRefreshing(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, refetchers);
+  return { refreshing, onRefresh };
 }

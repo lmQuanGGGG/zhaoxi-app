@@ -75,6 +75,7 @@ export function routeForWebHref(href?: string | null): Href {
     case "request":
       return `/service/${decoded}`;
     case "restaurant":
+    case "partners":
       return `/restaurant/${decoded}`;
     case "services":
       return `/services/${decoded}`;

@@ -1,119 +1,84 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useState } from "react";
-import { type FlatList, StyleSheet, Text, View, useWindowDimensions } from "react-native";
-import Animated, { Extrapolation, FadeInDown, interpolate, scrollTo, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, type SharedValue } from "react-native-reanimated";
-import { scheduleOnUI } from "react-native-worklets";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
 import { ONBOARDING_KEY } from "../src/constants";
 import { localeLabels, supportedLocales, useI18n } from "../src/i18n";
 import { registerForPush } from "../src/notifications";
-import { colors, radius, space } from "../src/theme";
-import { Button, Chip, haptic } from "../src/ui";
+import { colors, shadow } from "../src/theme";
+import { PressableScale, haptic } from "../src/ui";
 
-const images = [require("../assets/landmarks/dragon-bridge.webp"), require("../assets/landmarks/my-khe-beach.webp"), require("../assets/landmarks/han-river.webp")];
+// Same first-run card as the PWA (`ZhaoXiFoundationApp` language gate).
+const copy = {
+  "zh-CN": { title: "选择语言", hint: "此选择会保存，下次打开应用时自动使用。", next: "继续" },
+  "zh-TW": { title: "選擇語言", hint: "此選擇會儲存，下次開啟應用程式時自動使用。", next: "繼續" },
+  "vi-VN": { title: "Chọn ngôn ngữ", hint: "Lựa chọn sẽ được lưu và tự áp dụng lần sau.", next: "Tiếp tục" },
+  "en-US": { title: "Choose language", hint: "Your choice is saved and used next time.", next: "Continue" },
+} as const;
+const codes = { "zh-CN": "ZH", "zh-TW": "ZH", "vi-VN": "VI", "en-US": "EN" } as const;
+const order = ["zh-CN", "zh-TW", "vi-VN", "en-US"] as const;
 
 export default function Onboarding() {
-  const { t, locale, setLocale } = useI18n();
-  const { width, height } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
-  const x = useSharedValue(0);
-  const list = useAnimatedRef<FlatList<number>>();
-  const [page, setPage] = useState(0);
-  const slides = [
-    { title: t.onboarding.s1t, body: t.onboarding.s1b },
-    { title: t.onboarding.s2t, body: t.onboarding.s2b },
-    { title: t.onboarding.s3t, body: t.onboarding.s3b },
-  ];
-  const onScroll = useAnimatedScrollHandler((event) => { x.value = event.contentOffset.x; });
-
-  const finish = async (askPush: boolean) => {
+  const { locale, setLocale } = useI18n();
+  const c = copy[locale];
+  const finish = async () => {
     await AsyncStorage.setItem(ONBOARDING_KEY, "1");
     haptic.success();
-    if (askPush) await registerForPush(locale, true);
     router.replace("/");
+    // Ask once, after the first choice — same moment the partner app uses.
+    void registerForPush(locale, true);
   };
-
   return (
-    <View style={{ flex: 1, backgroundColor: "#071A18" }}>
-      <StatusBar style="light" />
-      <Animated.FlatList
-        ref={list}
-        data={[0, 1, 2]}
-        horizontal
-        pagingEnabled
-        bounces={false}
-        showsHorizontalScrollIndicator={false}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        onMomentumScrollEnd={(event) => setPage(Math.round(event.nativeEvent.contentOffset.x / width))}
-        keyExtractor={(item) => String(item)}
-        renderItem={({ item }) => <Slide index={item} x={x} width={width} height={height} image={images[item]} />}
-      />
-      <LinearGradient pointerEvents="none" colors={["transparent", "rgba(7,26,24,0.85)", "#071A18"]} locations={[0.35, 0.62, 1]} style={StyleSheet.absoluteFill} />
-      <View style={[styles.languages, { top: insets.top + 10 }]}>
-        {supportedLocales.map((code) => <Chip key={code} label={`${localeLabels[code].flag} ${localeLabels[code].native}`} active={locale === code} onPress={() => setLocale(code)} />)}
-      </View>
-      <View style={[styles.copy, { paddingBottom: Math.max(insets.bottom, 20) }]} pointerEvents="box-none">
-        <Animated.View key={`${page}-${locale}`} entering={FadeInDown.duration(380)}>
-          <Text style={styles.eyebrow}>ZHAOXI · 赵喜</Text>
-          <Text style={styles.title}>{slides[page]?.title}</Text>
-          <Text style={styles.body}>{slides[page]?.body}</Text>
-        </Animated.View>
-        <View style={styles.dots}>
-          {slides.map((_, index) => <Dot key={index} index={index} x={x} width={width} />)}
+    <View style={styles.page}>
+      <StatusBar style="dark" />
+      <Animated.View entering={FadeInDown.duration(380)} style={[styles.card, shadow("float")]}>
+        <View style={styles.brand}>
+          <View style={[styles.logoWrap, shadow("card")]}><Image source={require("../assets/brand-logo.png")} style={styles.logo} contentFit="cover" /></View>
+          <View>
+            <Text style={styles.brandName}>ZHAOXI</Text>
+            <Text style={styles.brandSub}>Customer · Partner · Admin</Text>
+          </View>
         </View>
-        {page < 2 ? (
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            <Button title={t.login.skip} variant="ghost" style={{ flex: 1 }} onPress={() => void finish(false)} />
-            <Button title={t.onboarding.next} icon="arrow-forward" style={{ flex: 2 }} onPress={() => {
-              const next = page + 1;
-              setPage(next);
-              scheduleOnUI(() => { "worklet"; scrollTo(list, next * width, 0, true); });
-            }} />
-          </View>
-        ) : (
-          <View style={{ gap: 10 }}>
-            <Button title={t.onboarding.enablePush} icon="notifications" onPress={() => void finish(true)} />
-            <Button title={t.onboarding.start} variant="ghost" onPress={() => void finish(false)} />
-          </View>
-        )}
-      </View>
-    </View>
-  );
-}
-
-function Slide({ index, x, width, height, image }: { index: number; x: SharedValue<number>; width: number; height: number; image: number }) {
-  const style = useAnimatedStyle(() => {
-    const input = [(index - 1) * width, index * width, (index + 1) * width];
-    return { transform: [{ translateX: interpolate(x.value, input, [-width * 0.35, 0, width * 0.35], Extrapolation.CLAMP) }, { scale: interpolate(x.value, input, [1.2, 1.05, 1.2], Extrapolation.CLAMP) }] };
-  });
-  return (
-    <View style={{ width, height, overflow: "hidden" }}>
-      <Animated.View style={[StyleSheet.absoluteFill, style]}>
-        <Image source={image} style={StyleSheet.absoluteFill} contentFit="cover" />
+        <Text style={styles.title}>{c.title}</Text>
+        <Text style={styles.hint}>{c.hint}</Text>
+        <View style={{ gap: 10, marginTop: 6 }}>
+          {order.filter((code) => supportedLocales.includes(code)).map((code) => {
+            const active = locale === code;
+            return (
+              <Animated.View key={code} layout={LinearTransition.springify().damping(18)}>
+                <Pressable onPress={() => { haptic.select(); setLocale(code); }} style={({ pressed }) => [styles.option, active ? styles.optionActive : shadow("card"), pressed && { transform: [{ scale: 0.98 }] }]}>
+                  <Text style={styles.optionText}>{localeLabels[code].native}</Text>
+                  {active ? <View style={styles.check}><Text style={styles.checkText}>✓</Text></View> : <View style={styles.code}><Text style={styles.codeText}>{codes[code]}</Text></View>}
+                </Pressable>
+              </Animated.View>
+            );
+          })}
+        </View>
+        <PressableScale onPress={() => void finish()} style={styles.next}><Text style={styles.nextText}>{c.next}</Text></PressableScale>
       </Animated.View>
     </View>
   );
 }
 
-function Dot({ index, x, width }: { index: number; x: SharedValue<number>; width: number }) {
-  const style = useAnimatedStyle(() => {
-    const input = [(index - 1) * width, index * width, (index + 1) * width];
-    return { width: interpolate(x.value, input, [8, 26, 8], Extrapolation.CLAMP), opacity: interpolate(x.value, input, [0.4, 1, 0.4], Extrapolation.CLAMP) };
-  });
-  return <Animated.View style={[styles.dot, style]} />;
-}
-
 const styles = StyleSheet.create({
-  languages: { position: "absolute", left: space.lg, right: space.lg, flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  copy: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: space.xl, gap: 20 },
-  eyebrow: { color: colors.brand, fontWeight: "900", letterSpacing: 2, fontSize: 12 },
-  title: { color: colors.white, fontSize: 34, fontWeight: "900", letterSpacing: -0.8, marginTop: 8 },
-  body: { color: "rgba(255,255,255,0.82)", fontSize: 16, lineHeight: 23, marginTop: 10 },
-  dots: { flexDirection: "row", gap: 6 },
-  dot: { height: 8, borderRadius: radius.pill, backgroundColor: colors.white },
+  page: { flex: 1, backgroundColor: "#F6F4EF", alignItems: "center", justifyContent: "center", padding: 20 },
+  card: { width: "100%", maxWidth: 420, padding: 28, borderRadius: 30, backgroundColor: colors.white, gap: 8 },
+  brand: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 14 },
+  logoWrap: { width: 52, height: 52, borderRadius: 16, backgroundColor: colors.white, overflow: "hidden" },
+  logo: { width: 52, height: 52 },
+  brandName: { fontSize: 20, fontWeight: "700", color: "#10203A" },
+  brandSub: { fontSize: 11.5, fontWeight: "600", color: "#66758D", marginTop: 4 },
+  title: { fontSize: 26, fontWeight: "800", color: "#10203A" },
+  hint: { fontSize: 13, color: colors.slate, marginBottom: 6 },
+  option: { height: 54, borderRadius: 16, paddingHorizontal: 18, flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "#F8FAFC" },
+  optionActive: { backgroundColor: colors.brandSoft, borderWidth: 1.5, borderColor: "#10B981", shadowColor: "#059669", shadowOpacity: 0.12, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } },
+  optionText: { fontSize: 15, fontWeight: "800", color: "#15233B" },
+  check: { width: 26, height: 26, borderRadius: 8, backgroundColor: "#228662", alignItems: "center", justifyContent: "center" },
+  checkText: { color: colors.white, fontSize: 13, fontWeight: "900" },
+  code: { width: 26, height: 26, borderRadius: 8, backgroundColor: "#E2E8F0", alignItems: "center", justifyContent: "center" },
+  codeText: { fontSize: 10, fontWeight: "800", color: "#64748B" },
+  next: { marginTop: 16, height: 50, borderRadius: 16, backgroundColor: "#228662", alignItems: "center", justifyContent: "center" },
+  nextText: { color: colors.white, fontSize: 15, fontWeight: "800" },
 });

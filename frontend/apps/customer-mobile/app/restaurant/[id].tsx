@@ -2,26 +2,25 @@ import { FlashList } from "@shopify/flash-list";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { localizeOrganizationName } from "@zhaoxi/i18n";
 import { LinearGradient } from "expo-linear-gradient";
-import { router, useLocalSearchParams } from "expo-router";
-import { useMemo } from "react";
+import { useLocalSearchParams } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
 import { RefreshControl, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getFoodPricing, getOrganizationServices, getRestaurantStatus } from "../../src/api/endpoints";
 import type { Service } from "../../src/api/types";
-import { MenuItemRow, RestaurantCartBar } from "../../src/components/food";
-import { useCart } from "../../src/cart";
+import { MenuCard, statusText } from "../../src/components/food";
+import { TAB_BAR_SPACE } from "../../src/constants";
 import { imageUri, str } from "../../src/format";
-import { restaurantStatusLabel } from "../../src/hooks";
+import { usePullRefresh } from "../../src/hooks";
 import { useI18n } from "../../src/i18n";
 import { keys } from "../../src/query";
-import { colors, font, radius, shadow, space } from "../../src/theme";
-import { AppImage, ErrorState, IconButton, Ionicons, Screen, Skeleton, SkeletonList } from "../../src/ui";
+import { colors } from "../../src/theme";
+import { AppImage, BackButton, ErrorState, Screen, Skeleton, SkeletonList } from "../../src/ui";
+
+const copy = { "vi-VN": "Toàn bộ thực đơn", "en-US": "Full menu", "zh-CN": "全部菜单", "zh-TW": "全部菜單" } as const;
 
 export default function RestaurantScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, locale } = useI18n();
-  const insets = useSafeAreaInsets();
-  const cart = useCart();
   const client = useQueryClient();
   const menu = useQuery({
     queryKey: keys.orgServices(id, locale),
@@ -36,73 +35,74 @@ export default function RestaurantScreen() {
     },
   });
   const status = useQuery({ queryKey: keys.restaurantStatus(id), queryFn: () => getRestaurantStatus(id), refetchInterval: 20_000 });
+  const pull = usePullRefresh(menu.refetch, status.refetch);
   const lines = useMemo(() => (menu.data || []).map((item) => ({ id: item.id, quantity: 1 })), [menu.data]);
   const pricing = useQuery({ queryKey: keys.foodPricing(lines.map((l) => l.id).join(",")), queryFn: () => getFoodPricing(lines), enabled: lines.length > 0 });
 
   const first = menu.data?.[0];
   const meta = first?.organizationMetadata || {};
-  const banners = (Array.isArray(meta.bannerUrls) ? meta.bannerUrls : []) as string[];
-  const cover = imageUri(banners[0]) || imageUri(meta.logoUrl);
-  const logo = imageUri(meta.logoUrl);
+  const banners = ((Array.isArray(meta.draftBannerUrls) && meta.draftBannerUrls.length ? meta.draftBannerUrls : Array.isArray(meta.bannerUrls) ? meta.bannerUrls : []) as string[]).map(imageUri).filter(Boolean) as string[];
+  const logo = imageUri(meta.draftLogoUrl || meta.logoUrl);
   const open = status.data?.open !== false;
-  const name = first ? localizeOrganizationName(locale, first.organizationCode, first.organizationName, first.organizationMetadata) : "";
+  const [slide, setSlide] = useState(0);
+  useEffect(() => {
+    if (banners.length < 2) return;
+    const timer = setInterval(() => setSlide((value) => (value + 1) % banners.length), 4200);
+    return () => clearInterval(timer);
+  }, [banners.length]);
 
   const header = (
     <View>
-      <View style={styles.cover}>
-        {menu.isPending ? <Skeleton height={230} radius={0} /> : <AppImage uri={cover} fallbackCode="food" style={StyleSheet.absoluteFill} />}
-        <LinearGradient colors={["rgba(0,0,0,0.35)", "transparent", "rgba(247,250,249,1)"]} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
-      </View>
-      <View style={[styles.info, shadow(2)]}>
-        {logo ? <AppImage uri={logo} style={styles.logo} /> : <View style={[styles.logo, { backgroundColor: colors.brand, alignItems: "center", justifyContent: "center" }]}><Text style={{ color: colors.white, fontSize: 22, fontWeight: "900" }}>喜</Text></View>}
-        {menu.isPending ? <Skeleton width="60%" height={22} /> : <Text style={[font.h1, { fontSize: 22 }]} numberOfLines={2}>{name}</Text>}
-        {first?.organizationAddress ? <Text style={[font.small, { marginTop: 4 }]} numberOfLines={2}>{str(first.organizationAddress)}</Text> : null}
-        <View style={{ flexDirection: "row", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-          <View style={[styles.status, { backgroundColor: open ? colors.brandSoft : colors.dangerSoft }]}>
-            <View style={[styles.dot, { backgroundColor: open ? colors.brand : colors.danger }]} />
-            <Text style={{ fontSize: 12, fontWeight: "800", color: open ? colors.brandStrong : colors.danger }}>{restaurantStatusLabel(status.data, t)}</Text>
-          </View>
-          <View style={[styles.status, { backgroundColor: "#EEF4FB" }]}>
-            <Ionicons name="restaurant" size={12} color="#4788C7" />
-            <Text style={{ fontSize: 12, fontWeight: "800", color: "#4788C7" }}>{menu.data?.length || 0} {t.common.items}</Text>
+      <View style={styles.hero}>
+        <LinearGradient colors={["#07C160", "#0AA6CF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+        {banners.length ? <AppImage key={banners[slide]} uri={banners[slide]} style={StyleSheet.absoluteFill} transition={600} /> : null}
+        <LinearGradient colors={["rgba(0,0,0,0.58)", "rgba(0,0,0,0.1)"]} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={StyleSheet.absoluteFill} />
+        <BackButton style={styles.back} />
+        <View style={styles.heroBody}>
+          {logo ? <AppImage uri={logo} style={styles.logo} contentFit="contain" /> : <View style={[styles.logo, { backgroundColor: colors.wechat, alignItems: "center", justifyContent: "center" }]}><Text style={{ color: colors.white, fontSize: 22, fontWeight: "900" }}>喜</Text></View>}
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <View style={[styles.status, !open && { backgroundColor: "#FFF1F2" }]}><Text style={[styles.statusText, !open && { color: "#B42318" }]}>{statusText(status.data, t)}</Text></View>
+            {first ? <Text style={styles.name} numberOfLines={1}>{localizeOrganizationName(locale, first.organizationCode, first.organizationName, first.organizationMetadata)}</Text> : <Skeleton width="60%" height={20} style={{ marginTop: 6 }} />}
+            {first?.organizationAddress ? <Text style={styles.address} numberOfLines={1}>{str(first.organizationAddress)}</Text> : null}
           </View>
         </View>
+        {banners.length > 1 ? <View style={styles.dots}>{banners.map((_, index) => <View key={index} style={[styles.dot, index === slide && styles.dotActive]} />)}</View> : null}
       </View>
-      <Text style={[font.h2, { paddingHorizontal: space.lg, marginTop: space.xl, marginBottom: 4 }]}>{t.browse.menu}</Text>
+      <Text style={styles.section}>{copy[locale]}</Text>
     </View>
   );
 
   return (
-    <Screen edges={[]}>
+    <Screen>
       <FlashList
         data={menu.data || []}
+        numColumns={2}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={header}
-        ListEmptyComponent={menu.isPending ? <View style={{ padding: space.lg }}><SkeletonList count={5} /></View> : menu.isError ? <View style={{ padding: space.lg }}><ErrorState message={t.common.error} retryLabel={t.common.retry} onRetry={() => void menu.refetch()} /></View> : null}
-        renderItem={({ item }) => (
-          <View style={{ paddingHorizontal: space.lg }}>
-            <View style={styles.divider} />
-            <MenuItemRow item={item} price={pricing.data?.[item.id]} restaurantOpen={open} />
+        ListEmptyComponent={menu.isPending ? <View style={{ padding: 14 }}><SkeletonList count={4} /></View> : menu.isError ? <View style={{ padding: 14 }}><ErrorState message={t.common.error} retryLabel={t.common.retry} onRetry={() => void menu.refetch()} /></View> : null}
+        renderItem={({ item, index }) => (
+          <View style={{ paddingLeft: index % 2 === 0 ? 26 : 5, paddingRight: index % 2 === 0 ? 5 : 26, paddingBottom: 10 }}>
+            <MenuCard item={item} price={pricing.data?.[item.id]} restaurantOpen={open} />
           </View>
         )}
-        refreshControl={<RefreshControl refreshing={menu.isRefetching} onRefresh={() => { void menu.refetch(); void status.refetch(); }} tintColor={colors.white} />}
-        contentContainerStyle={{ paddingBottom: 140 }}
+        refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} tintColor={colors.brand} />}
+        contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }}
       />
-      <View style={[styles.floating, { top: insets.top + 6 }]}>
-        <IconButton icon="chevron-back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/services/food"))} />
-        <IconButton icon="bag-handle-outline" badge={cart.count} onPress={() => router.push("/cart")} />
-      </View>
-      <RestaurantCartBar organizationId={id} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  cover: { height: 230, backgroundColor: "#DDEDE7" },
-  info: { marginTop: -70, marginHorizontal: space.lg, padding: space.lg, paddingTop: 38, borderRadius: radius.xl, backgroundColor: colors.white },
-  logo: { position: "absolute", top: -30, left: space.lg, width: 60, height: 60, borderRadius: 20, borderWidth: 3, borderColor: colors.white },
-  status: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
-  dot: { width: 7, height: 7, borderRadius: 4 },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border },
-  floating: { position: "absolute", left: space.lg, right: space.lg, flexDirection: "row", justifyContent: "space-between" },
+  hero: { height: 200, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, overflow: "hidden" },
+  back: { position: "absolute", top: 16, left: 14 },
+  heroBody: { position: "absolute", left: 14, right: 14, bottom: 34, flexDirection: "row", alignItems: "center", gap: 12 },
+  logo: { width: 56, height: 56, borderRadius: 14, backgroundColor: colors.white, borderWidth: 2, borderColor: "rgba(255,255,255,0.95)" },
+  status: { alignSelf: "flex-start", paddingHorizontal: 10, paddingVertical: 3, borderRadius: 999, backgroundColor: "#D1FAE5" },
+  statusText: { fontSize: 11, fontWeight: "700", color: "#065F46" },
+  name: { fontSize: 18, fontWeight: "800", color: colors.white, marginTop: 4 },
+  address: { fontSize: 11, color: "rgba(255,255,255,0.88)", marginTop: 2 },
+  dots: { position: "absolute", bottom: 14, alignSelf: "center", flexDirection: "row", gap: 7 },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "rgba(255,255,255,0.5)" },
+  dotActive: { width: 24, backgroundColor: colors.white },
+  section: { fontSize: 16, fontWeight: "700", color: colors.ink, paddingHorizontal: 14, paddingTop: 22, paddingBottom: 14 },
 });

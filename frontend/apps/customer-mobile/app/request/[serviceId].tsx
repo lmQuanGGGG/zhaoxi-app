@@ -3,7 +3,7 @@ import { localizeOrganizationName, localizeServiceName } from "@zhaoxi/i18n";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, { FadeIn, FadeInDown, LinearTransition } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createServiceRequest, evaluateCoupon, getCoupons, getDeliveryQuote, getFoodPricing, getPaymentCapabilities, getProfile, getRestaurantStatus } from "../../src/api/endpoints";
@@ -12,10 +12,11 @@ import { cart } from "../../src/cart";
 import { imageUri, money, num, str } from "../../src/format";
 import { useDebounced, useServiceDetail, useSession } from "../../src/hooks";
 import { useI18n } from "../../src/i18n";
-import { getLocationState, locate, searchAddress, setManualLocation } from "../../src/location";
+import { formatAddress, getLocationState, locate, searchAddress, setManualLocation } from "../../src/location";
 import { keys } from "../../src/query";
 import { colors, font, radius, shadow, space } from "../../src/theme";
-import { AppImage, Button, Chip, Field, GlassCard, Header, Ionicons, PressableScale, QuantityStepper, Row, Screen, SkeletonList, haptic } from "../../src/ui";
+import { DeliveryMap } from "../../src/components/DeliveryMap";
+import { AppImage, BackButton, Button, Chip, Field, GlassCard, Ionicons, PressableScale, QuantityStepper, Row, Screen, SkeletonList, haptic } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
 
 type Courier = "green_sm" | "grab";
@@ -170,80 +171,95 @@ export default function CheckoutScreen() {
     }
   };
 
-  if (service.isPending) return <Screen><Header title={t.checkout.title} /><View style={{ padding: space.lg }}><SkeletonList count={4} /></View></Screen>;
+  if (service.isPending) return <Screen soft><View style={{ padding: 14 }}><SkeletonList count={4} /></View></Screen>;
+  const partnerName = localizeOrganizationName(locale, data?.organization?.code, data?.organization?.name, data?.organization?.metadata);
+  const confirmTitle = ({ "vi-VN": "Xác nhận đơn dịch vụ", "en-US": "Confirm service order", "zh-CN": "确认服务订单", "zh-TW": "確認服務訂單" } as const)[locale];
+  const deliveryTitle = ({ "vi-VN": "Vị trí giao hàng", "en-US": "Delivery location", "zh-CN": "配送位置", "zh-TW": "配送位置" } as const)[locale];
+  const searchLabel = ({ "vi-VN": "Tìm", "en-US": "Search", "zh-CN": "搜索", "zh-TW": "搜尋" } as const)[locale];
+  const searchPlaceholder = ({ "vi-VN": "Tìm đường, số nhà hoặc địa điểm", "en-US": "Search street, number or place", "zh-CN": "搜索街道、门牌或地点", "zh-TW": "搜尋街道、門牌或地點" } as const)[locale];
 
   return (
-    <Screen>
-      <Header title={t.checkout.title} />
+    <Screen soft>
+      <View style={styles.subHeader}>
+        <BackButton style={{ backgroundColor: colors.white }} />
+        <Text style={styles.subBrand}>ZHAOXI</Text>
+      </View>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 4, gap: space.lg, paddingBottom: 150 }} keyboardShouldPersistTaps="handled">
-          <Animated.View entering={FadeInDown.duration(300)}>
-            <GlassCard style={{ gap: 10 }}>
-              <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
-                <AppImage uri={imageUri(data?.metadata?.imageUrl)} fallbackCode={data?.moduleCode} style={styles.thumb} />
-                <View style={{ flex: 1 }}>
-                  <Text style={font.tiny}>{localizeOrganizationName(locale, data?.organization?.code, data?.organization?.name, data?.organization?.metadata)}</Text>
-                  <Text style={font.h2} numberOfLines={2}>{locked ? `${cartItems.length} ${t.common.items}` : localizeServiceName(locale, data?.name || data?.code)}</Text>
-                </View>
-                {!locked ? <QuantityStepper value={form.quantity} min={1} onChange={(q) => setForm((f) => ({ ...f, quantity: q }))} /> : null}
+        <ScrollView contentContainerStyle={{ paddingBottom: 170 }} keyboardShouldPersistTaps="handled">
+          <Animated.View entering={FadeInDown.duration(260)} style={[styles.formCard, shadow("float")]}>
+            <View style={styles.serviceHead}>
+              <AppImage uri={imageUri(data?.metadata?.imageUrl)} fallbackCode={data?.moduleCode} style={styles.thumb} contentFit="contain" />
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={styles.headPartner} numberOfLines={1}>{partnerName}</Text>
+                <Text style={styles.headTitle} numberOfLines={2}>{localizeServiceName(locale, data?.name || data?.code)}</Text>
+                {data?.summary ? <Text style={styles.headSummary} numberOfLines={1}>{data.summary}</Text> : null}
               </View>
-              {locked ? cartItems.map((item) => (
-                <View key={item.serviceId} style={styles.cartLine}>
-                  <Text style={[font.small, { flex: 1, color: colors.text }]} numberOfLines={1}>{item.quantity} × {item.name}</Text>
-                  <Text style={font.small}>{money(item.unitPrice * item.quantity, item.currency)}</Text>
-                </View>
-              )) : null}
-            </GlassCard>
-          </Animated.View>
-
-          <GlassCard style={{ gap: 12 }}>
-            <Text style={font.h2}>{t.checkout.contact}</Text>
+            </View>
+            <Text style={styles.formTitle}>{confirmTitle}</Text>
+            {locked ? cartItems.map((item) => (
+              <View key={item.serviceId} style={styles.cartLine}>
+                <Text style={{ flex: 1, fontSize: 13, color: colors.ink }} numberOfLines={1}>{item.quantity} × {item.name}</Text>
+                <Text style={{ fontSize: 13, color: colors.slate }}>{money(item.unitPrice * item.quantity, item.currency)}</Text>
+              </View>
+            )) : (
+              <View style={styles.qtyRow}><Text style={styles.fieldLabel}>{t.checkout.quantity}</Text><QuantityStepper value={form.quantity} min={1} onChange={(q) => setForm((f) => ({ ...f, quantity: q }))} /></View>
+            )}
             {profile.data?.addresses?.length ? (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-                {profile.data.addresses.slice(0, 6).map((address) => (
-                  <PressableScale key={address.id} onPress={() => {
-                    setForm((f) => ({ ...f, name: address.recipientName || f.name, phone: address.recipientPhone || f.phone, address: address.addressText }));
-                    const lat = num(address.latitude, NaN), lng = num(address.longitude, NaN);
-                    if (Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0) setPoint({ latitude: lat, longitude: lng });
-                  }} style={[styles.savedAddress, address.addressText === form.address && styles.savedAddressActive]}>
-                    <Text style={font.h3} numberOfLines={1}>{address.label}</Text>
-                    <Text style={font.tiny} numberOfLines={2}>{address.addressText}</Text>
-                  </PressableScale>
-                ))}
-              </ScrollView>
+              <View style={{ gap: 6 }}>
+                <Text style={styles.fieldLabel}>{t.checkout.saved}</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+                  {profile.data.addresses.slice(0, 6).map((address) => (
+                    <PressableScale key={address.id} onPress={() => {
+                      setForm((f) => ({ ...f, name: address.recipientName || f.name, phone: address.recipientPhone || f.phone, address: address.addressText }));
+                      const lat = num(address.latitude, NaN), lng = num(address.longitude, NaN);
+                      if (Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0) setPoint({ latitude: lat, longitude: lng });
+                    }} style={[styles.savedAddress, address.addressText === form.address && styles.savedAddressActive]}>
+                      <Text style={{ fontSize: 13, fontWeight: "700", color: colors.ink }} numberOfLines={1}>{address.label}</Text>
+                      <Text style={{ fontSize: 11, color: colors.slate }} numberOfLines={2}>{address.addressText}</Text>
+                    </PressableScale>
+                  ))}
+                </ScrollView>
+              </View>
             ) : null}
             <Field label={t.checkout.name} value={form.name} onChangeText={(name) => setForm((f) => ({ ...f, name }))} autoComplete="name" />
             <Field label={t.checkout.phone} value={form.phone} onChangeText={(phone) => setForm((f) => ({ ...f, phone }))} keyboardType="phone-pad" autoComplete="tel" placeholder="09…" />
-            <Field label={t.checkout.address} value={form.address} onChangeText={(address) => { setForm((f) => ({ ...f, address })); if (isFood) setAddressQuery(address); }} multiline style={{ minHeight: 60 }} />
             {isFood ? (
-              <>
+              <View style={{ gap: 10 }}>
+                <View style={styles.locHead}>
+                  <Text style={styles.locTitle}>{deliveryTitle}</Text>
+                  <PressableScale onPress={() => void useCurrentLocation()} style={styles.useLocation}><Text style={styles.useLocationText}>◎ {t.checkout.useLocation}</Text></PressableScale>
+                </View>
+                <View style={[styles.mapSearch, shadow("card")]}>
+                  <Text style={{ color: "#167A55", fontSize: 13 }}>⌕</Text>
+                  <TextInput value={addressQuery} onChangeText={setAddressQuery} placeholder={searchPlaceholder} placeholderTextColor="#94A3B8" style={styles.mapSearchInput} returnKeyType="search" />
+                  <PressableScale onPress={() => setAddressQuery((q) => q.trim())} style={styles.mapSearchButton}><Text style={styles.mapSearchButtonText}>{searchLabel}</Text></PressableScale>
+                </View>
                 {addressResults.data?.length && addressQuery ? (
                   <Animated.View entering={FadeIn} style={styles.suggestions}>
                     {addressResults.data.map((result) => (
                       <PressableScale key={`${result.latitude}-${result.longitude}`} onPress={() => { setPoint(result); setForm((f) => ({ ...f, address: result.label })); setAddressQuery(""); }} style={styles.suggestion}>
                         <Ionicons name="location-outline" size={16} color={colors.brand} />
-                        <Text style={[font.small, { flex: 1, color: colors.text }]} numberOfLines={2}>{result.label}</Text>
+                        <Text style={{ flex: 1, fontSize: 12, color: colors.text }} numberOfLines={2}>{result.label}</Text>
                       </PressableScale>
                     ))}
                   </Animated.View>
                 ) : null}
-                <View style={styles.pointRow}>
-                  <Ionicons name={point ? "checkmark-circle" : "alert-circle"} size={18} color={point ? colors.brand : colors.warning} />
-                  <Text style={[font.small, { flex: 1 }]}>{point ? `${t.checkout.pointSet} · ${point.latitude.toFixed(4)}, ${point.longitude.toFixed(4)}` : t.checkout.locationRequired}</Text>
-                  <Button small variant="secondary" icon="navigate" title={t.checkout.useLocation} onPress={() => void useCurrentLocation()} />
-                </View>
-              </>
-            ) : null}
+                <DeliveryMap point={point} onChange={async (next) => { setPoint(next); const label = await formatAddress(next); if (label) setForm((f) => ({ ...f, address: label })); }} />
+                <Field label={t.checkout.address} value={form.address} onChangeText={(address) => setForm((f) => ({ ...f, address }))} multiline style={{ minHeight: 60 }} />
+              </View>
+            ) : (
+              <Field label={t.checkout.address} value={form.address} onChangeText={(address) => setForm((f) => ({ ...f, address }))} multiline style={{ minHeight: 60 }} />
+            )}
             <View style={{ flexDirection: "row", gap: 10 }}>
               <View style={{ flex: 1 }}><Field label={t.checkout.date} value={form.date} onChangeText={(date) => setForm((f) => ({ ...f, date }))} placeholder="YYYY-MM-DD" /></View>
               <View style={{ width: 110 }}><Field label={t.checkout.time} value={form.time} onChangeText={(time) => setForm((f) => ({ ...f, time }))} placeholder="HH:MM" /></View>
             </View>
-            <Text style={font.tiny}>{t.checkout.scheduleHint}</Text>
+            <Text style={{ fontSize: 11, color: colors.slate }}>{t.checkout.scheduleHint}</Text>
             <Field label={t.checkout.note} value={form.note} onChangeText={(note) => setForm((f) => ({ ...f, note }))} multiline />
-          </GlassCard>
+          </Animated.View>
 
           {isFood ? (
-            <GlassCard style={{ gap: 12 }}>
+            <GlassCard style={{ gap: 12, marginHorizontal: 14, marginTop: 12 }}>
               <Text style={font.h2}>🛵 {t.checkout.courier}</Text>
               <View style={{ flexDirection: "row", gap: 10 }}>
                 {(["green_sm", "grab"] as const).map((id) => {
@@ -263,7 +279,7 @@ export default function CheckoutScreen() {
             </GlassCard>
           ) : null}
 
-          <GlassCard style={{ gap: 10 }}>
+          <GlassCard style={{ gap: 10, marginHorizontal: 14, marginTop: 12 }}>
             <Text style={font.h2}>{t.checkout.payment}</Text>
             {(["cash_on_delivery", "bank_transfer"] as const).map((method) => {
               const enabled = method === "cash_on_delivery" || Boolean(paymentQr);
@@ -287,7 +303,7 @@ export default function CheckoutScreen() {
           </GlassCard>
 
           {isFood && orgId ? (
-            <GlassCard style={{ gap: 10 }}>
+            <GlassCard style={{ gap: 10, marginHorizontal: 14, marginTop: 12 }}>
               <Text style={font.h2}>🎟️ {t.checkout.coupon}</Text>
               <View style={{ flexDirection: "row", gap: 8, alignItems: "flex-end" }}>
                 <View style={{ flex: 1 }}><Field value={couponCode} onChangeText={(value) => setCouponCode(value.toUpperCase())} placeholder={t.checkout.couponPlaceholder} autoCapitalize="characters" /></View>
@@ -302,7 +318,7 @@ export default function CheckoutScreen() {
             </GlassCard>
           ) : null}
 
-          <GlassCard style={{ gap: 2 }}>
+          <GlassCard style={{ gap: 2, marginHorizontal: 14, marginTop: 12 }}>
             <Text style={[font.h2, { marginBottom: 6 }]}>{t.checkout.summary}</Text>
             <Row label={t.checkout.items} value={itemBase > 0 ? money(itemBase, currency) : t.detail.priceTbd} />
             {itemDiscount > 0 ? <Row label={t.checkout.itemDiscount} value={`-${money(itemDiscount, currency)}`} color={colors.brandStrong} /> : null}
@@ -342,7 +358,25 @@ export default function CheckoutScreen() {
 }
 
 const styles = StyleSheet.create({
-  thumb: { width: 56, height: 56, borderRadius: 16 },
+  subHeader: { height: 46, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 14, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.border },
+  subBrand: { fontSize: 13, fontWeight: "800", color: "#059669", letterSpacing: 1.6 },
+  formCard: { marginHorizontal: 14, marginTop: 10, padding: 16, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: "#E8ECE9", gap: 13 },
+  serviceHead: { flexDirection: "row", alignItems: "center", gap: 12, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: "#EDF0EE" },
+  thumb: { width: 46, height: 46, borderRadius: 11, backgroundColor: "#E8F9EF" },
+  headPartner: { fontSize: 10, color: colors.textSecondary },
+  headTitle: { fontSize: 18, fontWeight: "800", color: colors.text },
+  headSummary: { fontSize: 11, color: colors.textSecondary },
+  formTitle: { fontSize: 16, fontWeight: "800", color: colors.text },
+  fieldLabel: { fontSize: 13, color: colors.ink },
+  qtyRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  locHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  locTitle: { fontSize: 14, fontWeight: "800", color: colors.text },
+  useLocation: { paddingHorizontal: 14, height: 34, borderRadius: 999, backgroundColor: colors.brandSoft, borderWidth: 1, borderColor: "#A7F3D0", alignItems: "center", justifyContent: "center" },
+  useLocationText: { fontSize: 12, fontWeight: "700", color: "#167A55" },
+  mapSearch: { flexDirection: "row", alignItems: "center", gap: 8, padding: 7, paddingLeft: 14, borderRadius: 18, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  mapSearchInput: { flex: 1, height: 36, fontSize: 14, color: colors.text, backgroundColor: "#F8FAF9", borderRadius: 10, paddingHorizontal: 10 },
+  mapSearchButton: { height: 36, paddingHorizontal: 14, borderRadius: 11, backgroundColor: "#228662", alignItems: "center", justifyContent: "center" },
+  mapSearchButtonText: { color: colors.white, fontSize: 13, fontWeight: "800" },
   cartLine: { flexDirection: "row", gap: 10, paddingTop: 6, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   savedAddress: { width: 170, padding: 10, borderRadius: radius.md, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, gap: 3 },
   savedAddressActive: { borderColor: colors.brand, backgroundColor: colors.brandSoft },

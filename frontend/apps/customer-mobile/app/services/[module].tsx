@@ -1,21 +1,24 @@
 import { FlashList } from "@shopify/flash-list";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { localizeOrganizationName, localizeServiceModuleName, localizeServiceName } from "@zhaoxi/i18n";
+import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { getFoodPricing, getNearbyServices, getOrganizationServices, getRestaurantStatuses, getService } from "../../src/api/endpoints";
 import type { Service } from "../../src/api/types";
-import { MenuItemRow, RestaurantCartBar, RestaurantHeroCard } from "../../src/components/food";
+import { RestaurantCard } from "../../src/components/food";
+import { LocationBanner } from "../../src/components/LocationBanner";
 import { useCart } from "../../src/cart";
+import { TAB_BAR_SPACE } from "../../src/constants";
 import { imageUri, money } from "../../src/format";
-import { restaurantStatusLabel, useDebounced } from "../../src/hooks";
+import { useDebounced, usePullRefresh } from "../../src/hooks";
 import { useI18n } from "../../src/i18n";
 import { locate, pointKey, useLocationState } from "../../src/location";
 import { keys } from "../../src/query";
-import { colors, font, radius, shadow, space } from "../../src/theme";
-import { AppImage, EmptyState, ErrorState, Header, IconButton, Ionicons, PressableScale, Screen, ServiceBadge, SkeletonList } from "../../src/ui";
+import { colors, shadow } from "../../src/theme";
+import { AppImage, BackButton, EmptyState, ErrorState, PressableScale, Screen, ServiceBadge, ServiceIcon, SkeletonList, ZxIcon } from "../../src/ui";
 
 export default function ModuleBrowser() {
   const { module = "food" } = useLocalSearchParams<{ module: string }>();
@@ -27,9 +30,10 @@ export default function ModuleBrowser() {
   const search = useDebounced(query, 150);
   const isFood = module === "food";
 
-  useEffect(() => { if (!location.point) void locate(isFood); }, [isFood, location.point]);
+  useEffect(() => { if (!location.point) void locate(false); }, [location.point]);
 
   const services = useQuery({ queryKey: keys.nearby(module, locale, pointKey(location.point)), queryFn: () => getNearbyServices(module, locale, location.point) });
+  const pull = usePullRefresh(services.refetch);
   const filtered = useMemo(() => {
     const needle = search.trim().toLowerCase();
     return (services.data || []).filter((item) => !needle || `${item.name || ""} ${item.summary || ""} ${item.organizationName || ""}`.toLowerCase().includes(needle));
@@ -48,63 +52,55 @@ export default function ModuleBrowser() {
   const orgIds = restaurants.map((r) => r.id).filter((id) => id !== "unknown").sort().join(",");
   const statuses = useQuery({ queryKey: keys.restaurantStatuses(orgIds), queryFn: () => getRestaurantStatuses(orgIds.split(",")), enabled: isFood && Boolean(orgIds), refetchInterval: 30_000 });
   const previewLines = restaurants.flatMap((r) => r.menu.slice(0, 2)).map((item) => ({ id: item.id, quantity: 1 }));
-  const pricingSignature = previewLines.map((line) => line.id).join(",");
-  const pricing = useQuery({ queryKey: keys.foodPricing(pricingSignature), queryFn: () => getFoodPricing(previewLines), enabled: isFood && previewLines.length > 0 });
+  const pricing = useQuery({ queryKey: keys.foodPricing(previewLines.map((line) => line.id).join(",")), queryFn: () => getFoodPricing(previewLines), enabled: isFood && previewLines.length > 0 });
 
   const title = isFood ? t.browse.restaurants : localizeServiceModuleName(locale, module);
+  const count = isFood ? filtered.length : filtered.length;
   const prefetchRestaurant = (id: string) => void client.prefetchQuery({ queryKey: keys.orgServices(id, locale), queryFn: () => getOrganizationServices(id, locale), staleTime: 60_000 });
   const prefetchService = (id: string) => void client.prefetchQuery({ queryKey: keys.service(id, locale), queryFn: () => getService(id, locale), staleTime: 60_000 });
 
   const header = (
-    <View style={{ paddingHorizontal: space.lg, gap: 12, paddingBottom: 12 }}>
-      <PressableScale onPress={() => void locate(true)} scaleTo={0.98} style={styles.location}>
-        <Ionicons name="navigate-circle" size={20} color={colors.brand} />
-        <Text style={[font.small, { flex: 1, color: colors.text, fontWeight: "600" }]} numberOfLines={1}>{location.status === "locating" ? t.home.locating : location.label || t.home.locationOff}</Text>
-        <Ionicons name="refresh" size={16} color={colors.textMuted} />
-      </PressableScale>
-      <View style={styles.search}>
-        <Ionicons name="search" size={18} color={colors.textMuted} />
-        <TextInput value={query} onChangeText={setQuery} placeholder={isFood ? t.browse.searchFood : t.browse.searchService} placeholderTextColor={colors.textMuted} style={styles.searchInput} returnKeyType="search" clearButtonMode="while-editing" />
+    <View style={{ paddingHorizontal: 14, gap: 12, paddingTop: 14, paddingBottom: 14 }}>
+      <LocationBanner />
+      <View style={[styles.search, shadow("card")]}>
+        <ZxIcon name="search" size={17} color="#64748B" />
+        <TextInput value={query} onChangeText={setQuery} placeholder={isFood ? t.browse.searchFood : t.browse.searchService} placeholderTextColor="#94A3B8" style={styles.searchInput} returnKeyType="search" clearButtonMode="while-editing" />
       </View>
     </View>
   );
 
-  const empty = services.isPending ? <View style={{ paddingHorizontal: space.lg }}><SkeletonList count={4} /></View>
-    : services.isError && !services.data ? <View style={{ paddingHorizontal: space.lg }}><ErrorState message={t.common.error} retryLabel={t.common.retry} onRetry={() => void services.refetch()} /></View>
-    : <View style={{ paddingHorizontal: space.lg }}><EmptyState icon="search-outline" title={t.browse.empty} body={t.browse.askHint} action={t.browse.ask} onAction={() => router.push("/support")} /></View>;
+  const empty = services.isPending ? <View style={{ paddingHorizontal: 14 }}><SkeletonList count={4} /></View>
+    : services.isError && !services.data ? <View style={{ paddingHorizontal: 14 }}><ErrorState message={t.common.error} retryLabel={t.common.retry} onRetry={() => void services.refetch()} /></View>
+    : <View style={{ paddingHorizontal: 14 }}><EmptyState zx="search" title={t.browse.empty} body={t.browse.askHint} action={t.browse.ask} onAction={() => router.push("/support")} /></View>;
 
   return (
     <Screen>
-      <Header
-        title={title}
-        subtitle={`${isFood ? restaurants.length : filtered.length} ${t.browse.results}`}
-        right={isFood ? <IconButton icon="bag-handle-outline" badge={cart.count} onPress={() => router.push("/cart")} /> : <ServiceBadge code={module} size={42} />}
-      />
+      <View style={styles.moduleHeader}>
+        <BackButton />
+        <View style={styles.moduleTitle}>
+          <ServiceBadge code={module} size={40} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.moduleName} numberOfLines={1}>{title}</Text>
+            <Text style={styles.moduleCount}>{count} {t.common.items}</Text>
+          </View>
+        </View>
+        {isFood && cart.count > 0 ? (
+          <PressableScale onPress={() => router.push("/cart")} style={styles.cartPill}><Text style={styles.cartPillText}>{t.cart.title} ({cart.count})</Text></PressableScale>
+        ) : null}
+      </View>
       {isFood ? (
         <FlashList
           data={restaurants}
           keyExtractor={(item) => item.id}
           ListHeaderComponent={header}
           ListEmptyComponent={empty}
-          refreshControl={<RefreshControl refreshing={services.isRefetching} onRefresh={() => void services.refetch()} tintColor={colors.brand} />}
-          contentContainerStyle={{ paddingBottom: 140 }}
-          renderItem={({ item, index }) => {
-            const first = item.menu[0]!;
-            const status = statuses.data?.[item.id];
-            const open = status?.open !== false;
-            return (
-              <View style={{ paddingHorizontal: space.lg, paddingBottom: space.lg }}>
-                <RestaurantHeroCard index={index} item={first} open={open} statusLabel={restaurantStatusLabel(status, t)} onPress={() => { prefetchRestaurant(item.id); router.push(`/restaurant/${item.id}`); }} />
-                <View style={styles.menuPreview}>
-                  {item.menu.slice(0, 2).map((dish) => <MenuItemRow key={dish.id} item={dish} price={pricing.data?.[dish.id]} restaurantOpen={open} compact />)}
-                  <PressableScale onPressIn={() => prefetchRestaurant(item.id)} onPress={() => router.push(`/restaurant/${item.id}`)} style={styles.viewMenu}>
-                    <Text style={styles.viewMenuText}>{t.browse.viewMenu}{item.menu.length > 2 ? ` (+${item.menu.length - 2})` : ""}</Text>
-                    <Ionicons name="chevron-forward" size={14} color={colors.brandStrong} />
-                  </PressableScale>
-                </View>
-              </View>
-            );
-          }}
+          refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} tintColor={colors.brand} />}
+          contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }}
+          renderItem={({ item, index }) => (
+            <View style={{ paddingHorizontal: 14, paddingBottom: 16 }}>
+              <RestaurantCard id={item.id} menu={item.menu} index={index} status={statuses.data?.[item.id]} pricing={pricing.data} onOpen={() => { prefetchRestaurant(item.id); router.push(`/restaurant/${item.id}`); }} />
+            </View>
+          )}
         />
       ) : (
         <FlashList
@@ -112,41 +108,58 @@ export default function ModuleBrowser() {
           keyExtractor={(item) => item.id}
           ListHeaderComponent={header}
           ListEmptyComponent={empty}
-          refreshControl={<RefreshControl refreshing={services.isRefetching} onRefresh={() => void services.refetch()} tintColor={colors.brand} />}
-          contentContainerStyle={{ paddingBottom: 48 }}
-          renderItem={({ item, index }) => (
-            <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 40).duration(300)} style={{ paddingHorizontal: space.lg, paddingBottom: 12 }}>
-              <PressableScale onPressIn={() => prefetchService(item.id)} onPress={() => router.push(`/service/${item.id}`)} scaleTo={0.98} style={[styles.serviceCard, shadow(1)]}>
-                <AppImage uri={imageUri(item.metadata?.imageUrl)} fallbackCode={module} style={styles.serviceImage} />
-                <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
-                  <Text style={font.h3} numberOfLines={2}>{localizeServiceName(locale, item.name || item.code)}</Text>
-                  {item.summary ? <Text style={font.tiny} numberOfLines={2}>{item.summary}</Text> : null}
-                  <Text style={[font.tiny, { color: colors.textSecondary }]} numberOfLines={1}>{localizeOrganizationName(locale, item.organizationCode, item.organizationName, item.organizationMetadata)}</Text>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                    {Number(item.priceFrom || 0) > 0 ? <Text style={styles.price}>{t.common.from} {money(item.priceFrom, item.currency)}</Text> : null}
-                    {item.distanceKm != null ? <Text style={styles.distance}>⌖ {item.distanceKm.toFixed(1)} km</Text> : null}
-                  </View>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-              </PressableScale>
-            </Animated.View>
-          )}
+          refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} tintColor={colors.brand} />}
+          contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }}
+          renderItem={({ item, index }) => <GenericServiceCard item={item} module={module} index={index} onPressIn={() => prefetchService(item.id)} />}
         />
       )}
-      {isFood ? <RestaurantCartBar /> : null}
     </Screen>
   );
 }
 
+/** PWA `genericServiceCard`. */
+function GenericServiceCard({ item, module, index, onPressIn }: { item: Service; module: string; index: number; onPressIn: () => void }) {
+  const { locale } = useI18n();
+  const image = imageUri(item.metadata?.imageUrl);
+  return (
+    <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 40).duration(280)} style={{ paddingHorizontal: 14, paddingBottom: 12 }}>
+      <PressableScale onPressIn={onPressIn} onPress={() => router.push(`/service/${item.id}`)} scaleTo={0.985} style={[styles.serviceCard, shadow("card")]}>
+        {image ? <AppImage uri={image} style={styles.serviceImage} /> : (
+          <View style={styles.serviceIconBox}>
+            <LinearGradient colors={["#E7FFF2", "#D8F8E8"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 16 }]} />
+            <ServiceIcon code={module} size={44} />
+          </View>
+        )}
+        <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
+          <Text style={styles.serviceTitle} numberOfLines={2}>{localizeServiceName(locale, item.name || item.code)}</Text>
+          {item.summary ? <Text style={styles.serviceSummary} numberOfLines={2}>{item.summary}</Text> : null}
+          <Text style={styles.serviceOrg} numberOfLines={1}>{localizeOrganizationName(locale, item.organizationCode, item.organizationName, item.organizationMetadata)}</Text>
+          {item.distanceKm != null ? <View style={styles.distance}><Text style={styles.distanceText}>⌖ {item.distanceKm.toFixed(1)} km</Text></View> : null}
+          {Number(item.priceFrom || 0) > 0 ? <Text style={styles.servicePrice}>{money(item.priceFrom, item.currency)}</Text> : null}
+        </View>
+        <Text style={styles.chevron}>›</Text>
+      </PressableScale>
+    </Animated.View>
+  );
+}
+
 const styles = StyleSheet.create({
-  location: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: radius.md, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder },
-  search: { flexDirection: "row", alignItems: "center", gap: 8, height: 48, paddingHorizontal: 14, borderRadius: radius.md, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
-  searchInput: { flex: 1, fontSize: 15, color: colors.text },
-  menuPreview: { marginTop: -10, paddingTop: 10, paddingHorizontal: 14, borderBottomLeftRadius: radius.xl, borderBottomRightRadius: radius.xl, backgroundColor: "rgba(255,255,255,0.7)", borderWidth: 1, borderTopWidth: 0, borderColor: colors.glassBorder, zIndex: -1 },
-  viewMenu: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
-  viewMenuText: { color: colors.brandStrong, fontWeight: "800", fontSize: 13 },
-  serviceCard: { flexDirection: "row", alignItems: "center", gap: 12, padding: 12, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.glassBorder },
-  serviceImage: { width: 82, height: 82, borderRadius: radius.md },
-  price: { color: colors.price, fontWeight: "800", fontSize: 13 },
-  distance: { fontSize: 11, fontWeight: "700", color: colors.textSecondary },
+  moduleHeader: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 22, paddingVertical: 16, backgroundColor: "rgba(255,255,255,0.88)", borderBottomWidth: 1, borderBottomColor: "rgba(226,232,240,0.8)" },
+  moduleTitle: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10 },
+  moduleName: { fontSize: 16, fontWeight: "800", color: colors.ink },
+  moduleCount: { fontSize: 11, color: colors.slate, marginTop: 1 },
+  cartPill: { paddingHorizontal: 12, height: 32, borderRadius: 999, backgroundColor: colors.wechat, alignItems: "center", justifyContent: "center" },
+  cartPillText: { color: colors.white, fontSize: 11, fontWeight: "800" },
+  search: { height: 44, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
+  searchInput: { flex: 1, fontSize: 14, color: colors.text },
+  serviceCard: { flexDirection: "row", alignItems: "center", gap: 18, paddingVertical: 14, paddingHorizontal: 16, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  serviceImage: { width: 72, height: 72, borderRadius: 16 },
+  serviceIconBox: { width: 72, height: 72, borderRadius: 16, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(7,193,96,0.12)" },
+  serviceTitle: { fontSize: 15, fontWeight: "700", color: colors.ink },
+  serviceSummary: { fontSize: 12, color: colors.slate },
+  serviceOrg: { fontSize: 11, fontWeight: "600", color: "#059669" },
+  distance: { alignSelf: "flex-start", paddingHorizontal: 7, paddingVertical: 3, borderRadius: 999, backgroundColor: colors.brandSoft },
+  distanceText: { fontSize: 8, fontWeight: "800", color: colors.brandStrong },
+  servicePrice: { fontSize: 14, fontWeight: "700", color: colors.priceRose },
+  chevron: { fontSize: 20, color: "#94A3B8" },
 });

@@ -28,7 +28,8 @@ export function resolveModules(apiModules: ApiModule[] | undefined, locale: Zhao
     const meta = known.get(code);
     return {
       code,
-      name: localizeServiceModuleName(locale, code, api?.name),
+      // Same precedence as the PWA home grid: API name first, then local labels.
+      name: api?.name || localizeServiceModuleName(locale, code),
       description: meta?.description[locale] || api?.description || "",
       group: meta?.group || "life",
     };
