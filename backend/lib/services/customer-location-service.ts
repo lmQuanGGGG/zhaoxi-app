@@ -4,6 +4,7 @@ import {
   customerProfiles,customerSavedAddresses,moduleTranslations,modules,organizations,
   services,serviceTranslations
 } from "@/db/schema";
+import {publicOrganizationMetadata} from "@/lib/services/organization-metadata-projection";
 
 export type CustomerPoint={latitude:number;longitude:number};
 export type CustomerLocationSource="current"|"default_address"|"profile"|"none";
@@ -72,7 +73,7 @@ export class CustomerLocationService{
     return{source:"none" as CustomerLocationSource,point:null,addressText:saved?.addressText||profile?.addressText||"",label:saved?.label||""};
   }
 
-  async nearby(input:{userId?:string;locale:string;moduleCode?:string;current?:CustomerPoint|null;limit?:number;radiusKm?:number}){
+  async nearby(input:{userId?:string;locale:string;moduleCode?:string;current?:CustomerPoint|null;limit?:number;radiusKm?:number;requestUrl:string}){
     const db=getDb();
     const context=await this.context(input.userId,input.current);
     const filters=[eq(services.isEnabled,true),eq(modules.isEnabled,true),eq(organizations.status,"active")];
@@ -81,7 +82,7 @@ export class CustomerLocationService{
       id:services.id,code:services.code,moduleCode:modules.code,moduleName:moduleTranslations.name,
       name:serviceTranslations.name,summary:serviceTranslations.summary,priceFrom:services.priceFrom,currency:services.currency,
       serviceMetadata:services.metadata,organizationId:organizations.id,organizationCode:organizations.code,
-      organizationName:organizations.name,organizationAddress:organizations.addressText,organizationMetadata:organizations.metadata,
+      organizationName:organizations.name,organizationAddress:organizations.addressText,organizationMetadata:publicOrganizationMetadata(input.requestUrl),
     }).from(services)
       .innerJoin(modules,eq(services.moduleId,modules.id))
       .innerJoin(organizations,eq(services.organizationId,organizations.id))

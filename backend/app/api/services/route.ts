@@ -1,10 +1,12 @@
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
 import { modules, organizations, services, serviceTranslations } from "@/db/schema";
 import { errorResponse, json } from "@/lib/api";
+import { publicCacheHeaders } from "@/lib/core/api-response";
 import { localeFromRequest } from "@/lib/locale";
 import { requireSession, mayManageOrganization } from "@/lib/security/route-authorization";
 import { autoTranslateServiceTranslations } from "@/lib/services/auto-translate";
+import { publicOrganizationMetadata } from "@/lib/services/organization-metadata-projection";
 
 export const dynamic = "force-dynamic";
 const LOCALES = ["zh-CN", "zh-TW", "vi-VN", "en-US"] as const;
@@ -45,12 +47,7 @@ export async function GET(request: Request) {
       organizationCode: organizations.code, organizationName: organizations.name,
       organizationAddress: organizations.addressText,
       // Project inline QR bytes out in SQL, before transferring repeated rows from DB.
-      organizationMetadata: sql<Record<string, unknown>>`case
-        when ${organizations.metadata}->>'paymentQrUrl' ~ '^data:image/(png|jpeg|webp);base64,'
-        then jsonb_set(${organizations.metadata}, '{paymentQrUrl}', to_jsonb(
-          ${new URL('/api/organization-payment-qr', request.url).href}::text || '?id=' || ${organizations.id}::text
-          || '&v=' || md5(${organizations.metadata}->>'paymentQrUrl')
-        )) else ${organizations.metadata} end`,
+      organizationMetadata: publicOrganizationMetadata(request.url),
       name: serviceTranslations.name, summary: serviceTranslations.summary, description: serviceTranslations.description,
     }).from(services)
       .innerJoin(modules, eq(services.moduleId, modules.id))
@@ -87,7 +84,8 @@ export async function GET(request: Request) {
         row.organizationName = localizedOrg;
       }
     }
-    return json({ ok: true, locale, module: moduleCode, data: rows });
+    // Published menus are public; drafts are per-partner and never cached.
+    return json({ ok: true, locale, module: moduleCode, data: rows }, includeDrafts ? undefined : { headers: publicCacheHeaders(30) });
   } catch (error) { console.error(error); return errorResponse("Unable to load services.", 500); }
 }
 

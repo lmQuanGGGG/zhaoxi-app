@@ -14,7 +14,7 @@ import {
 import { errorResponse, json } from "@/lib/api";
 import { localeFromRequest, normalizeLocale } from "@/lib/locale";
 import { asObject, optionalRecord, optionalString, requiredString, ValidationError } from "@/lib/validation";
-import { completeExpiredOrders } from "@/lib/order-timers";
+import { scheduleOrderTimerSweep } from "@/lib/background-sweeps";
 import { paymentService } from "@/lib/services/payment-service";
 import { authenticatedSession } from "@/lib/auth-request";
 import { deliveryIntelligenceService } from "@/lib/services/delivery-intelligence-service";
@@ -36,8 +36,8 @@ export async function GET(request: Request) {
   try {
     // Do not block the partner queue on the maintenance sweep. The queue query
     // can return immediately while the timer reconciles expired orders after
-    // the response has been sent.
-    after(() => completeExpiredOrders().catch((error) => console.error("order timer sweep failed", error)));
+    // the response has been sent, at most once per interval per instance.
+    scheduleOrderTimerSweep();
     const url = new URL(request.url);
     const locale = localeFromRequest(request);
     const session = await authenticatedSession(request);

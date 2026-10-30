@@ -30,26 +30,34 @@ async function resolvePartnerOrganizationId(userId: string, explicitOrgId?: stri
   return member?.organizationId;
 }
 
-async function publicSession(row: typeof authSessions.$inferSelect): Promise<PublicAuthSession> {
-  const db=getDb();
-  const orgFields = { id: organizations.id, name: organizations.name, code: organizations.code, type: organizations.type };
-  const [userRows, orgRows] = await Promise.all([
-    db.select({ id: users.id, nickname: users.nickname, phone: users.phone, avatarUrl: users.avatarUrl, isGuest: users.isGuest, wechatOpenId: users.wechatOpenId }).from(users).where(eq(users.id,row.userId)).limit(1),
-    row.organizationId ? db.select(orgFields).from(organizations).where(eq(organizations.id,row.organizationId)).limit(1) : Promise.resolve([]),
-  ]);
-  const user=userRows[0];
+const userFields = { id: users.id, nickname: users.nickname, phone: users.phone, avatarUrl: users.avatarUrl, isGuest: users.isGuest, wechatOpenId: users.wechatOpenId };
+const orgFields = { id: organizations.id, name: organizations.name, code: organizations.code, type: organizations.type };
+type SessionUser = { id: string; nickname: string | null; phone: string | null; avatarUrl: string | null; isGuest: boolean; wechatOpenId: string | null };
+type SessionOrganization = { id: string; name: string; code: string; type: string };
+
+async function toPublicSession(row: typeof authSessions.$inferSelect, user: SessionUser | null | undefined, joinedOrg: SessionOrganization | null | undefined): Promise<PublicAuthSession> {
   if(!user) throw new Error("USER_NOT_FOUND");
+  const db=getDb();
   let orgId = row.organizationId;
   if (!orgId && row.role === "partner") {
     orgId = (await resolvePartnerOrganizationId(user.id)) ?? null;
   }
-  const org=orgRows[0] || (orgId ? (await db.select(orgFields).from(organizations).where(eq(organizations.id,orgId)).limit(1))[0] : undefined);
+  const org=joinedOrg || (orgId ? (await db.select(orgFields).from(organizations).where(eq(organizations.id,orgId)).limit(1))[0] : undefined);
   return {
     sessionId:row.id, role:row.role as WeChatRole, userId:user.id, displayName:user.nickname||"WeChat User",
     phone:user.phone||undefined, avatarUrl:user.avatarUrl||undefined, organizationId:org?.id, organizationName:org?.name,
     organizationCode:org?.code, organizationType:org?.type, authMethod:user.isGuest?"guest":(row.role==="admin"||row.role==="driver"?"internal":((row.role==="customer"||row.role==="partner")&&user.wechatOpenId?"wechat":(row.role==="customer"||row.role==="partner")&&user.phone?"otp":"qr")),
     accessExpiresAt:row.accessExpiresAt.toISOString(), refreshExpiresAt:row.refreshExpiresAt.toISOString(),
   };
+}
+
+async function publicSession(row: typeof authSessions.$inferSelect): Promise<PublicAuthSession> {
+  const db=getDb();
+  const [userRows, orgRows] = await Promise.all([
+    db.select(userFields).from(users).where(eq(users.id,row.userId)).limit(1),
+    row.organizationId ? db.select(orgFields).from(organizations).where(eq(organizations.id,row.organizationId)).limit(1) : Promise.resolve([]),
+  ]);
+  return toPublicSession(row, userRows[0], orgRows[0]);
 }
 
 export class SessionService {
@@ -68,12 +76,18 @@ export class SessionService {
   }
 
   async authenticate(accessToken:string) {
-    const db=getDb(); const row=(await db.select().from(authSessions).where(and(eq(authSessions.accessTokenHash,hashAuthToken(accessToken)),eq(authSessions.status,"active"))).limit(1))[0];
+    // Every authenticated request runs this, so load the session, its user and
+    // its organization in one round trip instead of two sequential ones.
+    const db=getDb(); const joined=(await db.select({session:authSessions,user:userFields,org:orgFields}).from(authSessions)
+      .leftJoin(users,eq(users.id,authSessions.userId))
+      .leftJoin(organizations,eq(organizations.id,authSessions.organizationId))
+      .where(and(eq(authSessions.accessTokenHash,hashAuthToken(accessToken)),eq(authSessions.status,"active"))).limit(1))[0];
+    const row=joined?.session;
     if(!row || row.accessExpiresAt.getTime()<=Date.now() || row.refreshExpiresAt.getTime()<=Date.now()) return null;
     // Keep validating expiry/revocation on every request, but do not write the
     // same session row for every background poll. This is activity, not expiry.
     const [session] = await Promise.all([
-      publicSession(row),
+      toPublicSession(row,joined.user,joined.org),
       !row.lastSeenAt || Date.now() - row.lastSeenAt.getTime() >= 60_000
         ? db.update(authSessions).set({lastSeenAt:new Date(),updatedAt:new Date()}).where(eq(authSessions.id,row.id))
         : Promise.resolve(),

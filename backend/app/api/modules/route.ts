@@ -2,6 +2,7 @@ import { and, asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { modules, moduleTranslations } from "@/db/schema";
 import { errorResponse, json } from "@/lib/api";
+import { publicCacheHeaders } from "@/lib/core/api-response";
 import { localeFromRequest } from "@/lib/locale";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +30,8 @@ export async function GET(request: Request) {
       .where(eq(modules.isEnabled, true))
       .orderBy(asc(modules.sortOrder));
 
-    return json({ ok: true, locale, data: rows });
+    // Modules change only through admin releases; let the CDN serve them.
+    return json({ ok: true, locale, data: rows }, { headers: publicCacheHeaders(300, 3600) });
   } catch (error) {
     console.error(error);
     return errorResponse("Unable to load modules.", 500);
