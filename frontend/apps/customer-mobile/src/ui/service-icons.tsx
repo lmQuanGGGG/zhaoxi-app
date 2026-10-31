@@ -7,8 +7,8 @@ import Svg, { Circle, Defs, Ellipse, G, LinearGradient, Path, RadialGradient, Re
  * they stay crisp at every size and ship with no image assets.
  */
 export const servicePalettes: Record<string, { tint: string; accent: string }> = {
-  food: { tint: "#FFF3EA", accent: "#EC5B2C" },
-  housing: { tint: "#EDF5FE", accent: "#2F72D2" },
+  food: { tint: "#FFF6E3", accent: "#D9A441" },
+  housing: { tint: "#FFF1E4", accent: "#E0864E" },
   visa: { tint: "#F2EFFE", accent: "#6650D4" },
   "car-rental": { tint: "#E9FAF7", accent: "#12948A" },
   translation: { tint: "#FAF0FC", accent: "#A44FC0" },
@@ -40,28 +40,37 @@ function Food() {
     <>
       <Defs>
         <GroundDef />
-        {lin("bowl", "#FFA261", "#E4511F")}
-        {lin("wood", "#E2A465", "#B5743A", false)}
-        <RadialGradient id="broth" cx="0.5" cy="0.4" r="0.6">
-          <Stop offset="0" stopColor="#FFEBC2" />
-          <Stop offset="1" stopColor="#F4B964" />
-        </RadialGradient>
+        {lin("bamboo", "#F4D48F", "#C98E45")}
+        {lin("bambooDark", "#D9A75E", "#A8712F")}
+        {lin("leaf", "#9BDB8C", "#3E9E55")}
+        {lin("siumai", "#FFE9A6", "#F2BE4E")}
+        {lin("hargow", "#FFFFFF", "#F3E7EC")}
       </Defs>
-      <Shadow rx={18} />
-      <Path d="M24.5 14.5c-2 2.6 1.8 3.8 0 6.6M32 10.5c-2 2.6 1.8 3.8 0 6.6M39.5 14.5c-2 2.6 1.8 3.8 0 6.6" stroke="#C9D3DF" strokeWidth={2.2} strokeLinecap="round" fill="none" opacity={0.85} />
-      <Ellipse cx={32} cy={30} rx={22} ry={6} fill="#D9481F" />
-      <Ellipse cx={32} cy={30.6} rx={19.6} ry={4.6} fill="url(#broth)" />
-      <Path d="M17.5 31.2c2.6-1.8 4.8 1 7.4-.8s4.8 1 7.4-.8 4.8 1 7.4-.8 4.6 1 6.4-.2" stroke="#FFF4DA" strokeWidth={1.6} strokeLinecap="round" fill="none" />
-      <Ellipse cx={39} cy={29.4} rx={3.8} ry={2.3} fill="#FFFFFF" />
-      <Circle cx={39.6} cy={29.2} r={1.4} fill="#FFB020" />
-      <Circle cx={24.5} cy={29.4} r={1.1} fill="#43B96E" />
-      <Circle cx={28} cy={31.3} r={1} fill="#43B96E" />
-      <Circle cx={45} cy={31} r={1} fill="#43B96E" />
-      <Path d="M41.5 6.5 28.8 30M47.5 8.5 33.5 30.8" stroke="url(#wood)" strokeWidth={3} strokeLinecap="round" />
-      <Path d="M10 30h44c0 11.4-9.8 20.2-22 20.2S10 41.4 10 30Z" fill="url(#bowl)" />
-      <Path d="M14.6 33.6c1.5 5.6 5.6 9.9 11.4 11.8" stroke="#FFFFFF" strokeOpacity={0.5} strokeWidth={2.4} strokeLinecap="round" fill="none" />
-      <Ellipse cx={32} cy={30} rx={22} ry={6} fill="none" stroke="#FFC29A" strokeWidth={1.5} />
-      <Path d="M24.5 49.4h15l-1.4 4.1H25.9Z" fill="#C7401A" />
+      <Shadow rx={22} cy={57} />
+      {/* steam */}
+      <Path d="M22 14c-2.2-2.6 2-4.4 0-7.4M30 12c-2.2-2.6 2-4.4 0-7.4" stroke="#CBD5E1" strokeWidth={2.2} strokeLinecap="round" fill="none" opacity={0.85} />
+      {/* lid leaning at the back */}
+      <G transform="rotate(-24 46 18)">
+        <Ellipse cx={46} cy={18} rx={14} ry={5.2} fill="url(#bambooDark)" />
+        <Ellipse cx={46} cy={16.6} rx={11} ry={3.4} fill="#E9C27A" />
+        <Path d="M38 16.8h16" stroke="#C38A43" strokeWidth={1.2} strokeLinecap="round" />
+      </G>
+      {/* basket */}
+      <Path d="M7.5 31h49v13.5c0 3.8-11 7.2-24.5 7.2S7.5 48.3 7.5 44.5Z" fill="url(#bamboo)" />
+      <Path d="M7.8 37.4c4.4 2.2 13 3.6 24.2 3.6s19.8-1.4 24.2-3.6M8.2 43.6c4.4 2.2 13 3.6 23.8 3.6s19.4-1.4 23.8-3.6" stroke="#B57A36" strokeOpacity={0.55} strokeWidth={1.4} fill="none" />
+      <Path d="M11.5 34.5c.8 5.4 2.4 9 5 11" stroke="#FFFFFF" strokeOpacity={0.5} strokeWidth={2.2} strokeLinecap="round" fill="none" />
+      <Ellipse cx={32} cy={31} rx={24.5} ry={7} fill="#E8BF77" />
+      <Ellipse cx={32} cy={31.4} rx={21.6} ry={5.6} fill="url(#leaf)" />
+      {/* dumplings: two siu mai + one har gow */}
+      <Path d="M14.5 33c0-5.6 3.2-8.6 7-8.6s7 3 7 8.6c-2.2 1.2-11.8 1.2-14 0Z" fill="url(#siumai)" />
+      <Ellipse cx={21.5} cy={24.6} rx={3.6} ry={1.3} fill="#F7D57A" />
+      <Circle cx={21.5} cy={24.2} r={1.6} fill="#F26B2E" />
+      <Path d="M35.5 33c0-5.6 3.2-8.6 7-8.6s7 3 7 8.6c-2.2 1.2-11.8 1.2-14 0Z" fill="url(#siumai)" />
+      <Ellipse cx={42.5} cy={24.6} rx={3.6} ry={1.3} fill="#F7D57A" />
+      <Circle cx={42.5} cy={24.2} r={1.6} fill="#F26B2E" />
+      <Path d="M24.5 33.6c0-4.4 3.4-8.4 7.5-9.4 4.1 1 7.5 5 7.5 9.4-2.4 1.4-12.6 1.4-15 0Z" fill="url(#hargow)" />
+      <Path d="M28 27.4l1.6 1.6M31 25.6l1 2M34.6 26.4l-.6 2M37 28.4l-1.6 1.2" stroke="#E7C9D3" strokeWidth={1.2} strokeLinecap="round" />
+      <Path d="M17 30c.4-1.8 1.4-3.2 2.8-4" stroke="#FFFFFF" strokeOpacity={0.7} strokeWidth={1.4} strokeLinecap="round" fill="none" />
     </>
   );
 }
@@ -71,23 +80,42 @@ function Housing() {
     <>
       <Defs>
         <GroundDef />
-        {lin("wall", "#FFFFFF", "#E2EBF7")}
-        {lin("roof", "#78C0FA", "#2C68C9", false)}
-        {lin("door", "#4A90E6", "#2556B0")}
+        {lin("sand", "#FFF1DF", "#F6C99A")}
+        {lin("sandSide", "#EDB98A", "#D69663")}
+        {lin("slab", "#1F8A8C", "#0E5A63")}
+        {lin("glass", "#D7F2FF", "#4FA8DE")}
+        {lin("wood2", "#C98A55", "#8D5631")}
+        <RadialGradient id="plant" cx="0.4" cy="0.35" r="0.7">
+          <Stop offset="0" stopColor="#8BE29A" />
+          <Stop offset="1" stopColor="#2E9E4F" />
+        </RadialGradient>
       </Defs>
-      <Shadow rx={21} />
-      <Path d="M42.5 4.8h5.2v12.6h-5.2Z" fill="#E8735A" />
-      <Path d="M42 4h6.2v2.4H42Z" fill="#C8553F" />
-      <Path d="M38 28.5 52.5 22v24.8L38 53Z" fill="#B7CCEA" />
-      <Path d="M12 28.5 25 15l13 13.5V53H12Z" fill="url(#wall)" />
-      <Path d="M25 14 39 7.6 54 22.4 38 29Z" fill="url(#roof)" />
-      <Path d="M9.6 30 25 13.4 40.4 30" stroke="#2A5FBC" strokeWidth={3.4} strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      <Path d="M25.8 13.2 39 7.2" stroke="#9AD1FF" strokeWidth={2.2} strokeLinecap="round" />
-      <Circle cx={25} cy={23.6} r={2.7} fill="#CDEBFF" stroke="#8DB2E2" strokeWidth={1} />
-      <Path d="M42.5 34 48.5 31.4v6.7l-6 2.6Z" fill="#E9F6FF" stroke="#8DB2E2" strokeWidth={1} />
-      <Path d="M19.8 53V42.4a5.2 5.2 0 0 1 10.4 0V53Z" fill="url(#door)" />
-      <Circle cx={27.6} cy={47.6} r={0.95} fill="#FFD27A" />
-      <Path d="M14 31v19.5" stroke="#FFFFFF" strokeWidth={2} strokeLinecap="round" opacity={0.9} />
+      <Shadow rx={25} cy={56.5} />
+      {/* ground floor */}
+      <Path d="M40 34 54.5 30v20.5L40 54.4Z" fill="url(#sandSide)" />
+      <Rect x={8} y={34} width={32} height={20.4} fill="url(#sand)" />
+      <Path d="M44 37.6 50.5 35.8v6.4L44 44Z" fill="url(#glass)" />
+      {/* upper floor, set back to the right */}
+      <Path d="M44 18 56 14.6V31L44 34Z" fill="url(#sandSide)" />
+      <Rect x={20} y={18} width={24} height={16} fill="url(#sand)" />
+      {/* flat roof slabs (brand petrol) */}
+      <Path d="M18.4 14.6h27.2L58 11.2v3.4l-12.4 3.4H18.4Z" fill="url(#slab)" />
+      <Path d="M18.4 14.6 31 11.2h27L45.6 14.6Z" fill="#3FB0A8" />
+      <Rect x={6.4} y={31.2} width={15} height={3.4} rx={1.2} fill="url(#slab)" />
+      {/* glass: big upper window, ground window */}
+      <Rect x={23} y={21} width={18} height={10} rx={1.6} fill="url(#glass)" />
+      <Path d="M32 21v10" stroke="#FFFFFF" strokeOpacity={0.8} strokeWidth={1.2} />
+      <Path d="M25 29.5 30 22.5M33.5 29.5l4.5-6.4" stroke="#FFFFFF" strokeOpacity={0.6} strokeWidth={1.6} strokeLinecap="round" />
+      <Rect x={24} y={38.4} width={13} height={9.6} rx={1.4} fill="url(#glass)" />
+      <Path d="M26 46.4l4-6" stroke="#FFFFFF" strokeOpacity={0.6} strokeWidth={1.6} strokeLinecap="round" />
+      {/* wooden door */}
+      <Rect x={12.4} y={40} width={8} height={14.4} rx={1.4} fill="url(#wood2)" />
+      <Circle cx={18.6} cy={47.6} r={0.95} fill="#FFD27A" />
+      <Path d="M10.4 36v16" stroke="#FFFFFF" strokeOpacity={0.8} strokeWidth={1.8} strokeLinecap="round" />
+      {/* potted plant */}
+      <Path d="M3.6 50h7l-1 5.2h-5Z" fill="#E07A4B" />
+      <Circle cx={7.1} cy={46.4} r={4.2} fill="url(#plant)" />
+      <Circle cx={5.8} cy={44.8} r={1.2} fill="#FFFFFF" opacity={0.55} />
     </>
   );
 }
