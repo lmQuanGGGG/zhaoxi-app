@@ -2,9 +2,9 @@ import { localizeServiceName } from "@zhaoxi/i18n";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, { Easing, Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring, withTiming, type SharedValue } from "react-native-reanimated";
+import Animated, { Easing, Extrapolation, interpolate, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withSpring, withTiming, type SharedValue } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import type { Service } from "../api/types";
 import { imageUri, money } from "../format";
@@ -180,12 +180,18 @@ function RingCard({ item, module, index, count, angle, cardW, cardH, left }: { i
 /* Best value: leaning 3D posters with big gold rank numbers           */
 /* ------------------------------------------------------------------ */
 
-const RANK_STEP = 172 + 22;
+const WIDE_W = 248;
+const WIDE_H = 146;
+const RANK_STEP = WIDE_W + 18;
 
+/** Best value: landscape cards that lean in 3D by their place in the row, with an inset photo and a price tag. */
 export function RankedRow({ items, module }: { items: Service[]; module: string }) {
   const { locale } = useI18n();
+  const { width } = useWindowDimensions();
   const ranked = useMemo(() => [...items].filter((x) => Number(x.priceFrom || 0) > 0).sort((a, b) => Number(a.priceFrom) - Number(b.priceFrom)).slice(0, 6), [items]);
-  const row = useRef<ScrollView>(null);
+  const row = useAnimatedRef<Animated.ScrollView>();
+  const x = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((event) => { x.value = event.contentOffset.x; });
   const at = useRef(0);
   const auto = useAutoplay(() => {
     if (ranked.length < 2) return;
@@ -193,39 +199,60 @@ export function RankedRow({ items, module }: { items: Service[]; module: string 
     row.current?.scrollTo({ x: at.current * RANK_STEP, animated: true });
   }, AUTOPLAY_MS + 600);
   if (ranked.length < 2) return null;
-  const unit = priceUnit(module, locale);
+  const side = (width - WIDE_W) / 2;
   return (
     <View style={{ marginTop: 26 }}>
       <Text style={styles.rowTitle}>{copy[locale].best}</Text>
-      <ScrollView
+      <Animated.ScrollView
         ref={row}
         horizontal
         showsHorizontalScrollIndicator={false}
         snapToInterval={RANK_STEP}
         decelerationRate="fast"
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         onScrollBeginDrag={auto.hold}
         onMomentumScrollEnd={(event) => { at.current = Math.round(event.nativeEvent.contentOffset.x / RANK_STEP); auto.release(); }}
-        contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 14, paddingBottom: 6, gap: 22 }}
+        contentContainerStyle={{ paddingHorizontal: side, paddingTop: 16, paddingBottom: 8, gap: 18 }}
       >
-        {ranked.map((item, i) => (
-          <Pressable key={item.id} onPress={() => open(item)} style={({ pressed }) => [{ width: 172 }, pressed && { transform: [{ scale: 0.97 }] }]}>
-            <View style={styles.posterShadow}>
-              <View style={styles.poster}>
-                <Photo item={item} module={module} style={StyleSheet.absoluteFill} />
-                <LinearGradient colors={["rgba(255,255,255,0.28)", "rgba(255,255,255,0)"]} start={{ x: 0, y: 0 }} end={{ x: 0.7, y: 0.5 }} style={StyleSheet.absoluteFill} pointerEvents="none" />
-              </View>
-            </View>
-            <View style={styles.rankRow}>
-              <Text style={styles.rank}>{i + 1}</Text>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={styles.rankName} numberOfLines={1}>{localizeServiceName(locale, item.name || item.code)}</Text>
-                <Text style={styles.rankPrice} numberOfLines={1}>{money(item.priceFrom, item.currency)}{unit ? <Text style={styles.rankUnit}> / {unit}</Text> : null}</Text>
-              </View>
-            </View>
-          </Pressable>
-        ))}
-      </ScrollView>
+        {ranked.map((item, i) => <WideCard key={item.id} item={item} module={module} index={i} x={x} />)}
+      </Animated.ScrollView>
     </View>
+  );
+}
+
+function WideCard({ item, module, index, x }: { item: Service; module: string; index: number; x: SharedValue<number> }) {
+  const { locale } = useI18n();
+  const meta = cardMeta(item, module, locale);
+  const unit = priceUnit(module, locale);
+  const gallery = Array.isArray(item.metadata?.galleryUrls) ? (item.metadata?.galleryUrls as unknown[]).map(String) : [];
+  const inset = imageUri(gallery[1] || gallery[0]);
+  const lean = useAnimatedStyle(() => {
+    const d = (index * RANK_STEP - x.value) / RANK_STEP; // <0 left of centre
+    return {
+      transform: [
+        { perspective: 800 },
+        { rotateY: `${interpolate(d, [-1.2, 0, 1.2], [16, 0, -16], Extrapolation.CLAMP)}deg` },
+        { scale: interpolate(Math.abs(d), [0, 1], [1, 0.94], Extrapolation.CLAMP) },
+      ],
+    };
+  });
+  return (
+    <Pressable onPress={() => open(item)} style={{ width: WIDE_W }}>
+      {/* Own container: the leaning card must not intersect its neighbours in 3D */}
+      <View>
+        <Animated.View style={[styles.wideShadow, lean]}>
+          <View style={styles.wide}>
+            <Photo item={item} module={module} style={StyleSheet.absoluteFill} />
+            <LinearGradient colors={["rgba(255,255,255,0.22)", "rgba(255,255,255,0)"]} start={{ x: 0, y: 0 }} end={{ x: 0.6, y: 0.5 }} style={StyleSheet.absoluteFill} pointerEvents="none" />
+            {inset ? <AppImage uri={inset} style={styles.inset} /> : null}
+            <View style={styles.tag}><Text style={styles.tagText}>{money(item.priceFrom, item.currency)}{unit ? ` / ${unit}` : ""}</Text></View>
+          </View>
+        </Animated.View>
+      </View>
+      <Text style={styles.wideName} numberOfLines={1}>{localizeServiceName(locale, item.name || item.code)}</Text>
+      {meta ? <Text style={styles.wideMeta} numberOfLines={1}>{meta}</Text> : null}
+    </Pressable>
   );
 }
 
@@ -256,11 +283,11 @@ const styles = StyleSheet.create({
   panelName: { fontSize: 18, fontWeight: "800", color: colors.white },
   panelSummary: { fontSize: 13, color: "rgba(255,255,255,0.68)" },
   rowTitle: { marginHorizontal: 18, fontSize: 20, fontWeight: "800", color: colors.ink, letterSpacing: -0.3 },
-  posterShadow: { borderRadius: 22, transform: [{ perspective: 700 }, { rotateY: "-14deg" }], shadowColor: "#00323A", shadowOpacity: 0.25, shadowRadius: 14, shadowOffset: { width: 6, height: 12 } },
-  poster: { height: 228, borderRadius: 22, overflow: "hidden", backgroundColor: "#E6F1F1", borderWidth: 2, borderColor: "rgba(255,255,255,0.9)" },
-  rankRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginTop: 12 },
-  rank: { fontSize: 54, lineHeight: 56, fontWeight: "900", fontStyle: "italic", color: "#F2B53A", textShadowColor: "rgba(242,181,58,0.35)", textShadowRadius: 10, marginTop: -4 },
-  rankName: { fontSize: 14, fontWeight: "800", color: colors.ink, lineHeight: 18 },
-  rankPrice: { marginTop: 4, fontSize: 13, fontWeight: "800", color: colors.priceRose },
-  rankUnit: { fontSize: 11, fontWeight: "600", color: colors.slate },
+  wideShadow: { borderRadius: 20, shadowColor: "#0F172A", shadowOpacity: 0.22, shadowRadius: 12, shadowOffset: { width: 0, height: 10 } },
+  wide: { height: WIDE_H, borderRadius: 20, overflow: "hidden", backgroundColor: "#E6F1F1", borderWidth: 2, borderColor: "rgba(255,255,255,0.95)" },
+  inset: { position: "absolute", left: 10, bottom: 10, width: 42, height: 58, borderRadius: 8, borderWidth: 1.5, borderColor: "rgba(255,255,255,0.95)" },
+  tag: { position: "absolute", right: 10, bottom: 10, paddingHorizontal: 9, height: 24, borderRadius: 7, justifyContent: "center", backgroundColor: "#1C8CD1" },
+  tagText: { fontSize: 11.5, fontWeight: "800", color: colors.white },
+  wideName: { marginTop: 12, fontSize: 15, fontWeight: "800", color: colors.ink },
+  wideMeta: { marginTop: 3, fontSize: 12, color: colors.slate },
 });
