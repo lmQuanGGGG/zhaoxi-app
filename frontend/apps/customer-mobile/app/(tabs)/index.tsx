@@ -1,11 +1,14 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { localizeOrganizationName, localizeServiceModuleName, localizeServiceName, statusLabels } from "@zhaoxi/i18n";
+import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, type SharedValue } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getHomeFeed, getModules, getNearbyServices, getOrders, getRecommendations, getUiConfig } from "../../src/api/endpoints";
 import type { FeedService, HomeFeed, Recommendation } from "../../src/api/types";
 import { TAB_BAR_SPACE } from "../../src/constants";
@@ -18,7 +21,8 @@ import { moduleRoute, resolveModules } from "../../src/modules";
 import { keys } from "../../src/query";
 import { ACTIVE_STATUSES } from "../../src/status";
 import { colors, shadow } from "../../src/theme";
-import { AppImage, PressableScale, Screen, SectionTitle, ServiceArt, ServiceIcon, Skeleton, StatusPill, ZxIcon } from "../../src/ui";
+import { HOME_GRADIENT, HeroCard, HomeBackdrop, HomeHeader, QuickActions, ServiceArc } from "../../src/components/home-hero";
+import { AppImage, PressableScale, Screen, SectionTitle, ServiceIcon, Skeleton, StatusPill, ZxIcon } from "../../src/ui";
 
 const landmarks = [
   { image: require("../../assets/landmarks/dragon-bridge.webp"), label: { "vi-VN": "Cầu Rồng", "en-US": "Dragon Bridge", "zh-CN": "龙桥", "zh-TW": "龍橋" } },
@@ -49,6 +53,14 @@ export default function HomeScreen() {
   const orders = useQuery({ queryKey: keys.orders(locale, userId), queryFn: () => getOrders(locale), enabled: Boolean(userId) });
   const activeOrder = orders.data?.find((order) => ACTIVE_STATUSES.has(order.status));
 
+  // Light status bar over the green header only while Home is focused: the
+  // <StatusBar> entry unmounts on blur so the root "dark" style applies again.
+  const [focused, setFocused] = useState(true);
+  useFocusEffect(useCallback(() => {
+    setFocused(true);
+    return () => setFocused(false);
+  }, []));
+
   // Use the last known GPS point silently; only prompt when the user taps "Chọn vị trí".
   useEffect(() => { if (!location.point) void locate(false); }, [location.point]);
 
@@ -67,20 +79,58 @@ export default function HomeScreen() {
   };
   const lc = locationCopy[locale];
 
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((event) => { scrollY.value = event.contentOffset.y; });
+  const quickCopy = {
+    "vi-VN": { locate: "Vị trí", ai: "Trợ lý AI", coupons: "Ưu đãi", favorites: "Yêu thích", payments: "Thanh toán", emergency: "Khẩn cấp", support: "Hỗ trợ", landmarks: "Khám phá Đà Nẵng" },
+    "en-US": { locate: "Location", ai: "AI assistant", coupons: "Offers", favorites: "Favorites", payments: "Payments", emergency: "Emergency", support: "Support", landmarks: "Explore Da Nang" },
+    "zh-CN": { locate: "位置", ai: "AI 助手", coupons: "优惠", favorites: "收藏", payments: "支付", emergency: "紧急", support: "客服", landmarks: "探索岘港" },
+    "zh-TW": { locate: "位置", ai: "AI 助手", coupons: "優惠", favorites: "收藏", payments: "支付", emergency: "緊急", support: "客服", landmarks: "探索峴港" },
+  }[locale];
+  const chips = [
+    { key: "support", label: quickCopy.support, onPress: () => router.push("/support") },
+    ...tiles.slice(0, 4).map((tile) => ({ key: tile.code, label: tile.name, onPress: () => router.push(moduleRoute(tile.code)) })),
+  ];
+  const arcTiles = resolveModules(modules.data, locale);
+
   return (
-    <Screen>
-      <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: TAB_BAR_SPACE }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.brand} />}
+    <Screen topbar={false}>
+      {focused ? <StatusBar style="light" /> : null}
+      <Animated.ScrollView
+        contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.white} />}
         showsVerticalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
-        <PressableScale onPress={() => router.push("/explore")} style={[styles.search, shadow("search")]} scaleTo={0.985}>
-          <ZxIcon name="search" size={18} color={colors.brand} />
-          <Text style={styles.searchText} numberOfLines={1}>{t.home.search}</Text>
-        </PressableScale>
+        <View>
+          <HomeBackdrop height={560} />
+          <HomeHeader />
+          <HeroCard
+            eyebrow={`ZHAOXI · ${banner?.cityLabel || t.home.city}`}
+            title={banner?.title || t.home.welcome}
+            slides={landmarks.map((item) => ({ image: item.image, label: item.label[locale] }))}
+            locationLabel={location.status === "locating" ? t.home.locating : location.label || lc.choose}
+            onLocate={() => void locate(true)}
+            chips={chips}
+          />
+          <View style={{ height: 96 }} />
+        </View>
 
-        <WelcomeBanner title={banner?.title || t.home.welcome} subtitle={banner?.subtitle || t.home.subtitle} city={banner?.cityLabel || t.home.city} cta={t.home.explore} />
+        <ServiceArc tiles={arcTiles} onOpen={(code) => router.push(moduleRoute(code))} onPressIn={prefetchModule} more={`${t.common.more}`} />
 
+        <QuickActions
+          items={[
+            { key: "locate", icon: "location", label: quickCopy.locate, onPress: () => void locate(true) },
+            { key: "ai", icon: "assistant", label: quickCopy.ai, onPress: () => router.push("/support"), accent: "#F5A524" },
+            { key: "coupons", icon: "ticket", label: quickCopy.coupons, onPress: () => router.push("/coupons"), accent: "#EC5B2C" },
+            { key: "favorites", icon: "heart", label: quickCopy.favorites, onPress: () => router.push("/favorites"), accent: "#E2564A" },
+            { key: "payments", icon: "payment", label: quickCopy.payments, onPress: () => router.push("/payments"), accent: "#2F72D2" },
+            { key: "emergency", icon: "emergency", label: quickCopy.emergency, onPress: () => router.push("/emergency"), accent: "#D83A3A" },
+          ]}
+        />
+
+        <View style={{ paddingHorizontal: 16 }}>
         {activeOrder ? (
           <Animated.View entering={FadeInDown.duration(320)}>
             <PressableScale onPress={() => router.push(`/order/${activeOrder.id}`)} style={[styles.activeOrder, shadow("soft")]} scaleTo={0.985}>
@@ -94,37 +144,6 @@ export default function HomeScreen() {
           </Animated.View>
         ) : null}
 
-        <View style={styles.contextRow}>
-          <View style={[styles.contextCard, shadow("soft")]}>
-            <LinearGradient colors={["#F7FBFA", "#DDF4F0"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 20 }]} />
-            <Text style={styles.locTitle}>{lc.title}</Text>
-            <Text style={styles.locBody} numberOfLines={3}>{location.status === "locating" ? t.home.locating : location.label || lc.hint}</Text>
-            <View style={styles.locActions}>
-              <PressableScale onPress={() => void locate(true)} style={styles.chooseButton}><Text style={styles.chooseText} numberOfLines={1}>{lc.choose}</Text></PressableScale>
-              <PressableScale onPress={() => router.push("/services/food")} style={styles.mapButton}><ZxIcon name="map" size={20} color={colors.ink} /></PressableScale>
-            </View>
-          </View>
-          <PressableScale onPress={() => router.push("/support")} scaleTo={0.98} style={[styles.contextCard, shadow("soft")]}>
-            <LinearGradient colors={["#FFFDF8", "#F5EBCD"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 20 }]} />
-            <Text style={styles.aiTitle} numberOfLines={3}>{t.home.ai}</Text>
-            <Text style={styles.aiBody} numberOfLines={3}>{t.home.aiHint}</Text>
-            <View style={styles.aiIcon}><ZxIcon name="assistant" size={20} color="#D97706" strokeWidth={2} /></View>
-          </PressableScale>
-        </View>
-
-        <SectionTitle title={t.home.module} action={t.common.more} onAction={() => router.push("/services")} />
-        <View style={styles.grid}>
-          {tiles.map((tile, index) => {
-            return (
-              <Animated.View key={tile.code} entering={FadeIn.delay(index * 30)} style={styles.tileWrap}>
-                <Pressable onPressIn={() => prefetchModule(tile.code)} onPress={() => router.push(moduleRoute(tile.code))} style={({ pressed }) => [styles.tile, shadow("card"), pressed && { transform: [{ scale: 0.95 }] }]}>
-                  <ServiceArt code={tile.code} size={50} />
-                  <Text style={styles.tileLabel} numberOfLines={2}>{tile.name}</Text>
-                </Pressable>
-              </Animated.View>
-            );
-          })}
-        </View>
 
         <PersonalFeed feed={feed.data} />
 
@@ -154,37 +173,22 @@ export default function HomeScreen() {
           <ZxIcon name="chevron" size={18} color="#A6472B" />
         </PressableScale>
         <Text style={styles.footer}>{t.home.footer}</Text>
-      </ScrollView>
+        </View>
+      </Animated.ScrollView>
+      <StatusBarScrim scrollY={scrollY} />
     </Screen>
   );
 }
 
-function WelcomeBanner({ title, subtitle, city, cta }: { title: string; subtitle: string; city: string; cta: string }) {
-  const { locale } = useI18n();
-  const [active, setActive] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => setActive((value) => (value + 1) % landmarks.length), 3000);
-    return () => clearInterval(timer);
-  }, []);
-  const slide = landmarks[active] ?? landmarks[0];
+/** Green glass strip behind the status bar once the header has scrolled away (keeps the light status bar readable). */
+function StatusBarScrim({ scrollY }: { scrollY: SharedValue<number> }) {
+  const insets = useSafeAreaInsets();
+  const fade = useAnimatedStyle(() => ({ opacity: interpolate(scrollY.value, [140, 260], [0, 1], "clamp") }));
   return (
-    <View style={[styles.banner, shadow("banner")]}>
-      <Image source={slide.image} style={StyleSheet.absoluteFill} contentFit="cover" transition={800} />
-      <LinearGradient colors={["rgba(24,63,53,0.78)", "rgba(24,63,53,0.38)", "rgba(24,63,53,0.12)"]} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={StyleSheet.absoluteFill} />
-      <LinearGradient colors={["transparent", "rgba(10,28,24,0.45)"]} style={StyleSheet.absoluteFill} />
-      <View style={styles.bannerCopy}>
-        <Text style={styles.bannerEyebrow}>ZHAOXI · {city}</Text>
-        <Text style={styles.bannerTitle}>{title}</Text>
-        <Text style={styles.bannerSubtitle} numberOfLines={1}>{subtitle}</Text>
-        <PressableScale onPress={() => router.push("/explore")} style={styles.bannerCta}>
-          <Text style={styles.bannerCtaText}>{cta} ›</Text>
-        </PressableScale>
-      </View>
-      <Text style={styles.bannerLandmark}>{slide.label[locale]}</Text>
-      <View style={styles.dots}>
-        {landmarks.map((_, index) => <Pressable key={index} hitSlop={4} onPress={() => setActive(index)} style={[styles.dot, index === active && styles.dotActive]} />)}
-      </View>
-    </View>
+    <Animated.View pointerEvents="none" style={[{ position: "absolute", top: 0, left: 0, right: 0, height: insets.top + 6 }, fade]}>
+      <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: HOME_GRADIENT[0], opacity: 0.9 }]} />
+    </Animated.View>
   );
 }
 
@@ -270,37 +274,8 @@ function PersonalFeed({ feed }: { feed?: HomeFeed | null }) {
 }
 
 const styles = StyleSheet.create({
-  search: { height: 48, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 13, borderRadius: 14, backgroundColor: "rgba(255,255,255,0.74)" },
-  searchText: { flex: 1, color: colors.textSecondary, fontSize: 14 },
-  banner: { height: 180, borderRadius: 22, overflow: "hidden", backgroundColor: colors.brandDeep, marginTop: 14 },
-  bannerCopy: { position: "absolute", left: 18, top: 16, bottom: 16, width: "68%" },
-  bannerEyebrow: { color: "rgba(255,255,255,0.9)", fontSize: 12, fontWeight: "700", letterSpacing: 1.6 },
-  bannerTitle: { color: colors.white, fontSize: 23, fontWeight: "800", lineHeight: 26.5, marginTop: 6 },
-  bannerSubtitle: { color: "rgba(255,255,255,0.9)", fontSize: 12, marginTop: 6 },
-  bannerCta: { position: "absolute", bottom: 0, left: 0, height: 32, paddingHorizontal: 14, borderRadius: 999, backgroundColor: "#F4E7C4", borderWidth: 1, borderColor: "rgba(255,255,255,0.42)", alignItems: "center", justifyContent: "center" },
-  bannerCtaText: { color: colors.brandDeep, fontSize: 11.5, fontWeight: "800" },
-  bannerLandmark: { position: "absolute", top: 16, right: 16, color: colors.white, fontSize: 11, fontWeight: "700" },
-  dots: { position: "absolute", right: 16, bottom: 16, flexDirection: "row", gap: 5 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.42)" },
-  dotActive: { width: 18, backgroundColor: "#F4E7C4" },
   activeOrder: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 12, padding: 12, borderRadius: 18, backgroundColor: colors.white, ...shadow("card") },
   activeIcon: { width: 40, height: 40, borderRadius: 13, backgroundColor: colors.wechat, alignItems: "center", justifyContent: "center" },
-  contextRow: { flexDirection: "row", gap: 12, marginTop: 12 },
-  contextCard: { flex: 1, minHeight: 141, borderRadius: 20, padding: 14 },
-  locTitle: { fontSize: 13, fontWeight: "700", color: "#067647" },
-  locBody: { fontSize: 12.5, fontWeight: "600", color: colors.ink, marginTop: 6, lineHeight: 17 },
-  locActions: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: "auto", paddingTop: 8 },
-  chooseButton: { flex: 1, height: 40, borderRadius: 999, backgroundColor: "rgba(236,253,245,0.9)", alignItems: "center", justifyContent: "center", paddingHorizontal: 10, shadowColor: "#047857", shadowOpacity: 0.13, shadowRadius: 7, shadowOffset: { width: 0, height: 5 } },
-  chooseText: { color: "#047857", fontSize: 14 },
-  mapButton: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center", ...shadow("card") },
-  aiTitle: { fontSize: 13, fontWeight: "700", color: "#B45309", lineHeight: 16.5, paddingRight: 4 },
-  aiBody: { fontSize: 12.5, fontWeight: "500", color: colors.slate, marginTop: 6, lineHeight: 17, paddingRight: 46 },
-  aiIcon: { position: "absolute", right: 12, bottom: 12, width: 44, height: 44, borderRadius: 14, backgroundColor: "rgba(255,255,255,0.72)", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 6, shadowOffset: { width: 0, height: 4 } },
-  grid: { flexDirection: "row", flexWrap: "wrap", rowGap: 10, columnGap: 8 },
-  tileWrap: { width: "22.8%" },
-  // Xanh SM–style service card: white tile, illustration + label inside.
-  tile: { alignItems: "center", justifyContent: "center", gap: 6, minHeight: 104, paddingTop: 12, paddingBottom: 10, paddingHorizontal: 4, borderRadius: 20, backgroundColor: colors.white, ...shadow("card") },
-  tileLabel: { fontSize: 11.5, fontWeight: "600", color: "#1F2A27", textAlign: "center", lineHeight: 14 },
   shortcut: { flex: 1, minHeight: 116, padding: 14, borderRadius: 20, overflow: "hidden" },
   shortcutTitle: { fontSize: 13, fontWeight: "700", color: colors.text, letterSpacing: -0.2 },
   shortcutBody: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10 },

@@ -40,3 +40,4 @@ Mỗi `compare-*.jpg` đặt ảnh PWA (trái, Chrome 402×874) cạnh ảnh app
 | Bộ icon dịch vụ vẽ lại — Trung tâm dịch vụ | app-31-services-hub-icons.jpg |
 | Thanh điều hướng Liquid Glass iOS 26 (kính khúc xạ, viên kính trượt theo tab) | app-32-liquid-glass-dock.jpg |
 | Thẻ không viền, bóng mờ mềm (trang chủ, Trung tâm dịch vụ, Cá nhân) | app-33-borderless-cards.jpg |
+| Home kiểu My Viettel: nền ngọc bích + vàng, header kính, hero ảnh danh thắng với chip kính, vòm dịch vụ cong | app-34-home-glass-hero.jpg |
