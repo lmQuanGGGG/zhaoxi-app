@@ -147,8 +147,8 @@ const HERO_H = 190;
 
 /**
  * Hero: a landmark photo card (cross-fading Da Nang landmarks, Liquid Glass
- * controls on the photo) layered over one frosted glass sheet that sticks out
- * on the left. Auto-advances; swipe left/right to change.
+ * controls on the photo) layered over one wider frosted glass sheet that sticks
+ * out on both sides. Auto-advances; swipe left/right to change.
  */
 export function HeroCard({ eyebrow, title, slides, locationLabel, onLocate }: { eyebrow: string; title: string; slides: HeroSlide[]; locationLabel: string; onLocate: () => void }) {
   const [active, setActive] = useState(0);
@@ -168,7 +168,7 @@ export function HeroCard({ eyebrow, title, slides, locationLabel, onLocate }: { 
   return (
     <GestureDetector gesture={swipe}>
       <View style={styles.heroWrap}>
-        {/* Back layer: a frosted glass sheet sticking out on the left, top a little lower, bottoms aligned */}
+        {/* Back layer: a wider frosted glass sheet sticking out on both sides, top a little lower, bottoms aligned */}
         <Glass style={styles.heroBackLayer} clear interactive={false} tint="rgba(255,240,232,0.32)" />
         <View style={[styles.heroCard, shadow("soft")]}>
           <View style={styles.heroClip}>
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   badge: { position: "absolute", top: -3, right: -3, minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 5, backgroundColor: "#FF4D4F", alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "rgba(255,255,255,0.9)" },
   badgeText: { color: colors.white, fontSize: 10, fontWeight: "900" },
   heroWrap: { marginHorizontal: 18, marginTop: 4, marginBottom: 30 },
-  heroBackLayer: { position: "absolute", left: -14, right: 30, top: 22, height: HERO_H - 22, borderRadius: 28 },
+  heroBackLayer: { position: "absolute", left: -14, right: -14, top: 22, height: HERO_H - 22, borderRadius: 30 },
   heroCard: { height: HERO_H, borderRadius: 28, backgroundColor: "#7A2A1C" },
   heroClip: { flex: 1, borderRadius: 28, overflow: "hidden" },
   heroFront: { position: "absolute", left: 0, right: 0, top: 0, bottom: 0 },
