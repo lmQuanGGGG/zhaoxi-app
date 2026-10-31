@@ -158,7 +158,6 @@ export default function HomeScreen() {
             title={exploreCopy.title}
             highlight={exploreCopy.highlight}
             more={exploreCopy.more}
-            allLabel={exploreCopy.all}
           />
         )}
 

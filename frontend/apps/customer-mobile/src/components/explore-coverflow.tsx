@@ -1,7 +1,7 @@
-import { localizeServiceModuleName, localizeServiceName } from "@zhaoxi/i18n";
+import { localizeServiceName } from "@zhaoxi/i18n";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { useCallback } from "react";
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import Animated, { cancelAnimation, Easing, Extrapolation, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming, type SharedValue } from "react-native-reanimated";
 import type { Recommendation } from "../api/types";
 import { imageUri, money } from "../format";
@@ -21,16 +21,13 @@ const SHADOW_ROOM = 72; // vertical room so card shadows fade out instead of bei
  * white card, highlighted title, glass module tabs, 3D carousel where the
  * centred card is straight and large and the neighbours rotate away in depth.
  */
-export function ExploreCoverflow({ items, title, highlight, more, allLabel }: { items: Recommendation[]; title: string; highlight: string; more: string; allLabel: string }) {
-  const { locale } = useI18n();
+export function ExploreCoverflow({ items, title, highlight, more }: { items: Recommendation[]; title: string; highlight: string; more: string }) {
   const { width } = useWindowDimensions();
-  const modules = useMemo(() => [...new Set(items.map((item) => item.moduleCode).filter(Boolean))].slice(0, 4), [items]);
-  const [tab, setTab] = useState<string>("all");
-  const list = useMemo(() => (tab === "all" ? items : items.filter((item) => item.moduleCode === tab)), [items, tab]);
+  const list = items;
   const x = useSharedValue(0);
   const onScroll = useAnimatedScrollHandler((event) => { x.value = event.contentOffset.x; });
   const pad = (width - CARD_W) / 2;
-  const mascot = tab === "all" ? list[0]?.moduleCode || "food" : tab;
+  const mascot = list[0]?.moduleCode || "food";
   if (!items.length) return null;
   return (
     <View style={styles.panel}>
@@ -38,20 +35,7 @@ export function ExploreCoverflow({ items, title, highlight, more, allLabel }: { 
       <Text style={styles.title} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
         {title} <Text style={styles.highlight}>{highlight}</Text>
       </Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabs}>
-        {[{ key: "all", label: allLabel }, ...modules.map((code) => ({ key: code, label: localizeServiceModuleName(locale, code) }))].map((item) => {
-          const active = tab === item.key;
-          return (
-            <Pressable key={item.key} onPress={() => { haptic.select(); setTab(item.key); }} style={({ pressed }) => [styles.tab, pressed && { transform: [{ scale: 0.95 }] }]}>
-              <GlassFill radius={24} tint={active ? "rgba(226,72,52,0.9)" : "rgba(241,243,246,0.7)"} />
-              {item.key !== "all" ? <ServiceArt code={item.key} size={22} /> : <ZxIcon name="services" size={18} color={active ? colors.white : "#475569"} />}
-              <Text style={[styles.tabText, active && { color: colors.white }]} numberOfLines={1}>{item.label}</Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
       <Animated.ScrollView
-        key={tab}
         horizontal
         showsHorizontalScrollIndicator={false}
         snapToInterval={STEP}
@@ -136,11 +120,8 @@ function Mascot({ code }: { code: string }) {
 const styles = StyleSheet.create({
   panel: { marginTop: 24, paddingTop: 26, paddingBottom: 22, borderRadius: 30, backgroundColor: colors.white, shadowColor: "#0F172A", shadowOpacity: 0.08, shadowRadius: 20, shadowOffset: { width: 0, height: 12 } },
   mascot: { position: "absolute", right: 12, top: -46 },
-  title: { paddingHorizontal: 22, paddingRight: 104, fontSize: 21, fontWeight: "800", color: "#17221F", letterSpacing: -0.3 },
+  title: { paddingHorizontal: 22, paddingRight: 104, marginBottom: 6, fontSize: 21, fontWeight: "800", color: "#17221F", letterSpacing: -0.3 },
   highlight: { color: "#E2482F" },
-  tabs: { gap: 10, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 22 },
-  tab: { height: 46, paddingHorizontal: 16, borderRadius: 23, flexDirection: "row", alignItems: "center", gap: 8 },
-  tabText: { fontSize: 15, fontWeight: "700", color: "#334155" },
   card: { width: CARD_W, height: CARD_H, borderRadius: 24, backgroundColor: colors.white, shadowOpacity: 0.45, shadowRadius: 18, shadowOffset: { width: 0, height: 12 } },
   cardClip: { ...StyleSheet.absoluteFill, borderRadius: 24, backgroundColor: colors.white },
   cardContent: { ...StyleSheet.absoluteFill },
