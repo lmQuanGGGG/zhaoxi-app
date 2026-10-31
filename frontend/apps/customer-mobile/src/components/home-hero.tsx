@@ -5,29 +5,32 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
-import Animated, { Extrapolation, interpolate, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, type SharedValue } from "react-native-reanimated";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, { Easing, Extrapolation, FadeInDown, interpolate, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withSpring, withTiming, type SharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Defs, LinearGradient as SvgGradient, Path, Stop } from "react-native-svg";
+import Svg, { Circle, Defs, Ellipse, LinearGradient as SvgGradient, Path, RadialGradient, Stop } from "react-native-svg";
 import { useCart } from "../cart";
 import { useSession, useUnread } from "../hooks";
 import { useI18n } from "../i18n";
 import { colors } from "../theme";
-import { PressableScale, ServiceArt, ZxIcon, haptic, type ZxIconName } from "../ui";
+import { PressableScale, ServiceArt, ZxIcon, haptic, servicePalettes, type ZxIconName } from "../ui";
 import { CartIcon } from "../ui/icons";
 
 const LIQUID_GLASS = Platform.OS === "ios" && isLiquidGlassAvailable();
 
 /** Brand gradient behind the home header (My Viettel–style immersive top). */
-export const HOME_GRADIENT = ["#10302A", "#183F35", "#24564A"] as const;
+/** Pearl base of the home header (also used for the status-bar scrim / overscroll). */
+export const HOME_BASE = "#F7F2EC";
 /** Champagne gold accents that pair with the deep emerald (logo colours). */
 const GOLD = "#B98A3A";
 const CREAM = "#F4E7C4";
 const EMERALD = "#1F6B57";
+const INK = "#1D2522";
 
 /** Real Liquid Glass where the OS has it, frosted blur otherwise. */
-export function Glass({ style, children, tint, clear = false }: { style?: StyleProp<ViewStyle>; children?: ReactNode; tint?: string; clear?: boolean }) {
+export function Glass({ style, children, tint, clear = false, interactive = true }: { style?: StyleProp<ViewStyle>; children?: ReactNode; tint?: string; clear?: boolean; interactive?: boolean }) {
   if (LIQUID_GLASS) {
-    return <GlassView glassEffectStyle={clear ? "clear" : "regular"} tintColor={tint} isInteractive colorScheme="light" style={style}>{children}</GlassView>;
+    return <GlassView glassEffectStyle={clear ? "clear" : "regular"} tintColor={tint} isInteractive={interactive} colorScheme="light" style={style}>{children}</GlassView>;
   }
   return (
     <View style={[style, { overflow: "hidden" }]}>
@@ -39,15 +42,24 @@ export function Glass({ style, children, tint, clear = false }: { style?: StyleP
 }
 
 /** Soft light blobs on the gradient so the glass has something to refract. */
+/**
+ * "Pearl aurora" backdrop: a warm pearl base with large pastel colour fields
+ * (peach, lilac, mint, sky, butter) melted together by a blur, so the Liquid
+ * Glass above has soft colour to refract.
+ */
 export function HomeBackdrop({ height }: { height: number }) {
   const { width } = useWindowDimensions();
+  const blob = (size: number, color: string, pos: ViewStyle) => <View style={[styles.blob, { width: size, height: size, borderRadius: size / 2, backgroundColor: color }, pos]} />;
   return (
-    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { height }]}>
-      <View style={{ position: "absolute", top: -800, left: 0, right: 0, height: 800, backgroundColor: HOME_GRADIENT[0] }} />
-      <LinearGradient colors={HOME_GRADIENT} start={{ x: 0, y: 0 }} end={{ x: 0.3, y: 1 }} style={StyleSheet.absoluteFill} />
-      <View style={[styles.blob, { width: width * 0.9, height: width * 0.9, borderRadius: width, top: -width * 0.35, right: -width * 0.35, backgroundColor: "rgba(244,214,150,0.16)" }]} />
-      <View style={[styles.blob, { width: width * 0.7, height: width * 0.7, borderRadius: width, top: height * 0.38, left: -width * 0.3, backgroundColor: "rgba(120,200,170,0.12)" }]} />
-      <View style={[styles.blob, { width: 140, height: 140, borderRadius: 70, top: height * 0.2, left: width * 0.45, backgroundColor: "rgba(255,236,190,0.14)" }]} />
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { height, overflow: "hidden" }]}>
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: HOME_BASE }]} />
+      {blob(width * 1.05, "#FFD3BF", { top: -width * 0.45, left: -width * 0.35 })}
+      {blob(width * 0.95, "#DCCBFF", { top: -width * 0.3, right: -width * 0.45 })}
+      {blob(width * 0.8, "#C6F1DF", { top: height * 0.36, left: -width * 0.3 })}
+      {blob(width * 0.85, "#CBE3FF", { top: height * 0.42, right: -width * 0.35 })}
+      {blob(width * 0.5, "#FFE9B0", { top: height * 0.2, left: width * 0.3 })}
+      <BlurView intensity={80} tint="light" style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={["rgba(255,255,255,0.15)", "rgba(255,255,255,0)", "rgba(255,255,255,0.35)"]} locations={[0, 0.55, 1]} style={StyleSheet.absoluteFill} />
     </View>
   );
 }
@@ -66,7 +78,7 @@ export function HomeHeader() {
   return (
     <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
       <Pressable onPress={() => router.navigate("/profile")} style={({ pressed }) => pressed && { transform: [{ scale: 0.94 }] }}>
-        <Glass style={styles.round} tint="rgba(255,255,255,0.22)"><Text style={styles.initials}>{initials}</Text></Glass>
+        <Glass style={styles.round} tint="rgba(255,255,255,0.4)"><Text style={styles.initials}>{initials}</Text></Glass>
       </Pressable>
       <Pressable onPress={() => router.push("/explore")} style={({ pressed }) => [{ flex: 1 }, pressed && { transform: [{ scale: 0.985 }] }]}>
         {/* Gradient hairline ring like the reference search pill */}
@@ -88,12 +100,12 @@ export function HomeHeader() {
       </Pressable>
       {cart.count > 0 ? (
         <Pressable accessibilityLabel={t.cart.title} onPress={() => router.push("/cart")} style={({ pressed }) => pressed && { transform: [{ scale: 0.94 }] }}>
-          <Glass style={styles.round} tint="rgba(255,255,255,0.22)"><CartIcon size={20} color={colors.white} /></Glass>
+          <Glass style={styles.round} tint="rgba(255,255,255,0.4)"><CartIcon size={20} color={INK} /></Glass>
           <Badge value={cart.count} />
         </Pressable>
       ) : null}
       <Pressable accessibilityLabel={t.notifications.title} onPress={() => router.push("/notifications")} style={({ pressed }) => pressed && { transform: [{ scale: 0.94 }] }}>
-        <Glass style={styles.round} tint="rgba(255,255,255,0.22)"><ZxIcon name="bell" size={21} color={colors.white} strokeWidth={2.1} /></Glass>
+        <Glass style={styles.round} tint="rgba(255,255,255,0.4)"><ZxIcon name="bell" size={21} color={INK} strokeWidth={2.1} /></Glass>
         <Badge value={unread.data?.notifications || 0} />
       </Pressable>
     </View>
@@ -107,56 +119,97 @@ function Badge({ value }: { value: number }) {
 
 export type HeroSlide = { image: number; label: string };
 
+const DECK_DEPTH = 3; // cards visible in the stack (front + 2 peeking behind)
+
 /**
- * Hero card: Da Nang landmark photos cross-fading underneath, with Liquid Glass
- * controls (location pill, chips, pager) floating on the photo so the glass
- * actually refracts real imagery.
+ * Hero as a layered deck of Da Nang landmark cards: the front card carries the
+ * copy and Liquid Glass controls, the next landmarks peek out behind it (smaller,
+ * lower, shifted left, frosted). Auto-advances; swipe left/right to shuffle.
  */
 export function HeroCard({ eyebrow, title, slides, locationLabel, onLocate, chips }: { eyebrow: string; title: string; slides: HeroSlide[]; locationLabel: string; onLocate: () => void; chips: Array<{ key: string; label: string; onPress: () => void }> }) {
   const [active, setActive] = useState(0);
+  const count = slides.length;
+  const next = () => setActive((value) => (value + 1) % Math.max(count, 1));
+  const prev = () => setActive((value) => (value - 1 + count) % Math.max(count, 1));
   useEffect(() => {
-    if (slides.length < 2) return;
-    const timer = setInterval(() => setActive((value) => (value + 1) % slides.length), 3500);
+    if (count < 2) return;
+    const timer = setInterval(next, 4200);
     return () => clearInterval(timer);
-  }, [slides.length]);
-  const slide = slides[active] ?? slides[0];
+  }, [count, active]);
+  const swipe = Gesture.Pan().activeOffsetX([-18, 18]).failOffsetY([-12, 12]).runOnJS(true).onEnd((event) => {
+    if (event.translationX < -40) { haptic.select(); next(); }
+    else if (event.translationX > 40) { haptic.select(); prev(); }
+  });
+  const slide = slides[active];
   return (
-    <View style={styles.heroWrap}>
-      <View style={styles.heroBack} />
-      <View style={styles.hero}>
-        {slide ? <Image source={slide.image} style={StyleSheet.absoluteFill} contentFit="cover" transition={900} /> : null}
-        <LinearGradient colors={["rgba(10,32,27,0.55)", "rgba(10,32,27,0.05)", "rgba(10,32,27,0.62)"]} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} pointerEvents="none" />
-        <Pressable onPress={onLocate} style={({ pressed }) => [styles.locWrap, pressed && { transform: [{ scale: 0.96 }] }]}>
-          <Glass style={styles.locPill} clear tint="rgba(255,255,255,0.12)">
-            <ZxIcon name="location" size={14} color={colors.white} strokeWidth={2.2} />
-            <Text style={styles.locText} numberOfLines={1}>{locationLabel}</Text>
+    <GestureDetector gesture={swipe}>
+      <View style={styles.heroWrap}>
+        {slides.map((item, index) => {
+          const depth = (index - active + count) % count;
+          return <DeckCard key={item.label} image={item.image} depth={depth} count={count} />;
+        })}
+        <View style={styles.heroFront} pointerEvents="box-none">
+          <Pressable onPress={onLocate} style={({ pressed }) => [styles.locWrap, pressed && { transform: [{ scale: 0.96 }] }]}>
+            <Glass style={styles.locPill} clear tint="rgba(255,255,255,0.12)">
+              <ZxIcon name="location" size={14} color={colors.white} strokeWidth={2.2} />
+              <Text style={styles.locText} numberOfLines={1}>{locationLabel}</Text>
+            </Glass>
+          </Pressable>
+          <Glass style={styles.pager} clear tint="rgba(255,255,255,0.1)">
+            {slides.map((item, index) => <Pressable key={item.label} hitSlop={5} onPress={() => setActive(index)} style={[styles.dot, index === active && styles.dotActive]} />)}
           </Glass>
-        </Pressable>
-        <Glass style={styles.pager} clear tint="rgba(255,255,255,0.1)">
-          {slides.map((item, index) => <Pressable key={item.label} hitSlop={5} onPress={() => setActive(index)} style={[styles.dot, index === active && styles.dotActive]} />)}
-        </Glass>
-        <View style={styles.heroCopy}>
-          <Text style={styles.heroEyebrow}>{eyebrow}</Text>
-          <Text style={styles.heroTitle} numberOfLines={2}>{title}</Text>
-          {slide ? <Text style={styles.heroHighlight} numberOfLines={1}>{slide.label}</Text> : null}
+          <View style={styles.heroCopy} pointerEvents="none">
+            <Text style={styles.heroEyebrow}>{eyebrow}</Text>
+            <Text style={styles.heroTitle} numberOfLines={2}>{title}</Text>
+            {slide ? <Animated.Text key={slide.label} entering={FadeInDown.duration(380)} style={styles.heroHighlight} numberOfLines={1}>{slide.label}</Animated.Text> : null}
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={styles.chipScroll}>
+            {chips.map((chip, index) => (
+              <Pressable key={chip.key} onPress={chip.onPress} style={({ pressed }) => pressed && { transform: [{ scale: 0.94 }] }}>
+                {index === 0 ? (
+                  <View style={[styles.chip, styles.chipPrimary]}><Text style={[styles.chipText, { color: "#183F35" }]}>{chip.label}</Text></View>
+                ) : (
+                  <Glass style={styles.chip} clear tint="rgba(255,255,255,0.14)"><Text style={styles.chipText}>{chip.label}</Text></Glass>
+                )}
+              </Pressable>
+            ))}
+          </ScrollView>
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={styles.chipScroll}>
-          {chips.map((chip, index) => (
-            <Pressable key={chip.key} onPress={chip.onPress} style={({ pressed }) => pressed && { transform: [{ scale: 0.94 }] }}>
-              {index === 0 ? (
-                <View style={[styles.chip, styles.chipPrimary]}><Text style={[styles.chipText, { color: "#183F35" }]}>{chip.label}</Text></View>
-              ) : (
-                <Glass style={styles.chip} clear tint="rgba(255,255,255,0.14)"><Text style={styles.chipText}>{chip.label}</Text></Glass>
-              )}
-            </Pressable>
-          ))}
-        </ScrollView>
       </View>
-    </View>
+    </GestureDetector>
+  );
+}
+
+/** One card of the deck; springs to its depth (front card shuffles to the back). */
+function DeckCard({ image, depth, count }: { image: number; depth: number; count: number }) {
+  const d = useSharedValue(depth);
+  useEffect(() => { d.value = withSpring(depth, { damping: 20, stiffness: 160, mass: 0.9 }); }, [depth, d]);
+  const style = useAnimatedStyle(() => {
+    const v = d.value;
+    return {
+      opacity: interpolate(v, [0, DECK_DEPTH - 1, DECK_DEPTH, count], [1, 1, 0, 0], Extrapolation.CLAMP),
+      transform: [
+        { translateX: interpolate(v, [0, 1, 2], [0, -30, -54], Extrapolation.CLAMP) },
+        { translateY: interpolate(v, [0, 1, 2], [0, 16, 30], Extrapolation.CLAMP) },
+        { scale: interpolate(v, [0, 1, 2], [1, 0.93, 0.86], Extrapolation.CLAMP) },
+      ],
+    };
+  });
+  const veil = useAnimatedStyle(() => ({ opacity: interpolate(d.value, [0, 1], [0, 1], Extrapolation.CLAMP) }));
+  return (
+    <Animated.View pointerEvents="none" style={[styles.deckCard, { zIndex: count - depth }, depth === 0 ? styles.deckFront : null, style]}>
+      <Image source={image} style={StyleSheet.absoluteFill} contentFit="cover" transition={300} />
+      <LinearGradient colors={["rgba(10,32,27,0.55)", "rgba(10,32,27,0.05)", "rgba(10,32,27,0.62)"]} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
+      {/* Cards behind the front one read as frosted layers */}
+      <Animated.View style={[StyleSheet.absoluteFill, veil]}>
+        <Glass style={StyleSheet.absoluteFill} clear interactive={false} tint="rgba(255,255,255,0.22)" />
+      </Animated.View>
+    </Animated.View>
   );
 }
 
 const ITEM = 96;
+const LENS = 178;
 
 /** White dome with a snapping service carousel: the centred item is enlarged and raised, the rest follow the arc. */
 export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ code: string; name: string }>; onOpen: (code: string) => void; onPressIn?: (code: string) => void; more: string }) {
@@ -170,7 +223,11 @@ export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ 
   return (
     <View style={styles.arcSection}>
       <View style={[styles.dome, { width: width * 2.2, height: width * 2.2, borderRadius: width * 1.1, left: -width * 0.6 }]} />
-      <LinearGradient colors={["#F6EEDB", "rgba(255,255,255,0)"]} style={[styles.arcGlow, { left: width / 2 - 78 }]} pointerEvents="none" />
+      {/* Liquid Glass lens bulging over the dome edge, refracting the emerald header behind it */}
+      <View pointerEvents="none" style={[styles.lensWrap, { left: width / 2 - LENS / 2 }]}>
+        <Glass style={styles.lens} clear interactive={false} tint="rgba(255,255,255,0.42)" />
+        <LinearGradient colors={["rgba(255,255,255,0.75)", "rgba(255,255,255,0)"]} start={{ x: 0.2, y: 0 }} end={{ x: 0.5, y: 0.7 }} style={styles.lensSheen} />
+      </View>
       <Animated.ScrollView
         ref={list}
         onLayout={centre}
@@ -195,6 +252,7 @@ export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ 
 }
 
 function ArcItem({ index, x, tile, onOpen, onPressIn }: { index: number; x: SharedValue<number>; tile: { code: string; name: string }; onOpen: (code: string) => void; onPressIn?: (code: string) => void }) {
+  const accent = servicePalettes[tile.code]?.accent || colors.brand;
   const motion = useAnimatedStyle(() => {
     const d = Math.abs(x.value - index * ITEM) / ITEM;
     return {
@@ -204,13 +262,47 @@ function ArcItem({ index, x, tile, onOpen, onPressIn }: { index: number; x: Shar
       ],
     };
   });
+  // Halo + coloured contact shadow + sparkles only light up on the centred item.
+  const lit = useAnimatedStyle(() => ({ opacity: interpolate(Math.abs(x.value - index * ITEM) / ITEM, [0, 0.7], [1, 0], Extrapolation.CLAMP) }));
+  const twinkle = useSharedValue(0);
+  useEffect(() => {
+    twinkle.value = withRepeat(withSequence(withTiming(1, { duration: 900, easing: Easing.inOut(Easing.quad) }), withTiming(0.25, { duration: 900, easing: Easing.inOut(Easing.quad) })), -1);
+  }, [twinkle]);
+  const sparkle = useAnimatedStyle(() => ({ opacity: twinkle.value, transform: [{ scale: 0.7 + twinkle.value * 0.4 }, { rotate: `${twinkle.value * 45}deg` }] }));
   return (
     <Pressable onPressIn={() => onPressIn?.(tile.code)} onPress={() => onOpen(tile.code)} style={{ width: ITEM, alignItems: "center" }}>
       <Animated.View style={[{ alignItems: "center", width: ITEM + 30 }, motion]}>
+        <Animated.View pointerEvents="none" style={[styles.halo, lit]}>
+          <Svg width={150} height={150} viewBox="0 0 150 150">
+            <Defs>
+              <RadialGradient id={`halo-${tile.code}`} cx="0.5" cy="0.5" r="0.5">
+                <Stop offset="0" stopColor={accent} stopOpacity={0.32} />
+                <Stop offset="0.55" stopColor={accent} stopOpacity={0.1} />
+                <Stop offset="1" stopColor={accent} stopOpacity={0} />
+              </RadialGradient>
+              <RadialGradient id={`drop-${tile.code}`} cx="0.5" cy="0.5" r="0.5">
+                <Stop offset="0" stopColor={accent} stopOpacity={0.55} />
+                <Stop offset="1" stopColor={accent} stopOpacity={0} />
+              </RadialGradient>
+            </Defs>
+            <Circle cx={75} cy={66} r={70} fill={`url(#halo-${tile.code})`} />
+            <Ellipse cx={75} cy={118} rx={44} ry={9} fill={`url(#drop-${tile.code})`} />
+          </Svg>
+        </Animated.View>
         <ServiceArt code={tile.code} size={86} />
+        <Animated.View pointerEvents="none" style={[styles.sparkleA, lit]}><Animated.View style={sparkle}><Sparkle size={16} color="#F6C453" /></Animated.View></Animated.View>
+        <Animated.View pointerEvents="none" style={[styles.sparkleB, lit]}><Animated.View style={sparkle}><Sparkle size={10} color="#FFFFFF" /></Animated.View></Animated.View>
         <Text style={styles.arcLabel} numberOfLines={2}>{tile.name}</Text>
       </Animated.View>
     </Pressable>
+  );
+}
+
+function Sparkle({ size, color }: { size: number; color: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path d="M12 0c.8 6.4 5.6 11.2 12 12-6.4.8-11.2 5.6-12 12-.8-6.4-5.6-11.2-12-12C6.4 11.2 11.2 6.4 12 0Z" fill={color} />
+    </Svg>
   );
 }
 
@@ -238,15 +330,16 @@ const styles = StyleSheet.create({
   blob: { position: "absolute" },
   header: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingBottom: 14 },
   round: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
-  initials: { color: colors.white, fontSize: 17, fontWeight: "800", letterSpacing: 0.5 },
+  initials: { color: INK, fontSize: 17, fontWeight: "800", letterSpacing: 0.5 },
   searchRing: { borderRadius: 999, padding: 1.6 },
   searchPill: { height: 46, borderRadius: 999, flexDirection: "row", alignItems: "center", gap: 9, paddingHorizontal: 16, backgroundColor: "rgba(255,255,255,0.94)" },
   searchText: { flex: 1, fontSize: 14.5, fontWeight: "600", color: "#7C8B86" },
   badge: { position: "absolute", top: -3, right: -3, minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 5, backgroundColor: "#FF4D4F", alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "rgba(255,255,255,0.9)" },
   badgeText: { color: colors.white, fontSize: 10, fontWeight: "900" },
-  heroWrap: { marginHorizontal: 16, marginTop: 4 },
-  heroBack: { position: "absolute", left: -8, right: 8, top: 18, bottom: -6, borderRadius: 30, backgroundColor: "rgba(255,255,255,0.14)" },
-  hero: { height: 280, borderRadius: 30, overflow: "hidden", backgroundColor: "#183F35" },
+  heroWrap: { marginLeft: 30, marginRight: 16, marginTop: 4, marginBottom: 30 },
+  deckCard: { position: "absolute", left: 0, right: 0, top: 0, height: 280, borderRadius: 30, overflow: "hidden", backgroundColor: "#183F35" },
+  deckFront: { shadowColor: "#06140F", shadowOpacity: 0.35, shadowRadius: 22, shadowOffset: { width: 0, height: 14 } },
+  heroFront: { height: 280, zIndex: 100 },
   locWrap: { position: "absolute", left: 16, top: 16, maxWidth: "62%" },
   locPill: { flexDirection: "row", alignItems: "center", gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 16 },
   locText: { flexShrink: 1, fontSize: 12, fontWeight: "700", color: colors.white },
@@ -264,7 +357,12 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 15, fontWeight: "700", color: colors.white },
   arcSection: { marginTop: -64, paddingTop: 18 },
   dome: { position: "absolute", top: 0, backgroundColor: colors.white },
-  arcGlow: { position: "absolute", top: -26, width: 156, height: 156, borderRadius: 78 },
+  lensWrap: { position: "absolute", top: -54, width: LENS, height: LENS },
+  lens: { width: LENS, height: LENS, borderRadius: LENS / 2 },
+  lensSheen: { position: "absolute", left: 18, top: 10, width: LENS * 0.56, height: LENS * 0.4, borderRadius: LENS },
+  halo: { position: "absolute", top: -32, width: 150, height: 150 },
+  sparkleA: { position: "absolute", top: -2, right: 14 },
+  sparkleB: { position: "absolute", top: 22, left: 16 },
   arcLabel: { marginTop: 6, fontSize: 15, fontWeight: "700", color: "#17221F", textAlign: "center", lineHeight: 19 },
   moreLink: { alignSelf: "center", flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 6, marginTop: 2 },
   moreText: { fontSize: 17, fontWeight: "800", color: EMERALD },
