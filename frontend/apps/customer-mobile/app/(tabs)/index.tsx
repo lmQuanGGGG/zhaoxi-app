@@ -1,14 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { localizeOrganizationName, localizeServiceModuleName, localizeServiceName, statusLabels } from "@zhaoxi/i18n";
-import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-import Animated, { FadeIn, FadeInDown, interpolate, withSpring, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, type SharedValue } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, { FadeIn, FadeInDown, useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 import { getHomeFeed, getModules, getNearbyServices, getOrders, getRecommendations, getUiConfig } from "../../src/api/endpoints";
 import type { FeedService, HomeFeed, Recommendation } from "../../src/api/types";
 import { TAB_BAR_SPACE } from "../../src/constants";
@@ -22,7 +21,7 @@ import { keys } from "../../src/query";
 import { ACTIVE_STATUSES } from "../../src/status";
 import { colors, shadow } from "../../src/theme";
 import { ExploreCoverflow } from "../../src/components/explore-coverflow";
-import { HOME_TOP, HeroCard, HomeBackdrop, HomeHeader, QuickActions, ServiceArc } from "../../src/components/home-hero";
+import { HeroCard, HomeBackdrop, HomeHeader, QuickActions, ServiceArc } from "../../src/components/home-hero";
 import { ArtLabel, Art3D, AppImage, GlassFill, PressableScale, Screen, SectionTitle, ServiceArt, ServiceIcon, Skeleton, StatusPill, ZxIcon } from "../../src/ui";
 
 const landmarks = [
@@ -87,8 +86,16 @@ export default function HomeScreen() {
     "zh-CN": { title: "探索", highlight: "无限精彩", more: "查看全部", all: "全部" },
     "zh-TW": { title: "探索", highlight: "無限精彩", more: "查看全部", all: "全部" },
   }[locale];
+  const overHeaderSV = useSharedValue(true);
   const scrollY = useSharedValue(0);
-  const onScroll = useAnimatedScrollHandler((event) => { scrollY.value = event.contentOffset.y; });
+  // No scrim behind the status bar: content scrolls right up under it, and the clock/battery
+  // switch to dark once the petrol header has scrolled away.
+  const [overHeader, setOverHeader] = useState(true);
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+    const next = event.contentOffset.y < 260;
+    if (next !== overHeaderSV.value) { overHeaderSV.value = next; scheduleOnRN(setOverHeader, next); }
+  });
   const quickCopy = {
     "vi-VN": { locate: "Vị trí", ai: "Trợ lý AI", coupons: "Ưu đãi", favorites: "Yêu thích", payments: "Thanh toán", emergency: "Khẩn cấp", support: "Hỗ trợ", landmarks: "Khám phá Đà Nẵng" },
     "en-US": { locate: "Location", ai: "AI assistant", coupons: "Offers", favorites: "Favorites", payments: "Payments", emergency: "Emergency", support: "Support", landmarks: "Explore Da Nang" },
@@ -99,7 +106,7 @@ export default function HomeScreen() {
 
   return (
     <Screen topbar={false}>
-      {focused ? <StatusBar style="light" /> : null}
+      {focused ? <StatusBar style={overHeader ? "light" : "dark"} animated /> : null}
       <Animated.ScrollView
         contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.white} />}
@@ -172,23 +179,11 @@ export default function HomeScreen() {
         <Text style={styles.footer}>{t.home.footer}</Text>
         </View>
       </Animated.ScrollView>
-      <StatusBarScrim scrollY={scrollY} />
     </Screen>
   );
 }
 
 /** Coral strip behind the status bar once the header has scrolled away (keeps the light status bar readable). */
-function StatusBarScrim({ scrollY }: { scrollY: SharedValue<number> }) {
-  const insets = useSafeAreaInsets();
-  const fade = useAnimatedStyle(() => ({ opacity: interpolate(scrollY.value, [140, 260], [0, 1], "clamp") }));
-  return (
-    <Animated.View pointerEvents="none" style={[{ position: "absolute", top: 0, left: 0, right: 0, height: insets.top + 6 }, fade]}>
-      <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: HOME_TOP, opacity: 0.92 }]} />
-    </Animated.View>
-  );
-}
-
 /** `PersonalizedHomeFeed` from the PWA. */
 function PersonalFeed({ feed }: { feed?: HomeFeed | null }) {
   const { t, locale } = useI18n();
