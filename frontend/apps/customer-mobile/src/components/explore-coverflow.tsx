@@ -1,6 +1,6 @@
 import { localizeServiceName } from "@zhaoxi/i18n";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import Animated, { cancelAnimation, Easing, Extrapolation, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming, type SharedValue } from "react-native-reanimated";
 import type { Recommendation } from "../api/types";
@@ -9,7 +9,7 @@ import { useI18n } from "../i18n";
 import { routeForWebHref } from "../links";
 import { colors } from "../theme";
 import { useDishColor } from "../dish-color";
-import { AppImage, GlassFill, ServiceArt, ZxIcon, haptic, servicePalettes } from "../ui";
+import { AppImage, GlassFill, ServiceArt, SolidFill, ZxIcon, haptic, servicePalettes } from "../ui";
 
 const CARD_W = 210;
 const CARD_H = 280;
@@ -23,14 +23,17 @@ const SHADOW_ROOM = 72; // vertical room so card shadows fade out instead of bei
  */
 export function ExploreCoverflow({ items, title, highlight, more }: { items: Recommendation[]; title: string; highlight: string; more: string }) {
   const { width } = useWindowDimensions();
+  // Measure the panel: it is narrower than the window, and centring on the window
+  // left the first card off-centre (and so tilted) on launch.
+  const [panelW, setPanelW] = useState(width - 32);
   const list = items;
   const x = useSharedValue(0);
   const onScroll = useAnimatedScrollHandler((event) => { x.value = event.contentOffset.x; });
-  const pad = (width - CARD_W) / 2;
+  const pad = (panelW - STEP) / 2; // slot 0 centred in the panel => first card straight and centred
   const mascot = list[0]?.moduleCode || "food";
   if (!items.length) return null;
   return (
-    <View style={styles.panel}>
+    <View style={styles.panel} onLayout={(event) => setPanelW(event.nativeEvent.layout.width)}>
       <Mascot code={mascot} />
       <Text style={styles.title} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
         {title} <Text style={styles.highlight}>{highlight}</Text>
@@ -44,12 +47,13 @@ export function ExploreCoverflow({ items, title, highlight, more }: { items: Rec
         scrollEventThrottle={16}
         onMomentumScrollEnd={() => haptic.select()}
         contentContainerStyle={{ paddingHorizontal: pad, paddingVertical: SHADOW_ROOM, alignItems: "center" }}
-        style={{ height: CARD_H + SHADOW_ROOM * 2, marginTop: -SHADOW_ROOM - 4, marginBottom: -SHADOW_ROOM + 12 }}
+        style={{ height: CARD_H + SHADOW_ROOM * 2, marginTop: -SHADOW_ROOM + 18, marginBottom: -SHADOW_ROOM + 12 }}
       >
-        {list.slice(0, 10).map((item, index) => <FlowCard key={`${item.kind}-${item.id}`} item={item} index={index} x={x} last={index === Math.min(list.length, 10) - 1} />)}
+        {list.slice(0, 10).map((item, index) => <FlowCard key={`${item.kind}-${item.id}`} item={item} index={index} x={x} />)}
       </Animated.ScrollView>
       <Pressable onPress={() => router.push("/explore")} style={({ pressed }) => [styles.more, pressed && { transform: [{ scale: 0.96 }] }]}>
-        <GlassFill radius={20} tint="rgba(226,72,52,0.92)" />
+        {/* Solid fill: Liquid Glass dropped the coral tint and left white text on white */}
+        <SolidFill radius={20} tint="#E2482F" />
         <Text style={styles.moreText}>{more}</Text>
         <ZxIcon name="chevron" size={14} color={colors.white} strokeWidth={2.6} />
       </Pressable>
@@ -57,7 +61,7 @@ export function ExploreCoverflow({ items, title, highlight, more }: { items: Rec
   );
 }
 
-function FlowCard({ item, index, x, last }: { item: Recommendation; index: number; x: SharedValue<number>; last: boolean }) {
+function FlowCard({ item, index, x }: { item: Recommendation; index: number; x: SharedValue<number> }) {
   const { locale, t } = useI18n();
   const style = useAnimatedStyle(() => {
     const d = (index * STEP - x.value) / STEP; // <0 left of centre, >0 right
@@ -78,7 +82,7 @@ function FlowCard({ item, index, x, last }: { item: Recommendation; index: numbe
   // Card glows in the dish's own dominant colour (service accent when there is no photo).
   const glow = useDishColor(uri, servicePalettes[item.moduleCode || ""]?.accent || colors.brand);
   return (
-    <Animated.View style={[{ width: STEP, height: CARD_H, alignItems: "center", marginRight: last ? CARD_W - STEP : 0 }, style]}>
+    <Animated.View style={[{ width: STEP, height: CARD_H, alignItems: "center" }, style]}>
       <Pressable onPress={() => router.push(routeForWebHref(item.href))} style={[styles.card, { shadowColor: glow }]}>
         <View style={styles.cardClip} />
         {/* Photo cropped to one rounded frame; the unclipped wrapper casts its soft shadow */}
