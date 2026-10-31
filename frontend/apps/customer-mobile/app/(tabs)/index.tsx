@@ -17,7 +17,7 @@ import { locate, pointKey, useLocationState } from "../../src/location";
 import { moduleRoute, resolveModules } from "../../src/modules";
 import { keys } from "../../src/query";
 import { ACTIVE_STATUSES } from "../../src/status";
-import { colors, serviceColors, shadow } from "../../src/theme";
+import { colors, shadow } from "../../src/theme";
 import { AppImage, PressableScale, Screen, SectionTitle, ServiceIcon, Skeleton, StatusPill, ZxIcon } from "../../src/ui";
 
 const landmarks = [
@@ -115,11 +115,10 @@ export default function HomeScreen() {
         <SectionTitle title={t.home.module} action={t.common.more} onAction={() => router.push("/services")} />
         <View style={styles.grid}>
           {tiles.map((tile, index) => {
-            const palette = serviceColors[tile.code] || { accent: colors.brand, tint: colors.brandSoft };
             return (
               <Animated.View key={tile.code} entering={FadeIn.delay(index * 30)} style={styles.tileWrap}>
                 <Pressable onPressIn={() => prefetchModule(tile.code)} onPress={() => router.push(moduleRoute(tile.code))} style={({ pressed }) => [styles.tile, pressed && { transform: [{ scale: 0.94 }] }]}>
-                  <View style={[styles.tileIcon, { backgroundColor: palette.tint }, shadow("card")]}><View style={styles.tileImage}><ServiceIcon code={tile.code} size={50} /></View></View>
+                  <ServiceIcon code={tile.code} size={52} />
                   <Text style={styles.tileLabel} numberOfLines={2}>{tile.name}</Text>
                 </Pressable>
               </Animated.View>
@@ -300,8 +299,6 @@ const styles = StyleSheet.create({
   grid: { flexDirection: "row", flexWrap: "wrap", rowGap: 16, columnGap: 8 },
   tileWrap: { width: "22.8%" },
   tile: { alignItems: "center", gap: 8 },
-  tileIcon: { width: 46, height: 46, borderRadius: 15, alignItems: "center", justifyContent: "center" },
-  tileImage: { position: "absolute", top: -2, left: -2 },
   tileLabel: { fontSize: 11, fontWeight: "800", color: "#26312D", textAlign: "center", lineHeight: 13 },
   shortcut: { flex: 1, minHeight: 116, padding: 14, borderRadius: 20, overflow: "hidden" },
   shortcutTitle: { fontSize: 13, fontWeight: "700", color: colors.text, letterSpacing: -0.2 },

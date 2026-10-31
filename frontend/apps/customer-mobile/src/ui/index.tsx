@@ -4,14 +4,16 @@ import { useEffect, type ComponentProps, type ReactNode } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, type PressableProps, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle } from "react-native";
 import Animated, { Easing, FadeInDown, interpolate, useAnimatedStyle, useSharedValue, withRepeat, withSpring, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors, font, radius, serviceColors, shadow, space } from "../theme";
+import { colors, font, radius, shadow, space } from "../theme";
 import { PageHeader, TopBar } from "./chrome";
 import { haptic } from "./haptics";
 import { ZxIcon, type ZxIconName } from "./icons";
+import { ServiceTile } from "./service-icons";
 
 export type IconName = ComponentProps<typeof Ionicons>["name"];
 export { Ionicons, haptic, ZxIcon, type ZxIconName };
 export { BackButton, DOCK_SPACE, PageHeader, ServicesGem, TopBar } from "./chrome";
+export { ServiceTile, servicePalettes } from "./service-icons";
 
 // ---------------------------------------------------------------------------
 // Layout
@@ -138,33 +140,14 @@ export function Field({ label, style, ...props }: TextInputProps & { label?: str
 // ---------------------------------------------------------------------------
 // Media
 // ---------------------------------------------------------------------------
-const serviceAssets: Record<string, number> = {
-  food: require("../../assets/services/food.webp"),
-  housing: require("../../assets/services/housing.webp"),
-  visa: require("../../assets/services/visa.webp"),
-  "car-rental": require("../../assets/services/car-rental.webp"),
-  translation: require("../../assets/services/translation.webp"),
-  travel: require("../../assets/services/travel.webp"),
-  payment: require("../../assets/services/payment.webp"),
-  community: require("../../assets/services/community.webp"),
-  market: require("../../assets/services/market.webp"),
-  emergency: require("../../assets/services/emergency.webp"),
-};
-
+/** Service icon: the native gradient tile set (see `service-icons.tsx`). */
 export function ServiceIcon({ code, size = 44 }: { code?: string | null; size?: number }) {
-  const asset = serviceAssets[code || ""];
-  if (!asset) return <ZxIcon name="services" size={size * 0.6} color={colors.brand} />;
-  return <Image source={asset} style={{ width: size, height: size }} contentFit="contain" />;
+  return <ServiceTile code={code} size={size} shadow={size >= 34} />;
 }
 
-/** Icon tile with the PWA's soft green gradient frame (services hub cards). */
-export function ServiceBadge({ code, size = 52, mint = true }: { code?: string | null; size?: number; mint?: boolean }) {
-  const palette = serviceColors[code || ""] || { accent: colors.brand, tint: colors.brandSoft };
-  return (
-    <View style={{ width: size, height: size, borderRadius: size * 0.29, backgroundColor: mint ? "#E0FAEC" : palette.tint, borderWidth: 1, borderColor: "rgba(7,193,96,0.12)", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-      <ServiceIcon code={code} size={size * 0.86} />
-    </View>
-  );
+/** Same tile at badge size (services hub, module headers, tracker links). */
+export function ServiceBadge({ code, size = 52 }: { code?: string | null; size?: number; mint?: boolean }) {
+  return <ServiceTile code={code} size={size} />;
 }
 
 export function AppImage({ uri, style, fallbackCode, ...props }: Omit<ImageProps, "source"> & { uri?: string; fallbackCode?: string | null }) {
