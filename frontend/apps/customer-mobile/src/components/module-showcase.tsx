@@ -180,9 +180,9 @@ function RingCard({ item, module, index, count, angle, cardW, cardH, left }: { i
 /* Best value: leaning 3D posters with big gold rank numbers           */
 /* ------------------------------------------------------------------ */
 
-const WIDE_W = 248;
-const WIDE_H = 146;
-const RANK_STEP = WIDE_W + 18;
+const WIDE_W = 214;
+const WIDE_H = 228; // close to square
+const RANK_STEP = WIDE_W + 14;
 
 /** Best value: landscape cards that lean in 3D by their place in the row, with an inset photo and a price tag. */
 export function RankedRow({ items, module }: { items: Service[]; module: string }) {
@@ -213,7 +213,7 @@ export function RankedRow({ items, module }: { items: Service[]; module: string 
         scrollEventThrottle={16}
         onScrollBeginDrag={auto.hold}
         onMomentumScrollEnd={(event) => { at.current = Math.round(event.nativeEvent.contentOffset.x / RANK_STEP); auto.release(); }}
-        contentContainerStyle={{ paddingHorizontal: side, paddingTop: 16, paddingBottom: 8, gap: 18 }}
+        contentContainerStyle={{ paddingHorizontal: side, paddingTop: 18, paddingBottom: 8, gap: 14 }}
       >
         {ranked.map((item, i) => <WideCard key={item.id} item={item} module={module} index={i} x={x} />)}
       </Animated.ScrollView>
@@ -225,15 +225,15 @@ function WideCard({ item, module, index, x }: { item: Service; module: string; i
   const { locale } = useI18n();
   const meta = cardMeta(item, module, locale);
   const unit = priceUnit(module, locale);
-  const gallery = Array.isArray(item.metadata?.galleryUrls) ? (item.metadata?.galleryUrls as unknown[]).map(String) : [];
-  const inset = imageUri(gallery[1] || gallery[0]);
+  // Posters lean towards each other: left ones turn their face right, right ones turn it left,
+  // the one in the middle stands straight (a shallow concave arc).
   const lean = useAnimatedStyle(() => {
     const d = (index * RANK_STEP - x.value) / RANK_STEP; // <0 left of centre
     return {
       transform: [
-        { perspective: 800 },
-        { rotateY: `${interpolate(d, [-1.2, 0, 1.2], [16, 0, -16], Extrapolation.CLAMP)}deg` },
-        { scale: interpolate(Math.abs(d), [0, 1], [1, 0.94], Extrapolation.CLAMP) },
+        { perspective: 600 },
+        { rotateY: `${interpolate(d, [-1.5, -1, 0, 1, 1.5], [-34, -28, 0, 28, 34], Extrapolation.CLAMP)}deg` },
+        { scale: interpolate(Math.abs(d), [0, 1], [1, 0.9], Extrapolation.CLAMP) },
       ],
     };
   });
@@ -244,14 +244,18 @@ function WideCard({ item, module, index, x }: { item: Service; module: string; i
         <Animated.View style={[styles.wideShadow, lean]}>
           <View style={styles.wide}>
             <Photo item={item} module={module} style={StyleSheet.absoluteFill} />
-            <LinearGradient colors={["rgba(255,255,255,0.22)", "rgba(255,255,255,0)"]} start={{ x: 0, y: 0 }} end={{ x: 0.6, y: 0.5 }} style={StyleSheet.absoluteFill} pointerEvents="none" />
-            {inset ? <AppImage uri={inset} style={styles.inset} /> : null}
+            <LinearGradient colors={["rgba(255,255,255,0.3)", "rgba(255,255,255,0)"]} start={{ x: 0, y: 0 }} end={{ x: 0.6, y: 0.5 }} style={StyleSheet.absoluteFill} pointerEvents="none" />
             <View style={styles.tag}><Text style={styles.tagText}>{money(item.priceFrom, item.currency)}{unit ? ` / ${unit}` : ""}</Text></View>
           </View>
         </Animated.View>
       </View>
-      <Text style={styles.wideName} numberOfLines={1}>{localizeServiceName(locale, item.name || item.code)}</Text>
-      {meta ? <Text style={styles.wideMeta} numberOfLines={1}>{meta}</Text> : null}
+      <View style={styles.rankRow}>
+        <Text style={styles.rank}>{index + 1}</Text>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={styles.wideName} numberOfLines={1}>{localizeServiceName(locale, item.name || item.code)}</Text>
+          {meta ? <Text style={styles.wideMeta} numberOfLines={1}>{meta}</Text> : null}
+        </View>
+      </View>
     </Pressable>
   );
 }
@@ -283,11 +287,12 @@ const styles = StyleSheet.create({
   panelName: { fontSize: 18, fontWeight: "800", color: colors.white },
   panelSummary: { fontSize: 13, color: "rgba(255,255,255,0.68)" },
   rowTitle: { marginHorizontal: 18, fontSize: 20, fontWeight: "800", color: colors.ink, letterSpacing: -0.3 },
-  wideShadow: { borderRadius: 20, shadowColor: "#0F172A", shadowOpacity: 0.22, shadowRadius: 12, shadowOffset: { width: 0, height: 10 } },
+  wideShadow: { borderRadius: 20, shadowColor: "#0F172A", shadowOpacity: 0.28, shadowRadius: 14, shadowOffset: { width: 8, height: 12 } },
   wide: { height: WIDE_H, borderRadius: 20, overflow: "hidden", backgroundColor: "#E6F1F1", borderWidth: 2, borderColor: "rgba(255,255,255,0.95)" },
-  inset: { position: "absolute", left: 10, bottom: 10, width: 42, height: 58, borderRadius: 8, borderWidth: 1.5, borderColor: "rgba(255,255,255,0.95)" },
-  tag: { position: "absolute", right: 10, bottom: 10, paddingHorizontal: 9, height: 24, borderRadius: 7, justifyContent: "center", backgroundColor: "#1C8CD1" },
+  tag: { position: "absolute", left: 10, bottom: 10, paddingHorizontal: 9, height: 24, borderRadius: 7, justifyContent: "center", backgroundColor: "rgba(17,24,64,0.82)" },
   tagText: { fontSize: 11.5, fontWeight: "800", color: colors.white },
-  wideName: { marginTop: 12, fontSize: 15, fontWeight: "800", color: colors.ink },
+  rankRow: { flexDirection: "row", alignItems: "flex-end", gap: 8, marginTop: 10, paddingLeft: 4 },
+  rank: { fontSize: 52, lineHeight: 54, fontWeight: "900", fontStyle: "italic", color: "#F2B53A", marginBottom: -6 },
+  wideName: { fontSize: 14.5, fontWeight: "800", color: colors.ink },
   wideMeta: { marginTop: 3, fontSize: 12, color: colors.slate },
 });
