@@ -315,6 +315,97 @@ function Fallback() {
   );
 }
 
+/* ---- Property facts (housing detail): bed, bathtub, floor plan in the same clay style ---- */
+
+function Bed() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("headboard", "#D9AE7E", "#A06D3F")}
+        {lin("frame", "#F4F7FB", "#C9D5E4")}
+        {lin("duvet", "#8CC2FA", "#3874D6")}
+        {lin("pillow", "#FFFFFF", "#E3EAF4")}
+      </Defs>
+      <Shadow rx={24} cy={55.5} />
+      <Rect x={10} y={12} width={44} height={26} rx={8} fill="url(#headboard)" />
+      <Path d="M15 17.5c4-2.4 10-3.2 16-3" stroke="#FFFFFF" strokeOpacity={0.45} strokeWidth={2.2} strokeLinecap="round" fill="none" />
+      <Rect x={9} y={47} width={4} height={6} rx={1.6} fill="#8A5A31" />
+      <Rect x={51} y={47} width={4} height={6} rx={1.6} fill="#8A5A31" />
+      <Rect x={6} y={33} width={52} height={16} rx={5.5} fill="url(#frame)" />
+      <Rect x={13.5} y={23.5} width={16} height={9.5} rx={4.6} fill="url(#pillow)" />
+      <Rect x={34.5} y={23.5} width={16} height={9.5} rx={4.6} fill="url(#pillow)" />
+      <Path d="M6 36.5c0-2.2 1.8-4 4-4h44c2.2 0 4 1.8 4 4V42c0 2.8-2.2 5-5 5H11c-2.8 0-5-2.2-5-5Z" fill="url(#duvet)" />
+      <Path d="M6.4 36.6c0-2 1.7-3.6 3.7-3.6h43.8c2 0 3.7 1.6 3.7 3.6v1.6H6.4Z" fill="#FFFFFF" opacity={0.92} />
+      <Path d="M12 42.5c8 1.6 24 1.6 38 0" stroke="#FFFFFF" strokeOpacity={0.35} strokeWidth={1.8} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function Bath() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("tub", "#FFFFFF", "#D4E1F0")}
+        {lin("chrome", "#E9EEF4", "#8A98AA", false)}
+        {lin("water", "#9BE1FA", "#3BB0E6")}
+        {lin("brass", "#F7D27A", "#C8932E")}
+      </Defs>
+      <Shadow rx={22} />
+      <Path d="M51 29V13.5c0-3.4-2.4-5.5-5.4-5.5S40.4 10 40.4 13" stroke="url(#chrome)" strokeWidth={3.2} strokeLinecap="round" fill="none" />
+      <Rect x={53} y={18} width={6} height={3} rx={1.5} fill="#8A98AA" />
+      <Circle cx={22} cy={24} r={5.4} fill="#FFFFFF" stroke="#CDEBFA" strokeWidth={1.2} />
+      <Circle cx={30.5} cy={20.5} r={6.6} fill="#FFFFFF" stroke="#CDEBFA" strokeWidth={1.2} />
+      <Circle cx={40} cy={23.5} r={5.6} fill="#FFFFFF" stroke="#CDEBFA" strokeWidth={1.2} />
+      <Circle cx={46.5} cy={17} r={2.6} fill="#FFFFFF" stroke="#CDEBFA" strokeWidth={1} />
+      <Circle cx={15.5} cy={18.5} r={2} fill="#FFFFFF" stroke="#CDEBFA" strokeWidth={1} />
+      <Ellipse cx={17} cy={52.5} rx={3.6} ry={2.6} fill="url(#brass)" />
+      <Ellipse cx={47} cy={52.5} rx={3.6} ry={2.6} fill="url(#brass)" />
+      <Path d="M8 31h48v3.5C56 44 49 51 39.5 51h-15C15 51 8 44 8 34.5Z" fill="url(#tub)" />
+      <Rect x={6} y={27.5} width={52} height={6} rx={3} fill="#F7FAFD" />
+      <Rect x={9} y={28.6} width={46} height={3.2} rx={1.6} fill="url(#water)" />
+      <Path d="M13 37.5c1.2 5.2 5.4 8.8 11 9.6" stroke="#FFFFFF" strokeWidth={2.4} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function FloorArea() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("plan", "#F2F7FE", "#CFDFF5")}
+        {lin("ruler", "#FFDB7A", "#EFA235")}
+      </Defs>
+      <Shadow rx={21} />
+      <Rect x={7} y={8} width={42} height={42} rx={9} fill="url(#plan)" />
+      <Path d="M10.5 12.5c3-2 8-2.6 13-2.4" stroke="#FFFFFF" strokeWidth={2.2} strokeLinecap="round" fill="none" />
+      <Rect x={13} y={14} width={30} height={30} rx={3} fill="none" stroke="#4F86D6" strokeWidth={2.4} />
+      <Path d="M13 30h10M29 14v11M29 31v13M36 31h7" stroke="#4F86D6" strokeWidth={2.4} strokeLinecap="round" />
+      <Path d="M23 30a6 6 0 0 1 6-6" stroke="#9CBCEB" strokeWidth={1.5} fill="none" strokeDasharray="2 2" />
+      <G transform="rotate(-32 41 45)">
+        <Rect x={21} y={40} width={41} height={10.5} rx={3.2} fill="url(#ruler)" />
+        <Path d="M25 40v4M29.5 40v2.6M34 40v4M38.5 40v2.6M43 40v4M47.5 40v2.6M52 40v4M56.5 40v2.6" stroke="#9A5B12" strokeWidth={1.4} strokeLinecap="round" />
+        <Path d="M23 47.4h36" stroke="#FFFFFF" strokeOpacity={0.5} strokeWidth={1.4} strokeLinecap="round" />
+      </G>
+    </>
+  );
+}
+
+const factArt = { bed: Bed, bath: Bath, area: FloorArea } as const;
+export type FactArtKind = keyof typeof factArt;
+
+/** Clay illustration for a housing fact tile (bedrooms, bathrooms, floor area). */
+export function FactArt({ kind, size = 36 }: { kind: FactArtKind; size?: number }) {
+  const Art = factArt[kind];
+  return (
+    <Svg width={size} height={size} viewBox="0 0 64 64">
+      <Art />
+    </Svg>
+  );
+}
+
 const art: Record<string, () => React.JSX.Element> = {
   food: Food,
   housing: Housing,

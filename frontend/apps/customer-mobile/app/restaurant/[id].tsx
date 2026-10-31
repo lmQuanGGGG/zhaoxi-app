@@ -14,7 +14,7 @@ import { usePullRefresh } from "../../src/hooks";
 import { useI18n } from "../../src/i18n";
 import { keys } from "../../src/query";
 import { colors } from "../../src/theme";
-import { AppImage, BackButton, ErrorState, Screen, Skeleton, SkeletonList } from "../../src/ui";
+import { AppImage, BackButton, ErrorState, PhotoCounter, Screen, Skeleton, SkeletonList } from "../../src/ui";
 
 const copy = { "vi-VN": "Toàn bộ thực đơn", "en-US": "Full menu", "zh-CN": "全部菜单", "zh-TW": "全部菜單" } as const;
 
@@ -66,7 +66,7 @@ export default function RestaurantScreen() {
             {first?.organizationAddress ? <Text style={styles.address} numberOfLines={1}>{str(first.organizationAddress)}</Text> : null}
           </View>
         </View>
-        {banners.length > 1 ? <View style={styles.dots}>{banners.map((_, index) => <View key={index} style={[styles.dot, index === slide && styles.dotActive]} />)}</View> : null}
+        <PhotoCounter index={slide} total={banners.length} style={{ top: 14, bottom: undefined }} />
       </View>
       <Text style={styles.section}>{copy[locale]}</Text>
     </View>
@@ -101,8 +101,5 @@ const styles = StyleSheet.create({
   statusText: { fontSize: 11, fontWeight: "700", color: "#065F46" },
   name: { fontSize: 18, fontWeight: "800", color: colors.white, marginTop: 4 },
   address: { fontSize: 11, color: "rgba(255,255,255,0.88)", marginTop: 2 },
-  dots: { position: "absolute", bottom: 14, alignSelf: "center", flexDirection: "row", gap: 7 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "rgba(255,255,255,0.5)" },
-  dotActive: { width: 24, backgroundColor: colors.white },
   section: { fontSize: 16, fontWeight: "700", color: colors.ink, paddingHorizontal: 14, paddingTop: 22, paddingBottom: 14 },
 });

@@ -11,7 +11,7 @@ import { useSession } from "../hooks";
 import { useI18n } from "../i18n";
 import { keys } from "../query";
 import { colors, shadow } from "../theme";
-import { AppImage, Button, Field, PressableScale, QuantityStepper, haptic } from "../ui";
+import { AppImage, Button, FactArt, Field, PhotoCounter, PressableScale, QuantityStepper, haptic, type FactArtKind } from "../ui";
 import { toast } from "../ui/toast";
 import { DateStrip, OptionPills, isoDay, nextDays } from "./pickers";
 
@@ -56,19 +56,19 @@ export function Gallery({ data }: { data: ServiceDetail }) {
   const [index, setIndex] = useState(0);
   if (urls.length < 2) return null;
   return (
-    <View style={{ gap: 8 }}>
+    <View>
       <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} onMomentumScrollEnd={(event) => setIndex(Math.round(event.nativeEvent.contentOffset.x / (width - 32)))} style={{ borderRadius: 18 }} snapToInterval={width - 32} decelerationRate="fast">
         {urls.map((url) => <AppImage key={url} uri={url} style={{ width: width - 32, height: (width - 32) / 1.4 }} />)}
       </ScrollView>
-      <View style={styles.dots}>{urls.map((url, i) => <View key={url} style={[styles.dot, i === index && styles.dotActive]} />)}</View>
+      <PhotoCounter index={index} total={urls.length} />
     </View>
   );
 }
 
-function Fact({ icon, label, value }: { icon: string; label: string; value: string }) {
+function Fact({ kind, icon, label, value }: { kind?: FactArtKind; icon?: string; label: string; value: string }) {
   return (
     <View style={styles.fact}>
-      <Text style={{ fontSize: 18 }}>{icon}</Text>
+      {kind ? <FactArt kind={kind} size={40} /> : <Text style={{ fontSize: 18 }}>{icon}</Text>}
       <Text style={styles.factLabel}>{label}</Text>
       <Text style={styles.factValue} numberOfLines={1}>{value}</Text>
     </View>
@@ -103,12 +103,12 @@ export function HousingFacts({ data }: { data: ServiceDetail }) {
   return (
     <Animated.View entering={FadeInDown.duration(260)} style={{ gap: 12 }}>
       <View style={[styles.statusBadge, status !== "available" && { backgroundColor: "#F1F5F9" }]}>
-        <Text style={[styles.statusText, status !== "available" && { color: colors.slate }]}>● {statusLabel}</Text>
+        <Text style={[styles.statusText, status !== "available" && { color: colors.slate }]}>{statusLabel}</Text>
       </View>
       <View style={styles.facts}>
-        <Fact icon="🛏" label={t.bed} value={num(m.bedrooms) > 0 ? String(m.bedrooms) : "—"} />
-        <Fact icon="🚿" label={t.bath} value={num(m.bathrooms) > 0 ? String(m.bathrooms) : "—"} />
-        <Fact icon="📐" label={t.area} value={num(m.areaSqm) > 0 ? `${m.areaSqm} m²` : "—"} />
+        <Fact kind="bed" label={t.bed} value={num(m.bedrooms) > 0 ? String(m.bedrooms) : "—"} />
+        <Fact kind="bath" label={t.bath} value={num(m.bathrooms) > 0 ? String(m.bathrooms) : "—"} />
+        <Fact kind="area" label={t.area} value={num(m.areaSqm) > 0 ? `${m.areaSqm} m²` : "—"} />
       </View>
       {rows.length || str(m.propertyAddress) ? (
         <View style={styles.card}>
@@ -337,11 +337,8 @@ export function TravelBookingForm({ data }: { data: ServiceDetail }) {
 }
 
 const styles = StyleSheet.create({
-  dots: { flexDirection: "row", justifyContent: "center", gap: 5 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#CBD5E1" },
-  dotActive: { width: 16, backgroundColor: colors.wechat },
   facts: { flexDirection: "row", gap: 8 },
-  fact: { flex: 1, alignItems: "center", gap: 2, paddingVertical: 12, paddingHorizontal: 6, borderRadius: 16, backgroundColor: colors.surfaceMuted, ...shadow("card") },
+  fact: { flex: 1, alignItems: "center", gap: 3, paddingTop: 10, paddingBottom: 12, paddingHorizontal: 6, borderRadius: 16, backgroundColor: colors.surfaceMuted, ...shadow("card") },
   factLabel: { fontSize: 10, color: colors.slate, fontWeight: "600" },
   factValue: { fontSize: 15, color: colors.ink, fontWeight: "800" },
   card: { padding: 16, borderRadius: 20, backgroundColor: colors.surfaceMuted, gap: 8, ...shadow("card") },

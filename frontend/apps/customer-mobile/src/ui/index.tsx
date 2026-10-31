@@ -14,7 +14,7 @@ import { ServiceArt, ServiceTile } from "./service-icons";
 export type IconName = ComponentProps<typeof Ionicons>["name"];
 export { Ionicons, haptic, ZxIcon, type ZxIconName };
 export { BackButton, DOCK_SPACE, PageHeader, ServicesGem, TopBar } from "./chrome";
-export { ServiceArt, ServiceTile, servicePalettes } from "./service-icons";
+export { FactArt, ServiceArt, ServiceTile, servicePalettes, type FactArtKind } from "./service-icons";
 export { Glass, GlassFill, LIQUID_GLASS, SolidFill } from "./glass";
 
 // ---------------------------------------------------------------------------
@@ -96,6 +96,17 @@ export function IconButton({ icon, zx, onPress, badge, color = colors.ink, style
       {zx ? <ZxIcon name={zx} size={19} color={color} /> : icon ? <Ionicons name={icon} size={19} color={color} /> : null}
       {badge ? <Badge value={badge} style={{ position: "absolute", top: -5, right: -5 }} /> : null}
     </PressableScale>
+  );
+}
+
+/** "2 / 6" glass pill laid over a photo carousel, in place of pager dots. */
+export function PhotoCounter({ index, total, style }: { index: number; total: number; style?: StyleProp<ViewStyle> }) {
+  if (total < 2) return null;
+  return (
+    <View pointerEvents="none" style={[styles.counter, style]}>
+      <GlassFill radius={13} clear tint="rgba(15,23,42,0.32)" />
+      <Text style={styles.counterText}>{index + 1} / {total}</Text>
+    </View>
   );
 }
 
@@ -276,6 +287,8 @@ export const styles = StyleSheet.create({
   chipCount: { minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 4, backgroundColor: "#EEF0EE", alignItems: "center", justifyContent: "center" },
   chipCountText: { fontSize: 9, color: colors.textSecondary },
   stepper: { flexDirection: "row", alignItems: "center", gap: 6 },
+  counter: { position: "absolute", right: 12, bottom: 12, height: 26, paddingHorizontal: 11, borderRadius: 13, alignItems: "center", justifyContent: "center" },
+  counterText: { fontSize: 12, fontWeight: "700", color: "#FFFFFF", letterSpacing: 0.3, fontVariant: ["tabular-nums"] },
   stepMinus: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center" },
   stepPlus: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center" },
   stepperValue: { minWidth: 18, textAlign: "center", fontWeight: "700", fontSize: 13, color: colors.ink },

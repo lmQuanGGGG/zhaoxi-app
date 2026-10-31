@@ -378,7 +378,6 @@ export function QuickActions({ items }: { items: Array<{ key: string; icon: ZxIc
           <PressableScale key={item.key} onPress={item.onPress} scaleTo={0.93} style={styles.quickItem}>
             <View style={styles.quickIcon}>
               <ZxIcon name={item.icon} size={28} color="#1F2A27" strokeWidth={1.9} />
-              <View style={[styles.quickDot, { backgroundColor: item.accent || colors.brand }]} />
             </View>
             <Text style={styles.quickLabel} numberOfLines={1}>{item.label}</Text>
           </PressableScale>
@@ -427,6 +426,5 @@ const styles = StyleSheet.create({
   quick: { marginHorizontal: 16, marginTop: 18, paddingVertical: 18, borderRadius: 26, backgroundColor: colors.white, shadowColor: "#0F172A", shadowOpacity: 0.075, shadowRadius: 17, shadowOffset: { width: 0, height: 10 } },
   quickItem: { width: 92, alignItems: "center", gap: 10 },
   quickIcon: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
-  quickDot: { position: "absolute", right: 2, top: 4, width: 9, height: 9, borderRadius: 5, borderWidth: 2, borderColor: colors.white },
   quickLabel: { fontSize: 13.5, fontWeight: "600", color: "#1F2A27" },
 });
