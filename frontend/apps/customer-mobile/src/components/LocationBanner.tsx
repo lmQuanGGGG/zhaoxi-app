@@ -25,8 +25,10 @@ export function LocationBanner() {
         <Text style={styles.locTitle}>{c.title}</Text>
         <Text style={styles.locBody} numberOfLines={1}>{location.status === "locating" ? t.home.locating : location.label || c.hint}</Text>
       </PressableScale>
-      <PressableScale onPress={() => router.push("/location")} style={styles.locMap}><ZxIcon name="map" size={17} color={colors.brandDeep} /></PressableScale>
-      <PressableScale onPress={() => router.push("/location")} style={styles.locChoose}><Text style={styles.locChooseText}>{c.choose}</Text></PressableScale>
+      <PressableScale onPress={() => router.push("/location")} style={styles.locChoose}>
+        <ZxIcon name="map" size={15} color="#047857" />
+        <Text style={styles.locChooseText}>{c.choose}</Text>
+      </PressableScale>
     </View>
   );
 }
@@ -35,7 +37,6 @@ const styles = StyleSheet.create({
   locBanner: { flexDirection: "row", alignItems: "center", gap: 8, minHeight: 60, paddingVertical: 10, paddingLeft: 14, paddingRight: 10, borderRadius: 18 },
   locTitle: { fontSize: 11, fontWeight: "700", color: "#067647" },
   locBody: { fontSize: 13, fontWeight: "600", color: colors.ink, marginTop: 2 },
-  locMap: { width: 38, height: 38, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.85)", borderWidth: 2, borderColor: "rgba(255,255,255,0.7)", alignItems: "center", justifyContent: "center", ...shadow("card") },
-  locChoose: { height: 40, paddingHorizontal: 16, borderRadius: 999, backgroundColor: "rgba(236,253,245,0.9)", alignItems: "center", justifyContent: "center", shadowColor: "#047857", shadowOpacity: 0.13, shadowRadius: 7, shadowOffset: { width: 0, height: 5 } },
-  locChooseText: { color: "#047857", fontSize: 14 },
+  locChoose: { height: 40, paddingHorizontal: 14, borderRadius: 999, flexDirection: "row", gap: 6, backgroundColor: "rgba(236,253,245,0.9)", alignItems: "center", justifyContent: "center", shadowColor: "#047857", shadowOpacity: 0.13, shadowRadius: 7, shadowOffset: { width: 0, height: 5 } },
+  locChooseText: { color: "#047857", fontSize: 14, fontWeight: "700" },
 });
