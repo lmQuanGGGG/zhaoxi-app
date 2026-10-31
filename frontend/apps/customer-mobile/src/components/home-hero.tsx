@@ -6,9 +6,10 @@ import { router } from "expo-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, { Easing, Extrapolation, FadeInDown, interpolate, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming, type SharedValue } from "react-native-reanimated";
+import Animated, { Easing, Extrapolation, interpolate, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withSpring, withTiming, type SharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Circle, Defs, Ellipse, LinearGradient as SvgGradient, Path, RadialGradient, Rect, Stop } from "react-native-svg";
+import Svg, { Circle, ClipPath, Defs, Ellipse, Image as SvgImage, LinearGradient as SvgGradient, Path, RadialGradient, Rect, Stop } from "react-native-svg";
+import { scheduleOnRN } from "react-native-worklets";
 import { useCart } from "../cart";
 import { useSession, useUnread } from "../hooks";
 import { useI18n } from "../i18n";
@@ -144,39 +145,77 @@ function Badge({ value }: { value: number }) {
 export type HeroSlide = { image: number; label: string };
 
 const HERO_H = 190;
+const SHEET_OUT = 18; // top edge of the back card sticks out this far on each side
+const SHEET_FOOT = 7; // bottom corners still stick out a little ("long legs")
+const SHEET_TOP = 14; // back card starts a bit lower than the front card
+const SHEET_DROP = 8; // and ends a bit below it
 
 /**
- * Hero: a landmark photo card (cross-fading Da Nang landmarks, Liquid Glass
- * controls on the photo) layered over one wider frosted glass sheet that sticks
- * out on both sides. Auto-advances; swipe left/right to change.
+ * Hero: the current landmark photo card over the NEXT landmark photo, which
+ * peeks out behind as a rounded isosceles trapezoid. Swipe horizontally (or
+ * wait) and the front card tilts away in 3D while the back card comes forward.
  */
 export function HeroCard({ eyebrow, title, slides, locationLabel, onLocate }: { eyebrow: string; title: string; slides: HeroSlide[]; locationLabel: string; onLocate: () => void }) {
+  const { width } = useWindowDimensions();
+  const count = Math.max(slides.length, 1);
   const [active, setActive] = useState(0);
-  const count = slides.length;
-  const next = () => setActive((value) => (value + 1) % Math.max(count, 1));
-  const prev = () => setActive((value) => (value - 1 + count) % Math.max(count, 1));
+  const tx = useSharedValue(0); // horizontal drag of the front card
+  const enter = useSharedValue(1); // 0 → 1 as a new front card arrives from the back
+  const commit = (dir: number) => setActive((value) => (value + dir + count) % count);
+  // Each new front card rises out of the back sheet.
   useEffect(() => {
-    if (count < 2) return;
-    const timer = setInterval(next, 4200);
-    return () => clearInterval(timer);
-  }, [count, active]);
-  const swipe = Gesture.Pan().activeOffsetX([-18, 18]).failOffsetY([-12, 12]).runOnJS(true).onEnd((event) => {
-    if (event.translationX < -40) { haptic.select(); next(); }
-    else if (event.translationX > 40) { haptic.select(); prev(); }
+    tx.value = 0;
+    enter.value = 0;
+    enter.value = withSpring(1, { damping: 15, stiffness: 150, mass: 0.9 });
+  }, [active, enter, tx]);
+  const fling = (dir: number) => {
+    "worklet";
+    tx.value = withTiming(-dir * width * 1.15, { duration: 330, easing: Easing.in(Easing.quad) }, (done) => {
+      if (done) scheduleOnRN(commit, dir);
+    });
+  };
+  useEffect(() => {
+    if (slides.length < 2) return;
+    const timer = setTimeout(() => fling(1), 4200);
+    return () => clearTimeout(timer);
+  }, [active, slides.length]);
+  const pan = Gesture.Pan()
+    .activeOffsetX([-12, 12])
+    .failOffsetY([-14, 14])
+    .onUpdate((event) => { tx.value = event.translationX; })
+    .onEnd((event) => {
+      if (event.translationX < -70 || event.velocityX < -650) { fling(1); scheduleOnRN(haptic.select); }
+      else if (event.translationX > 70 || event.velocityX > 650) { fling(-1); scheduleOnRN(haptic.select); }
+      else tx.value = withSpring(0, { damping: 16, stiffness: 180 });
+    });
+  const front = useAnimatedStyle(() => {
+    const p = Math.max(-1, Math.min(1, tx.value / width));
+    const arrive = enter.value;
+    return {
+      opacity: interpolate(Math.abs(p), [0.6, 1], [1, 0], Extrapolation.CLAMP) * interpolate(arrive, [0, 0.35], [0.55, 1], Extrapolation.CLAMP),
+      transform: [
+        { perspective: 900 },
+        { translateX: tx.value },
+        { translateY: (1 - arrive) * 16 },
+        { rotateY: `${p * -32}deg` },
+        { rotateZ: `${p * -5}deg` },
+        { scale: (1 - Math.abs(p) * 0.1) * (0.9 + arrive * 0.1) },
+      ],
+    };
   });
   const slide = slides[active];
+  const upcoming = slides[(active + 1) % count];
   return (
-    <GestureDetector gesture={swipe}>
+    <GestureDetector gesture={pan}>
       <View style={styles.heroWrap}>
-        {/* Back layer: frosted sheet shaped as an isosceles trapezoid (wide top, narrow bottom) behind the photo card */}
-        <BackSheet />
-        <View style={[styles.heroCard, shadow("soft")]}>
+        {upcoming ? <BackCard image={upcoming.image} drag={tx} /> : null}
+        {/* Own flat container on top, so the 3D-tilted front card never intersects the back card */}
+        <View style={styles.frontLayer} pointerEvents="box-none">
+        <Animated.View style={[styles.heroCard, shadow("soft"), front]}>
           <View style={styles.heroClip}>
-            {slides.map((item, index) => <PhotoLayer key={item.label} image={item.image} visible={index === active} />)}
+            {slide ? <Image source={slide.image} style={StyleSheet.absoluteFill} contentFit="cover" /> : null}
             <LinearGradient colors={["rgba(20,12,8,0.4)", "rgba(20,12,8,0)", "rgba(20,12,8,0.5)"]} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
           </View>
-        </View>
-        <View style={styles.heroFront} pointerEvents="box-none">
           <Pressable onPress={onLocate} style={({ pressed }) => [styles.locWrap, pressed && { transform: [{ scale: 0.96 }] }]}>
             <Glass style={styles.locPill} clear tint="rgba(255,255,255,0.12)">
               <ZxIcon name="location" size={14} color={colors.white} strokeWidth={2.2} />
@@ -184,75 +223,64 @@ export function HeroCard({ eyebrow, title, slides, locationLabel, onLocate }: { 
             </Glass>
           </Pressable>
           <Glass style={styles.pager} clear tint="rgba(255,255,255,0.1)">
-            {slides.map((item, index) => <Pressable key={item.label} hitSlop={5} onPress={() => setActive(index)} style={[styles.dot, index === active && styles.dotActive]} />)}
+            {slides.map((item, index) => <View key={item.label} style={[styles.dot, index === active && styles.dotActive]} />)}
           </Glass>
           <View style={styles.heroCopy} pointerEvents="none">
             <Text style={styles.heroEyebrow}>{eyebrow}</Text>
             <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>{title}</Text>
-            {slide ? <Animated.Text key={slide.label} entering={FadeInDown.duration(380)} style={styles.heroHighlight} numberOfLines={1}>{slide.label}</Animated.Text> : null}
+            {slide ? <Text style={styles.heroHighlight} numberOfLines={1}>{slide.label}</Text> : null}
           </View>
+        </Animated.View>
         </View>
       </View>
     </GestureDetector>
   );
 }
 
-const SHEET_OUT = 20; // how far the top edge sticks out on each side
-const SHEET_IN = 30; // how far the bottom edge tucks in under the card
-const SHEET_TOP = 14;
-
-/** Rounded isosceles trapezoid drawn in SVG (GlassView can only be rectangular). */
-function BackSheet() {
+/** Next landmark photo clipped to a rounded isosceles trapezoid (wide top, slightly narrower foot). */
+function BackCard({ image, drag }: { image: number; drag: SharedValue<number> }) {
   const { width } = useWindowDimensions();
+  // Comes forward and loses its frost while the front card is dragged away.
+  const style = useAnimatedStyle(() => {
+    const p = Math.min(1, Math.abs(drag.value) / width);
+    return { transform: [{ scale: 1 + p * 0.04 }, { translateY: -p * 6 }] };
+  });
+  const veil = useAnimatedStyle(() => ({ opacity: 1 - Math.min(1, Math.abs(drag.value) / width) * 0.8 }));
   const card = width - 36; // heroWrap horizontal margins
   const w = card + SHEET_OUT * 2;
-  const h = HERO_H - SHEET_TOP;
+  const h = HERO_H - SHEET_TOP + SHEET_DROP;
   const r = 24;
-  const inset = SHEET_OUT + SHEET_IN;
+  const inset = SHEET_OUT - SHEET_FOOT;
   const len = Math.hypot(inset, h);
   const ux = inset / len;
   const uy = h / len;
   const d = [
-    `M ${r} 0`,
-    `L ${w - r} 0`,
-    `Q ${w} 0 ${w - ux * r} ${uy * r}`,
-    `L ${w - inset + ux * r} ${h - uy * r}`,
-    `Q ${w - inset} ${h} ${w - inset - r} ${h}`,
-    `L ${inset + r} ${h}`,
-    `Q ${inset} ${h} ${inset - ux * r} ${h - uy * r}`,
-    `L ${ux * r} ${uy * r}`,
-    `Q 0 0 ${r} 0`,
-    "Z",
+    `M ${r} 0`, `L ${w - r} 0`, `Q ${w} 0 ${w - ux * r} ${uy * r}`,
+    `L ${w - inset + ux * r} ${h - uy * r}`, `Q ${w - inset} ${h} ${w - inset - r} ${h}`,
+    `L ${inset + r} ${h}`, `Q ${inset} ${h} ${inset - ux * r} ${h - uy * r}`,
+    `L ${ux * r} ${uy * r}`, `Q 0 0 ${r} 0`, "Z",
   ].join(" ");
   return (
-    <View pointerEvents="none" style={{ position: "absolute", left: -SHEET_OUT, top: SHEET_TOP, width: w, height: h }}>
+    <Animated.View pointerEvents="none" style={[{ position: "absolute", left: -SHEET_OUT, top: SHEET_TOP, width: w, height: h, zIndex: 1 }, style]}>
       <Svg width={w} height={h}>
         <Defs>
-          <SvgGradient id="sheet" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#FFF3EC" stopOpacity={0.62} />
-            <Stop offset="1" stopColor="#FFE2D3" stopOpacity={0.28} />
-          </SvgGradient>
-          <SvgGradient id="sheetShine" x1="0" y1="0" x2="1" y2="0">
-            <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.55} />
-            <Stop offset="0.5" stopColor="#FFFFFF" stopOpacity={0.1} />
-            <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0.45} />
-          </SvgGradient>
+          <ClipPath id="trap"><Path d={d} /></ClipPath>
         </Defs>
-        <Path d={d} fill="url(#sheet)" />
-        <Path d={d} fill="none" stroke="url(#sheetShine)" strokeWidth={1.2} />
+        <SvgImage href={image} x={0} y={0} width={w} height={h} preserveAspectRatio="xMidYMid slice" clipPath="url(#trap)" />
       </Svg>
-    </View>
-  );
-}
-
-/** Landmark photo that cross-fades in/out. */
-function PhotoLayer({ image, visible }: { image: number; visible: boolean }) {
-  const o = useSharedValue(visible ? 1 : 0);
-  useEffect(() => { o.value = withTiming(visible ? 1 : 0, { duration: 700 }); }, [visible, o]);
-  const fade = useAnimatedStyle(() => ({ opacity: o.value }));
-  return (
-    <Animated.View style={[StyleSheet.absoluteFill, fade]}>
-      <Image source={image} style={StyleSheet.absoluteFill} contentFit="cover" />
+      {/* Frost so the back card reads as behind; clears as it comes forward */}
+      <Animated.View style={[StyleSheet.absoluteFill, veil]}>
+        <Svg width={w} height={h}>
+          <Defs>
+            <SvgGradient id="frost" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#FFF1E8" stopOpacity={0.5} />
+              <Stop offset="1" stopColor="#FFE0CF" stopOpacity={0.3} />
+            </SvgGradient>
+          </Defs>
+          <Path d={d} fill="url(#frost)" />
+          <Path d={d} fill="none" stroke="#FFFFFF" strokeOpacity={0.45} strokeWidth={1.2} />
+        </Svg>
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -386,9 +414,9 @@ const styles = StyleSheet.create({
   badge: { position: "absolute", top: -3, right: -3, minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 5, backgroundColor: "#FF4D4F", alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "rgba(255,255,255,0.9)" },
   badgeText: { color: colors.white, fontSize: 10, fontWeight: "900" },
   heroWrap: { marginHorizontal: 18, marginTop: 4, marginBottom: 30 },
+  frontLayer: { zIndex: 2 },
   heroCard: { height: HERO_H, borderRadius: 28, backgroundColor: "#7A2A1C" },
   heroClip: { flex: 1, borderRadius: 28, overflow: "hidden" },
-  heroFront: { position: "absolute", left: 0, right: 0, top: 0, bottom: 0 },
   locWrap: { position: "absolute", left: 14, top: 14, maxWidth: "62%" },
   locPill: { flexDirection: "row", alignItems: "center", gap: 6, height: 30, paddingHorizontal: 11, borderRadius: 15 },
   locText: { flexShrink: 1, fontSize: 12, fontWeight: "700", color: colors.white },

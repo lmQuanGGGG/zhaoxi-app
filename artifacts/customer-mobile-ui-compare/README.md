@@ -43,3 +43,4 @@ Mỗi `compare-*.jpg` đặt ảnh PWA (trái, Chrome 402×874) cạnh ảnh app
 | Home kiểu My Viettel: nền ngọc bích + vàng, header kính, hero ảnh danh thắng với chip kính, vòm dịch vụ cong | app-34-home-glass-hero.jpg |
 | Home nền ngọc trai aurora pastel, hero chồng thẻ ảnh xếp lớp, kính tròn + quầng sáng icon dịch vụ | app-35-home-pearl-aurora.jpg |
 | Home nền san hô hoàng hôn (SVG), thẻ ảnh + tấm kính lòi bên trái theo ảnh mẫu | app-36-home-coral.jpg |
+| Hero vuốt ngang: thẻ trước nghiêng 3D bay đi, thẻ sau (ảnh thật, hình thang) tiến lên | app-37-hero-3d-swipe.jpg |
