@@ -406,6 +406,246 @@ export function FactArt({ kind, size = 36 }: { kind: FactArtKind; size?: number 
   );
 }
 
+/* ---- Profile / settings menu: same clay style, one object per row ---- */
+
+function Parcel() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("boxFront", "#E9B57A", "#C98445")}
+        {lin("boxSide", "#D39A5C", "#A9692F")}
+        {lin("boxTop", "#F6D2A2", "#E5AE6E")}
+      </Defs>
+      <Shadow rx={22} />
+      <Path d="M10 22 32 31v23L10 45Z" fill="url(#boxFront)" />
+      <Path d="M54 22 32 31v23l22-9Z" fill="url(#boxSide)" />
+      <Path d="M10 22 32 13l22 9-22 9Z" fill="url(#boxTop)" />
+      <Path d="M21 17.5 43 26.5v9l-5 2v-9L16 19.6Z" fill="#FFF3DE" opacity={0.92} />
+      <Path d="M13.5 27.5c.8 5 1 9.6.6 14" stroke="#FFFFFF" strokeOpacity={0.4} strokeWidth={2} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function StarBadge() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("star", "#FFE07A", "#F2A516")}
+      </Defs>
+      <Shadow rx={17} />
+      <Path d="M32 7.5l7.2 14.6 16.1 2.3-11.6 11.4 2.7 16-14.4-7.6-14.4 7.6 2.7-16L8.7 24.4l16.1-2.3Z" fill="url(#star)" stroke="#E8960F" strokeWidth={1.2} strokeLinejoin="round" />
+      <Path d="M29.5 15.5 26.6 22c-.4.9-1.3 1.6-2.3 1.7l-6.5 1" stroke="#FFFFFF" strokeOpacity={0.7} strokeWidth={2.4} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function Clock() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("rim", "#5FC7C0", "#1E7F86")}
+        <RadialGradient id="face" cx="0.4" cy="0.35" r="0.7">
+          <Stop offset="0" stopColor="#FFFFFF" />
+          <Stop offset="1" stopColor="#E3EEF1" />
+        </RadialGradient>
+      </Defs>
+      <Shadow rx={18} />
+      <Circle cx={32} cy={31} r={22} fill="url(#rim)" />
+      <Circle cx={32} cy={31} r={17.5} fill="url(#face)" />
+      <Path d="M32 18.5v2.6M32 40.9v2.6M19.5 31h2.6M41.9 31h2.6" stroke="#9FB4BC" strokeWidth={2} strokeLinecap="round" />
+      <Path d="M32 31V22.5M32 31l6.5 4" stroke="#18323A" strokeWidth={3} strokeLinecap="round" />
+      <Circle cx={32} cy={31} r={2.4} fill="#EC5B2C" />
+      <Path d="M16.5 22c2.6-4.4 7-7.4 12-8.2" stroke="#FFFFFF" strokeOpacity={0.6} strokeWidth={2.4} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function Ticket() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("ticket", "#FF9A6B", "#E8492F", false)}
+      </Defs>
+      <Shadow rx={22} />
+      <G transform="rotate(-12 32 32)">
+        <Path d="M9 19h46v8.5a4.5 4.5 0 0 0 0 9V45H9v-8.5a4.5 4.5 0 0 0 0-9Z" fill="url(#ticket)" />
+        <Path d="M40 21.5v21" stroke="#FFFFFF" strokeOpacity={0.7} strokeWidth={1.8} strokeDasharray="3 3" />
+        <Path d="M17 28.5h15M17 34.5h10" stroke="#FFFFFF" strokeWidth={3} strokeLinecap="round" />
+        <Path d="M47.5 28l-3 8" stroke="#FFFFFF" strokeWidth={2.2} strokeLinecap="round" />
+        <Circle cx={45} cy={29.3} r={1.5} fill="#FFFFFF" />
+        <Circle cx={47.8} cy={35} r={1.5} fill="#FFFFFF" />
+        <Path d="M12.5 22h12" stroke="#FFFFFF" strokeOpacity={0.45} strokeWidth={1.8} strokeLinecap="round" />
+      </G>
+    </>
+  );
+}
+
+function Bell() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("bell", "#FFD66E", "#E99A12")}
+      </Defs>
+      <Shadow rx={17} />
+      <Circle cx={32} cy={47} r={5} fill="#C97A0C" />
+      <Path d="M32 9.5c-9.5 0-15 7.2-15 16.5v8.6l-4.4 6.2c-.8 1.2 0 2.7 1.4 2.7h36c1.4 0 2.2-1.5 1.4-2.7L47 34.6V26c0-9.3-5.5-16.5-15-16.5Z" fill="url(#bell)" />
+      <Circle cx={32} cy={8.5} r={3} fill="#E99A12" />
+      <Path d="M22.5 22c1.2-4.6 4.4-7.4 8.4-8" stroke="#FFFFFF" strokeOpacity={0.7} strokeWidth={2.6} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function Globe() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        <RadialGradient id="globe" cx="0.38" cy="0.32" r="0.75">
+          <Stop offset="0" stopColor="#8FD3FF" />
+          <Stop offset="1" stopColor="#2F72D2" />
+        </RadialGradient>
+      </Defs>
+      <Shadow rx={18} />
+      <Circle cx={32} cy={31} r={21} fill="url(#globe)" />
+      <Path d="M18 21c4 2 6 6 4 9s1 6 5 6 3 6 1 9M38 12c-2 4 0 7 4 8s6 5 3 9-1 8 3 9" stroke="#7FD8A6" strokeWidth={5} strokeLinecap="round" fill="none" opacity={0.9} />
+      <Ellipse cx={32} cy={31} rx={9} ry={21} fill="none" stroke="#FFFFFF" strokeOpacity={0.35} strokeWidth={1.4} />
+      <Path d="M11 31h42" stroke="#FFFFFF" strokeOpacity={0.35} strokeWidth={1.4} />
+      <Path d="M18 19c3-4 7.6-6.6 12.6-7.2" stroke="#FFFFFF" strokeOpacity={0.75} strokeWidth={2.6} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function Shield() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("shield", "#8C9BFF", "#4B4FD1")}
+      </Defs>
+      <Shadow rx={17} />
+      <Path d="M32 7.5 51 14v14.5C51 40 43 48.6 32 53 21 48.6 13 40 13 28.5V14Z" fill="url(#shield)" />
+      <Path d="M32 11.8 47 17v11.5c0 9-6.1 16-15 19.8Z" fill="#FFFFFF" opacity={0.12} />
+      <Path d="m23.5 30.5 6 6 11.5-12.5" stroke="#FFFFFF" strokeWidth={4.2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <Path d="M17.5 17.5c2.4-.9 4.8-1.7 7.2-2.5" stroke="#FFFFFF" strokeOpacity={0.6} strokeWidth={2.4} strokeLinecap="round" />
+    </>
+  );
+}
+
+function Siren() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("dome", "#FF8A80", "#D7262B")}
+        {lin("base", "#4A5568", "#1F2937")}
+      </Defs>
+      <Shadow rx={19} />
+      <Path d="M8 14l5 4M56 14l-5 4M32 4v6M4 30h6M54 30h6" stroke="#F59E0B" strokeWidth={3} strokeLinecap="round" />
+      <Path d="M18 44V32c0-8 6.3-14 14-14s14 6 14 14v12Z" fill="url(#dome)" />
+      <Rect x={13} y={43} width={38} height={8} rx={3} fill="url(#base)" />
+      <Path d="M24 33c0-4.4 3-8 7-8.6" stroke="#FFFFFF" strokeOpacity={0.75} strokeWidth={3} strokeLinecap="round" fill="none" />
+      <Rect x={29.5} y={30} width={5} height={10} rx={2.5} fill="#FFE1DE" />
+    </>
+  );
+}
+
+function PhonePush() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("phone", "#4B5563", "#111827")}
+        {lin("screen", "#7DD3C8", "#2B8A8E")}
+      </Defs>
+      <Shadow rx={15} />
+      <Rect x={18} y={6} width={28} height={48} rx={7} fill="url(#phone)" />
+      <Rect x={20.5} y={9} width={23} height={42} rx={5} fill="url(#screen)" />
+      <Rect x={23} y={18} width={18} height={7} rx={2.5} fill="#FFFFFF" opacity={0.92} />
+      <Rect x={23} y={28} width={18} height={7} rx={2.5} fill="#FFFFFF" opacity={0.6} />
+    </>
+  );
+}
+
+function Megaphone() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("horn", "#FFB067", "#F0602A")}
+      </Defs>
+      <Shadow rx={19} />
+      <Path d="M22 39l4 12c.4 1.3 1.8 2 3.1 1.6l3-1c1.3-.4 2-1.8 1.6-3.1L30 38" fill="#C2410C" />
+      <Path d="M12 26c0-2 1.6-3.5 3.5-3.5H22L46 11v38L22 37.5h-6.5C13.6 37.5 12 36 12 34Z" fill="url(#horn)" />
+      <Ellipse cx={46} cy={30} rx={4.5} ry={19} fill="#FFD3AE" />
+      <Path d="M52 22c2.2 2.4 2.2 13.6 0 16M56.5 18c3.6 4 3.6 20 0 24" stroke="#F59E0B" strokeWidth={2.4} strokeLinecap="round" fill="none" />
+      <Path d="M16 26.5h5" stroke="#FFFFFF" strokeOpacity={0.6} strokeWidth={2.4} strokeLinecap="round" />
+    </>
+  );
+}
+
+function Lifebuoy() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        <RadialGradient id="ring" cx="0.4" cy="0.35" r="0.7">
+          <Stop offset="0" stopColor="#FFFFFF" />
+          <Stop offset="1" stopColor="#DCE5EE" />
+        </RadialGradient>
+        {lin("band", "#FF7A6B", "#D9332B")}
+      </Defs>
+      <Shadow rx={19} />
+      <Circle cx={32} cy={31} r={21} fill="url(#ring)" />
+      <Path d="M17.2 16.2a21 21 0 0 1 9.4-5.5l2.6 10.6a10 10 0 0 0-4.3 2.6Z M46.8 16.2a21 21 0 0 1 5.5 9.4l-10.6 2.6a10 10 0 0 0-2.6-4.3Z M46.8 45.8a21 21 0 0 1-9.4 5.5l-2.6-10.6a10 10 0 0 0 4.3-2.6Z M17.2 45.8a21 21 0 0 1-5.5-9.4l10.6-2.6a10 10 0 0 0 2.6 4.3Z" fill="url(#band)" />
+      <Circle cx={32} cy={31} r={10} fill="#F1F6FA" />
+      <Circle cx={32} cy={31} r={10} fill="none" stroke="#C7D3DF" strokeWidth={1.4} />
+      <Path d="M15.5 24c1.6-4 4.4-7.2 8-9.2" stroke="#FFFFFF" strokeWidth={2.4} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function ChatHeart() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("bubble", "#6EE7B7", "#10A37F")}
+      </Defs>
+      <Shadow rx={19} />
+      <Path d="M14 10h36c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H29l-10 9v-9h-5c-3.3 0-6-2.7-6-6V16c0-3.3 2.7-6 6-6Z" fill="url(#bubble)" />
+      <Path d="M32 34.5c-5.6-3.8-8.5-6.8-8.5-10 0-2.4 1.9-4.2 4.2-4.2 1.8 0 3.3 1 4.3 2.6 1-1.6 2.5-2.6 4.3-2.6 2.3 0 4.2 1.8 4.2 4.2 0 3.2-2.9 6.2-8.5 10Z" fill="#FFFFFF" />
+      <Path d="M13 16.5c.6-1.9 2.2-3 4.2-3h6" stroke="#FFFFFF" strokeOpacity={0.6} strokeWidth={2.4} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+const menuArt = {
+  orders: Parcel, favorites: StarBadge, history: Clock, coupons: Ticket, notifications: Bell, language: Globe,
+  security: Shield, emergency: Siren, push: PhonePush, promotions: Megaphone, help: Lifebuoy, feedback: ChatHeart,
+} as const;
+export type MenuArtKind = keyof typeof menuArt;
+const menuTints: Record<MenuArtKind, string> = {
+  orders: "#FFF4E6", favorites: "#FFF8E1", history: "#E8F6F5", coupons: "#FFEEE8", notifications: "#FFF6E0", language: "#EAF3FE",
+  security: "#EEEFFF", emergency: "#FFECEC", push: "#E8F5F4", promotions: "#FFF0E6", help: "#FFEFEF", feedback: "#E7F8F1",
+};
+
+/** Clay menu illustration on its soft tinted tile (profile / settings rows). */
+export function MenuArt({ kind, size = 40 }: { kind: MenuArtKind; size?: number }) {
+  const Art = menuArt[kind];
+  return (
+    <View style={{ width: size, height: size, borderRadius: size * 0.32, backgroundColor: menuTints[kind], alignItems: "center", justifyContent: "center" }}>
+      <Svg width={size * 0.8} height={size * 0.8} viewBox="0 0 64 64">
+        <Art />
+      </Svg>
+    </View>
+  );
+}
+
 const art: Record<string, () => React.JSX.Element> = {
   food: Food,
   housing: Housing,

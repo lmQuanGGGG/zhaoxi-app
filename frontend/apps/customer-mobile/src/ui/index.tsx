@@ -9,12 +9,12 @@ import { PageHeader, TopBar } from "./chrome";
 import { haptic } from "./haptics";
 import { ZxIcon, type ZxIconName } from "./icons";
 import { GlassFill, SolidFill } from "./glass";
-import { ServiceArt, ServiceTile } from "./service-icons";
+import { MenuArt, ServiceArt, ServiceTile, type MenuArtKind } from "./service-icons";
 
 export type IconName = ComponentProps<typeof Ionicons>["name"];
 export { Ionicons, haptic, ZxIcon, type ZxIconName };
 export { BackButton, DOCK_SPACE, PageHeader, ServicesGem, TopBar } from "./chrome";
-export { FactArt, ServiceArt, ServiceTile, servicePalettes, type FactArtKind } from "./service-icons";
+export { FactArt, MenuArt, ServiceArt, ServiceTile, servicePalettes, type FactArtKind, type MenuArtKind } from "./service-icons";
 export { Glass, GlassFill, LIQUID_GLASS, SolidFill } from "./glass";
 
 // ---------------------------------------------------------------------------
@@ -258,10 +258,10 @@ export function StatusPill({ label, tone = "brand" }: { label: string; tone?: "b
 }
 
 /** PWA profile menu row: white card, emoji/icon, label, chevron. */
-export function ListRow({ icon, emoji, title, subtitle, onPress, right, tint = colors.brand }: { icon?: IconName; emoji?: string; title: string; subtitle?: string; onPress?: () => void; right?: ReactNode; tint?: string }) {
+export function ListRow({ art, icon, emoji, title, subtitle, onPress, right, tint = colors.brand }: { art?: MenuArtKind; icon?: IconName; emoji?: string; title: string; subtitle?: string; onPress?: () => void; right?: ReactNode; tint?: string }) {
   return (
-    <PressableScale onPress={onPress} scaleTo={0.985} style={styles.listRow}>
-      {emoji ? <Text style={{ fontSize: 18, width: 26, textAlign: "center" }}>{emoji}</Text> : icon ? <Ionicons name={icon} size={19} color={tint} style={{ width: 26, textAlign: "center" }} /> : null}
+    <PressableScale onPress={onPress} scaleTo={0.985} style={[styles.listRow, art ? { paddingVertical: 10, gap: 12 } : null]}>
+      {art ? <MenuArt kind={art} size={40} /> : emoji ? <Text style={{ fontSize: 18, width: 26, textAlign: "center" }}>{emoji}</Text> : icon ? <Ionicons name={icon} size={19} color={tint} style={{ width: 26, textAlign: "center" }} /> : null}
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={{ fontSize: 14, fontWeight: "600", color: colors.ink }} numberOfLines={1}>{title}</Text>
         {subtitle ? <Text style={[font.tiny, { marginTop: 2, fontSize: 11 }]} numberOfLines={1}>{subtitle}</Text> : null}

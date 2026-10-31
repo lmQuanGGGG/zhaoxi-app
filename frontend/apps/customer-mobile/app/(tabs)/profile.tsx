@@ -14,7 +14,7 @@ import { getPromotionsPreference, pushPermissionGranted, registerForPush, setPro
 import { profileCopy } from "../../src/profile-copy";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
-import { ListRow, PressableScale, Screen } from "../../src/ui";
+import { ListRow, PressableScale, Screen, type MenuArtKind } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
 
 const feedbackLabel = { "vi-VN": "Gửi phản hồi Beta", "en-US": "Beta feedback", "zh-CN": "Beta 反馈", "zh-TW": "Beta 回饋" } as const;
@@ -38,9 +38,9 @@ export default function ProfileScreen() {
   const unnamed = !data?.user?.displayName || /guest/i.test(name);
   const fields = [data?.user?.displayName, data?.user?.phone, data?.profile?.nationality, data?.profile?.cityName, data?.profile?.addressText];
   const completion = Math.round((fields.filter((x) => Boolean(x && String(x).trim())).length / fields.length) * 100);
-  const menu: Array<[string, string, string]> = [
-    ["📦", c.orders, "/orders"], ["☆", c.favorites, "/favorites"], ["◷", c.history, "/history"], ["🎟️", c.coupons, "/coupons"],
-    ["◌", c.notifications, "/notifications"], ["文", c.language, "/language"], ["🛡️", c.security, "/account/security"], ["🆘", c.emergency, "/emergency"],
+  const menu: Array<[MenuArtKind, string, string]> = [
+    ["orders", c.orders, "/orders"], ["favorites", c.favorites, "/favorites"], ["history", c.history, "/history"], ["coupons", c.coupons, "/coupons"],
+    ["notifications", c.notifications, "/notifications"], ["language", c.language, "/language"], ["security", c.security, "/account/security"], ["emergency", c.emergency, "/emergency"],
   ];
   const info: Array<[string, string]> = [
     [c.phone, str(data?.user?.phone)], [c.nationality, str(data?.profile?.nationality)], [c.city, str(data?.profile?.cityName)],
@@ -100,19 +100,19 @@ export default function ProfileScreen() {
 
         <Text style={styles.groupTitle}>{c.personal}</Text>
         <View style={{ gap: 8 }}>
-          {menu.map(([emoji, label, href]) => <ListRow key={href} emoji={emoji} title={label} subtitle={href === "/language" ? `${localeLabels[locale].flag} ${localeLabels[locale].native}` : undefined} onPress={() => router.push(href as never)} />)}
+          {menu.map(([art, label, href]) => <ListRow key={href} art={art} title={label} subtitle={href === "/language" ? `${localeLabels[locale].flag} ${localeLabels[locale].native}` : undefined} onPress={() => router.push(href as never)} />)}
         </View>
 
         <Text style={styles.groupTitle}>{c.app}</Text>
         <View style={{ gap: 8 }}>
-          <ListRow emoji="🔔" title={c.push} subtitle={push ? t.profile.pushOn : t.profile.pushOff} onPress={async () => {
+          <ListRow art="push" title={c.push} subtitle={push ? t.profile.pushOn : t.profile.pushOff} onPress={async () => {
             const status = await registerForPush(locale, true);
             setPush(await pushPermissionGranted());
             if (!status.enabled && status.reason === "simulator") toast(t.profile.pushDevice, "info");
           }} right={<Text style={{ color: push ? colors.wechat : colors.textMuted, fontSize: 16 }}>{push ? "✓" : "○"}</Text>} />
-          <ListRow emoji="📣" title={c.promotions} right={<Switch value={promotions} trackColor={{ true: colors.wechat }} onValueChange={(value) => { setPromotions(value); void setPromotionsPreference(value, locale); }} />} />
-          <ListRow emoji="❓" title={t.profile.help} onPress={() => router.push("/help")} />
-          <ListRow emoji="💬" title={feedbackLabel[locale]} onPress={() => router.push("/feedback")} />
+          <ListRow art="promotions" title={c.promotions} right={<Switch value={promotions} trackColor={{ true: colors.wechat }} onValueChange={(value) => { setPromotions(value); void setPromotionsPreference(value, locale); }} />} />
+          <ListRow art="help" title={t.profile.help} onPress={() => router.push("/help")} />
+          <ListRow art="feedback" title={feedbackLabel[locale]} onPress={() => router.push("/feedback")} />
         </View>
         <Text style={styles.version}>ZhaoXi · {t.profile.version} {APP_VERSION}</Text>
       </ScrollView>
