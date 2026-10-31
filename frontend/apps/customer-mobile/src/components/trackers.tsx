@@ -11,7 +11,7 @@ import type { FollowupEntry, HousingAppointment, InquiryMessage, PartnerPaymentS
 import { money, shortDate } from "../format";
 import { useI18n } from "../i18n";
 import { keys } from "../query";
-import { colors } from "../theme";
+import { colors, shadow } from "../theme";
 import { Button, PressableScale, ZxIcon, haptic } from "../ui";
 import { toast } from "../ui/toast";
 import { DateStrip, OptionPills, nextDays } from "./pickers";
@@ -296,7 +296,7 @@ export function PaymentSupport({ requestId, ticket }: { requestId: string; ticke
 }
 
 export const trackerStyles = StyleSheet.create({
-  card: { padding: 14, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft, gap: 10 },
+  card: { padding: 14, borderRadius: 20, backgroundColor: colors.white, gap: 10, ...shadow("card") },
   top: { flexDirection: "row", gap: 12 },
   thumb: { width: 72, height: 72, borderRadius: 14 },
   code: { fontSize: 12, fontWeight: "700", color: colors.ink },
@@ -307,7 +307,7 @@ export const trackerStyles = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
-  section: { padding: 12, borderRadius: 16, backgroundColor: colors.surfaceMuted, borderWidth: 1, borderColor: "#EDF1EF", gap: 8 },
+  section: { padding: 12, borderRadius: 16, backgroundColor: colors.surfaceMuted, gap: 8, ...shadow("card") },
   sectionHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6, flexShrink: 1 },
   sectionTitle: { fontSize: 13.5, fontWeight: "700", color: colors.ink },
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   unreadText: { fontSize: 10, fontWeight: "900", color: "#B42318" },
   bubble: { maxWidth: "86%", paddingHorizontal: 11, paddingVertical: 8, borderRadius: 14 },
   bubbleMine: { alignSelf: "flex-end", backgroundColor: "#DCFCE7", borderBottomRightRadius: 4 },
-  bubbleTheirs: { alignSelf: "flex-start", backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft, borderBottomLeftRadius: 4 },
+  bubbleTheirs: { alignSelf: "flex-start", backgroundColor: colors.white, borderBottomLeftRadius: 4, ...shadow("card") },
   bubbleText: { fontSize: 13, color: colors.text, lineHeight: 18 },
   bubbleMeta: { fontSize: 9.5, color: colors.slate, marginTop: 3 },
   composer: { flexDirection: "row", alignItems: "flex-end", gap: 8 },
@@ -334,6 +334,6 @@ const styles = StyleSheet.create({
   historyChevron: { fontSize: 14, color: colors.slate, fontWeight: "800" },
   historyRow: { padding: 9, borderRadius: 10, backgroundColor: colors.surfaceMuted, gap: 2 },
   historyLine: { fontSize: 11.5, color: colors.slate },
-  qr: { gap: 6, padding: 10, borderRadius: 12, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  qr: { gap: 6, padding: 10, borderRadius: 12, backgroundColor: colors.white, ...shadow("card") },
   qrText: { fontSize: 11, color: colors.ink, fontFamily: "Menlo" },
 });

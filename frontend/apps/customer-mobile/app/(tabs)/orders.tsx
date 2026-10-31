@@ -123,13 +123,13 @@ function OrderCard({ order, index, onPressIn }: { order: Order; index: number; o
 
 const styles = StyleSheet.create({
   summary: { flexDirection: "row", gap: 7 },
-  sumCard: { flex: 1, gap: 4, paddingVertical: 9, paddingHorizontal: 11, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
-  tile: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 9, paddingHorizontal: 10, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  sumCard: { flex: 1, gap: 4, paddingVertical: 9, paddingHorizontal: 11, borderRadius: 16, backgroundColor: colors.white, ...shadow("card") },
+  tile: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 9, paddingHorizontal: 10, borderRadius: 16, backgroundColor: colors.white, ...shadow("card") },
   tileTitle: { fontSize: 11, fontWeight: "700", color: colors.ink },
   tileCount: { fontSize: 15, fontWeight: "800", color: colors.brandStrong, marginTop: 1 },
   sumLabel: { fontSize: 10, color: colors.textMuted },
   sumValue: { fontSize: 16, fontWeight: "700", color: colors.text },
-  card: { padding: 14, borderRadius: 19, backgroundColor: "rgba(255,255,255,0.92)", borderWidth: 1, borderColor: colors.borderWarm },
+  card: { padding: 14, borderRadius: 19, backgroundColor: "rgba(255,255,255,0.92)", ...shadow("card") },
   row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   code: { flex: 1, fontSize: 11, color: colors.textMuted, fontVariant: ["tabular-nums"] },
   badge: { paddingHorizontal: 9, paddingVertical: 5, borderRadius: 999 },

@@ -102,8 +102,8 @@ export function RestaurantCard({ id, menu, status, pricing, index = 0, onOpen }:
   const hours = status?.code === "closed_hours" && status.businessHoursToday?.enabled ? `${t.browse.hours}: ${status.businessHoursToday.open}–${status.businessHoursToday.close}` : !open ? status?.pauseReason || "" : "";
 
   return (
-    <Animated.View entering={FadeInDown.delay(Math.min(index, 5) * 50).duration(300)}>
-     <View style={[styles.restaurant, shadow("float"), !open && { opacity: 0.72 }]}>
+    <Animated.View entering={FadeInDown.delay(Math.min(index, 5) * 50).duration(300)} style={[styles.restaurantShadow, shadow("float")]}>
+     <View style={[styles.restaurant, !open && { opacity: 0.72 }]}>
       <Pressable onPress={onOpen} style={styles.banner}>
         <LinearGradient colors={["#07C160", "#0AA6CF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
         {banners.length ? <AppImage key={banners[slide]} uri={banners[slide]} style={StyleSheet.absoluteFill} transition={600} /> : logo ? <AppImage uri={logo} style={StyleSheet.absoluteFill} /> : null}
@@ -158,7 +158,7 @@ export function RestaurantCartBar({ organizationId }: { organizationId?: string 
 const styles = StyleSheet.create({
   menuGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   menuCell: { width: "48.3%", gap: 6 },
-  menuCard: { padding: 10, borderRadius: 16, backgroundColor: colors.surfaceMuted, borderWidth: 1, borderColor: "#F1F5F9", gap: 8 },
+  menuCard: { padding: 10, borderRadius: 16, backgroundColor: colors.surfaceMuted, gap: 8, ...shadow("card") },
   menuMain: { flexDirection: "row", gap: 9 },
   menuImage: { width: 52, height: 52, borderRadius: 12, backgroundColor: "#E2E8F0" },
   menuName: { fontSize: 12, fontWeight: "700", color: colors.ink },
@@ -172,7 +172,9 @@ const styles = StyleSheet.create({
   addText: { fontSize: 10, fontWeight: "700", color: "#94A3B8" },
   soldOut: { textAlign: "center", color: colors.dangerText, fontWeight: "900", fontSize: 12, paddingVertical: 6 },
   detailLink: { textAlign: "center", fontSize: 11, fontWeight: "600", color: colors.brandStrong },
-  restaurant: { borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft, overflow: "hidden" },
+  // Shadow on an unclipped wrapper; iOS drops shadows on views with overflow hidden.
+  restaurantShadow: { borderRadius: 22, backgroundColor: colors.white },
+  restaurant: { borderRadius: 22, backgroundColor: colors.white, overflow: "hidden" },
   banner: { height: 112, overflow: "hidden" },
   bannerRow: { flex: 1, flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, paddingVertical: 10 },
   logo: { width: 46, height: 46, borderRadius: 14, backgroundColor: colors.white, borderWidth: 2, borderColor: "rgba(255,255,255,0.95)" },

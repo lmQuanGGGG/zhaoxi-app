@@ -217,7 +217,7 @@ function LivePulse({ active }: { active: boolean }) {
 
 const styles = StyleSheet.create({
   eta: { flexDirection: "row", alignItems: "center", gap: 8, padding: 10, borderRadius: radius.md, backgroundColor: colors.brandSoft },
-  courier: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: radius.md, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
+  courier: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: radius.md, backgroundColor: colors.white, ...shadow("card") },
   item: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   itemImage: { width: 40, height: 40, borderRadius: 10 },
   timelineRow: { flexDirection: "row", gap: 12 },

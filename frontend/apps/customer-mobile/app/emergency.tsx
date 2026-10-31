@@ -58,7 +58,7 @@ export default function EmergencyScreen() {
 }
 
 const styles = StyleSheet.create({
-  choice: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.86)", borderWidth: 1, borderColor: colors.borderWarm },
+  choice: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.86)", ...shadow("card") },
   icon: { width: 44, height: 44, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   title: { fontSize: 14, fontWeight: "600", color: colors.text },
   desc: { fontSize: 13, color: colors.textMuted, marginTop: 3, lineHeight: 19 },

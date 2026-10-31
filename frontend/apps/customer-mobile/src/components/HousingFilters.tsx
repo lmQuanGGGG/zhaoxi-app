@@ -106,10 +106,10 @@ export function useHousingFilters(items: Service[]) {
 }
 
 const styles = StyleSheet.create({
-  requests: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 18, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  requests: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 18, backgroundColor: colors.white, ...shadow("card") },
   requestsText: { flex: 1, fontSize: 14, fontWeight: "700", color: colors.ink },
   chevron: { fontSize: 20, color: "#94A3B8" },
-  panel: { gap: 10, padding: 14, borderRadius: 18, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  panel: { gap: 10, padding: 14, borderRadius: 18, backgroundColor: colors.white, ...shadow("card") },
   label: { fontSize: 13, fontWeight: "600", color: colors.ink },
   input: { flex: 1, height: 44, borderRadius: 14, backgroundColor: "#F2F5F8", paddingHorizontal: 14, fontSize: 14, color: colors.text },
   switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },

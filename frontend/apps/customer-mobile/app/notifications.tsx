@@ -123,10 +123,10 @@ export default function NotificationsScreen() {
 
 const styles = StyleSheet.create({
   toolbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 12 },
-  prefs: { marginHorizontal: 14, marginBottom: 10, padding: 12, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  prefs: { marginHorizontal: 14, marginBottom: 10, padding: 12, borderRadius: 16, backgroundColor: colors.white, ...shadow("card") },
   prefsTitle: { fontSize: 13, fontWeight: "700", color: colors.ink, marginBottom: 4 },
   prefRow: { flexDirection: "row", alignItems: "center", paddingVertical: 5 },
-  notice: { padding: 10, borderRadius: 12, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderWarm },
+  notice: { padding: 10, borderRadius: 12, backgroundColor: colors.white, ...shadow("card") },
   meta: { fontSize: 11, color: colors.textSecondary },
   noticeTitle: { fontSize: 13.5, fontWeight: "700", color: colors.text },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.brand, marginTop: 4 },

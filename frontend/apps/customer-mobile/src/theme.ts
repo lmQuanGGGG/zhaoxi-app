@@ -72,9 +72,9 @@ export const font = {
 
 type ShadowSpec = { color: string; opacity: number; radius: number; y: number };
 const shadowSpec: Record<"card" | "soft" | "float" | "dock" | "banner" | "search", ShadowSpec> = {
-  card: { color: "#0F172A", opacity: 0.05, radius: 18, y: 6 }, // 0 6px 20px rgba(15,23,42,.04)
-  soft: { color: "#18211E", opacity: 0.07, radius: 22, y: 10 }, // 0 10px 24px rgba(24,33,30,.067)
-  float: { color: "#0F172A", opacity: 0.07, radius: 26, y: 10 }, // restaurant card
+  card: { color: "#0F172A", opacity: 0.075, radius: 34, y: 10 }, // soft diffused card shadow, cards have no border
+  soft: { color: "#18211E", opacity: 0.09, radius: 40, y: 14 }, // larger floating cards
+  float: { color: "#0F172A", opacity: 0.09, radius: 40, y: 14 }, // restaurant card
   dock: { color: "#18211E", opacity: 0.12, radius: 32, y: 12 }, // 0 12px 36px rgba(24,33,30,.1)
   banner: { color: "#183F35", opacity: 0.2, radius: 26, y: 14 }, // 0 14px 28px rgba(24,63,53,.18)
   search: { color: "#18211E", opacity: 0.08, radius: 22, y: 10 }, // 0 10px 24px rgba(24,33,30,.08)

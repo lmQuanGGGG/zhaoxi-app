@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   desc: { fontSize: 11, color: colors.slate, marginTop: 2 },
   badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, backgroundColor: "#F1F5F9" },
   badgeText: { fontSize: 11, fontWeight: "600", color: colors.slate },
-  panel: { alignItems: "center", gap: 10, marginTop: 4, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: "#86EFAC", backgroundColor: "#F0FDF4" },
+  panel: { alignItems: "center", gap: 10, marginTop: 4, padding: 16, borderRadius: 16, backgroundColor: "#F0FDF4", ...shadow("card") },
   panelTitle: { alignSelf: "flex-start", fontSize: 14, fontWeight: "800", color: colors.ink },
   qr: { width: 220, height: 220, borderRadius: 14, backgroundColor: colors.white },
   instruction: { fontSize: 13, color: "#475569", textAlign: "center", lineHeight: 18 },

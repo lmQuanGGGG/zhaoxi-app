@@ -345,7 +345,7 @@ export function ServiceTile({ code, size = 48, shadow = true }: { code?: string 
   return (
     <View
       style={[
-        { width: size, height: size, borderRadius: size * 0.3, backgroundColor: palette.tint, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.9)" },
+        { width: size, height: size, borderRadius: size * 0.3, backgroundColor: palette.tint, alignItems: "center", justifyContent: "center" },
         shadow ? { shadowColor: palette.accent, shadowOpacity: 0.14, shadowRadius: size * 0.14, shadowOffset: { width: 0, height: size * 0.08 } } : null,
       ]}
     >

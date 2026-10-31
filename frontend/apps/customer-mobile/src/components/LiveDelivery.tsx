@@ -107,7 +107,7 @@ export function LiveDelivery({ tracking }: { tracking: DeliveryTracking }) {
 }
 
 const styles = StyleSheet.create({
-  card: { gap: 10, padding: 16, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  card: { gap: 10, padding: 16, borderRadius: 20, backgroundColor: colors.white, ...shadow("card") },
   head: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   stage: { flexShrink: 1, fontSize: 14, fontWeight: "800", color: colors.ink },
   live: { fontSize: 11, fontWeight: "800" },

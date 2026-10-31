@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   search: { flexDirection: "row", alignItems: "center", gap: 8, height: 46, paddingHorizontal: 12, borderRadius: 14, backgroundColor: "#F1F4F2" },
   searchInput: { flex: 1, fontSize: 15, color: colors.text, backgroundColor: "#F8FAF9", borderRadius: 6, paddingHorizontal: 6, height: 32 },
   toolbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 12 },
-  thread: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: 12, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderWarm },
+  thread: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: 12, backgroundColor: colors.white, ...shadow("card") },
   meta: { fontSize: 11, color: colors.textSecondary },
   threadTitle: { fontSize: 13.5, fontWeight: "700", color: colors.text },
 });

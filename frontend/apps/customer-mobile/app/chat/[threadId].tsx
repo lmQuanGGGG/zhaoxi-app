@@ -9,7 +9,7 @@ import type { ChatMessage, MessageThread } from "../../src/api/types";
 import { shortDate } from "../../src/format";
 import { useI18n } from "../../src/i18n";
 import { keys } from "../../src/query";
-import { colors, font, radius, space } from "../../src/theme";
+import { colors, font, radius, shadow, space } from "../../src/theme";
 import { EmptyState, Header, Ionicons, PressableScale, Screen, SkeletonList, haptic } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
 
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   bubbleWrap: { maxWidth: "100%" },
   bubble: { maxWidth: "82%", paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20 },
   own: { backgroundColor: colors.brand, borderBottomRightRadius: 6 },
-  other: { backgroundColor: colors.white, borderBottomLeftRadius: 6, borderWidth: 1, borderColor: colors.borderSoft },
+  other: { backgroundColor: colors.white, borderBottomLeftRadius: 6, ...shadow("card") },
   composer: { flexDirection: "row", alignItems: "flex-end", gap: 10, paddingHorizontal: space.lg, paddingTop: 10, backgroundColor: "rgba(255,255,255,0.97)", borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   input: { flex: 1, minHeight: 44, maxHeight: 120, borderRadius: radius.lg, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, backgroundColor: colors.bg, fontSize: 15, color: colors.text },
   send: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.brand, alignItems: "center", justifyContent: "center" },

@@ -116,7 +116,7 @@ export default function ServiceDetailScreen() {
 const styles = StyleSheet.create({
   hero: { height: 200, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, overflow: "hidden", backgroundColor: "#E9F4EE", borderWidth: 1, borderTopWidth: 0, borderColor: "rgba(255,255,255,0.3)" },
   back: { position: "absolute", top: 16, left: 14 },
-  moduleBadge: { position: "absolute", left: 11, top: 139, width: 50, height: 50, borderRadius: 15, backgroundColor: colors.white, borderWidth: 1, borderColor: "rgba(255,255,255,0.62)", alignItems: "center", justifyContent: "center" },
+  moduleBadge: { position: "absolute", left: 11, top: 139, width: 50, height: 50, borderRadius: 15, backgroundColor: colors.white, alignItems: "center", justifyContent: "center", ...shadow("card") },
   body: { paddingHorizontal: 16, paddingTop: 20, gap: 14 },
   verified: { alignSelf: "flex-start", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: colors.brandSoft },
   verifiedText: { fontSize: 10, fontWeight: "800", color: "#065F46" },
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   perMonth: { fontSize: 14, fontWeight: "700", color: colors.slate },
   favorite: { paddingHorizontal: 14, height: 35, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, justifyContent: "center", shadowColor: "#71371B", shadowOpacity: 0.18, shadowRadius: 0, shadowOffset: { width: 0, height: 4 } },
   favoriteText: { fontSize: 12, fontWeight: "800", color: "#475569" },
-  infoCard: { padding: 16, borderRadius: 20, backgroundColor: colors.surfaceMuted, borderWidth: 1, borderColor: colors.borderSoft, gap: 8 },
+  infoCard: { padding: 16, borderRadius: 20, backgroundColor: colors.surfaceMuted, gap: 8, ...shadow("card") },
   infoTitle: { fontSize: 15, fontWeight: "700", color: colors.ink },
   infoLine: { fontSize: 12, color: colors.slate, lineHeight: 17 },
   infoLabel: { fontWeight: "700", color: colors.ink },

@@ -48,7 +48,7 @@ export function ServiceList({ items, loading, refreshing, onRefresh, emptyTitle,
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  row: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 20, backgroundColor: colors.white, ...shadow("card") },
   image: { width: 64, height: 64, borderRadius: 16 },
   title: { fontSize: 15, fontWeight: "700", color: colors.ink },
   summary: { fontSize: 12, color: colors.slate },

@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { localeLabels, supportedLocales, useI18n } from "../src/i18n";
 import { registerForPush } from "../src/notifications";
-import { colors, font, radius, space } from "../src/theme";
+import { colors, font, radius, shadow, space } from "../src/theme";
 import { Ionicons, PressableScale, haptic } from "../src/ui";
 
 export default function LanguageSheet() {
@@ -35,6 +35,6 @@ export default function LanguageSheet() {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: radius.lg, backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.borderSoft },
+  row: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: radius.lg, backgroundColor: colors.white, ...shadow("card") },
   active: { borderColor: colors.brand, backgroundColor: colors.brandSoft },
 });

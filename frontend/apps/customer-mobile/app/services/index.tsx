@@ -78,7 +78,7 @@ export default function ServicesHub() {
 const styles = StyleSheet.create({
   search: { height: 44, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   input: { flex: 1, fontSize: 14, color: colors.text },
-  card: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12, paddingHorizontal: 14, minHeight: 78, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  card: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12, paddingHorizontal: 14, minHeight: 78, borderRadius: 20, backgroundColor: colors.white, ...shadow("card") },
   cardTitle: { fontSize: 15, fontWeight: "700", color: colors.ink },
   cardDesc: { fontSize: 12, color: colors.slate, marginTop: 3 },
 });

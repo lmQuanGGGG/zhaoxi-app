@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   dots: { position: "absolute", right: 16, bottom: 16, flexDirection: "row", gap: 5 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.42)" },
   dotActive: { width: 18, backgroundColor: "#F4E7C4" },
-  activeOrder: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 12, padding: 12, borderRadius: 18, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  activeOrder: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 12, padding: 12, borderRadius: 18, backgroundColor: colors.white, ...shadow("card") },
   activeIcon: { width: 40, height: 40, borderRadius: 13, backgroundColor: colors.wechat, alignItems: "center", justifyContent: "center" },
   contextRow: { flexDirection: "row", gap: 12, marginTop: 12 },
   contextCard: { flex: 1, minHeight: 141, borderRadius: 20, padding: 14 },
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   grid: { flexDirection: "row", flexWrap: "wrap", rowGap: 10, columnGap: 8 },
   tileWrap: { width: "22.8%" },
   // Xanh SM–style service card: white tile, illustration + label inside.
-  tile: { alignItems: "center", justifyContent: "center", gap: 6, minHeight: 104, paddingTop: 12, paddingBottom: 10, paddingHorizontal: 4, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: "rgba(226,232,240,0.7)" },
+  tile: { alignItems: "center", justifyContent: "center", gap: 6, minHeight: 104, paddingTop: 12, paddingBottom: 10, paddingHorizontal: 4, borderRadius: 20, backgroundColor: colors.white, ...shadow("card") },
   tileLabel: { fontSize: 11.5, fontWeight: "600", color: "#1F2A27", textAlign: "center", lineHeight: 14 },
   shortcut: { flex: 1, minHeight: 116, padding: 14, borderRadius: 20, overflow: "hidden" },
   shortcutTitle: { fontSize: 13, fontWeight: "700", color: colors.text, letterSpacing: -0.2 },

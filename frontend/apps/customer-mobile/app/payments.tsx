@@ -34,13 +34,15 @@ export default function PaymentsScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }} refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} tintColor={colors.brand} />}>
         <Header title={c.title} subtitle={c.subtitle} />
         <View style={{ paddingHorizontal: 14, gap: 10 }}>
-          <Animated.View entering={FadeInDown.duration(280)} style={[styles.overview, shadow("soft")]}>
+          <Animated.View entering={FadeInDown.duration(280)} style={[styles.overviewShadow, shadow("soft")]}>
+          <View style={styles.overview}>
             {/* PWA 18.3.4 "aurora glass" overview card */}
             <LinearGradient colors={["rgba(196,178,255,0.52)", "rgba(158,220,255,0.47)", "rgba(160,242,210,0.36)"]} locations={[0, 0.52, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
             <View style={styles.glow} />
             <Text style={styles.eyebrow}>{c.overview}</Text>
             <Text style={styles.overviewTitle}>{c.safe}</Text>
             <Text style={styles.overviewText}>{c.safeHint}</Text>
+          </View>
           </Animated.View>
 
           <Text style={styles.section}>{c.services}</Text>
@@ -87,7 +89,8 @@ export default function PaymentsScreen() {
 
 const card = { borderRadius: 14, backgroundColor: "rgba(255,255,255,0.86)", borderWidth: 1, borderColor: "rgba(255,255,255,0.92)" } as const;
 const styles = StyleSheet.create({
-  overview: { minHeight: 106, justifyContent: "center", padding: 15, borderRadius: 16, overflow: "hidden", borderWidth: 1, borderColor: "rgba(255,255,255,0.38)", backgroundColor: "#DCEBFA" },
+  overviewShadow: { borderRadius: 16, backgroundColor: "#DCEBFA" },
+  overview: { minHeight: 106, justifyContent: "center", padding: 15, borderRadius: 16, overflow: "hidden", backgroundColor: "#DCEBFA" },
   glow: { position: "absolute", right: -30, top: -40, width: 140, height: 140, borderRadius: 70, backgroundColor: "rgba(255,255,255,0.4)" },
   eyebrow: { fontSize: 10, fontWeight: "800", letterSpacing: 0.9, color: colors.brand },
   overviewTitle: { fontSize: 20, fontWeight: "700", color: colors.navy, marginVertical: 5 },

@@ -245,7 +245,7 @@ export function ListRow({ icon, emoji, title, subtitle, onPress, right, tint = c
 }
 
 export const styles = StyleSheet.create({
-  card: { backgroundColor: colors.white, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.borderSoft },
+  card: { backgroundColor: colors.white, borderRadius: radius.lg, ...shadow("card") },
   cardMuted: { backgroundColor: colors.surfaceMuted },
   button: { minHeight: 48, borderRadius: radius.pill, borderWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, paddingHorizontal: 18 },
   buttonSmall: { minHeight: 34, paddingHorizontal: 13 },
@@ -265,7 +265,7 @@ export const styles = StyleSheet.create({
   stepperValue: { minWidth: 18, textAlign: "center", fontWeight: "700", fontSize: 13, color: colors.ink },
   fieldLabel: { fontSize: 13, color: colors.ink },
   field: { minHeight: 52, borderRadius: 18, backgroundColor: "#F2F5F8", paddingHorizontal: 16, fontSize: 15, color: colors.text, ...shadow("card") },
-  empty: { alignItems: "center", paddingVertical: 22, paddingHorizontal: 16, borderRadius: 12, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderWarm },
+  empty: { alignItems: "center", paddingVertical: 22, paddingHorizontal: 16, borderRadius: 12, backgroundColor: colors.white, ...shadow("card") },
   emptyIcon: { width: 38, height: 38, borderRadius: 11, backgroundColor: colors.brandMint, alignItems: "center", justifyContent: "center", marginBottom: 10 },
   emptyTitle: { fontSize: 16, fontWeight: "700", color: colors.text, textAlign: "center" },
   emptyBody: { fontSize: 12, color: colors.textMuted, textAlign: "center", marginTop: 4, lineHeight: 17 },
@@ -275,7 +275,7 @@ export const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 6 },
   pill: { alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.pill },
   pillText: { fontSize: 10, fontWeight: "700" },
-  listRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 14, paddingHorizontal: 16, borderRadius: 18, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  listRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 14, paddingHorizontal: 16, borderRadius: 18, backgroundColor: colors.white, ...shadow("card") },
 });
 
 void space;

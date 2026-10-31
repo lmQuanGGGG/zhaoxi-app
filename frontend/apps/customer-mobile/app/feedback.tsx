@@ -68,11 +68,11 @@ export default function FeedbackScreen() {
 }
 
 const styles = StyleSheet.create({
-  card: { gap: 12, padding: 16, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  card: { gap: 12, padding: 16, borderRadius: 22, backgroundColor: colors.white, ...shadow("card") },
   label: { fontSize: 13, fontWeight: "600", color: colors.ink },
   stars: { flexDirection: "row", gap: 6 },
   star: { fontSize: 32, color: "#F5A524" },
-  sent: { alignItems: "center", gap: 10, padding: 22, borderRadius: 22, backgroundColor: colors.brandSoft, borderWidth: 1, borderColor: "#BBF7D0" },
+  sent: { alignItems: "center", gap: 10, padding: 22, borderRadius: 22, backgroundColor: colors.brandSoft, ...shadow("card") },
   sentIcon: { width: 46, height: 46, borderRadius: 23, backgroundColor: colors.wechat, alignItems: "center", justifyContent: "center" },
   sentText: { fontSize: 15, fontWeight: "800", color: colors.brandStrong, textAlign: "center" },
 });
