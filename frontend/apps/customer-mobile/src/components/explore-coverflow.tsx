@@ -12,7 +12,8 @@ import { AppImage, GlassFill, ServiceArt, ZxIcon, haptic } from "../ui";
 
 const CARD_W = 210;
 const CARD_H = 280;
-const STEP = CARD_W * 0.78; // cards overlap so the side ones peek out from behind the centre one
+const STEP = CARD_W * 0.78;
+const SHADOW_ROOM = 34; // vertical room so card shadows fade out instead of being cut by the ScrollView // cards overlap so the side ones peek out from behind the centre one
 
 /**
  * "Khám phá thêm" as an immersive coverflow (My Viettel "Giải trí không giới hạn"):
@@ -57,15 +58,15 @@ export function ExploreCoverflow({ items, title, highlight, more, allLabel }: { 
         onScroll={onScroll}
         scrollEventThrottle={16}
         onMomentumScrollEnd={() => haptic.select()}
-        contentContainerStyle={{ paddingHorizontal: pad, alignItems: "center" }}
-        style={{ height: CARD_H + 40 }}
+        contentContainerStyle={{ paddingHorizontal: pad, paddingVertical: SHADOW_ROOM, alignItems: "center" }}
+        style={{ height: CARD_H + SHADOW_ROOM * 2, marginTop: -SHADOW_ROOM - 4, marginBottom: -SHADOW_ROOM + 12 }}
       >
         {list.slice(0, 10).map((item, index) => <FlowCard key={`${item.kind}-${item.id}`} item={item} index={index} x={x} last={index === Math.min(list.length, 10) - 1} />)}
       </Animated.ScrollView>
       <Pressable onPress={() => router.push("/explore")} style={({ pressed }) => [styles.more, pressed && { transform: [{ scale: 0.96 }] }]}>
-        <GlassFill radius={26} tint="rgba(226,72,52,0.92)" />
+        <GlassFill radius={20} tint="rgba(226,72,52,0.92)" />
         <Text style={styles.moreText}>{more}</Text>
-        <ZxIcon name="chevron" size={18} color={colors.white} strokeWidth={2.6} />
+        <ZxIcon name="chevron" size={14} color={colors.white} strokeWidth={2.6} />
       </Pressable>
     </View>
   );
@@ -91,14 +92,18 @@ function FlowCard({ item, index, x, last }: { item: Recommendation; index: numbe
   return (
     <Animated.View style={[{ width: STEP, height: CARD_H, alignItems: "center", marginRight: last ? CARD_W - STEP : 0 }, style]}>
       <Pressable onPress={() => router.push(routeForWebHref(item.href))} style={styles.card}>
-        <View style={styles.cardClip}>
-          <AppImage uri={imageUri(item.imageUrl)} fallbackCode={item.moduleCode} style={StyleSheet.absoluteFill} />
+        <View style={styles.cardClip} />
+        {/* Unclipped and without a background so iOS draws the shadow along the dish's own outline */}
+        <View style={styles.dishShadow} pointerEvents="none">
+          <AppImage uri={imageUri(item.imageUrl)} fallbackCode={item.moduleCode} contentFit="contain" style={styles.dish} />
+        </View>
+        <View style={styles.cardContent} pointerEvents="none">
+
           <View style={styles.badge}>
             <GlassFill radius={14} tint="rgba(255,255,255,0.4)" />
             <ServiceArt code={item.moduleCode} size={22} />
           </View>
           <View style={styles.info}>
-            <GlassFill radius={18} tint="rgba(255,255,255,0.78)" />
             <Text style={styles.cardTitle} numberOfLines={2}>{localizeServiceName(locale, item.title)}</Text>
             {price ? <Text style={styles.cardPrice}>{t.common.from} {price}</Text> : null}
           </View>
@@ -127,15 +132,18 @@ const styles = StyleSheet.create({
   mascot: { position: "absolute", right: 12, top: -46 },
   title: { paddingHorizontal: 22, paddingRight: 104, fontSize: 21, fontWeight: "800", color: "#17221F", letterSpacing: -0.3 },
   highlight: { color: "#E2482F" },
-  tabs: { gap: 10, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 },
+  tabs: { gap: 10, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 22 },
   tab: { height: 46, paddingHorizontal: 16, borderRadius: 23, flexDirection: "row", alignItems: "center", gap: 8 },
   tabText: { fontSize: 15, fontWeight: "700", color: "#334155" },
-  card: { width: CARD_W, height: CARD_H, borderRadius: 24, backgroundColor: colors.white, shadowColor: "#0F172A", shadowOpacity: 0.16, shadowRadius: 16, shadowOffset: { width: 0, height: 14 } },
-  cardClip: { flex: 1, borderRadius: 24, overflow: "hidden", backgroundColor: colors.white },
+  card: { width: CARD_W, height: CARD_H, borderRadius: 24, backgroundColor: colors.white },
+  cardClip: { ...StyleSheet.absoluteFill, borderRadius: 24, backgroundColor: colors.white },
+  cardContent: { ...StyleSheet.absoluteFill },
+  dishShadow: { position: "absolute", left: 18, right: 18, top: 40, bottom: 78, shadowColor: "#3B2410", shadowOpacity: 0.32, shadowRadius: 14, shadowOffset: { width: 0, height: 16 } },
+  dish: { width: "100%", height: "100%", backgroundColor: "transparent" },
   badge: { position: "absolute", left: 12, top: 12, width: 38, height: 38, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  info: { position: "absolute", left: 10, right: 10, bottom: 10, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 18 },
+  info: { position: "absolute", left: 16, right: 16, bottom: 16 },
   cardTitle: { fontSize: 16, fontWeight: "800", color: "#17221F", lineHeight: 20 },
   cardPrice: { marginTop: 3, fontSize: 13, fontWeight: "800", color: colors.priceRose },
-  more: { alignSelf: "center", marginTop: 8, height: 52, paddingHorizontal: 28, borderRadius: 26, flexDirection: "row", alignItems: "center", gap: 6 },
-  moreText: { fontSize: 18, fontWeight: "800", color: colors.white },
+  more: { alignSelf: "center", marginTop: 4, height: 40, paddingHorizontal: 20, borderRadius: 20, flexDirection: "row", alignItems: "center", gap: 4 },
+  moreText: { fontSize: 14, fontWeight: "800", color: colors.white },
 });

@@ -286,6 +286,11 @@ export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ 
   const list = useAnimatedRef<Animated.ScrollView>();
   // Open on the second service so both sides of the arc are filled.
   const centre = () => list.current?.scrollTo({ x: ITEM, animated: false });
+  // Snap guard: never rest between two items (the centred icon must sit inside the glass sphere).
+  const settle = (offset: number) => {
+    const target = Math.round(offset / ITEM) * ITEM;
+    if (Math.abs(target - offset) > 0.5) list.current?.scrollTo({ x: target, animated: true });
+  };
   return (
     <View style={styles.arcSection}>
       <View style={[styles.dome, { width: width * 2.2, height: width * 2.2, borderRadius: width * 1.1, left: -width * 0.6 }]} />
@@ -309,7 +314,8 @@ export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ 
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingHorizontal: pad, paddingTop: ARC_HEADROOM }}
         style={{ height: 176 + ARC_HEADROOM, marginTop: -ARC_HEADROOM }}
-        onMomentumScrollEnd={() => haptic.select()}
+        onScrollEndDrag={(event) => { if (Math.abs(event.nativeEvent.velocity?.x ?? 0) < 0.05) settle(event.nativeEvent.contentOffset.x); }}
+        onMomentumScrollEnd={(event) => { settle(event.nativeEvent.contentOffset.x); haptic.select(); }}
       >
         {tiles.map((tile, index) => <ArcItem key={tile.code} index={index} x={x} tile={tile} onOpen={onOpen} onPressIn={onPressIn} />)}
       </Animated.ScrollView>
