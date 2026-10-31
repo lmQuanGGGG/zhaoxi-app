@@ -34,8 +34,8 @@ export default function LocationScreen() {
   const [resolving, setResolving] = useState(false);
   const [query, setQuery] = useState("");
   const [denied, setDenied] = useState(false);
-  const debounced = useDebounced(query, 450);
-  const results = useQuery({ queryKey: ["geocode", "picker", debounced], queryFn: () => searchAddress(debounced), enabled: debounced.trim().length > 2 });
+  const debounced = useDebounced(query, 220);
+  const results = useQuery({ queryKey: ["geocode", "picker", debounced.trim().toLowerCase()], queryFn: ({ signal }) => searchAddress(debounced, signal), enabled: debounced.trim().length > 1, placeholderData: (previous) => previous, staleTime: 10 * 60_000 });
   const lift = useSharedValue(0);
   const pin = useAnimatedStyle(() => ({ transform: [{ translateY: -lift.value }] }));
 
@@ -64,7 +64,7 @@ export default function LocationScreen() {
     router.back();
   };
 
-  const showResults = query.trim().length > 2;
+  const showResults = query.trim().length > 1;
   return (
     <View style={{ flex: 1, backgroundColor: "#E9EEF0" }}>
       <StatusBar style="dark" />

@@ -73,11 +73,36 @@ export async function locate(prompt = true): Promise<Point | null> {
   }
 }
 
-export async function searchAddress(query: string): Promise<Array<Point & { label: string }>> {
+type PhotonFeature = { geometry: { coordinates: [number, number] }; properties: Record<string, string | undefined> };
+
+/** One Photon (OpenStreetMap) request biased to Đà Nẵng: named places + streets, ~1 s (same source as the PWA). */
+async function photonSearch(query: string, signal?: AbortSignal) {
+  const url = `https://photon.komoot.io/api/?limit=6&bbox=108.0,15.85,108.4,16.2&lat=16.0544&lon=108.2022&location_bias_scale=0.1&q=${encodeURIComponent(query)}`;
+  const response = await fetch(url, { signal, headers: { Accept: "application/json" } });
+  if (!response.ok) throw new Error(`photon ${response.status}`);
+  const data = (await response.json()) as { features?: PhotonFeature[] };
+  const seen = new Set<string>();
+  return (data.features || []).map((feature) => {
+    const p = feature.properties;
+    const [longitude, latitude] = feature.geometry.coordinates;
+    const street = p.street ? [p.housenumber, p.street].filter(Boolean).join(" ") : "";
+    const label = [p.name, street && street !== p.name ? street : null, p.district || p.locality, p.city].filter(Boolean).join(", ");
+    return { latitude, longitude, label };
+  }).filter((item) => item.label && !seen.has(item.label) && seen.add(item.label)).slice(0, 5);
+}
+
+/** Address search: Photon first (fast, POI-aware); the on-device geocoder is the fallback. */
+export async function searchAddress(query: string, signal?: AbortSignal): Promise<Array<Point & { label: string }>> {
   if (!query.trim()) return [];
   try {
+    const results = await photonSearch(query.trim(), signal);
+    if (results.length) return results;
+  } catch (error) {
+    if (signal?.aborted) throw error;
+  }
+  try {
     const results = await Location.geocodeAsync(`${query}, Đà Nẵng`);
-    return Promise.all(results.slice(0, 5).map(async (result) => {
+    return Promise.all(results.slice(0, 3).map(async (result) => {
       const point = { latitude: result.latitude, longitude: result.longitude };
       return { ...point, label: (await formatAddress(point)) || query };
     }));
