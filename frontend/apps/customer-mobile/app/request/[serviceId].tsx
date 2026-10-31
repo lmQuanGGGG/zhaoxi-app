@@ -16,6 +16,7 @@ import { formatAddress, getLocationState, locate, searchAddress, setManualLocati
 import { keys } from "../../src/query";
 import { colors, font, radius, shadow, space } from "../../src/theme";
 import { DeliveryMap } from "../../src/components/DeliveryMap";
+import { PaymentMethods } from "../../src/components/PaymentMethods";
 import { AppImage, BackButton, Button, Chip, Field, GlassCard, Ionicons, PressableScale, QuantityStepper, Row, Screen, SkeletonList, haptic } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
 
@@ -281,25 +282,7 @@ export default function CheckoutScreen() {
 
           <GlassCard style={{ gap: 10, marginHorizontal: 14, marginTop: 12 }}>
             <Text style={font.h2}>{t.checkout.payment}</Text>
-            {(["cash_on_delivery", "bank_transfer"] as const).map((method) => {
-              const enabled = method === "cash_on_delivery" || Boolean(paymentQr);
-              if (!enabled) return null;
-              const selected = payment === method;
-              return (
-                <PressableScale key={method} onPress={() => { haptic.select(); setPayment(method); }} hapticOnPress={false} style={[styles.method, selected && styles.methodActive]}>
-                  <Ionicons name={method === "cash_on_delivery" ? "cash-outline" : "qr-code-outline"} size={22} color={selected ? colors.brandStrong : colors.textSecondary} />
-                  <Text style={[font.h3, { flex: 1 }]}>{method === "cash_on_delivery" ? t.checkout.cod : t.checkout.bank}</Text>
-                  <View style={[styles.radio, selected && { borderColor: colors.brand, borderWidth: 6 }]} />
-                </PressableScale>
-              );
-            })}
-            {payment === "bank_transfer" && paymentQr ? (
-              <Animated.View entering={FadeInDown} layout={LinearTransition} style={{ alignItems: "center", gap: 10, paddingTop: 6 }}>
-                <AppImage uri={paymentQr} contentFit="contain" style={styles.qr} />
-                <Text style={[font.small, { textAlign: "center" }]}>{t.checkout.bankHint}</Text>
-                <Button variant={bankConfirmed ? "secondary" : "primary"} icon={bankConfirmed ? "checkmark-circle" : "card"} title={bankConfirmed ? t.checkout.bankConfirmed : t.checkout.bankConfirm} onPress={() => { haptic.success(); setBankConfirmed(true); }} style={{ alignSelf: "stretch" }} />
-              </Animated.View>
-            ) : null}
+            <PaymentMethods value={payment} onChange={(method) => { setPayment(method); setBankConfirmed(false); }} qr={paymentQr} capabilities={capabilities.data} confirmed={bankConfirmed} onConfirm={() => { setBankConfirmed(true); setError(""); }} />
           </GlassCard>
 
           {isFood && orgId ? (
@@ -385,9 +368,6 @@ const styles = StyleSheet.create({
   pointRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   courier: { flex: 1, padding: 12, gap: 4, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.white },
   radio: { position: "absolute", top: 12, right: 12, width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: "#CBD5E1", backgroundColor: colors.white },
-  method: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.white },
-  methodActive: { borderColor: colors.brand, backgroundColor: colors.brandSoft },
-  qr: { width: 220, height: 220, borderRadius: radius.md, backgroundColor: colors.white },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginVertical: 8 },
   bottom: { position: "absolute", left: 0, right: 0, bottom: 0, gap: 10, paddingHorizontal: space.lg, paddingTop: 12, backgroundColor: "rgba(255,255,255,0.98)", borderTopLeftRadius: 24, borderTopRightRadius: 24 },
   error: { flexDirection: "row", alignItems: "center", gap: 6, padding: 10, borderRadius: radius.sm, backgroundColor: colors.dangerSoft },

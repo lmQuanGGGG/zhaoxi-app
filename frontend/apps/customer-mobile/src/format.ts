@@ -31,6 +31,8 @@ export function imageUri(value: unknown): string | undefined {
   const text = typeof value === "string" ? value.trim() : "";
   if (!text) return undefined;
   if (/^https?:\/\//.test(text)) return text;
+  // Partners upload payment QR codes as inline images.
+  if (/^data:image\//.test(text)) return text;
   if (text.startsWith("/api/")) return `${API_URL}${text}`;
   if (text.startsWith("/")) return `${WEB_URL}${text}`;
   return undefined;

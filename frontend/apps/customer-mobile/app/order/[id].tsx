@@ -8,7 +8,7 @@ import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withRep
 import { getDeliveryTracking, getOrder, getSupportConfig } from "../../src/api/endpoints";
 import { LiveDelivery } from "../../src/components/LiveDelivery";
 import { money, num, shortDate, str } from "../../src/format";
-import { useNow } from "../../src/hooks";
+import { useNow, usePullRefresh } from "../../src/hooks";
 import { useI18n } from "../../src/i18n";
 import { foodMilestones, fulfillmentCopy, milestoneLabels, paymentMethodLabels, paymentStatusLabels, type FoodMilestone } from "../../src/order-copy";
 import { keys } from "../../src/query";
@@ -26,10 +26,20 @@ export default function OrderDetailScreen() {
   const order = useQuery({
     queryKey: keys.order(id, locale),
     queryFn: () => getOrder(id, locale),
-    // Live updates while the order is moving (push also invalidates this query).
-    refetchInterval: (query) => (query.state.data && ACTIVE_STATUSES.has(query.state.data.status) ? 5_000 : false),
+    // Every status change already arrives as a push that invalidates this query;
+    // polling is only a slow fallback for devices without push permission.
+    refetchInterval: (query) => (query.state.data && ACTIVE_STATUSES.has(query.state.data.status) ? 20_000 : false),
   });
-  const tracking = useQuery({ queryKey: keys.tracking(id), queryFn: () => getDeliveryTracking(id), refetchInterval: order.data && ACTIVE_STATUSES.has(order.data.status) ? 8_000 : false });
+  const moving = Boolean(order.data && ACTIVE_STATUSES.has(order.data.status));
+  // Poll GPS only once a delivery job exists (the courier is moving); before that the
+  // endpoint answers 404 and the "driver assigned" push refreshes it.
+  const tracking = useQuery({
+    queryKey: keys.tracking(id),
+    queryFn: () => getDeliveryTracking(id),
+    enabled: Boolean(order.data),
+    refetchInterval: (query) => (moving && query.state.data?.job && !["delivered", "cancelled"].includes(query.state.data.job.status) ? 8_000 : false),
+  });
+  const pull = usePullRefresh(order.refetch, tracking.refetch);
   const support = useQuery({ queryKey: ["support-config"], queryFn: getSupportConfig, staleTime: 60 * 60_000 });
 
   const data = order.data;
@@ -57,12 +67,21 @@ export default function OrderDetailScreen() {
   const reached = milestoneIndex(stage, data.status);
   const courierName = str(details.courierName);
   const courierPhone = str(details.courierPhone);
+  // zalo:// / weixin:// throw when the app isn't installed; the order text is already on the clipboard either way.
+  const openChat = async (url: string) => {
+    await Clipboard.setStringAsync(copyText);
+    try {
+      await Linking.openURL(url);
+    } catch {
+      toast(t.common.copied, "info");
+    }
+  };
   const copyText = `${t.success.code}: ${data.requestCode}\n${items.map((item) => `${item.quantity || 1} × ${item.name || ""}`).join("\n") || data.serviceName || data.title}`;
 
   return (
     <Screen>
       <Header title={t.order.title} subtitle={data.requestCode} right={<StatusPill tone={statusTone(data.status)} label={statusLabels[locale][data.status] || data.status} />} />
-      <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 4, gap: space.lg, paddingBottom: 60 }} refreshControl={<RefreshControl refreshing={order.isRefetching} onRefresh={() => { void order.refetch(); void tracking.refetch(); }} tintColor={colors.brand} />}>
+      <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 4, gap: space.lg, paddingBottom: 60 }} refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} tintColor={colors.brand} />}>
         <Animated.View entering={FadeInDown.duration(320)}>
           <GlassCard style={{ gap: 14 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
@@ -143,8 +162,8 @@ export default function OrderDetailScreen() {
           <Text style={font.small}>{t.order.supportHint}</Text>
           <Button variant="secondary" icon="copy-outline" title={t.order.copyOrder} onPress={async () => { await Clipboard.setStringAsync(copyText); haptic.success(); toast(t.common.copied); }} />
           <View style={{ flexDirection: "row", gap: 10 }}>
-            {support.data?.zaloChatUrl ? <Button small variant="secondary" title={t.order.zalo} style={{ flex: 1 }} onPress={async () => { await Clipboard.setStringAsync(copyText); void Linking.openURL(String(support.data?.zaloChatUrl)); }} /> : null}
-            {support.data?.wechatChatUrl ? <Button small variant="secondary" title={t.order.wechat} style={{ flex: 1 }} onPress={async () => { await Clipboard.setStringAsync(copyText); void Linking.openURL(String(support.data?.wechatChatUrl)); }} /> : null}
+            {support.data?.zaloChatUrl ? <Button small variant="secondary" title={t.order.zalo} style={{ flex: 1 }} onPress={() => void openChat(String(support.data?.zaloChatUrl))} /> : null}
+            {support.data?.wechatChatUrl ? <Button small variant="secondary" title={t.order.wechat} style={{ flex: 1 }} onPress={() => void openChat(String(support.data?.wechatChatUrl))} /> : null}
           </View>
           <Button small icon="chatbubbles" title={t.order.chat} onPress={() => router.push({ pathname: "/support", params: { subject: `${t.success.code} ${data.requestCode}` } })} />
         </GlassCard>

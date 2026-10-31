@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFavorites, setFavorite } from "../src/api/endpoints";
 import type { FavoriteItem } from "../src/api/types";
 import { ServiceList } from "../src/components/ServiceList";
-import { useSession } from "../src/hooks";
+import { usePullRefresh, useSession } from "../src/hooks";
 import { useI18n } from "../src/i18n";
 import { keys } from "../src/query";
 import { colors } from "../src/theme";
@@ -14,6 +14,7 @@ export default function FavoritesScreen() {
   const client = useQueryClient();
   const key = keys.favorites(locale, userId);
   const favorites = useQuery({ queryKey: key, queryFn: () => getFavorites(locale), enabled: Boolean(userId) });
+  const pull = usePullRefresh(favorites.refetch);
   // Optimistic removal with rollback.
   const remove = useMutation({
     mutationFn: (item: FavoriteItem) => setFavorite(item.id, false),
@@ -34,8 +35,8 @@ export default function FavoritesScreen() {
       <ServiceList
         items={favorites.data || []}
         loading={favorites.isPending}
-        refreshing={favorites.isRefetching}
-        onRefresh={() => void favorites.refetch()}
+        refreshing={pull.refreshing}
+        onRefresh={pull.onRefresh}
         emptyIcon="heart"
         emptyTitle={t.personal.favoritesEmpty}
         renderAction={(item) => <IconButton icon="heart" color={colors.danger} label={t.detail.unfavorite} onPress={() => remove.mutate(item)} />}
