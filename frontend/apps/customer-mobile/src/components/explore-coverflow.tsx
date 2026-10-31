@@ -29,7 +29,9 @@ export function ExploreCoverflow({ items, title, highlight, more }: { items: Rec
   const list = items;
   const x = useSharedValue(0);
   const onScroll = useAnimatedScrollHandler((event) => { x.value = event.contentOffset.x; });
-  const pad = (panelW - STEP) / 2; // slot 0 centred in the panel => first card straight and centred
+  // The resting card sits flush left (card edge 16pt from the panel), the next ones peek in on the right.
+  const padLeft = 16 + (CARD_W - STEP) / 2;
+  const padRight = Math.max(16, panelW - padLeft - STEP);
   const mascot = list[0]?.moduleCode || "food";
   if (!items.length) return null;
   return (
@@ -46,7 +48,7 @@ export function ExploreCoverflow({ items, title, highlight, more }: { items: Rec
         onScroll={onScroll}
         scrollEventThrottle={16}
         onMomentumScrollEnd={() => haptic.select()}
-        contentContainerStyle={{ paddingHorizontal: pad, paddingVertical: SHADOW_ROOM, alignItems: "center" }}
+        contentContainerStyle={{ paddingLeft: padLeft, paddingRight: padRight, paddingVertical: SHADOW_ROOM, alignItems: "center" }}
         style={{ height: CARD_H + SHADOW_ROOM * 2, marginTop: -SHADOW_ROOM + 18, marginBottom: -SHADOW_ROOM + 12 }}
       >
         {list.slice(0, 10).map((item, index) => <FlowCard key={`${item.kind}-${item.id}`} item={item} index={index} x={x} />)}
@@ -72,7 +74,7 @@ function FlowCard({ item, index, x }: { item: Recommendation; index: number; x: 
       transform: [
         { perspective: 800 },
         { translateX: interpolate(d, [-2, -1, 0, 1, 2], [CARD_W * 0.18, CARD_W * 0.1, 0, -CARD_W * 0.1, -CARD_W * 0.18], Extrapolation.CLAMP) },
-        { rotateY: `${interpolate(d, [-1, 0, 1], [38, 0, -38], Extrapolation.CLAMP)}deg` },
+        { rotateY: `${interpolate(d, [-1, 0, 1], [38, 8, -38], Extrapolation.CLAMP)}deg` }, // resting card keeps a slight lean
         { scale: interpolate(a, [0, 1, 2], [1, 0.82, 0.7], Extrapolation.CLAMP) },
       ],
     };
