@@ -3,7 +3,8 @@ import { localizeOrganizationName, localizeServiceModuleName, localizeServiceNam
 import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn, FadeInDown, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, type SharedValue } from "react-native-reanimated";
@@ -20,7 +21,7 @@ import { moduleRoute, resolveModules } from "../../src/modules";
 import { keys } from "../../src/query";
 import { ACTIVE_STATUSES } from "../../src/status";
 import { colors, shadow } from "../../src/theme";
-import { HOME_BASE, HeroCard, HomeBackdrop, HomeHeader, QuickActions, ServiceArc } from "../../src/components/home-hero";
+import { HOME_TOP, HeroCard, HomeBackdrop, HomeHeader, QuickActions, ServiceArc } from "../../src/components/home-hero";
 import { AppImage, PressableScale, Screen, SectionTitle, ServiceIcon, Skeleton, StatusPill, ZxIcon } from "../../src/ui";
 
 const landmarks = [
@@ -53,6 +54,14 @@ export default function HomeScreen() {
   const activeOrder = orders.data?.find((order) => ACTIVE_STATUSES.has(order.status));
 
 
+  // Light status bar over the coral header only while Home is focused: the
+  // <StatusBar> entry unmounts on blur so the root "dark" style applies again.
+  const [focused, setFocused] = useState(true);
+  useFocusEffect(useCallback(() => {
+    setFocused(true);
+    return () => setFocused(false);
+  }, []));
+
   // Use the last known GPS point silently; only prompt when the user taps "Chọn vị trí".
   useEffect(() => { if (!location.point) void locate(false); }, [location.point]);
 
@@ -83,9 +92,10 @@ export default function HomeScreen() {
 
   return (
     <Screen topbar={false}>
+      {focused ? <StatusBar style="light" /> : null}
       <Animated.ScrollView
         contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.brand} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.white} />}
         showsVerticalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}
@@ -166,14 +176,14 @@ export default function HomeScreen() {
   );
 }
 
-/** Frosted pearl strip behind the status bar once the header has scrolled away. */
+/** Coral strip behind the status bar once the header has scrolled away (keeps the light status bar readable). */
 function StatusBarScrim({ scrollY }: { scrollY: SharedValue<number> }) {
   const insets = useSafeAreaInsets();
   const fade = useAnimatedStyle(() => ({ opacity: interpolate(scrollY.value, [140, 260], [0, 1], "clamp") }));
   return (
     <Animated.View pointerEvents="none" style={[{ position: "absolute", top: 0, left: 0, right: 0, height: insets.top + 6 }, fade]}>
-      <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: HOME_BASE, opacity: 0.75 }]} />
+      <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: HOME_TOP, opacity: 0.92 }]} />
     </Animated.View>
   );
 }

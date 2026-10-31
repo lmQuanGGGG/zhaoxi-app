@@ -6,26 +6,27 @@ import { router } from "expo-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, { Easing, Extrapolation, FadeInDown, interpolate, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withSpring, withTiming, type SharedValue } from "react-native-reanimated";
+import Animated, { Easing, Extrapolation, FadeInDown, interpolate, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming, type SharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Circle, Defs, Ellipse, LinearGradient as SvgGradient, Path, RadialGradient, Stop } from "react-native-svg";
+import Svg, { Circle, Defs, Ellipse, LinearGradient as SvgGradient, Path, RadialGradient, Rect, Stop } from "react-native-svg";
 import { useCart } from "../cart";
 import { useSession, useUnread } from "../hooks";
 import { useI18n } from "../i18n";
-import { colors } from "../theme";
+import { colors, shadow } from "../theme";
 import { PressableScale, ServiceArt, ZxIcon, haptic, servicePalettes, type ZxIconName } from "../ui";
 import { CartIcon } from "../ui/icons";
 
 const LIQUID_GLASS = Platform.OS === "ios" && isLiquidGlassAvailable();
 
 /** Brand gradient behind the home header (My Viettel–style immersive top). */
-/** Pearl base of the home header (also used for the status-bar scrim / overscroll). */
-export const HOME_BASE = "#F7F2EC";
+/** Deep coral at the top of the home header (status-bar scrim / overscroll). */
+export const HOME_TOP = "#C9382A";
 /** Champagne gold accents that pair with the deep emerald (logo colours). */
 const GOLD = "#B98A3A";
 const CREAM = "#F4E7C4";
 const EMERALD = "#1F6B57";
-const INK = "#1D2522";
+const CORAL = "#D9472B";
+const INK = "#FFFFFF";
 
 /** Real Liquid Glass where the OS has it, frosted blur otherwise. */
 export function Glass({ style, children, tint, clear = false, interactive = true }: { style?: StyleProp<ViewStyle>; children?: ReactNode; tint?: string; clear?: boolean; interactive?: boolean }) {
@@ -43,23 +44,46 @@ export function Glass({ style, children, tint, clear = false, interactive = true
 
 /** Soft light blobs on the gradient so the glass has something to refract. */
 /**
- * "Pearl aurora" backdrop: a warm pearl base with large pastel colour fields
- * (peach, lilac, mint, sky, butter) melted together by a blur, so the Liquid
- * Glass above has soft colour to refract.
+ * Sunset-coral backdrop drawn in SVG (brand orange of the 喜 mark): a deep
+ * coral→orange sweep, a soft pearl bloom behind the hero card, a peach glow
+ * top-right and faint Dragon Bridge arches running through it.
  */
 export function HomeBackdrop({ height }: { height: number }) {
   const { width } = useWindowDimensions();
-  const blob = (size: number, color: string, pos: ViewStyle) => <View style={[styles.blob, { width: size, height: size, borderRadius: size / 2, backgroundColor: color }, pos]} />;
+  const w = width;
+  const h = height;
+  const arch = (y: number, amp: number) => `M${-w * 0.1} ${y} C ${w * 0.15} ${y - amp}, ${w * 0.35} ${y - amp}, ${w * 0.5} ${y} S ${w * 0.85} ${y + amp}, ${w * 1.1} ${y}`;
   return (
-    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { height, overflow: "hidden" }]}>
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: HOME_BASE }]} />
-      {blob(width * 1.05, "#FFD3BF", { top: -width * 0.45, left: -width * 0.35 })}
-      {blob(width * 0.95, "#DCCBFF", { top: -width * 0.3, right: -width * 0.45 })}
-      {blob(width * 0.8, "#C6F1DF", { top: height * 0.36, left: -width * 0.3 })}
-      {blob(width * 0.85, "#CBE3FF", { top: height * 0.42, right: -width * 0.35 })}
-      {blob(width * 0.5, "#FFE9B0", { top: height * 0.2, left: width * 0.3 })}
-      <BlurView intensity={80} tint="light" style={StyleSheet.absoluteFill} />
-      <LinearGradient colors={["rgba(255,255,255,0.15)", "rgba(255,255,255,0)", "rgba(255,255,255,0.35)"]} locations={[0, 0.55, 1]} style={StyleSheet.absoluteFill} />
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { height }]}>
+      <View style={{ position: "absolute", top: -800, left: 0, right: 0, height: 800, backgroundColor: HOME_TOP }} />
+      <Svg width={w} height={h}>
+        <Defs>
+          <SvgGradient id="bg" x1="0" y1="0" x2="0.35" y2="1">
+            <Stop offset="0" stopColor={HOME_TOP} />
+            <Stop offset="0.5" stopColor="#E25A35" />
+            <Stop offset="1" stopColor="#F2864A" />
+          </SvgGradient>
+          <RadialGradient id="bloom" cx="0.55" cy="0.5" r="0.5">
+            <Stop offset="0" stopColor="#FFF4EC" stopOpacity={0.62} />
+            <Stop offset="0.55" stopColor="#FFD9C4" stopOpacity={0.22} />
+            <Stop offset="1" stopColor="#FFD9C4" stopOpacity={0} />
+          </RadialGradient>
+          <RadialGradient id="peach" cx="0.5" cy="0.5" r="0.5">
+            <Stop offset="0" stopColor="#FFB98A" stopOpacity={0.7} />
+            <Stop offset="1" stopColor="#FFB98A" stopOpacity={0} />
+          </RadialGradient>
+          <RadialGradient id="ember" cx="0.5" cy="0.5" r="0.5">
+            <Stop offset="0" stopColor="#9E2418" stopOpacity={0.45} />
+            <Stop offset="1" stopColor="#9E2418" stopOpacity={0} />
+          </RadialGradient>
+        </Defs>
+        <Rect x={0} y={0} width={w} height={h} fill="url(#bg)" />
+        <Ellipse cx={w * 0.92} cy={h * 0.08} rx={w * 0.55} ry={w * 0.45} fill="url(#peach)" />
+        <Ellipse cx={-w * 0.05} cy={h * 0.18} rx={w * 0.5} ry={w * 0.4} fill="url(#ember)" />
+        <Ellipse cx={w * 0.5} cy={h * 0.5} rx={w * 0.85} ry={h * 0.42} fill="url(#bloom)" />
+        <Path d={arch(h * 0.86, 46)} stroke="#FFFFFF" strokeOpacity={0.12} strokeWidth={2} fill="none" />
+        <Path d={arch(h * 0.9, 34)} stroke="#FFFFFF" strokeOpacity={0.08} strokeWidth={1.5} fill="none" />
+      </Svg>
     </View>
   );
 }
@@ -78,11 +102,11 @@ export function HomeHeader() {
   return (
     <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
       <Pressable onPress={() => router.navigate("/profile")} style={({ pressed }) => pressed && { transform: [{ scale: 0.94 }] }}>
-        <Glass style={styles.round} tint="rgba(255,255,255,0.4)"><Text style={styles.initials}>{initials}</Text></Glass>
+        <Glass style={styles.round} tint="rgba(255,255,255,0.2)"><Text style={styles.initials}>{initials}</Text></Glass>
       </Pressable>
       <Pressable onPress={() => router.push("/explore")} style={({ pressed }) => [{ flex: 1 }, pressed && { transform: [{ scale: 0.985 }] }]}>
         {/* Gradient hairline ring like the reference search pill */}
-        <LinearGradient colors={["#F4E7C4", "#D9B46A", "#9ED9C3"]} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={styles.searchRing}>
+        <LinearGradient colors={["#B9A4FF", "#7FD3FF", "#FFD38A"]} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={styles.searchRing}>
           <View style={styles.searchPill}>
             <Svg width={20} height={20} viewBox="0 0 24 24">
               <Defs>
@@ -100,12 +124,12 @@ export function HomeHeader() {
       </Pressable>
       {cart.count > 0 ? (
         <Pressable accessibilityLabel={t.cart.title} onPress={() => router.push("/cart")} style={({ pressed }) => pressed && { transform: [{ scale: 0.94 }] }}>
-          <Glass style={styles.round} tint="rgba(255,255,255,0.4)"><CartIcon size={20} color={INK} /></Glass>
+          <Glass style={styles.round} tint="rgba(255,255,255,0.2)"><CartIcon size={20} color={INK} /></Glass>
           <Badge value={cart.count} />
         </Pressable>
       ) : null}
       <Pressable accessibilityLabel={t.notifications.title} onPress={() => router.push("/notifications")} style={({ pressed }) => pressed && { transform: [{ scale: 0.94 }] }}>
-        <Glass style={styles.round} tint="rgba(255,255,255,0.4)"><ZxIcon name="bell" size={21} color={INK} strokeWidth={2.1} /></Glass>
+        <Glass style={styles.round} tint="rgba(255,255,255,0.2)"><ZxIcon name="bell" size={21} color={INK} strokeWidth={2.1} /></Glass>
         <Badge value={unread.data?.notifications || 0} />
       </Pressable>
     </View>
@@ -120,12 +144,11 @@ function Badge({ value }: { value: number }) {
 export type HeroSlide = { image: number; label: string };
 
 const HERO_H = 190;
-const DECK_DEPTH = 3; // cards visible in the stack (front + 2 peeking behind)
 
 /**
- * Hero as a layered deck of Da Nang landmark cards: the front card carries the
- * copy and Liquid Glass controls, the next landmarks peek out behind it (smaller,
- * lower, shifted left, frosted). Auto-advances; swipe left/right to shuffle.
+ * Hero: a landmark photo card (cross-fading Da Nang landmarks, Liquid Glass
+ * controls on the photo) layered over one frosted glass sheet that sticks out
+ * on the left. Auto-advances; swipe left/right to change.
  */
 export function HeroCard({ eyebrow, title, slides, locationLabel, onLocate }: { eyebrow: string; title: string; slides: HeroSlide[]; locationLabel: string; onLocate: () => void }) {
   const [active, setActive] = useState(0);
@@ -145,10 +168,14 @@ export function HeroCard({ eyebrow, title, slides, locationLabel, onLocate }: { 
   return (
     <GestureDetector gesture={swipe}>
       <View style={styles.heroWrap}>
-        {slides.map((item, index) => {
-          const depth = (index - active + count) % count;
-          return <DeckCard key={item.label} image={item.image} depth={depth} count={count} />;
-        })}
+        {/* Back layer: a frosted glass sheet sticking out on the left, top a little lower, bottoms aligned */}
+        <Glass style={styles.heroBackLayer} clear interactive={false} tint="rgba(255,240,232,0.32)" />
+        <View style={[styles.heroCard, shadow("soft")]}>
+          <View style={styles.heroClip}>
+            {slides.map((item, index) => <PhotoLayer key={item.label} image={item.image} visible={index === active} />)}
+            <LinearGradient colors={["rgba(20,12,8,0.4)", "rgba(20,12,8,0)", "rgba(20,12,8,0.5)"]} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
+          </View>
+        </View>
         <View style={styles.heroFront} pointerEvents="box-none">
           <Pressable onPress={onLocate} style={({ pressed }) => [styles.locWrap, pressed && { transform: [{ scale: 0.96 }] }]}>
             <Glass style={styles.locPill} clear tint="rgba(255,255,255,0.12)">
@@ -170,30 +197,14 @@ export function HeroCard({ eyebrow, title, slides, locationLabel, onLocate }: { 
   );
 }
 
-/** One card of the deck; springs to its depth (front card shuffles to the back). */
-function DeckCard({ image, depth, count }: { image: number; depth: number; count: number }) {
-  const d = useSharedValue(depth);
-  useEffect(() => { d.value = withSpring(depth, { damping: 20, stiffness: 160, mass: 0.9 }); }, [depth, d]);
-  const style = useAnimatedStyle(() => {
-    const v = d.value;
-    return {
-      opacity: interpolate(v, [0, DECK_DEPTH - 1, DECK_DEPTH, count], [1, 1, 0, 0], Extrapolation.CLAMP),
-      transform: [
-        { translateX: interpolate(v, [0, 1, 2], [0, -30, -54], Extrapolation.CLAMP) },
-        { translateY: interpolate(v, [0, 1, 2], [0, 16, 30], Extrapolation.CLAMP) },
-        { scale: interpolate(v, [0, 1, 2], [1, 0.93, 0.86], Extrapolation.CLAMP) },
-      ],
-    };
-  });
-  const veil = useAnimatedStyle(() => ({ opacity: interpolate(d.value, [0, 1], [0, 1], Extrapolation.CLAMP) }));
+/** Landmark photo that cross-fades in/out. */
+function PhotoLayer({ image, visible }: { image: number; visible: boolean }) {
+  const o = useSharedValue(visible ? 1 : 0);
+  useEffect(() => { o.value = withTiming(visible ? 1 : 0, { duration: 700 }); }, [visible, o]);
+  const fade = useAnimatedStyle(() => ({ opacity: o.value }));
   return (
-    <Animated.View pointerEvents="none" style={[styles.deckCard, { zIndex: count - depth }, depth === 0 ? styles.deckFront : null, style]}>
-      <Image source={image} style={StyleSheet.absoluteFill} contentFit="cover" transition={300} />
-      <LinearGradient colors={["rgba(10,32,27,0.55)", "rgba(10,32,27,0.05)", "rgba(10,32,27,0.62)"]} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
-      {/* Cards behind the front one read as frosted layers */}
-      <Animated.View style={[StyleSheet.absoluteFill, veil]}>
-        <Glass style={StyleSheet.absoluteFill} clear interactive={false} tint="rgba(255,255,255,0.22)" />
-      </Animated.View>
+    <Animated.View style={[StyleSheet.absoluteFill, fade]}>
+      <Image source={image} style={StyleSheet.absoluteFill} contentFit="cover" />
     </Animated.View>
   );
 }
@@ -235,7 +246,7 @@ export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ 
       </Animated.ScrollView>
       <Pressable onPress={() => router.push("/services")} style={styles.moreLink} hitSlop={8}>
         <Text style={styles.moreText}>{more}</Text>
-        <ZxIcon name="chevron" size={18} color={EMERALD} strokeWidth={2.4} />
+        <ZxIcon name="chevron" size={18} color={CORAL} strokeWidth={2.4} />
       </Pressable>
     </View>
   );
@@ -326,10 +337,11 @@ const styles = StyleSheet.create({
   searchText: { flex: 1, fontSize: 14.5, fontWeight: "600", color: "#7C8B86" },
   badge: { position: "absolute", top: -3, right: -3, minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 5, backgroundColor: "#FF4D4F", alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "rgba(255,255,255,0.9)" },
   badgeText: { color: colors.white, fontSize: 10, fontWeight: "900" },
-  heroWrap: { marginLeft: 30, marginRight: 16, marginTop: 4, marginBottom: 30 },
-  deckCard: { position: "absolute", left: 0, right: 0, top: 0, height: HERO_H, borderRadius: 30, overflow: "hidden", backgroundColor: "#183F35" },
-  deckFront: { shadowColor: "#06140F", shadowOpacity: 0.35, shadowRadius: 22, shadowOffset: { width: 0, height: 14 } },
-  heroFront: { height: HERO_H, zIndex: 100 },
+  heroWrap: { marginHorizontal: 18, marginTop: 4, marginBottom: 30 },
+  heroBackLayer: { position: "absolute", left: -14, right: 30, top: 22, height: HERO_H - 22, borderRadius: 28 },
+  heroCard: { height: HERO_H, borderRadius: 28, backgroundColor: "#7A2A1C" },
+  heroClip: { flex: 1, borderRadius: 28, overflow: "hidden" },
+  heroFront: { position: "absolute", left: 0, right: 0, top: 0, bottom: 0 },
   locWrap: { position: "absolute", left: 14, top: 14, maxWidth: "62%" },
   locPill: { flexDirection: "row", alignItems: "center", gap: 6, height: 30, paddingHorizontal: 11, borderRadius: 15 },
   locText: { flexShrink: 1, fontSize: 12, fontWeight: "700", color: colors.white },
@@ -350,7 +362,7 @@ const styles = StyleSheet.create({
   sparkleB: { position: "absolute", top: 22, left: 16 },
   arcLabel: { marginTop: 6, fontSize: 15, fontWeight: "700", color: "#17221F", textAlign: "center", lineHeight: 19 },
   moreLink: { alignSelf: "center", flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 6, marginTop: 2 },
-  moreText: { fontSize: 17, fontWeight: "800", color: EMERALD },
+  moreText: { fontSize: 17, fontWeight: "800", color: CORAL },
   quick: { marginHorizontal: 16, marginTop: 18, paddingVertical: 18, borderRadius: 26, backgroundColor: colors.white, shadowColor: "#0F172A", shadowOpacity: 0.075, shadowRadius: 17, shadowOffset: { width: 0, height: 10 } },
   quickItem: { width: 92, alignItems: "center", gap: 10 },
   quickIcon: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
