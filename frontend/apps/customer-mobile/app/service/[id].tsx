@@ -64,7 +64,8 @@ export default function ServiceDetailScreen() {
               <View style={{ gap: 10 }}><Skeleton width="45%" height={20} /><Skeleton width="80%" height={26} /><Skeleton width="40%" height={26} /></View>
             ) : data ? (
               <Animated.View entering={FadeInDown.duration(260)} style={{ gap: 8 }}>
-                <View style={styles.verified}><Text style={styles.verifiedText}>{c.verified}</Text></View>
+                {/* Housing listings carry the badge only once an admin has verified them (PWA parity) */}
+                {data.moduleCode !== "housing" || data.metadata?.adminVerified === true ? <View style={styles.verified}><Text style={styles.verifiedText}>{c.verified}</Text></View> : null}
                 <Text style={styles.title}>{name}</Text>
                 {data.summary ? <Text style={styles.summary}>{data.summary}</Text> : null}
                 <View style={styles.priceRow}>
