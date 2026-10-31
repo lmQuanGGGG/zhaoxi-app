@@ -13,7 +13,7 @@ import { ServiceTile } from "./service-icons";
 export type IconName = ComponentProps<typeof Ionicons>["name"];
 export { Ionicons, haptic, ZxIcon, type ZxIconName };
 export { BackButton, DOCK_SPACE, PageHeader, ServicesGem, TopBar } from "./chrome";
-export { ServiceTile, servicePalettes } from "./service-icons";
+export { ServiceArt, ServiceTile, servicePalettes } from "./service-icons";
 
 // ---------------------------------------------------------------------------
 // Layout

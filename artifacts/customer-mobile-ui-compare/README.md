@@ -36,5 +36,6 @@ Mỗi `compare-*.jpg` đặt ảnh PWA (trái, Chrome 402×874) cạnh ảnh app
 | Trung tâm trợ giúp (theo PWA `/help`) | app-27-help.jpg |
 | Gửi phản hồi Beta (theo PWA `/feedback`) | app-28-feedback.jpg |
 | Bản đồ theo dõi tài xế trong chi tiết đơn (dữ liệu giả để chụp, route thử đã xoá) | app-29-live-delivery-map.jpg |
-| Bộ icon dịch vụ vẽ lại (SVG, gradient thống nhất) — trang chủ | app-30-home-service-icons.jpg |
+| Bộ icon dịch vụ vẽ lại (minh hoạ 3D SVG trên thẻ trắng) — trang chủ | app-30-home-service-icons.jpg |
 | Bộ icon dịch vụ vẽ lại — Trung tâm dịch vụ | app-31-services-hub-icons.jpg |
+| Thanh điều hướng Liquid Glass iOS 26 (kính khúc xạ, viên kính trượt theo tab) | app-32-liquid-glass-dock.jpg |

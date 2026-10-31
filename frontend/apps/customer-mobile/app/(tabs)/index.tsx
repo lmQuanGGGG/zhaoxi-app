@@ -18,7 +18,7 @@ import { moduleRoute, resolveModules } from "../../src/modules";
 import { keys } from "../../src/query";
 import { ACTIVE_STATUSES } from "../../src/status";
 import { colors, shadow } from "../../src/theme";
-import { AppImage, PressableScale, Screen, SectionTitle, ServiceIcon, Skeleton, StatusPill, ZxIcon } from "../../src/ui";
+import { AppImage, PressableScale, Screen, SectionTitle, ServiceArt, ServiceIcon, Skeleton, StatusPill, ZxIcon } from "../../src/ui";
 
 const landmarks = [
   { image: require("../../assets/landmarks/dragon-bridge.webp"), label: { "vi-VN": "Cầu Rồng", "en-US": "Dragon Bridge", "zh-CN": "龙桥", "zh-TW": "龍橋" } },
@@ -117,8 +117,8 @@ export default function HomeScreen() {
           {tiles.map((tile, index) => {
             return (
               <Animated.View key={tile.code} entering={FadeIn.delay(index * 30)} style={styles.tileWrap}>
-                <Pressable onPressIn={() => prefetchModule(tile.code)} onPress={() => router.push(moduleRoute(tile.code))} style={({ pressed }) => [styles.tile, pressed && { transform: [{ scale: 0.94 }] }]}>
-                  <ServiceIcon code={tile.code} size={52} />
+                <Pressable onPressIn={() => prefetchModule(tile.code)} onPress={() => router.push(moduleRoute(tile.code))} style={({ pressed }) => [styles.tile, shadow("card"), pressed && { transform: [{ scale: 0.95 }] }]}>
+                  <ServiceArt code={tile.code} size={50} />
                   <Text style={styles.tileLabel} numberOfLines={2}>{tile.name}</Text>
                 </Pressable>
               </Animated.View>
@@ -296,10 +296,11 @@ const styles = StyleSheet.create({
   aiTitle: { fontSize: 13, fontWeight: "700", color: "#B45309", lineHeight: 16.5, paddingRight: 4 },
   aiBody: { fontSize: 12.5, fontWeight: "500", color: colors.slate, marginTop: 6, lineHeight: 17, paddingRight: 46 },
   aiIcon: { position: "absolute", right: 12, bottom: 12, width: 44, height: 44, borderRadius: 14, backgroundColor: "rgba(255,255,255,0.72)", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 6, shadowOffset: { width: 0, height: 4 } },
-  grid: { flexDirection: "row", flexWrap: "wrap", rowGap: 16, columnGap: 8 },
+  grid: { flexDirection: "row", flexWrap: "wrap", rowGap: 10, columnGap: 8 },
   tileWrap: { width: "22.8%" },
-  tile: { alignItems: "center", gap: 8 },
-  tileLabel: { fontSize: 11, fontWeight: "800", color: "#26312D", textAlign: "center", lineHeight: 13 },
+  // Xanh SM–style service card: white tile, illustration + label inside.
+  tile: { alignItems: "center", justifyContent: "center", gap: 6, minHeight: 104, paddingTop: 12, paddingBottom: 10, paddingHorizontal: 4, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: "rgba(226,232,240,0.7)" },
+  tileLabel: { fontSize: 11.5, fontWeight: "600", color: "#1F2A27", textAlign: "center", lineHeight: 14 },
   shortcut: { flex: 1, minHeight: 116, padding: 14, borderRadius: 20, overflow: "hidden" },
   shortcutTitle: { fontSize: 13, fontWeight: "700", color: colors.text, letterSpacing: -0.2 },
   shortcutBody: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10 },

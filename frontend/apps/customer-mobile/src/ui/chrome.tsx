@@ -3,7 +3,8 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, usePathname } from "expo-router";
 import { useEffect, type ReactNode } from "react";
-import { Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { GlassContainer, GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
+import { Alert, Platform, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { logout } from "../api/client";
@@ -86,38 +87,65 @@ const HIDDEN_DOCK = [/^\/onboarding/, /^\/login/, /^\/request\//, /^\/request-su
 
 export const DOCK_SPACE = 104;
 
+const LIQUID_GLASS = Platform.OS === "ios" && isLiquidGlassAvailable();
+const DOCK_WIDTH = 268;
+const DOCK_PAD = 5;
+const ITEM_WIDTH = (DOCK_WIDTH - DOCK_PAD * 2) / dockItems.length;
+
+/**
+ * Floating tab bar. On iOS 26+ it is real Liquid Glass (refracts and reflects the
+ * content scrolling underneath, reacts to touch) with the services button merged
+ * into the same glass container; older iOS / Android fall back to a frosted blur.
+ */
 export function Dock() {
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const { t } = useI18n();
   const unread = useUnread();
+  const index = dockItems.findIndex((item) => (item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)));
+  const slot = useSharedValue(Math.max(index, 0));
+  useEffect(() => { if (index >= 0) slot.value = withSpring(index, { damping: 18, stiffness: 210, mass: 0.8 }); }, [index, slot]);
+  const lens = useAnimatedStyle(() => ({ transform: [{ translateX: slot.value * ITEM_WIDTH }] }));
   if (HIDDEN_DOCK.some((pattern) => pattern.test(pathname))) return null;
   const labels = { home: t.tabs.home, orders: t.tabs.orders, messages: t.tabs.messages, profile: t.tabs.profile };
+  const Container = LIQUID_GLASS ? GlassContainer : View;
   return (
-    <View pointerEvents="box-none" style={[styles.dockWrap, { bottom: Math.max(insets.bottom - 12, 10) }]}>
-      <View style={[styles.dockPill, shadow("dock")]}>
-        <GlassFill intensity={45} />
-        {dockItems.map((item) => {
-          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-          return <DockButton key={item.key} label={labels[item.key]} icon={item.icon} active={active} badge={item.key === "messages" ? unread.data?.messages || 0 : 0} onPress={() => router.navigate(item.href)} />;
-        })}
-      </View>
-      <Pressable accessibilityLabel={t.services.title} onPress={() => router.push("/services")} style={({ pressed }) => [styles.gemButton, shadow("dock"), pressed && { transform: [{ scale: 0.94 }] }]}>
-        <GlassFill intensity={50} />
-        <ServicesGem />
-      </Pressable>
+    <View pointerEvents="box-none" style={[styles.dockWrap, { bottom: Math.max(insets.bottom - 14, 10) }]}>
+      <Container spacing={14} style={styles.dockRow}>
+        <GlassSurface style={[styles.dockPill, !LIQUID_GLASS && shadow("dock")]}>
+          {index >= 0 ? <Animated.View style={[styles.dockLens, lens]} /> : null}
+          {dockItems.map((item, i) => (
+            <DockButton key={item.key} label={labels[item.key]} icon={item.icon} active={i === index} badge={item.key === "messages" ? unread.data?.messages || 0 : 0} onPress={() => router.navigate(item.href)} />
+          ))}
+        </GlassSurface>
+        <GlassSurface style={[styles.gemButton, !LIQUID_GLASS && shadow("dock")]}>
+          <Pressable accessibilityLabel={t.services.title} onPress={() => router.push("/services")} style={({ pressed }) => [styles.gemPress, pressed && { transform: [{ scale: 0.92 }] }]}>
+            <ServicesGem />
+          </Pressable>
+        </GlassSurface>
+      </Container>
+    </View>
+  );
+}
+
+/** Liquid Glass when the OS has it, otherwise the frosted blur fill. */
+function GlassSurface({ style, children }: { style: StyleProp<ViewStyle>; children: ReactNode }) {
+  if (LIQUID_GLASS) {
+    return <GlassView glassEffectStyle="regular" isInteractive colorScheme="light" style={style}>{children}</GlassView>;
+  }
+  return (
+    <View style={style}>
+      <GlassFill intensity={45} />
+      {children}
     </View>
   );
 }
 
 function DockButton({ icon, active, onPress, badge, label }: { icon: ZxIconName; active: boolean; onPress: () => void; badge: number; label: string }) {
-  const progress = useSharedValue(active ? 1 : 0);
-  useEffect(() => { progress.value = withSpring(active ? 1 : 0, { damping: 16, stiffness: 220 }); }, [active, progress]);
-  const glow = useAnimatedStyle(() => ({ opacity: progress.value, transform: [{ scale: 0.7 + progress.value * 0.3 }] }));
   return (
-    <Pressable accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected: active }} onPress={onPress} style={styles.dockButton}>
-      <Animated.View style={[styles.dockGlow, glow]} />
-      <ZxIcon name={icon} size={active ? 23 : 21} color={active ? colors.brandDeep : colors.textMuted} strokeWidth={active ? 2.25 : 1.85} />
+    <Pressable accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected: active }} onPress={onPress} style={({ pressed }) => [styles.dockButton, pressed && { transform: [{ scale: 0.92 }] }]}>
+      <ZxIcon name={icon} size={22} color={active ? colors.brandDeep : "#3F4A46"} strokeWidth={active ? 2.3 : 1.9} />
+      <Text style={[styles.dockLabel, active && styles.dockLabelActive]} numberOfLines={1}>{label}</Text>
       {badge ? <View style={styles.dockBadge}><Text style={styles.topBadgeText}>{badge > 99 ? "99+" : badge}</Text></View> : null}
     </Pressable>
   );
@@ -197,13 +225,18 @@ const styles = StyleSheet.create({
   topIcon: { width: 34, height: 34, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.86)", alignItems: "center", justifyContent: "center" },
   topBadge: { position: "absolute", top: -6, right: -5, minWidth: 17, height: 17, borderRadius: 9, paddingHorizontal: 4, backgroundColor: "#22C55E", alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: colors.white },
   topBadgeText: { color: colors.white, fontSize: 8, fontWeight: "900" },
-  dockWrap: { position: "absolute", left: 0, right: 0, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 4 },
-  dockPill: { width: 244, height: 64, borderRadius: 999, flexDirection: "row", alignItems: "center", padding: 5, overflow: Platform.OS === "android" ? "hidden" : "visible" },
+  dockWrap: { position: "absolute", left: 0, right: 0, alignItems: "center" },
+  dockRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  dockPill: { width: DOCK_WIDTH, height: 64, borderRadius: 32, flexDirection: "row", alignItems: "center", padding: DOCK_PAD, overflow: Platform.OS === "android" ? "hidden" : "visible" },
   dockGlass: { borderRadius: 999, backgroundColor: Platform.OS === "ios" ? "rgba(255,255,255,0.42)" : "rgba(255,255,255,0.94)", borderWidth: 1, borderColor: "rgba(255,255,255,0.78)" },
-  dockButton: { flex: 1, height: 54, alignItems: "center", justifyContent: "center", borderRadius: 22 },
-  dockGlow: { position: "absolute", width: 38, height: 38, borderRadius: 19, backgroundColor: "rgba(15,175,122,0.09)", shadowColor: "#0FAF7A", shadowOpacity: 0.45, shadowRadius: 14, shadowOffset: { width: 0, height: 0 } },
+  dockButton: { width: ITEM_WIDTH, height: 54, alignItems: "center", justifyContent: "center", gap: 2, borderRadius: 27 },
+  dockLabel: { fontSize: 10, fontWeight: "600", color: "#3F4A46" },
+  dockLabelActive: { color: colors.brandDeep, fontWeight: "800" },
+  // Selection "lens": a lighter capsule that slides under the active tab like the iOS 26 tab bar.
+  dockLens: { position: "absolute", left: DOCK_PAD, top: DOCK_PAD, width: ITEM_WIDTH, height: 54, borderRadius: 27, backgroundColor: "rgba(15,175,122,0.13)" },
   dockBadge: { position: "absolute", top: 6, right: 8, minWidth: 17, height: 17, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.danger, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: colors.white },
-  gemButton: { width: 66, height: 66, borderRadius: 33, alignItems: "center", justifyContent: "center" },
+  gemButton: { width: 64, height: 64, borderRadius: 32 },
+  gemPress: { flex: 1, alignItems: "center", justifyContent: "center", borderRadius: 32 },
   gem: { position: "absolute", overflow: "hidden", shadowColor: "#18211E", shadowOpacity: 0.18, shadowRadius: 2.5, shadowOffset: { width: 0, height: 2 } },
   gemShine: { position: "absolute", left: 2, right: 2, top: 1, height: 1, backgroundColor: "rgba(255,255,255,0.65)", borderRadius: 1 },
   pageHeader: { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 14, paddingTop: 12, paddingBottom: 8 },
