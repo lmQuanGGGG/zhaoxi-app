@@ -97,9 +97,9 @@ function FlowCard({ item, index, x, last }: { item: Recommendation; index: numbe
     <Animated.View style={[{ width: STEP, height: CARD_H, alignItems: "center", marginRight: last ? CARD_W - STEP : 0 }, style]}>
       <Pressable onPress={() => router.push(routeForWebHref(item.href))} style={[styles.card, { shadowColor: glow }]}>
         <View style={styles.cardClip} />
-        {/* Unclipped and without a background so iOS draws the shadow along the dish's own outline */}
+        {/* Photo cropped to one rounded frame; the unclipped wrapper casts its soft shadow */}
         <View style={styles.dishShadow} pointerEvents="none">
-          <AppImage uri={uri} fallbackCode={item.moduleCode} contentFit="contain" style={styles.dish} />
+          <AppImage uri={uri} fallbackCode={item.moduleCode} contentFit="cover" style={styles.dish} />
         </View>
         <View style={styles.cardContent} pointerEvents="none">
 
@@ -144,8 +144,8 @@ const styles = StyleSheet.create({
   card: { width: CARD_W, height: CARD_H, borderRadius: 24, backgroundColor: colors.white, shadowOpacity: 0.45, shadowRadius: 18, shadowOffset: { width: 0, height: 12 } },
   cardClip: { ...StyleSheet.absoluteFill, borderRadius: 24, backgroundColor: colors.white },
   cardContent: { ...StyleSheet.absoluteFill },
-  dishShadow: { position: "absolute", left: 18, right: 18, top: 40, bottom: 78, shadowColor: "#3B2410", shadowOpacity: 0.22, shadowRadius: 12, shadowOffset: { width: 0, height: 14 } },
-  dish: { width: "100%", height: "100%", backgroundColor: "transparent" },
+  dishShadow: { position: "absolute", left: 14, right: 14, top: 60, bottom: 84, shadowColor: "#0F172A", shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: 10 } },
+  dish: { width: "100%", height: "100%", borderRadius: 18, overflow: "hidden" },
   badge: { position: "absolute", left: 12, top: 12, width: 38, height: 38, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   info: { position: "absolute", left: 16, right: 16, bottom: 16 },
   cardTitle: { fontSize: 16, fontWeight: "800", color: "#17221F", lineHeight: 20 },
