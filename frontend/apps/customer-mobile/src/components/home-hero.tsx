@@ -168,8 +168,8 @@ export function HeroCard({ eyebrow, title, slides, locationLabel, onLocate }: { 
   return (
     <GestureDetector gesture={swipe}>
       <View style={styles.heroWrap}>
-        {/* Back layer: a wider frosted glass sheet sticking out on both sides, top a little lower, bottoms aligned */}
-        <Glass style={styles.heroBackLayer} clear interactive={false} tint="rgba(255,240,232,0.32)" />
+        {/* Back layer: frosted sheet shaped as an isosceles trapezoid (wide top, narrow bottom) behind the photo card */}
+        <BackSheet />
         <View style={[styles.heroCard, shadow("soft")]}>
           <View style={styles.heroClip}>
             {slides.map((item, index) => <PhotoLayer key={item.label} image={item.image} visible={index === active} />)}
@@ -194,6 +194,54 @@ export function HeroCard({ eyebrow, title, slides, locationLabel, onLocate }: { 
         </View>
       </View>
     </GestureDetector>
+  );
+}
+
+const SHEET_OUT = 20; // how far the top edge sticks out on each side
+const SHEET_IN = 30; // how far the bottom edge tucks in under the card
+const SHEET_TOP = 14;
+
+/** Rounded isosceles trapezoid drawn in SVG (GlassView can only be rectangular). */
+function BackSheet() {
+  const { width } = useWindowDimensions();
+  const card = width - 36; // heroWrap horizontal margins
+  const w = card + SHEET_OUT * 2;
+  const h = HERO_H - SHEET_TOP;
+  const r = 24;
+  const inset = SHEET_OUT + SHEET_IN;
+  const len = Math.hypot(inset, h);
+  const ux = inset / len;
+  const uy = h / len;
+  const d = [
+    `M ${r} 0`,
+    `L ${w - r} 0`,
+    `Q ${w} 0 ${w - ux * r} ${uy * r}`,
+    `L ${w - inset + ux * r} ${h - uy * r}`,
+    `Q ${w - inset} ${h} ${w - inset - r} ${h}`,
+    `L ${inset + r} ${h}`,
+    `Q ${inset} ${h} ${inset - ux * r} ${h - uy * r}`,
+    `L ${ux * r} ${uy * r}`,
+    `Q 0 0 ${r} 0`,
+    "Z",
+  ].join(" ");
+  return (
+    <View pointerEvents="none" style={{ position: "absolute", left: -SHEET_OUT, top: SHEET_TOP, width: w, height: h }}>
+      <Svg width={w} height={h}>
+        <Defs>
+          <SvgGradient id="sheet" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor="#FFF3EC" stopOpacity={0.62} />
+            <Stop offset="1" stopColor="#FFE2D3" stopOpacity={0.28} />
+          </SvgGradient>
+          <SvgGradient id="sheetShine" x1="0" y1="0" x2="1" y2="0">
+            <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.55} />
+            <Stop offset="0.5" stopColor="#FFFFFF" stopOpacity={0.1} />
+            <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0.45} />
+          </SvgGradient>
+        </Defs>
+        <Path d={d} fill="url(#sheet)" />
+        <Path d={d} fill="none" stroke="url(#sheetShine)" strokeWidth={1.2} />
+      </Svg>
+    </View>
   );
 }
 
@@ -338,7 +386,6 @@ const styles = StyleSheet.create({
   badge: { position: "absolute", top: -3, right: -3, minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 5, backgroundColor: "#FF4D4F", alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "rgba(255,255,255,0.9)" },
   badgeText: { color: colors.white, fontSize: 10, fontWeight: "900" },
   heroWrap: { marginHorizontal: 18, marginTop: 4, marginBottom: 30 },
-  heroBackLayer: { position: "absolute", left: -14, right: -14, top: 22, height: HERO_H - 22, borderRadius: 30 },
   heroCard: { height: HERO_H, borderRadius: 28, backgroundColor: "#7A2A1C" },
   heroClip: { flex: 1, borderRadius: 28, overflow: "hidden" },
   heroFront: { position: "absolute", left: 0, right: 0, top: 0, bottom: 0 },
