@@ -79,10 +79,6 @@ export default function HomeScreen() {
     "zh-CN": { locate: "位置", ai: "AI 助手", coupons: "优惠", favorites: "收藏", payments: "支付", emergency: "紧急", support: "客服", landmarks: "探索岘港" },
     "zh-TW": { locate: "位置", ai: "AI 助手", coupons: "優惠", favorites: "收藏", payments: "支付", emergency: "緊急", support: "客服", landmarks: "探索峴港" },
   }[locale];
-  const chips = [
-    { key: "support", label: quickCopy.support, onPress: () => router.push("/support") },
-    ...tiles.slice(0, 4).map((tile) => ({ key: tile.code, label: tile.name, onPress: () => router.push(moduleRoute(tile.code)) })),
-  ];
   const arcTiles = resolveModules(modules.data, locale);
 
   return (
@@ -95,7 +91,7 @@ export default function HomeScreen() {
         scrollEventThrottle={16}
       >
         <View>
-          <HomeBackdrop height={560} />
+          <HomeBackdrop height={480} />
           <HomeHeader />
           <HeroCard
             eyebrow={`ZHAOXI · ${banner?.cityLabel || t.home.city}`}
@@ -103,7 +99,6 @@ export default function HomeScreen() {
             slides={landmarks.map((item) => ({ image: item.image, label: item.label[locale] }))}
             locationLabel={location.status === "locating" ? t.home.locating : location.label || lc.choose}
             onLocate={() => void locate(true)}
-            chips={chips}
           />
           <View style={{ height: 96 }} />
         </View>

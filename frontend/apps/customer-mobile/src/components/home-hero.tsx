@@ -119,6 +119,7 @@ function Badge({ value }: { value: number }) {
 
 export type HeroSlide = { image: number; label: string };
 
+const HERO_H = 190;
 const DECK_DEPTH = 3; // cards visible in the stack (front + 2 peeking behind)
 
 /**
@@ -126,7 +127,7 @@ const DECK_DEPTH = 3; // cards visible in the stack (front + 2 peeking behind)
  * copy and Liquid Glass controls, the next landmarks peek out behind it (smaller,
  * lower, shifted left, frosted). Auto-advances; swipe left/right to shuffle.
  */
-export function HeroCard({ eyebrow, title, slides, locationLabel, onLocate, chips }: { eyebrow: string; title: string; slides: HeroSlide[]; locationLabel: string; onLocate: () => void; chips: Array<{ key: string; label: string; onPress: () => void }> }) {
+export function HeroCard({ eyebrow, title, slides, locationLabel, onLocate }: { eyebrow: string; title: string; slides: HeroSlide[]; locationLabel: string; onLocate: () => void }) {
   const [active, setActive] = useState(0);
   const count = slides.length;
   const next = () => setActive((value) => (value + 1) % Math.max(count, 1));
@@ -160,20 +161,9 @@ export function HeroCard({ eyebrow, title, slides, locationLabel, onLocate, chip
           </Glass>
           <View style={styles.heroCopy} pointerEvents="none">
             <Text style={styles.heroEyebrow}>{eyebrow}</Text>
-            <Text style={styles.heroTitle} numberOfLines={2}>{title}</Text>
+            <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>{title}</Text>
             {slide ? <Animated.Text key={slide.label} entering={FadeInDown.duration(380)} style={styles.heroHighlight} numberOfLines={1}>{slide.label}</Animated.Text> : null}
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={styles.chipScroll}>
-            {chips.map((chip, index) => (
-              <Pressable key={chip.key} onPress={chip.onPress} style={({ pressed }) => pressed && { transform: [{ scale: 0.94 }] }}>
-                {index === 0 ? (
-                  <View style={[styles.chip, styles.chipPrimary]}><Text style={[styles.chipText, { color: "#183F35" }]}>{chip.label}</Text></View>
-                ) : (
-                  <Glass style={styles.chip} clear tint="rgba(255,255,255,0.14)"><Text style={styles.chipText}>{chip.label}</Text></Glass>
-                )}
-              </Pressable>
-            ))}
-          </ScrollView>
         </View>
       </View>
     </GestureDetector>
@@ -337,24 +327,19 @@ const styles = StyleSheet.create({
   badge: { position: "absolute", top: -3, right: -3, minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 5, backgroundColor: "#FF4D4F", alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "rgba(255,255,255,0.9)" },
   badgeText: { color: colors.white, fontSize: 10, fontWeight: "900" },
   heroWrap: { marginLeft: 30, marginRight: 16, marginTop: 4, marginBottom: 30 },
-  deckCard: { position: "absolute", left: 0, right: 0, top: 0, height: 280, borderRadius: 30, overflow: "hidden", backgroundColor: "#183F35" },
+  deckCard: { position: "absolute", left: 0, right: 0, top: 0, height: HERO_H, borderRadius: 30, overflow: "hidden", backgroundColor: "#183F35" },
   deckFront: { shadowColor: "#06140F", shadowOpacity: 0.35, shadowRadius: 22, shadowOffset: { width: 0, height: 14 } },
-  heroFront: { height: 280, zIndex: 100 },
-  locWrap: { position: "absolute", left: 16, top: 16, maxWidth: "62%" },
-  locPill: { flexDirection: "row", alignItems: "center", gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 16 },
+  heroFront: { height: HERO_H, zIndex: 100 },
+  locWrap: { position: "absolute", left: 14, top: 14, maxWidth: "62%" },
+  locPill: { flexDirection: "row", alignItems: "center", gap: 6, height: 30, paddingHorizontal: 11, borderRadius: 15 },
   locText: { flexShrink: 1, fontSize: 12, fontWeight: "700", color: colors.white },
-  pager: { position: "absolute", right: 16, top: 20, flexDirection: "row", gap: 5, paddingHorizontal: 9, paddingVertical: 7, borderRadius: 12 },
+  pager: { position: "absolute", right: 14, top: 18, flexDirection: "row", gap: 5, paddingHorizontal: 9, paddingVertical: 7, borderRadius: 12 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.5)" },
   dotActive: { width: 16, backgroundColor: CREAM },
-  heroCopy: { position: "absolute", left: 20, right: 20, top: 74 },
-  heroEyebrow: { fontSize: 11.5, fontWeight: "800", letterSpacing: 2, color: "rgba(255,255,255,0.9)" },
-  heroTitle: { fontSize: 26, fontWeight: "800", color: colors.white, lineHeight: 31, letterSpacing: -0.4, marginTop: 6, textShadowColor: "rgba(0,0,0,0.25)", textShadowRadius: 8 },
-  heroHighlight: { fontSize: 17, fontWeight: "800", color: "#F6D892", marginTop: 6 },
-  chipScroll: { position: "absolute", left: 0, right: 0, bottom: 16 },
-  chips: { gap: 8, paddingHorizontal: 16 },
-  chip: { height: 42, paddingHorizontal: 18, borderRadius: 21, justifyContent: "center", alignItems: "center" },
-  chipPrimary: { backgroundColor: CREAM, shadowColor: "#000", shadowOpacity: 0.18, shadowRadius: 10, shadowOffset: { width: 0, height: 6 } },
-  chipText: { fontSize: 15, fontWeight: "700", color: colors.white },
+  heroCopy: { position: "absolute", left: 18, right: 18, bottom: 18 },
+  heroEyebrow: { fontSize: 10.5, fontWeight: "800", letterSpacing: 2, color: "rgba(255,255,255,0.9)" },
+  heroTitle: { fontSize: 22, fontWeight: "800", color: colors.white, lineHeight: 27, letterSpacing: -0.4, marginTop: 4, textShadowColor: "rgba(0,0,0,0.25)", textShadowRadius: 8 },
+  heroHighlight: { fontSize: 15, fontWeight: "800", color: "#F6D892", marginTop: 3 },
   arcSection: { marginTop: -64, paddingTop: 18 },
   dome: { position: "absolute", top: 0, backgroundColor: colors.white },
   lensWrap: { position: "absolute", top: -54, width: LENS, height: LENS },
