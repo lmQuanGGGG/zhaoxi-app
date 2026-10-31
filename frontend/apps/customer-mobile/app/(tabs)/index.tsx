@@ -7,9 +7,8 @@ import { router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-import Animated, { FadeIn, FadeInDown, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, type SharedValue } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, interpolate, withSpring, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, type SharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Defs, Ellipse, RadialGradient, Stop } from "react-native-svg";
 import { getHomeFeed, getModules, getNearbyServices, getOrders, getRecommendations, getUiConfig } from "../../src/api/endpoints";
 import type { FeedService, HomeFeed, Recommendation } from "../../src/api/types";
 import { TAB_BAR_SPACE } from "../../src/constants";
@@ -22,8 +21,9 @@ import { moduleRoute, resolveModules } from "../../src/modules";
 import { keys } from "../../src/query";
 import { ACTIVE_STATUSES } from "../../src/status";
 import { colors, shadow } from "../../src/theme";
+import { ExploreCoverflow } from "../../src/components/explore-coverflow";
 import { HOME_TOP, HeroCard, HomeBackdrop, HomeHeader, QuickActions, ServiceArc } from "../../src/components/home-hero";
-import { AppImage, GlassFill, PressableScale, Screen, SectionTitle, ServiceArt, ServiceIcon, servicePalettes, Skeleton, StatusPill, ZxIcon } from "../../src/ui";
+import { AppImage, GlassFill, PressableScale, Screen, SectionTitle, ServiceArt, ServiceIcon,  Skeleton, StatusPill, ZxIcon } from "../../src/ui";
 
 const landmarks = [
   { image: require("../../assets/landmarks/dragon-bridge.webp"), label: { "vi-VN": "Cầu Rồng", "en-US": "Dragon Bridge", "zh-CN": "龙桥", "zh-TW": "龍橋" } },
@@ -81,6 +81,12 @@ export default function HomeScreen() {
   };
   const lc = locationCopy[locale];
 
+  const exploreCopy = {
+    "vi-VN": { title: "Khám phá", highlight: "không giới hạn", more: "Xem tất cả", all: "Tất cả" },
+    "en-US": { title: "Explore", highlight: "without limits", more: "See all", all: "All" },
+    "zh-CN": { title: "探索", highlight: "无限精彩", more: "查看全部", all: "全部" },
+    "zh-TW": { title: "探索", highlight: "無限精彩", more: "查看全部", all: "全部" },
+  }[locale];
   const scrollY = useSharedValue(0);
   const onScroll = useAnimatedScrollHandler((event) => { scrollY.value = event.contentOffset.y; });
   const quickCopy = {
@@ -144,20 +150,15 @@ export default function HomeScreen() {
 
         <PersonalFeed feed={feed.data} />
 
-        <SectionTitle title={t.home.recommend} action={t.common.more} onAction={() => router.push("/explore")} />
         {recommendations.isPending ? (
-          <View style={{ flexDirection: "row", gap: 14 }}>{[0, 1].map((i) => <Skeleton key={i} width={198} height={236} radius={26} />)}</View>
+          <View style={{ marginTop: 28 }}><Skeleton height={420} radius={34} /></View>
         ) : (
-          <FlatList
-            horizontal
-            data={(recommendations.data?.items || []).slice(0, 8)}
-            keyExtractor={(item) => `${item.kind}-${item.id}`}
-            renderItem={({ item }) => <RecommendationCard item={item} personalized={Boolean(recommendations.data?.personalized)} />}
-            showsHorizontalScrollIndicator={false}
-            snapToInterval={212}
-            decelerationRate="fast"
-            contentContainerStyle={{ gap: 14, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 18 }}
-            style={{ marginHorizontal: -16 }}
+          <ExploreCoverflow
+            items={(recommendations.data?.items || []).slice(0, 10)}
+            title={exploreCopy.title}
+            highlight={exploreCopy.highlight}
+            more={exploreCopy.more}
+            allLabel={exploreCopy.all}
           />
         )}
 
@@ -186,48 +187,6 @@ function StatusBarScrim({ scrollY }: { scrollY: SharedValue<number> }) {
       <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
       <View style={[StyleSheet.absoluteFill, { backgroundColor: HOME_TOP, opacity: 0.92 }]} />
     </Animated.View>
-  );
-}
-
-/** "Khám phá thêm" card: frosted glass panel tinted by service, bold copy on top, the photo floating in 3D at the bottom-right. */
-function RecommendationCard({ item, personalized }: { item: Recommendation; personalized: boolean }) {
-  const { t, locale } = useI18n();
-  const reason = item.reasonCode === "favorite" ? t.home.becauseFavorite : item.reasonCode === "recent_view" ? t.home.becauseViewed : item.reasonCode === "ordered" ? t.home.becauseOrdered : item.reasonCode === "popular" ? t.home.becausePopular : item.reasonCode === "new" ? t.home.becauseNew : t.home.becauseExplore;
-  const meta = personalized ? reason : item.kind === "module_fallback" ? t.home.available : item.isNew ? t.home.newPartner : item.usageCount > 0 ? t.home.popular : localizeOrganizationName(locale, null, item.organizationName) || t.home.available;
-  const price = Number(item.priceFrom || 0) > 0 ? money(item.priceFrom, item.currency) : "";
-  const tint = servicePalettes[item.moduleCode || ""]?.tint || "#EEF8F3";
-  const accent = servicePalettes[item.moduleCode || ""]?.accent || colors.brand;
-  return (
-    <PressableScale onPress={() => router.push(routeForWebHref(item.href))} style={[styles.recCard, shadow("soft")]} scaleTo={0.97}>
-      <LinearGradient colors={[tint, "#FFFFFF"]} start={{ x: 0, y: 0 }} end={{ x: 0.9, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 26 }]} />
-      <GlassFill radius={26} clear tint="rgba(255,255,255,0.28)" />
-      <View style={styles.recHead}>
-        <ServiceArt code={item.moduleCode} size={22} />
-        <Text style={[styles.recModule, { color: accent }]} numberOfLines={1}>{localizeServiceModuleName(locale, item.moduleCode)}</Text>
-      </View>
-      <Text style={styles.recTitle} numberOfLines={2}>{localizeServiceName(locale, item.title)}</Text>
-      <Text style={styles.recMeta} numberOfLines={1}>{meta}</Text>
-      {price ? (
-        <View style={styles.recPrice}>
-          <GlassFill radius={13} tint="rgba(255,255,255,0.55)" />
-          <Text style={styles.recPriceText}>{t.common.from} {price}</Text>
-        </View>
-      ) : null}
-      <View style={styles.recArt} pointerEvents="none">
-        <Svg width={130} height={26} style={styles.recGround}>
-          <Defs>
-            <RadialGradient id={`g-${item.id}`} cx="0.5" cy="0.5" r="0.5">
-              <Stop offset="0" stopColor={accent} stopOpacity={0.35} />
-              <Stop offset="1" stopColor={accent} stopOpacity={0} />
-            </RadialGradient>
-          </Defs>
-          <Ellipse cx={65} cy={13} rx={62} ry={11} fill={`url(#g-${item.id})`} />
-        </Svg>
-        <View style={styles.recPhotoShadow}>
-          <AppImage uri={imageUri(item.imageUrl)} fallbackCode={item.moduleCode} style={styles.recPhoto} />
-        </View>
-      </View>
-    </PressableScale>
   );
 }
 
@@ -313,17 +272,5 @@ const styles = StyleSheet.create({
   emIcon: { width: 42, height: 42, borderRadius: 12, backgroundColor: "#F4CFC1", alignItems: "center", justifyContent: "center" },
   emTitle: { fontSize: 14, fontWeight: "700", color: "#A6472B" },
   emBody: { fontSize: 10, color: "#7C665E", marginTop: 2 },
-  recCard: { width: 198, height: 236, borderRadius: 26, padding: 16, backgroundColor: "#FFFFFF" },
-  recHead: { flexDirection: "row", alignItems: "center", gap: 6 },
-  recModule: { flexShrink: 1, fontSize: 11, fontWeight: "800" },
-  recTitle: { marginTop: 8, fontSize: 17, fontWeight: "800", color: "#17221F", lineHeight: 21, letterSpacing: -0.2 },
-  recMeta: { marginTop: 3, fontSize: 11.5, color: colors.textSecondary },
-  // Photo floats out of the card, tilted in perspective like a 3D object.
-  recArt: { position: "absolute", right: 10, bottom: 12, width: 112, height: 120, alignItems: "center", justifyContent: "flex-end" },
-  recGround: { position: "absolute", bottom: -10 },
-  recPhotoShadow: { width: 100, height: 100, borderRadius: 22, backgroundColor: "#FFFFFF", transform: [{ perspective: 600 }, { rotateY: "-16deg" }, { rotateZ: "6deg" }], shadowColor: "#1F2937", shadowOpacity: 0.26, shadowRadius: 12, shadowOffset: { width: -6, height: 12 } },
-  recPhoto: { width: 100, height: 100, borderRadius: 22 },
-  recPrice: { alignSelf: "flex-start", marginTop: 8, height: 26, paddingHorizontal: 10, borderRadius: 13, justifyContent: "center" },
-  recPriceText: { fontSize: 11.5, fontWeight: "800", color: colors.priceRose },
   footer: { textAlign: "center", color: colors.textMuted, fontSize: 10, paddingTop: 18, paddingBottom: 3 },
 });

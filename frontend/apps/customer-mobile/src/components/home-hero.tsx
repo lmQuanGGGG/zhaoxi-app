@@ -273,7 +273,9 @@ function BackCard({ image, drag }: { image: number; drag: SharedValue<number> })
 }
 
 const ITEM = 96;
-const LENS = 178;
+const LENS = 168;
+const ARC_HEADROOM = 48; // room above the items so the halo/sparkles are not clipped by the ScrollView
+const ARC_ICON_CENTER = 18 + 43; // arcSection paddingTop + half the 86pt centre icon
 
 /** White dome with a snapping service carousel: the centred item is enlarged and raised, the rest follow the arc. */
 export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ code: string; name: string }>; onOpen: (code: string) => void; onPressIn?: (code: string) => void; more: string }) {
@@ -289,8 +291,12 @@ export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ 
       <View style={[styles.dome, { width: width * 2.2, height: width * 2.2, borderRadius: width * 1.1, left: -width * 0.6 }]} />
       {/* Liquid Glass lens bulging over the dome edge, refracting the emerald header behind it */}
       <View pointerEvents="none" style={[styles.lensWrap, { left: width / 2 - LENS / 2 }]}>
-        <Glass style={styles.lens} clear interactive={false} tint="rgba(255,255,255,0.42)" />
-        <LinearGradient colors={["rgba(255,255,255,0.75)", "rgba(255,255,255,0)"]} start={{ x: 0.2, y: 0 }} end={{ x: 0.5, y: 0.7 }} style={styles.lensSheen} />
+        <View style={styles.lensShadow} />
+        <Glass style={styles.lens} clear interactive={false} tint="rgba(255,226,210,0.28)" />
+        {/* Peach body so the half over the white dome still reads as a glass sphere */}
+        <LinearGradient colors={["rgba(255,255,255,0)", "rgba(255,196,170,0.22)", "rgba(255,170,140,0.32)"]} locations={[0, 0.55, 1]} style={styles.lensBody} />
+        <LinearGradient colors={["rgba(255,255,255,0.8)", "rgba(255,255,255,0)"]} start={{ x: 0.2, y: 0 }} end={{ x: 0.5, y: 0.7 }} style={styles.lensSheen} />
+        <View style={styles.lensRim} />
       </View>
       <Animated.ScrollView
         ref={list}
@@ -301,8 +307,8 @@ export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ 
         decelerationRate="fast"
         onScroll={onScroll}
         scrollEventThrottle={16}
-        contentContainerStyle={{ paddingHorizontal: pad }}
-        style={{ height: 176 }}
+        contentContainerStyle={{ paddingHorizontal: pad, paddingTop: ARC_HEADROOM }}
+        style={{ height: 176 + ARC_HEADROOM, marginTop: -ARC_HEADROOM }}
         onMomentumScrollEnd={() => haptic.select()}
       >
         {tiles.map((tile, index) => <ArcItem key={tile.code} index={index} x={x} tile={tile} onOpen={onOpen} onPressIn={onPressIn} />)}
@@ -416,8 +422,11 @@ const styles = StyleSheet.create({
   heroHighlight: { fontSize: 15, fontWeight: "800", color: "#F6D892", marginTop: 3 },
   arcSection: { marginTop: -64, paddingTop: 18 },
   dome: { position: "absolute", top: 0, backgroundColor: colors.white },
-  lensWrap: { position: "absolute", top: -54, width: LENS, height: LENS },
+  lensWrap: { position: "absolute", top: ARC_ICON_CENTER - LENS / 2, width: LENS, height: LENS },
   lens: { width: LENS, height: LENS, borderRadius: LENS / 2 },
+  lensShadow: { position: "absolute", left: 6, right: 6, top: 6, bottom: 6, borderRadius: LENS / 2, backgroundColor: "#FFFFFF", shadowColor: "#C2410C", shadowOpacity: 0.22, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
+  lensBody: { position: "absolute", left: 0, top: 0, width: LENS, height: LENS, borderRadius: LENS / 2 },
+  lensRim: { position: "absolute", left: 0, top: 0, width: LENS, height: LENS, borderRadius: LENS / 2, borderWidth: 1.5, borderColor: "rgba(255,255,255,0.95)" },
   lensSheen: { position: "absolute", left: 18, top: 10, width: LENS * 0.56, height: LENS * 0.4, borderRadius: LENS },
   halo: { position: "absolute", top: -32, width: 150, height: 150 },
   sparkleA: { position: "absolute", top: -2, right: 14 },
