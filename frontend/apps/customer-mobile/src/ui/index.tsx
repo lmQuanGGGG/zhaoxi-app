@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image, type ImageProps } from "expo-image";
-import { useEffect, type ComponentProps, type ReactNode } from "react";
+import { LinearGradient } from "expo-linear-gradient";
+import { useEffect, useState, type ComponentProps, type ReactNode } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, type PressableProps, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle } from "react-native";
 import Animated, { Easing, FadeInDown, interpolate, useAnimatedStyle, useSharedValue, withRepeat, withSpring, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,7 +10,7 @@ import { PageHeader, TopBar } from "./chrome";
 import { haptic } from "./haptics";
 import { ZxIcon, type ZxIconName } from "./icons";
 import { GlassFill } from "./glass";
-import { ServiceTile } from "./service-icons";
+import { ServiceArt, ServiceTile, servicePalettes } from "./service-icons";
 
 export type IconName = ComponentProps<typeof Ionicons>["name"];
 export { Ionicons, haptic, ZxIcon, type ZxIconName };
@@ -160,14 +161,26 @@ export function ServiceBadge({ code, size = 52 }: { code?: string | null; size?:
 }
 
 export function AppImage({ uri, style, fallbackCode, ...props }: Omit<ImageProps, "source"> & { uri?: string; fallbackCode?: string | null }) {
-  if (!uri) {
-    return (
-      <View style={[{ backgroundColor: "#E9F7EF", alignItems: "center", justifyContent: "center", overflow: "hidden" }, style as StyleProp<ViewStyle>]}>
-        <ServiceIcon code={fallbackCode} size={34} />
-      </View>
-    );
-  }
+  if (!uri) return <ArtFallback code={fallbackCode} style={style as StyleProp<ViewStyle>} />;
   return <Image source={{ uri }} cachePolicy="memory-disk" transition={200} contentFit="cover" recyclingKey={uri} placeholder={{ blurhash: "L6PZfSi_.AyE_3t7t7R**0o#DgR4" }} style={style} {...props} />;
+}
+
+/** No photo: the 3D service illustration scaled to the frame on a service-tinted gradient with a soft glow. */
+function ArtFallback({ code, style }: { code?: string | null; style?: StyleProp<ViewStyle> }) {
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  const palette = servicePalettes[code || ""] || { tint: "#ECFDF5", accent: colors.brand };
+  const size = Math.max(28, Math.min(box.w, box.h) * 0.66);
+  return (
+    <View onLayout={(event) => setBox({ w: event.nativeEvent.layout.width, h: event.nativeEvent.layout.height })} style={[{ alignItems: "center", justifyContent: "center", overflow: "hidden", backgroundColor: palette.tint }, style]}>
+      <LinearGradient colors={[palette.tint, "#FFFFFF", palette.tint]} locations={[0, 0.55, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+      {box.w ? (
+        <>
+          <View style={{ position: "absolute", width: size * 1.25, height: size * 1.25, borderRadius: size, backgroundColor: palette.accent, opacity: 0.12 }} />
+          <ServiceArt code={code} size={size} />
+        </>
+      ) : null}
+    </View>
+  );
 }
 
 // ---------------------------------------------------------------------------

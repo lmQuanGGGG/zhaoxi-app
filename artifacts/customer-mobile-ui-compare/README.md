@@ -47,3 +47,4 @@ Mỗi `compare-*.jpg` đặt ảnh PWA (trái, Chrome 402×874) cạnh ảnh app
 | "Khám phá không giới hạn": khối tối, tab kính, băng chuyền thẻ 3D (coverflow), hình 3D lơ lửng | app-38-explore-more-3d.jpg |
 | Nút dùng chung chuyển sang Liquid Glass (topbar, quay lại, chip, +/−, Thêm vào giỏ, Đặt dịch vụ, Yêu thích) | app-39-glass-buttons.jpg |
 | Quả cầu kính trọn vẹn quanh dịch vụ giữa, quầng sáng không bị cắt | app-40-service-glass-sphere.jpg |
+| Dịch vụ không có ảnh: minh hoạ 3D phóng to theo khung, nền chuyển màu theo dịch vụ | app-41-no-photo-3d-art.jpg |
