@@ -108,7 +108,7 @@ export default function HomeScreen() {
         scrollEventThrottle={16}
       >
         <View>
-          <HomeBackdrop height={480} />
+          <HomeBackdrop height={540} />
           <HomeHeader />
           <HeroCard
             eyebrow={`ZHAOXI · ${banner?.cityLabel || t.home.city}`}

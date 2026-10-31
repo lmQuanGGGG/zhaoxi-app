@@ -21,7 +21,7 @@ import { CartIcon } from "../ui/icons";
 /** Brand gradient behind the home header (My Viettel–style immersive top). */
 /** Deep coral at the top of the home header (status-bar scrim / overscroll). */
 export { Glass };
-export const HOME_TOP = "#C9382A";
+export const HOME_TOP = "#00323A";
 /** Champagne gold accents that pair with the deep emerald (logo colours). */
 const GOLD = "#B98A3A";
 const CREAM = "#F4E7C4";
@@ -38,39 +38,29 @@ const INK = "#FFFFFF";
  */
 export function HomeBackdrop({ height }: { height: number }) {
   const { width } = useWindowDimensions();
-  const w = width;
-  const h = height;
-  const arch = (y: number, amp: number) => `M${-w * 0.1} ${y} C ${w * 0.15} ${y - amp}, ${w * 0.35} ${y - amp}, ${w * 0.5} ${y} S ${w * 0.85} ${y + amp}, ${w * 1.1} ${y}`;
+  // Deep petrol teal that melts into the white page right under the hero, so the
+  // service arc floats on the fade (no hard dome edge).
   return (
     <View pointerEvents="none" style={[StyleSheet.absoluteFill, { height }]}>
       <View style={{ position: "absolute", top: -800, left: 0, right: 0, height: 800, backgroundColor: HOME_TOP }} />
-      <Svg width={w} height={h}>
+      <Svg width={width} height={height}>
         <Defs>
-          <SvgGradient id="bg" x1="0" y1="0" x2="0.35" y2="1">
+          <SvgGradient id="bg" x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={HOME_TOP} />
-            <Stop offset="0.5" stopColor="#E25A35" />
-            <Stop offset="1" stopColor="#F2864A" />
+            <Stop offset="0.3" stopColor="#033F47" />
+            <Stop offset="0.52" stopColor="#3F8285" />
+            <Stop offset="0.66" stopColor="#8EBDBC" />
+            <Stop offset="0.8" stopColor="#D5E8E6" />
+            <Stop offset="0.92" stopColor="#F4F9F8" />
+            <Stop offset="1" stopColor={colors.bg} />
           </SvgGradient>
-          <RadialGradient id="bloom" cx="0.55" cy="0.5" r="0.5">
-            <Stop offset="0" stopColor="#FFF4EC" stopOpacity={0.62} />
-            <Stop offset="0.55" stopColor="#FFD9C4" stopOpacity={0.22} />
-            <Stop offset="1" stopColor="#FFD9C4" stopOpacity={0} />
-          </RadialGradient>
-          <RadialGradient id="peach" cx="0.5" cy="0.5" r="0.5">
-            <Stop offset="0" stopColor="#FFB98A" stopOpacity={0.7} />
-            <Stop offset="1" stopColor="#FFB98A" stopOpacity={0} />
-          </RadialGradient>
-          <RadialGradient id="ember" cx="0.5" cy="0.5" r="0.5">
-            <Stop offset="0" stopColor="#9E2418" stopOpacity={0.45} />
-            <Stop offset="1" stopColor="#9E2418" stopOpacity={0} />
+          <RadialGradient id="sheen" cx="0.5" cy="0.5" r="0.5">
+            <Stop offset="0" stopColor="#5FA7A6" stopOpacity={0.35} />
+            <Stop offset="1" stopColor="#5FA7A6" stopOpacity={0} />
           </RadialGradient>
         </Defs>
-        <Rect x={0} y={0} width={w} height={h} fill="url(#bg)" />
-        <Ellipse cx={w * 0.92} cy={h * 0.08} rx={w * 0.55} ry={w * 0.45} fill="url(#peach)" />
-        <Ellipse cx={-w * 0.05} cy={h * 0.18} rx={w * 0.5} ry={w * 0.4} fill="url(#ember)" />
-        <Ellipse cx={w * 0.5} cy={h * 0.5} rx={w * 0.85} ry={h * 0.42} fill="url(#bloom)" />
-        <Path d={arch(h * 0.86, 46)} stroke="#FFFFFF" strokeOpacity={0.12} strokeWidth={2} fill="none" />
-        <Path d={arch(h * 0.9, 34)} stroke="#FFFFFF" strokeOpacity={0.08} strokeWidth={1.5} fill="none" />
+        <Rect x={0} y={0} width={width} height={height} fill="url(#bg)" />
+        <Ellipse cx={width * 0.85} cy={height * 0.12} rx={width * 0.55} ry={height * 0.22} fill="url(#sheen)" />
       </Svg>
     </View>
   );
@@ -278,7 +268,7 @@ const ARC_HEADROOM = 48; // room above the items so the halo is not clipped by t
 const ARC_TOP = 18; // arcSection paddingTop
 const ARC_ICON_CENTER = ARC_TOP + 43; // + half the 86pt centre icon
 
-/** White dome with a snapping service carousel: the centred item is enlarged and raised, the rest follow the arc. */
+/** Snapping service carousel on the header fade: the centred item is enlarged and raised, the rest follow the arc. */
 export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ code: string; name: string }>; onOpen: (code: string) => void; onPressIn?: (code: string) => void; more: string }) {
   const { width } = useWindowDimensions();
   const x = useSharedValue(ITEM);
@@ -294,12 +284,11 @@ export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ 
   };
   return (
     <View style={styles.arcSection}>
-      <View style={[styles.dome, { width: width * 2.2, height: width * 2.2, borderRadius: width * 1.1, left: -width * 0.6 }]} />
-      {/* Liquid Glass lens bulging over the dome edge, refracting the emerald header behind it */}
+      {/* Liquid Glass lens floating where the teal header fades into the page */}
       <View pointerEvents="none" style={[styles.lensWrap, { left: width / 2 - LENS / 2 }]}>
         <View style={styles.lensShadow} />
         <Glass style={styles.lens} clear interactive={false} tint="rgba(255,226,210,0.28)" />
-        {/* Peach body so the half over the white dome still reads as a glass sphere */}
+        {/* Peach body so the lower half, over the near-white fade, still reads as a glass sphere */}
         <LinearGradient colors={["rgba(255,255,255,0)", "rgba(255,196,170,0.22)", "rgba(255,170,140,0.32)"]} locations={[0, 0.55, 1]} style={styles.lensBody} />
         <LinearGradient colors={["rgba(255,255,255,0.8)", "rgba(255,255,255,0)"]} start={{ x: 0.2, y: 0 }} end={{ x: 0.5, y: 0.7 }} style={styles.lensSheen} />
         <View style={styles.lensRim} />
@@ -412,7 +401,6 @@ const styles = StyleSheet.create({
   heroTitle: { fontSize: 22, fontWeight: "800", color: colors.white, lineHeight: 27, letterSpacing: -0.4, marginTop: 4, textShadowColor: "rgba(0,0,0,0.25)", textShadowRadius: 8 },
   heroHighlight: { fontSize: 15, fontWeight: "800", color: "#F6D892", marginTop: 3 },
   arcSection: { marginTop: -64, paddingTop: ARC_TOP },
-  dome: { position: "absolute", top: 0, backgroundColor: colors.white },
   lensWrap: { position: "absolute", top: ARC_ICON_CENTER - LENS / 2, width: LENS, height: LENS },
   lens: { width: LENS, height: LENS, borderRadius: LENS / 2 },
   lensShadow: { position: "absolute", left: 6, right: 6, top: 6, bottom: 6, borderRadius: LENS / 2, backgroundColor: "#FFFFFF", shadowColor: "#C2410C", shadowOpacity: 0.22, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
