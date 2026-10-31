@@ -35,7 +35,7 @@ export default function OrdersScreen() {
 
   const header = (
     <View>
-      <Header title={t.orders.title} />
+      <Header back={false} title={t.orders.title} />
       <View style={{ paddingHorizontal: 14, gap: 8 }}>
         <View style={styles.summary}>
           <View style={[styles.sumCard, shadow("card")]}><Text style={styles.sumLabel}>{t.orders.count}</Text><Text style={styles.sumValue}>{visible.length}</Text></View>
@@ -53,7 +53,7 @@ export default function OrdersScreen() {
   );
 
   return (
-    <Screen>
+    <Screen tab>
       <FlashList
         data={visible}
         keyExtractor={(item) => item.id}

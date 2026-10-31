@@ -48,7 +48,7 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <Screen>
+    <Screen tab>
       <ScrollView contentContainerStyle={{ padding: 14, gap: 12, paddingBottom: TAB_BAR_SPACE }}>
         {/* The fade lives on an unshadowed wrapper: iOS would cast the hero's shadow from the whole gradient */}
         <View>

@@ -40,7 +40,7 @@ export default function MessagesScreen() {
   }, [threads.data, filter, query]);
 
   return (
-    <Screen>
+    <Screen tab>
       <FlashList
         data={visible}
         keyExtractor={(item) => item.id}

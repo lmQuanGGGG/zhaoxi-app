@@ -5,7 +5,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, type P
 import Animated, { Easing, FadeInDown, interpolate, useAnimatedStyle, useSharedValue, withRepeat, withSpring, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, font, radius, shadow, space } from "../theme";
-import { PageHeader, TopBar } from "./chrome";
+import { PageHeader, StatusStrip, TopBar } from "./chrome";
 import { haptic } from "./haptics";
 import { ZxIcon, type ZxIconName } from "./icons";
 import { GlassFill, SolidFill } from "./glass";
@@ -21,11 +21,14 @@ export { Glass, GlassFill, LIQUID_GLASS, SolidFill } from "./glass";
 // Layout
 // ---------------------------------------------------------------------------
 /** Page shell: PWA top bar + white (or soft grey) page background. */
-export function Screen({ children, style, topbar = true, soft = false, edges = [] }: { children: ReactNode; style?: StyleProp<ViewStyle>; topbar?: boolean; soft?: boolean; edges?: Array<"top" | "bottom"> }) {
+export function Screen({ children, style, topbar = true, tab = false, soft = false, edges = [] }: { children: ReactNode; style?: StyleProp<ViewStyle>; topbar?: boolean; tab?: boolean; soft?: boolean; edges?: Array<"top" | "bottom"> }) {
   const insets = useSafeAreaInsets();
+  // Tab roots keep the ZhaoXi top bar; pushed screens only get a petrol status strip.
+  const sub = topbar && !tab;
   return (
-    <View style={[{ flex: 1, backgroundColor: soft ? colors.bgSoft : colors.bg, paddingTop: !topbar && edges.includes("top") ? insets.top : 0, paddingBottom: edges.includes("bottom") ? insets.bottom : 0 }, style]}>
-      {topbar ? <TopBar /> : null}
+    <View style={[{ flex: 1, backgroundColor: soft ? colors.bgSoft : colors.bg, paddingTop: sub || (!topbar && edges.includes("top")) ? insets.top : 0, paddingBottom: edges.includes("bottom") ? insets.bottom : 0 }, style]}>
+      {topbar && tab ? <TopBar /> : null}
+      {sub ? <StatusStrip /> : null}
       {children}
     </View>
   );
@@ -122,7 +125,8 @@ export function Chip({ label, active, onPress, count, icon, tone = "green", imag
   const activeBg = dark ? "rgba(24,63,53,0.92)" : "rgba(7,193,96,0.9)";
   return (
     <PressableScale onPress={() => { haptic.select(); onPress?.(); }} hapticOnPress={false} style={[styles.chip, dark && styles.chipDark, soft && styles.chipSoft]}>
-      <GlassFill radius={999} tint={active ? activeBg : soft ? "rgba(241,245,244,0.6)" : undefined} />
+      {/* Selected state is a solid fill: Liquid Glass drops dark tints, which hid the active chip */}
+      {active ? <SolidFill radius={999} tint={activeBg} /> : <GlassFill radius={999} tint={soft ? "rgba(241,245,244,0.6)" : undefined} />}
       {image}
       {icon ? <Ionicons name={icon} size={14} color={active ? colors.white : "#475569"} /> : null}
       <Text style={[styles.chipText, dark && { fontSize: 11, fontWeight: "500", color: colors.textSecondary }, active && { color: colors.white }]}>{label}</Text>

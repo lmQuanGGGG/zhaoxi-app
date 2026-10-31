@@ -41,14 +41,9 @@ export function TopBar() {
     ]);
   };
 
-  // Light status bar over the petrol header only while this screen is focused
-  // (the root layout keeps "dark" for header-less screens).
-  const [focused, setFocused] = useState(true);
-  useFocusEffect(useCallback(() => { setFocused(true); return () => setFocused(false); }, []));
-
   return (
     <View style={[styles.topbar, { paddingTop: insets.top + 8 }]}>
-      {focused ? <StatusBar style="light" /> : null}
+      <LightStatusBar />
       <View style={styles.topbarRow}>
         <Pressable onPress={() => router.navigate("/")} style={styles.brand} hitSlop={6}>
           <Image source={require("../../assets/brand-logo.png")} style={styles.logo} contentFit="cover" />
@@ -64,6 +59,26 @@ export function TopBar() {
           <TopIcon label={t.profile.signOut} onPress={onSignOut}><ZxIcon name="logout" size={18} color="#FFB4A6" /></TopIcon>
         </View>
       </View>
+    </View>
+  );
+}
+
+/** Light status bar over the petrol header only while this screen is focused (root layout keeps "dark"). */
+function LightStatusBar() {
+  const [focused, setFocused] = useState(true);
+  useFocusEffect(useCallback(() => { setFocused(true); return () => setFocused(false); }, []));
+  return focused ? <StatusBar style="light" /> : null;
+}
+
+/**
+ * Pushed (non-tab) screens drop the global top bar and dock: only a petrol strip
+ * behind the status bar stays fixed, the page's own back button + title follow.
+ */
+export function StatusStrip() {
+  const insets = useSafeAreaInsets();
+  return (
+    <View pointerEvents="none" style={[styles.statusStrip, { height: insets.top }]}>
+      <LightStatusBar />
     </View>
   );
 }
@@ -115,7 +130,6 @@ const dockItems: Array<{ href: "/" | "/orders" | "/messages" | "/profile"; icon:
   { href: "/profile", icon: "profile", key: "profile" },
 ];
 
-const HIDDEN_DOCK = [/^\/onboarding/, /^\/login/, /^\/request\//, /^\/request-success/, /^\/chat\//, /^\/language/];
 
 export const DOCK_SPACE = 104;
 
@@ -137,7 +151,8 @@ export function Dock() {
   const slot = useSharedValue(Math.max(index, 0));
   useEffect(() => { if (index >= 0) slot.value = withSpring(index, { damping: 18, stiffness: 210, mass: 0.8 }); }, [index, slot]);
   const lens = useAnimatedStyle(() => ({ transform: [{ translateX: slot.value * ITEM_WIDTH }] }));
-  if (HIDDEN_DOCK.some((pattern) => pattern.test(pathname))) return null;
+  // Tab roots only: once the user drills into a pushed screen the dock gets out of the way.
+  if (index < 0 || dockItems[index].href !== pathname) return null;
   const labels = { home: t.tabs.home, orders: t.tabs.orders, messages: t.tabs.messages, profile: t.tabs.profile };
   const Container = LIQUID_GLASS ? GlassContainer : View;
   return (
@@ -162,7 +177,8 @@ export function Dock() {
 /** Liquid Glass when the OS has it, otherwise the frosted blur fill. */
 function GlassSurface({ style, children }: { style: StyleProp<ViewStyle>; children: ReactNode }) {
   if (LIQUID_GLASS) {
-    return <GlassView glassEffectStyle="regular" isInteractive colorScheme="light" style={style}>{children}</GlassView>;
+    // Not `isInteractive`: on iOS 27 the interactive glass let taps fall through to the content below the dock.
+    return <GlassView glassEffectStyle="regular" colorScheme="light" style={style}>{children}</GlassView>;
   }
   return (
     <View style={style}>
@@ -272,6 +288,7 @@ const styles = StyleSheet.create({
   gemPress: { flex: 1, alignItems: "center", justifyContent: "center", borderRadius: 32 },
   gem: { position: "absolute", overflow: "hidden", shadowColor: "#18211E", shadowOpacity: 0.18, shadowRadius: 2.5, shadowOffset: { width: 0, height: 2 } },
   gemShine: { position: "absolute", left: 2, right: 2, top: 1, height: 1, backgroundColor: "rgba(255,255,255,0.65)", borderRadius: 1 },
+  statusStrip: { position: "absolute", left: 0, right: 0, top: 0, zIndex: 40, backgroundColor: colors.header },
   fadeHost: { position: "absolute", left: 0, right: 0, top: 0, bottom: 0, zIndex: -1 },
   pageHeader: { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 14, paddingTop: 10, paddingBottom: 14 },
   backButton: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
