@@ -12,7 +12,7 @@ import { restaurantStatusLabel, useFavorite, useServiceDetail, useSession } from
 import { useI18n } from "../../src/i18n";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
-import { AppImage, BackButton, Button, PressableScale, Screen, ServiceIcon, Skeleton, StatusPill } from "../../src/ui";
+import { AppImage, BackButton, Button, GlassFill, PressableScale, Screen, ServiceIcon, Skeleton, StatusPill } from "../../src/ui";
 
 const copy = {
   "vi-VN": { verified: "✓ Đối tác ZhaoXi xác thực", from: "Từ", info: "Thông tin dịch vụ", address: "Địa chỉ", phone: "Điện thoại", book: "Đặt dịch vụ" },
@@ -71,6 +71,7 @@ export default function ServiceDetailScreen() {
                   <Text style={styles.price}>{priceText}{data.moduleCode === "housing" && unitPrice > 0 ? <Text style={styles.perMonth}> / {monthUnit[locale]}</Text> : null}</Text>
                   <Animated.View key={String(favorite.favorite)} entering={ZoomIn.springify().damping(14)}>
                     <PressableScale onPress={favorite.toggle} style={styles.favorite}>
+                      <GlassFill radius={18} />
                       <Text style={[styles.favoriteText, favorite.favorite && { color: colors.danger }]}>{favorite.favorite ? "★" : "☆"} {favorite.favorite ? t.detail.unfavorite : t.detail.favorite}</Text>
                     </PressableScale>
                   </Animated.View>
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
   priceRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 4 },
   price: { flexShrink: 1, fontSize: 22, fontWeight: "800", color: colors.priceRose },
   perMonth: { fontSize: 14, fontWeight: "700", color: colors.slate },
-  favorite: { paddingHorizontal: 14, height: 35, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, justifyContent: "center", shadowColor: "#71371B", shadowOpacity: 0.18, shadowRadius: 0, shadowOffset: { width: 0, height: 4 } },
+  favorite: { paddingHorizontal: 14, height: 36, borderRadius: 18, justifyContent: "center" },
   favoriteText: { fontSize: 12, fontWeight: "800", color: "#475569" },
   infoCard: { padding: 16, borderRadius: 20, backgroundColor: colors.surfaceMuted, gap: 8, ...shadow("card") },
   infoTitle: { fontSize: 15, fontWeight: "700", color: colors.ink },

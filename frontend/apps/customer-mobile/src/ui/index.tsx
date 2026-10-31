@@ -8,12 +8,14 @@ import { colors, font, radius, shadow, space } from "../theme";
 import { PageHeader, TopBar } from "./chrome";
 import { haptic } from "./haptics";
 import { ZxIcon, type ZxIconName } from "./icons";
+import { GlassFill } from "./glass";
 import { ServiceTile } from "./service-icons";
 
 export type IconName = ComponentProps<typeof Ionicons>["name"];
 export { Ionicons, haptic, ZxIcon, type ZxIconName };
 export { BackButton, DOCK_SPACE, PageHeader, ServicesGem, TopBar } from "./chrome";
 export { ServiceArt, ServiceTile, servicePalettes } from "./service-icons";
+export { Glass, GlassFill, LIQUID_GLASS } from "./glass";
 
 // ---------------------------------------------------------------------------
 // Layout
@@ -63,17 +65,20 @@ export function PressableScale({ children, style, onPress, scaleTo = 0.97, hapti
 }
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "dark" | "soft";
+/** Liquid Glass button: tinted glass for prominent variants, clear glass for secondary. */
 export function Button({ title, onPress, variant = "primary", icon, loading, disabled, style, small }: { title: string; onPress?: () => void; variant?: ButtonVariant; icon?: IconName; loading?: boolean; disabled?: boolean; style?: StyleProp<ViewStyle>; small?: boolean }) {
   const palette = {
-    primary: { bg: colors.wechat, fg: colors.white, border: colors.wechat },
-    secondary: { bg: colors.white, fg: "#475569", border: colors.border },
-    ghost: { bg: "transparent", fg: colors.brandStrong, border: "transparent" },
-    danger: { bg: colors.dangerSoft, fg: colors.dangerText, border: colors.dangerSoft },
-    dark: { bg: colors.brandDeep, fg: colors.white, border: colors.brandDeep },
-    soft: { bg: colors.brandSoft, fg: colors.brandStrong, border: "#DCFCE7" },
+    primary: { tint: "rgba(7,193,96,0.92)", fg: colors.white },
+    secondary: { tint: undefined, fg: colors.ink },
+    ghost: { tint: null, fg: colors.brandStrong },
+    danger: { tint: "rgba(239,68,68,0.16)", fg: colors.dangerText },
+    dark: { tint: "rgba(24,63,53,0.92)", fg: colors.white },
+    soft: { tint: "rgba(15,175,122,0.16)", fg: colors.brandStrong },
   }[variant];
+  const r = variant === "dark" ? 14 : 999;
   return (
-    <PressableScale disabled={disabled || loading} onPress={onPress} style={[styles.button, small && styles.buttonSmall, variant === "dark" && { borderRadius: 9 }, { backgroundColor: palette.bg, borderColor: palette.border }, style]}>
+    <PressableScale disabled={disabled || loading} onPress={onPress} style={[styles.button, small && styles.buttonSmall, { borderRadius: r }, style]}>
+      {palette.tint !== null ? <GlassFill radius={r} tint={palette.tint} /> : null}
       {loading ? <ActivityIndicator color={palette.fg} /> : (
         <>
           {icon ? <Ionicons name={icon} size={small ? 14 : 17} color={palette.fg} /> : null}
@@ -87,6 +92,7 @@ export function Button({ title, onPress, variant = "primary", icon, loading, dis
 export function IconButton({ icon, zx, onPress, badge, color = colors.ink, style, label }: { icon?: IconName; zx?: ZxIconName; onPress?: () => void; badge?: number; color?: string; style?: StyleProp<ViewStyle>; label?: string }) {
   return (
     <PressableScale accessibilityLabel={label} onPress={onPress} style={[styles.iconButton, style]}>
+      <GlassFill radius={12} />
       {zx ? <ZxIcon name={zx} size={19} color={color} /> : icon ? <Ionicons name={icon} size={19} color={color} /> : null}
       {badge ? <Badge value={badge} style={{ position: "absolute", top: -5, right: -5 }} /> : null}
     </PressableScale>
@@ -102,9 +108,10 @@ export function Badge({ value, style, green }: { value: number; style?: StylePro
 export function Chip({ label, active, onPress, count, icon, tone = "green", image }: { label: string; active?: boolean; onPress?: () => void; count?: number; icon?: IconName; tone?: "green" | "dark" | "soft"; image?: ReactNode }) {
   const dark = tone === "dark";
   const soft = tone === "soft";
-  const activeBg = dark ? colors.brandDeep : colors.wechat;
+  const activeBg = dark ? "rgba(24,63,53,0.92)" : "rgba(7,193,96,0.9)";
   return (
-    <PressableScale onPress={() => { haptic.select(); onPress?.(); }} hapticOnPress={false} style={[styles.chip, dark && styles.chipDark, soft && styles.chipSoft, active && { backgroundColor: activeBg, borderColor: activeBg }, active && !dark && shadow("card")]}>
+    <PressableScale onPress={() => { haptic.select(); onPress?.(); }} hapticOnPress={false} style={[styles.chip, dark && styles.chipDark, soft && styles.chipSoft]}>
+      <GlassFill radius={999} tint={active ? activeBg : soft ? "rgba(241,245,244,0.6)" : undefined} />
       {image}
       {icon ? <Ionicons name={icon} size={14} color={active ? colors.white : "#475569"} /> : null}
       <Text style={[styles.chipText, dark && { fontSize: 11, fontWeight: "500", color: colors.textSecondary }, active && { color: colors.white }]}>{label}</Text>
@@ -118,10 +125,12 @@ export function QuantityStepper({ value, onChange, min = 0, max = 99, disabled }
   return (
     <View style={styles.stepper}>
       <PressableScale disabled={disabled || value <= min} onPress={() => { haptic.select(); onChange(Math.max(min, value - 1)); }} hapticOnPress={false} style={styles.stepMinus}>
+        <GlassFill radius={13} />
         <ZxIcon name="minus" size={14} color="#334155" strokeWidth={2.4} />
       </PressableScale>
       <Text style={styles.stepperValue}>{value}</Text>
       <PressableScale disabled={disabled || value >= max} onPress={() => { haptic.select(); onChange(Math.min(max, value + 1)); }} hapticOnPress={false} style={styles.stepPlus}>
+        <GlassFill radius={13} tint="rgba(7,193,96,0.9)" />
         <ZxIcon name="plus" size={14} color={colors.white} strokeWidth={2.6} />
       </PressableScale>
     </View>
@@ -247,21 +256,21 @@ export function ListRow({ icon, emoji, title, subtitle, onPress, right, tint = c
 export const styles = StyleSheet.create({
   card: { backgroundColor: colors.white, borderRadius: radius.lg, ...shadow("card") },
   cardMuted: { backgroundColor: colors.surfaceMuted },
-  button: { minHeight: 48, borderRadius: radius.pill, borderWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, paddingHorizontal: 18 },
+  button: { minHeight: 48, borderRadius: radius.pill, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, paddingHorizontal: 18 },
   buttonSmall: { minHeight: 34, paddingHorizontal: 13 },
   buttonText: { fontSize: 15, fontWeight: "800" },
-  iconButton: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.white, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: colors.border },
+  iconButton: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   badge: { minWidth: 17, height: 17, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.danger, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: colors.white },
   badgeText: { color: colors.white, fontSize: 8, fontWeight: "900" },
-  chip: { flexDirection: "row", alignItems: "center", gap: 5, height: 34, paddingHorizontal: 14, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
-  chipDark: { height: 30, paddingHorizontal: 9, gap: 6, borderColor: colors.borderWarm },
-  chipSoft: { borderColor: "transparent", backgroundColor: "#F1F5F4" },
+  chip: { flexDirection: "row", alignItems: "center", gap: 5, height: 34, paddingHorizontal: 14, borderRadius: radius.pill },
+  chipDark: { height: 30, paddingHorizontal: 9, gap: 6 },
+  chipSoft: {},
   chipText: { fontSize: 12, fontWeight: "600", color: "#475569" },
   chipCount: { minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 4, backgroundColor: "#EEF0EE", alignItems: "center", justifyContent: "center" },
   chipCountText: { fontSize: 9, color: colors.textSecondary },
   stepper: { flexDirection: "row", alignItems: "center", gap: 6 },
-  stepMinus: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" },
-  stepPlus: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.wechat, alignItems: "center", justifyContent: "center" },
+  stepMinus: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center" },
+  stepPlus: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center" },
   stepperValue: { minWidth: 18, textAlign: "center", fontWeight: "700", fontSize: 13, color: colors.ink },
   fieldLabel: { fontSize: 13, color: colors.ink },
   field: { minHeight: 52, borderRadius: 18, backgroundColor: "#F2F5F8", paddingHorizontal: 16, fontSize: 15, color: colors.text, ...shadow("card") },

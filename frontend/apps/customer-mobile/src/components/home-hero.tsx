@@ -1,6 +1,5 @@
 import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
-import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useState, type ReactNode } from "react";
@@ -14,13 +13,14 @@ import { useCart } from "../cart";
 import { useSession, useUnread } from "../hooks";
 import { useI18n } from "../i18n";
 import { colors, shadow } from "../theme";
+import { Glass } from "../ui/glass";
 import { PressableScale, ServiceArt, ZxIcon, haptic, servicePalettes, type ZxIconName } from "../ui";
 import { CartIcon } from "../ui/icons";
 
-const LIQUID_GLASS = Platform.OS === "ios" && isLiquidGlassAvailable();
 
 /** Brand gradient behind the home header (My Viettel–style immersive top). */
 /** Deep coral at the top of the home header (status-bar scrim / overscroll). */
+export { Glass };
 export const HOME_TOP = "#C9382A";
 /** Champagne gold accents that pair with the deep emerald (logo colours). */
 const GOLD = "#B98A3A";
@@ -29,19 +29,6 @@ const EMERALD = "#1F6B57";
 const CORAL = "#D9472B";
 const INK = "#FFFFFF";
 
-/** Real Liquid Glass where the OS has it, frosted blur otherwise. */
-export function Glass({ style, children, tint, clear = false, interactive = true }: { style?: StyleProp<ViewStyle>; children?: ReactNode; tint?: string; clear?: boolean; interactive?: boolean }) {
-  if (LIQUID_GLASS) {
-    return <GlassView glassEffectStyle={clear ? "clear" : "regular"} tintColor={tint} isInteractive={interactive} colorScheme="light" style={style}>{children}</GlassView>;
-  }
-  return (
-    <View style={[style, { overflow: "hidden" }]}>
-      {Platform.OS === "ios" ? <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} /> : null}
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: tint || "rgba(255,255,255,0.32)" }]} />
-      {children}
-    </View>
-  );
-}
 
 /** Soft light blobs on the gradient so the glass has something to refract. */
 /**

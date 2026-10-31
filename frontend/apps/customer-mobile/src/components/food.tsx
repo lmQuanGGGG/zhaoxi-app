@@ -11,6 +11,7 @@ import { imageUri, money, num, str } from "../format";
 import { useI18n } from "../i18n";
 import { colors, shadow } from "../theme";
 import { AppImage, PressableScale, QuantityStepper, haptic } from "../ui";
+import { GlassFill } from "../ui/glass";
 import { CartIcon } from "../ui/icons";
 import { toast } from "../ui/toast";
 
@@ -51,7 +52,8 @@ export function MenuCard({ item, price, restaurantOpen }: { item: Service; price
       {available ? (
         <View style={{ alignItems: "center", gap: 8 }}>
           <QuantityStepper value={quantity} onChange={setQuantity} />
-          <PressableScale disabled={!quantity} onPress={add} style={[styles.addButton, quantity > 0 && styles.addButtonOn]}>
+          <PressableScale disabled={!quantity} onPress={add} style={styles.addButton}>
+            <GlassFill radius={14} tint={quantity > 0 ? "rgba(7,193,96,0.9)" : undefined} />
             <Text style={[styles.addText, quantity > 0 && { color: colors.white }]}>{t.detail.addCart}</Text>
           </PressableScale>
         </View>
@@ -121,7 +123,7 @@ export function RestaurantCard({ id, menu, status, pricing, index = 0, onOpen }:
       </Pressable>
       <View style={{ padding: 12 }}>
         <MenuGrid items={menu.slice(0, 2)} pricing={pricing} restaurantOpen={open} withDetailLink />
-        <PressableScale onPress={onOpen} style={styles.viewMore}><Text style={styles.viewMoreText}>{t.browse.viewMenu}{menu.length > 2 ? ` (${menu.length - 2})` : ""} ›</Text></PressableScale>
+        <PressableScale onPress={onOpen} style={styles.viewMore}><GlassFill radius={20} tint="rgba(15,175,122,0.14)" /><Text style={styles.viewMoreText}>{t.browse.viewMenu}{menu.length > 2 ? ` (${menu.length - 2})` : ""} ›</Text></PressableScale>
       </View>
      </View>
     </Animated.View>
@@ -167,9 +169,8 @@ const styles = StyleSheet.create({
   promo: { alignSelf: "flex-start", marginTop: 3, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999, backgroundColor: "#FFF7ED" },
   promoText: { fontSize: 8, fontWeight: "800", color: "#C2410C" },
   dashed: { height: 0, borderWidth: 0.6, borderStyle: "dashed", borderColor: "#CBD5E1" },
-  addButton: { alignSelf: "stretch", height: 28, borderRadius: 999, backgroundColor: "#E2E8F0", alignItems: "center", justifyContent: "center" },
-  addButtonOn: { backgroundColor: colors.wechat },
-  addText: { fontSize: 10, fontWeight: "700", color: "#94A3B8" },
+  addButton: { alignSelf: "stretch", height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  addText: { fontSize: 10.5, fontWeight: "700", color: "#64748B" },
   soldOut: { textAlign: "center", color: colors.dangerText, fontWeight: "900", fontSize: 12, paddingVertical: 6 },
   detailLink: { textAlign: "center", fontSize: 11, fontWeight: "600", color: colors.brandStrong },
   // Shadow on an unclipped wrapper; iOS drops shadows on views with overflow hidden.
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
   hours: { fontSize: 10, color: "#FECACA", fontWeight: "800", marginTop: 2 },
   distance: { alignSelf: "flex-start", marginTop: 4, paddingHorizontal: 7, paddingVertical: 2.5, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.92)" },
   distanceText: { fontSize: 9, fontWeight: "700", color: "#065F46" },
-  viewMore: { marginTop: 12, height: 39, borderRadius: 14, backgroundColor: "#F0FDF4", borderWidth: 1, borderColor: "#DCFCE7", alignItems: "center", justifyContent: "center" },
+  viewMore: { marginTop: 12, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   viewMoreText: { fontSize: 12, fontWeight: "700", color: "#15803D" },
   cartBarWrap: { position: "absolute", left: 16, right: 16 },
   cartBar: { flexDirection: "row", alignItems: "center", gap: 10, height: 52, paddingHorizontal: 8, paddingRight: 16, borderRadius: 999, backgroundColor: colors.wechat },

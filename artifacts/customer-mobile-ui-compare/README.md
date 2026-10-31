@@ -44,3 +44,5 @@ Mỗi `compare-*.jpg` đặt ảnh PWA (trái, Chrome 402×874) cạnh ảnh app
 | Home nền ngọc trai aurora pastel, hero chồng thẻ ảnh xếp lớp, kính tròn + quầng sáng icon dịch vụ | app-35-home-pearl-aurora.jpg |
 | Home nền san hô hoàng hôn (SVG), thẻ ảnh + tấm kính lòi bên trái theo ảnh mẫu | app-36-home-coral.jpg |
 | Hero vuốt ngang: thẻ trước nghiêng 3D bay đi, thẻ sau (ảnh thật, hình thang) tiến lên | app-37-hero-3d-swipe.jpg |
+| "Khám phá thêm": thẻ kính nhuộm màu dịch vụ, ảnh món nghiêng 3D nổi góc phải | app-38-explore-more-3d.jpg |
+| Nút dùng chung chuyển sang Liquid Glass (topbar, quay lại, chip, +/−, Thêm vào giỏ, Đặt dịch vụ, Yêu thích) | app-39-glass-buttons.jpg |
