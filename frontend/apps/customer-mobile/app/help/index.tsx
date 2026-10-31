@@ -9,7 +9,7 @@ import { useDebounced } from "../../src/hooks";
 import { useI18n } from "../../src/i18n";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
-import { Header, PressableScale, Screen, SkeletonList, ZxIcon } from "../../src/ui";
+import { Art3D, Header, PressableScale, Screen, SkeletonList, ZxIcon } from "../../src/ui";
 
 // Copy from the PWA help page.
 const copy = {
@@ -45,7 +45,7 @@ export default function HelpCenter() {
             </Animated.View>
           )) : (
             <View style={styles.empty}>
-              <Text style={{ fontSize: 32 }}>❓</Text>
+              <Art3D kind="help" size={40} />
               <Text style={styles.emptyText}>{c.empty}</Text>
             </View>
           )}

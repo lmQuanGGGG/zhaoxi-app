@@ -14,7 +14,7 @@ import { usePullRefresh, useSession } from "../../src/hooks";
 import { useI18n } from "../../src/i18n";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
-import { Badge, Header, PressableScale, Screen, SkeletonList } from "../../src/ui";
+import { Art3D, Badge, Header, PressableScale, Screen, SkeletonList } from "../../src/ui";
 
 const copy = {
   "vi-VN": { title: "Trung tâm tin nhắn", search: "Trung tâm tin nhắn…", assistant: "Trợ lý ZhaoXi", assistantHint: "Tư vấn dịch vụ và hỗ trợ tức thời", empty: "Chưa có hội thoại", help: "Trung tâm trợ giúp", create: "Tạo hội thoại hỗ trợ", notify: "Trung tâm thông báo", payment: "Hỗ trợ thanh toán", support: "Hỗ trợ ZhaoXi" },
@@ -60,7 +60,7 @@ export default function MessagesScreen() {
                 <Text style={styles.chevron}>›</Text>
               </PressableScale>
               <View style={styles.search}>
-                <Text style={{ color: colors.textSecondary }}>⌕</Text>
+                <Art3D kind="search" size={16} />
                 <TextInput value={query} onChangeText={setQuery} placeholder={c.search} placeholderTextColor="#94A3B8" style={styles.searchInput} />
               </View>
             </View>

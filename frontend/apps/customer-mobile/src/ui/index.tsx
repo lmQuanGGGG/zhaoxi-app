@@ -9,12 +9,12 @@ import { PageHeader, StatusStrip, TopBar } from "./chrome";
 import { haptic } from "./haptics";
 import { ZxIcon, type ZxIconName } from "./icons";
 import { GlassFill, SolidFill } from "./glass";
-import { MenuArt, ServiceArt, ServiceTile, type MenuArtKind } from "./service-icons";
+import { Art3D, MenuArt, ServiceArt, ServiceTile, type ArtKind, type MenuArtKind } from "./service-icons";
 
 export type IconName = ComponentProps<typeof Ionicons>["name"];
 export { Ionicons, haptic, ZxIcon, type ZxIconName };
 export { BackButton, DOCK_SPACE, HeaderFade, PageHeader, ServicesGem, TopBar } from "./chrome";
-export { FactArt, MenuArt, ServiceArt, ServiceTile, servicePalettes, type FactArtKind, type MenuArtKind } from "./service-icons";
+export { Art3D, FactArt, MenuArt, ServiceArt, ServiceTile, servicePalettes, type ArtKind, type FactArtKind, type MenuArtKind } from "./service-icons";
 export { Glass, GlassFill, LIQUID_GLASS, SolidFill } from "./glass";
 
 // ---------------------------------------------------------------------------
@@ -109,6 +109,16 @@ export function PhotoCounter({ index, total, style }: { index: number; total: nu
     <View pointerEvents="none" style={[styles.counter, style]}>
       <GlassFill radius={13} clear tint="rgba(15,23,42,0.32)" />
       <Text style={styles.counterText}>{index + 1} / {total}</Text>
+    </View>
+  );
+}
+
+/** 3D pictogram + label on one line (replaces "emoji + text" titles). */
+export function ArtLabel({ kind, size = 20, style, children, numberOfLines }: { kind: ArtKind; size?: number; style?: StyleProp<TextStyle>; children: ReactNode; numberOfLines?: number }) {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexShrink: 1 }}>
+      <Art3D kind={kind} size={size} />
+      <Text style={[style, { flexShrink: 1 }]} numberOfLines={numberOfLines}>{children}</Text>
     </View>
   );
 }

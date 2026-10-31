@@ -117,7 +117,7 @@ export function RestaurantCard({ id, menu, status, pricing, index = 0, onOpen }:
             <Text style={styles.restName} numberOfLines={1}>{localizeOrganizationName(locale, first.organizationCode, first.organizationName, first.organizationMetadata)}</Text>
             <Text style={styles.restAddress} numberOfLines={2}>{str(first.organizationAddress)}</Text>
             {hours ? <Text style={styles.hours} numberOfLines={1}>{hours}</Text> : null}
-            {first.distanceKm != null ? <View style={styles.distance}><Text style={styles.distanceText}>⌖ {first.distanceKm.toFixed(1)} km</Text></View> : null}
+            {first.distanceKm != null ? <View style={styles.distance}><Text style={styles.distanceText}>{first.distanceKm.toFixed(1)} km</Text></View> : null}
           </View>
         </View>
       </Pressable>

@@ -12,7 +12,7 @@ import { money, shortDate } from "../format";
 import { useI18n } from "../i18n";
 import { keys } from "../query";
 import { colors, shadow } from "../theme";
-import { Button, PressableScale, ZxIcon, haptic } from "../ui";
+import { Art3D, Button, PressableScale, ZxIcon, haptic } from "../ui";
 import { toast } from "../ui/toast";
 import { DateStrip, OptionPills, nextDays } from "./pickers";
 
@@ -154,7 +154,7 @@ export function AppointmentSection({ requestId, appointment }: { requestId: stri
   return (
     <View style={styles.section}>
       <View style={styles.sectionHead}>
-        <View style={styles.sectionTitleRow}><Text style={{ fontSize: 15 }}>📅</Text><Text style={styles.sectionTitle}>{t.appointment}</Text></View>
+        <View style={styles.sectionTitleRow}><Art3D kind="calendar" size={20} /><Text style={styles.sectionTitle}>{t.appointment}</Text></View>
         <Text style={[styles.sectionStatus, { color: status === "confirmed" ? colors.brandStrong : status === "cancelled" || !appointment ? colors.slate : "#1D4ED8" }]}>{label}</Text>
       </View>
       {appointment ? (
@@ -223,7 +223,7 @@ export function PartnerPayment({ requestId, stage, details }: { requestId: strin
   const label = state.status === "paid" ? t.paid : state.status === "failed" ? t.payFailed : state.status === "cancelled" ? t.payCancelled : t.payPending;
   return (
     <View style={styles.section}>
-      <View style={styles.sectionTitleRow}><Text style={{ fontSize: 15 }}>💳</Text><Text style={styles.sectionTitle}>{t.payTitle}</Text></View>
+      <View style={styles.sectionTitleRow}><Art3D kind="card" size={20} /><Text style={styles.sectionTitle}>{t.payTitle}</Text></View>
       <Text style={[styles.line, { color: colors.brandStrong }]}>✓ {t.payDirect}</Text>
       {state.status !== "not_started" ? <Text style={styles.line}><Text style={styles.strong}>{label}</Text>{intent.amount ? ` · ${money(intent.amount, intent.currency || "VND")}` : ""}</Text> : null}
       <View style={styles.actions}>
@@ -262,7 +262,7 @@ export function PaymentSupport({ requestId, ticket }: { requestId: string; ticke
   return (
     <Animated.View layout={LinearTransition} style={styles.section}>
       <PressableScale onPress={() => setOpen((v) => !v)} hapticOnPress={false} style={styles.sectionHead}>
-        <View style={styles.sectionTitleRow}><Text style={{ fontSize: 15 }}>🛟</Text><Text style={styles.sectionTitle}>{t.supportTitle}</Text></View>
+        <View style={styles.sectionTitleRow}><Art3D kind="help" size={20} /><Text style={styles.sectionTitle}>{t.supportTitle}</Text></View>
         {unread > 0 ? <View style={styles.unread}><Text style={styles.unreadText}>{t.unread} {unread}</Text></View> : <Text style={styles.historyChevron}>{open ? "⌃" : "⌄"}</Text>}
       </PressableScale>
       {open ? (

@@ -5,7 +5,7 @@ import type { PaymentCapabilities, PaymentMethod } from "../api/types";
 import { useI18n } from "../i18n";
 import { paymentMethodLabels } from "../order-copy";
 import { colors, shadow } from "../theme";
-import { AppImage, Button, PressableScale, haptic } from "../ui";
+import { ArtLabel, AppImage, Button, PressableScale, haptic } from "../ui";
 import { toast } from "../ui/toast";
 
 // Copy from the PWA ServiceRequestForm payment section.
@@ -68,7 +68,7 @@ export function PaymentMethods({ value, onChange, qr, capabilities, confirmed, o
       })}
       {value === "bank_transfer" && qr ? (
         <Animated.View entering={FadeInDown} layout={LinearTransition} style={styles.panel}>
-          <Text style={styles.panelTitle}>💳 {c.title}</Text>
+          <ArtLabel kind="card" size={20} style={styles.panelTitle}>{c.title}</ArtLabel>
           <AppImage uri={qr} contentFit="contain" style={styles.qr} />
           <Button small variant="secondary" title={c.save} onPress={() => void shareQr(qr).catch(() => toast(c.saveFailed, "error"))} style={{ alignSelf: "stretch" }} />
           <Text style={styles.instruction}>{c.instruction}</Text>

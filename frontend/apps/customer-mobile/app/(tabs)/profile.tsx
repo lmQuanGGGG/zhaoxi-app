@@ -14,7 +14,7 @@ import { getPromotionsPreference, pushPermissionGranted, registerForPush, setPro
 import { profileCopy } from "../../src/profile-copy";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
-import { HeaderFade, ListRow, PressableScale, Screen, type MenuArtKind } from "../../src/ui";
+import { ArtLabel, HeaderFade, ListRow, PressableScale, Screen, type MenuArtKind } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
 
 const feedbackLabel = { "vi-VN": "Gửi phản hồi Beta", "en-US": "Beta feedback", "zh-CN": "Beta 反馈", "zh-TW": "Beta 回饋" } as const;
@@ -62,7 +62,7 @@ export default function ProfileScreen() {
               <Text style={styles.heroSmall}>{isGuest ? c.guest : c.persistent}</Text>
               <Text style={styles.heroName} numberOfLines={1}>{name}</Text>
               <Text style={styles.heroId} numberOfLines={1}>{c.identity}: {data?.identity?.zhaoxiId || "—"}</Text>
-              {unnamed ? <PressableScale onPress={() => router.push("/account/edit")} style={styles.namePill}><Text style={styles.namePillText}>✏️ {c.nameNow}</Text></PressableScale> : null}
+              {unnamed ? <PressableScale onPress={() => router.push("/account/edit")} style={styles.namePill}><ArtLabel kind="pencil" size={14} style={styles.namePillText}>{c.nameNow}</ArtLabel></PressableScale> : null}
             </View>
             <PressableScale onPress={() => router.push(isGuest ? "/login" : "/account/edit")} style={styles.editButton}><Text style={styles.editText}>{isGuest ? t.common.signIn : c.edit}</Text></PressableScale>
           </View>
@@ -75,7 +75,7 @@ export default function ProfileScreen() {
           <View style={styles.nameCard}>
             <LinearGradient colors={["#FFFBEB", "#FEF3C7"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 18 }]} />
             <View style={{ flex: 1 }}>
-              <Text style={styles.nameTitle}>👋 {c.nameTitle}</Text>
+              <ArtLabel kind="pencil" size={18} style={styles.nameTitle}>{c.nameTitle}</ArtLabel>
               <Text style={styles.nameHint}>{c.nameHint}</Text>
             </View>
             <PressableScale onPress={() => router.push("/account/edit")} style={styles.nameButton}><Text style={styles.nameButtonText}>{c.nameNow}</Text></PressableScale>

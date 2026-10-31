@@ -17,7 +17,7 @@ import { keys } from "../../src/query";
 import { colors, font, radius, shadow, space } from "../../src/theme";
 import { DeliveryMap } from "../../src/components/DeliveryMap";
 import { PaymentMethods } from "../../src/components/PaymentMethods";
-import { AppImage, BackButton, Button, Chip, Field, GlassCard, Ionicons, PressableScale, QuantityStepper, Row, Screen, SkeletonList, haptic } from "../../src/ui";
+import { ArtLabel, Art3D, AppImage, BackButton, Button, Chip, Field, GlassCard, Ionicons, PressableScale, QuantityStepper, Row, Screen, SkeletonList, haptic } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
 
 type Courier = "green_sm" | "grab";
@@ -228,10 +228,10 @@ export default function CheckoutScreen() {
               <View style={{ gap: 10 }}>
                 <View style={styles.locHead}>
                   <Text style={styles.locTitle}>{deliveryTitle}</Text>
-                  <PressableScale onPress={() => void useCurrentLocation()} style={styles.useLocation}><Text style={styles.useLocationText}>◎ {t.checkout.useLocation}</Text></PressableScale>
+                  <PressableScale onPress={() => void useCurrentLocation()} style={styles.useLocation}><ArtLabel kind="pin" size={16} style={styles.useLocationText}>{t.checkout.useLocation}</ArtLabel></PressableScale>
                 </View>
                 <View style={[styles.mapSearch, shadow("card")]}>
-                  <Text style={{ color: "#167A55", fontSize: 13 }}>⌕</Text>
+                  <Art3D kind="search" size={16} />
                   <TextInput value={addressQuery} onChangeText={setAddressQuery} placeholder={searchPlaceholder} placeholderTextColor="#94A3B8" style={styles.mapSearchInput} returnKeyType="search" />
                   <PressableScale onPress={() => setAddressQuery((q) => q.trim())} style={styles.mapSearchButton}><Text style={styles.mapSearchButtonText}>{searchLabel}</Text></PressableScale>
                 </View>
@@ -261,7 +261,7 @@ export default function CheckoutScreen() {
 
           {isFood ? (
             <GlassCard style={{ gap: 12, marginHorizontal: 14, marginTop: 12 }}>
-              <Text style={font.h2}>🛵 {t.checkout.courier}</Text>
+              <ArtLabel kind="scooter" size={24} style={font.h2}>{t.checkout.courier}</ArtLabel>
               <View style={{ flexDirection: "row", gap: 10 }}>
                 {(["green_sm", "grab"] as const).map((id) => {
                   const selected = courier === id;
@@ -287,7 +287,7 @@ export default function CheckoutScreen() {
 
           {isFood && orgId ? (
             <GlassCard style={{ gap: 10, marginHorizontal: 14, marginTop: 12 }}>
-              <Text style={font.h2}>🎟️ {t.checkout.coupon}</Text>
+              <ArtLabel kind="coupons" size={24} style={font.h2}>{t.checkout.coupon}</ArtLabel>
               <View style={{ flexDirection: "row", gap: 8, alignItems: "flex-end" }}>
                 <View style={{ flex: 1 }}><Field value={couponCode} onChangeText={(value) => setCouponCode(value.toUpperCase())} placeholder={t.checkout.couponPlaceholder} autoCapitalize="characters" /></View>
                 {coupon?.valid ? <Button small variant="danger" title={t.checkout.removeCoupon} onPress={() => { setCoupon(null); setCouponCode(""); }} style={{ minHeight: 48 }} />

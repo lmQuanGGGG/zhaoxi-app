@@ -12,7 +12,7 @@ import { useI18n } from "../src/i18n";
 import { resolveModules } from "../src/modules";
 import { keys } from "../src/query";
 import { colors, shadow } from "../src/theme";
-import { AppImage, BackButton, Chip, EmptyState, PressableScale, Screen, ServiceIcon, SkeletonList, ZxIcon } from "../src/ui";
+import { ArtLabel, Art3D, AppImage, BackButton, Chip, EmptyState, PressableScale, Screen, ServiceIcon, SkeletonList, ZxIcon } from "../src/ui";
 
 const copy = {
   "vi-VN": { title: "Khám phá dịch vụ ZhaoXi", placeholder: "Tìm nhà hàng, nhà ở, du lịch, Partner…", saved: "Tìm kiếm đã lưu", savedEmpty: "Chưa có tìm kiếm đã lưu", storefront: "Xem storefront ›", services: "Dịch vụ" },
@@ -39,7 +39,7 @@ export default function ExploreScreen() {
     <Screen>
       <View style={styles.header}>
         <BackButton style={{ backgroundColor: colors.white }} />
-        <Text style={styles.title} numberOfLines={1}>⌕ {c.title}</Text>
+        <ArtLabel kind="search" size={22} style={styles.title} numberOfLines={1}>{c.title}</ArtLabel>
         <PressableScale onPress={() => router.push("/favorites")} style={styles.heart}><ZxIcon name="heart" size={18} color={colors.brandStrong} strokeWidth={2} /></PressableScale>
       </View>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: TAB_BAR_SPACE }} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled">
@@ -52,7 +52,7 @@ export default function ExploreScreen() {
         </ScrollView>
         <View style={[styles.saved, shadow("card")]}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-            <Text style={styles.savedTitle}>🔖 {c.saved}</Text>
+            <ArtLabel kind="bookmark" size={18} style={styles.savedTitle}>{c.saved}</ArtLabel>
           </View>
           <Text style={styles.savedEmpty}>{c.savedEmpty}</Text>
         </View>
@@ -65,7 +65,7 @@ export default function ExploreScreen() {
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 14 }} style={{ marginRight: -14 }}>
                   {partners.map((partner) => (
                     <PressableScale key={partner.organizationId} onPress={() => router.push(`/restaurant/${partner.organizationId}`)} style={[styles.partner, shadow("card")]}>
-                      <Text style={{ fontSize: 24 }}>🏪</Text>
+                      <Art3D kind="store" size={30} />
                       <Text style={styles.partnerName} numberOfLines={2}>{partner.name}</Text>
                       {partner.serviceCount ? <Text style={styles.partnerMeta}>{partner.serviceCount} {c.services.toLowerCase()}</Text> : null}
                       <Text style={styles.storefront}>{c.storefront}</Text>

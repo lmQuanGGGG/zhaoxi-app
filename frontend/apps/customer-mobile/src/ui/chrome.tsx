@@ -4,7 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { GlassContainer, GlassView } from "expo-glass-effect";
+import { GlassView } from "expo-glass-effect";
 import { Alert, Platform, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -154,28 +154,31 @@ export function Dock() {
   // Tab roots only: once the user drills into a pushed screen the dock gets out of the way.
   if (index < 0 || dockItems[index].href !== pathname) return null;
   const labels = { home: t.tabs.home, orders: t.tabs.orders, messages: t.tabs.messages, profile: t.tabs.profile };
-  const Container = LIQUID_GLASS ? GlassContainer : View;
+  // The glass is a non-touchable backdrop; the buttons sit in plain views above it.
+  // Pressables nested inside GlassView let taps fall through to the page on iOS 26+.
   return (
     <View pointerEvents="box-none" style={[styles.dockWrap, { bottom: Math.max(insets.bottom - 14, 10) }]}>
-      <Container spacing={14} style={styles.dockRow}>
-        <GlassSurface style={[styles.dockPill, !LIQUID_GLASS && shadow("dock")]}>
-          {index >= 0 ? <Animated.View style={[styles.dockLens, lens]} /> : null}
+      <View style={styles.dockRow}>
+        <View style={[styles.dockPill, !LIQUID_GLASS && shadow("dock")]}>
+          <View pointerEvents="none" style={StyleSheet.absoluteFill}><GlassSurface style={[StyleSheet.absoluteFill, { borderRadius: 32 }]} /></View>
+          {index >= 0 ? <Animated.View pointerEvents="none" style={[styles.dockLens, lens]} /> : null}
           {dockItems.map((item, i) => (
             <DockButton key={item.key} label={labels[item.key]} icon={item.icon} active={i === index} badge={item.key === "messages" ? unread.data?.messages || 0 : 0} onPress={() => router.navigate(item.href)} />
           ))}
-        </GlassSurface>
-        <GlassSurface style={[styles.gemButton, !LIQUID_GLASS && shadow("dock")]}>
+        </View>
+        <View style={[styles.gemButton, !LIQUID_GLASS && shadow("dock")]}>
+          <View pointerEvents="none" style={StyleSheet.absoluteFill}><GlassSurface style={[StyleSheet.absoluteFill, { borderRadius: 32 }]} /></View>
           <Pressable accessibilityLabel={t.services.title} onPress={() => router.push("/services")} style={({ pressed }) => [styles.gemPress, pressed && { transform: [{ scale: 0.92 }] }]}>
             <ServicesGem />
           </Pressable>
-        </GlassSurface>
-      </Container>
+        </View>
+      </View>
     </View>
   );
 }
 
 /** Liquid Glass when the OS has it, otherwise the frosted blur fill. */
-function GlassSurface({ style, children }: { style: StyleProp<ViewStyle>; children: ReactNode }) {
+function GlassSurface({ style, children }: { style: StyleProp<ViewStyle>; children?: ReactNode }) {
   if (LIQUID_GLASS) {
     // Not `isInteractive`: on iOS 27 the interactive glass let taps fall through to the content below the dock.
     return <GlassView glassEffectStyle="regular" colorScheme="light" style={style}>{children}</GlassView>;

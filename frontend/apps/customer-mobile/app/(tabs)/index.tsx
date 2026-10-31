@@ -23,7 +23,7 @@ import { ACTIVE_STATUSES } from "../../src/status";
 import { colors, shadow } from "../../src/theme";
 import { ExploreCoverflow } from "../../src/components/explore-coverflow";
 import { HOME_TOP, HeroCard, HomeBackdrop, HomeHeader, QuickActions, ServiceArc } from "../../src/components/home-hero";
-import { AppImage, GlassFill, PressableScale, Screen, SectionTitle, ServiceArt, ServiceIcon,  Skeleton, StatusPill, ZxIcon } from "../../src/ui";
+import { ArtLabel, Art3D, AppImage, GlassFill, PressableScale, Screen, SectionTitle, ServiceArt, ServiceIcon, Skeleton, StatusPill, ZxIcon } from "../../src/ui";
 
 const landmarks = [
   { image: require("../../assets/landmarks/dragon-bridge.webp"), label: { "vi-VN": "Cầu Rồng", "en-US": "Dragon Bridge", "zh-CN": "龙桥", "zh-TW": "龍橋" } },
@@ -214,7 +214,7 @@ function PersonalFeed({ feed }: { feed?: HomeFeed | null }) {
           {resume ? (
             <PressableScale onPress={() => router.push(routeForWebHref(resume.publicHref || `/service/${resume.id}`))} style={[styles.shortcut, shadow("soft"), !partner && { flex: 0, width: "48.5%" }]}>
               <LinearGradient colors={["#F7FBFA", "#DDF4F0"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 20 }]} />
-              <Text style={styles.shortcutTitle}>▶ {t.home.resume}</Text>
+              <ArtLabel kind="play" size={18} style={styles.shortcutTitle}>{t.home.resume}</ArtLabel>
               <View style={styles.shortcutBody}>
                 <AppImage uri={imageUri(resume.imageUrl)} fallbackCode={resume.moduleCode} style={styles.shortcutThumb} />
                 <View style={{ flex: 1, minWidth: 0 }}>
@@ -228,9 +228,9 @@ function PersonalFeed({ feed }: { feed?: HomeFeed | null }) {
           {partner ? (
             <PressableScale onPress={() => router.push(routeForWebHref(partner.href))} style={[styles.shortcut, shadow("soft")]}>
               <LinearGradient colors={["#FFFDF8", "#F5EBCD"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 20 }]} />
-              <Text style={styles.shortcutTitle}>🏪 {t.home.partners}</Text>
+              <ArtLabel kind="store" size={18} style={styles.shortcutTitle}>{t.home.partners}</ArtLabel>
               <View style={styles.shortcutBody}>
-                <View style={[styles.shortcutThumb, { alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.66)" }]}><Text style={{ fontSize: 23 }}>🏪</Text></View>
+                <View style={[styles.shortcutThumb, { alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.66)" }]}><Art3D kind="store" size={30} /></View>
                 <Text style={{ flex: 1, fontSize: 13, fontWeight: "700", color: colors.ink }} numberOfLines={2}>{localizeOrganizationName(locale, partner.code, partner.name)}</Text>
               </View>
             </PressableScale>
@@ -239,13 +239,13 @@ function PersonalFeed({ feed }: { feed?: HomeFeed | null }) {
       ) : null}
       {feed.favorites?.length ? (
         <View style={[styles.feedBox, shadow("card")]}>
-          <Text style={styles.feedBoxTitle}>♥ {t.home.favorites}</Text>
+          <ArtLabel kind="heart" size={18} style={styles.feedBoxTitle}>{t.home.favorites}</ArtLabel>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingTop: 8, paddingBottom: 4, paddingRight: 18 }}>{feed.favorites.slice(0, 8).map((item) => card(item))}</ScrollView>
         </View>
       ) : null}
       {feed.forYou?.length ? (
         <View style={[styles.feedBox, shadow("card")]}>
-          <Text style={styles.feedBoxTitle}>✨ {t.home.forYou}</Text>
+          <ArtLabel kind="sparkle" size={18} style={styles.feedBoxTitle}>{t.home.forYou}</ArtLabel>
           <View style={{ flexDirection: "row", gap: 9, paddingTop: 8 }}>{feed.forYou.slice(0, 3).map((item) => card(item, true))}</View>
         </View>
       ) : null}

@@ -8,7 +8,7 @@ import { sendFeedback, type FeedbackCategory } from "../src/api/endpoints";
 import { OptionPills } from "../src/components/pickers";
 import { useI18n } from "../src/i18n";
 import { colors, shadow } from "../src/theme";
-import { Button, Field, Header, PressableScale, Screen, haptic } from "../src/ui";
+import { Art3D, Button, Field, Header, PressableScale, Screen, haptic } from "../src/ui";
 import { toast } from "../src/ui/toast";
 
 // Copy from @zhaoxi/feedback BetaFeedback (PWA /feedback).
@@ -40,7 +40,7 @@ export default function FeedbackScreen() {
           <View style={{ paddingHorizontal: 14 }}>
             {send.isSuccess ? (
               <Animated.View entering={ZoomIn.springify().damping(16)} style={styles.sent}>
-                <View style={styles.sentIcon}><Text style={{ color: colors.white, fontSize: 22 }}>✓</Text></View>
+                <Art3D kind="check" size={56} />
                 <Text style={styles.sentText}>{c.sent}</Text>
                 <Button title={c.back} variant="secondary" onPress={() => (router.canGoBack() ? router.back() : router.replace("/profile"))} style={{ alignSelf: "stretch" }} />
               </Animated.View>

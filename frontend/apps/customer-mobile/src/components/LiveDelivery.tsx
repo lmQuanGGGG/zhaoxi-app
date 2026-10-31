@@ -7,6 +7,7 @@ import type { DeliveryJobStatus, DeliveryTracking } from "../api/types";
 import { shortDate } from "../format";
 import { useI18n } from "../i18n";
 import { colors, shadow } from "../theme";
+import { Art3D, ArtLabel } from "../ui";
 
 // Labels from @zhaoxi/driver `deliveryStageLabel` and the PWA order page.
 const stageLabels: Record<string, Record<DeliveryJobStatus, string>> = {
@@ -39,7 +40,7 @@ function DriverDot() {
   return (
     <View style={styles.driverWrap}>
       <Animated.View style={[styles.driverRing, ring]} />
-      <View style={styles.driverDot}><Text style={{ fontSize: 13 }}>🛵</Text></View>
+      <View style={styles.driverDot}><Art3D kind="scooter" size={18} /></View>
     </View>
   );
 }
@@ -63,7 +64,7 @@ export function LiveDelivery({ tracking }: { tracking: DeliveryTracking }) {
   return (
     <Animated.View entering={FadeIn.duration(300)} style={[styles.card, shadow("card")]}>
       <View style={styles.head}>
-        <Text style={styles.stage}>🚚 {deliveryStageLabel(status, locale)}</Text>
+        <ArtLabel kind="truck" size={18} style={styles.stage}>{deliveryStageLabel(status, locale)}</ArtLabel>
         <Text style={[styles.live, { color: telemetry?.isLive ? "#059669" : "#D97706" }]}>{telemetry?.isLive ? "● LIVE" : telemetry?.isStale ? `● ${c.stale}` : "● GPS"}</Text>
       </View>
       {tracking.driver ? (
@@ -83,9 +84,9 @@ export function LiveDelivery({ tracking }: { tracking: DeliveryTracking }) {
         </View>
       ) : null}
       <View style={styles.chips}>
-        {telemetry?.targetType ? <Text style={styles.chip}>🧭 {telemetry.targetType === "pickup" ? c.toPickup : c.toDropoff}</Text> : null}
-        {telemetry?.distanceRemainingKm != null ? <Text style={styles.chip}>📍 {telemetry.distanceRemainingKm.toFixed(1)} km</Text> : null}
-        {telemetry?.etaMinutes != null ? <Text style={styles.chip}>⏱ {telemetry.etaMinutes} min</Text> : null}
+        {telemetry?.targetType ? <ArtLabel kind="compass" size={14} style={styles.chip}>{telemetry.targetType === "pickup" ? c.toPickup : c.toDropoff}</ArtLabel> : null}
+        {telemetry?.distanceRemainingKm != null ? <ArtLabel kind="pin" size={14} style={styles.chip}>{telemetry.distanceRemainingKm.toFixed(1)} km</ArtLabel> : null}
+        {telemetry?.etaMinutes != null ? <ArtLabel kind="history" size={14} style={styles.chip}>{telemetry.etaMinutes} min</ArtLabel> : null}
         {telemetry?.locationAgeSeconds != null ? <Text style={styles.chip}>{telemetry.locationAgeSeconds}s</Text> : null}
       </View>
       {tracking.timeline?.length ? (

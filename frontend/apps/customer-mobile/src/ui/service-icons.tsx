@@ -624,11 +624,227 @@ function ChatHeart() {
   );
 }
 
+/* ---- Extra clay pictograms used across screens in place of emoji ---- */
+
+function Pin() {
+  return (
+    <>
+      <Defs><GroundDef />{lin("pin", "#FF7A6B", "#D7262B")}</Defs>
+      <Shadow rx={12} cy={57} />
+      <Path d="M32 56s-17-15.6-17-29.5C15 16.8 22.6 9 32 9s17 7.8 17 17.5C49 40.4 32 56 32 56Z" fill="url(#pin)" />
+      <Circle cx={32} cy={26.5} r={7} fill="#FFFFFF" />
+      <Path d="M22 18.5c2-3.4 5.4-5.6 9.4-6" stroke="#FFFFFF" strokeOpacity={0.6} strokeWidth={2.6} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function People() {
+  return (
+    <>
+      <Defs><GroundDef />{lin("p1", "#7CC4FF", "#2F72D2")}{lin("p2", "#8EE3C8", "#16A085")}{lin("skin", "#FFE1C4", "#F2B488")}</Defs>
+      <Shadow rx={22} />
+      <Circle cx={22} cy={22} r={7.5} fill="url(#skin)" />
+      <Path d="M8 52c0-9.4 6.3-16 14-16s14 6.6 14 16Z" fill="url(#p2)" />
+      <Circle cx={41} cy={20} r={8.5} fill="url(#skin)" />
+      <Path d="M25 53c0-10.6 7.2-18 16-18s16 7.4 16 18Z" fill="url(#p1)" />
+      <Path d="M31 42c1.6-2.4 3.8-4 6.4-4.6" stroke="#FFFFFF" strokeOpacity={0.55} strokeWidth={2.4} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function Store() {
+  return (
+    <>
+      <Defs><GroundDef />{lin("wall2", "#FFFFFF", "#E3EAF2")}{lin("awn", "#FF8A6B", "#E2482F")}</Defs>
+      <Shadow rx={22} />
+      <Rect x={12} y={26} width={40} height={27} rx={3} fill="url(#wall2)" />
+      <Rect x={18} y={34} width={12} height={19} rx={2} fill="#2F72D2" />
+      <Rect x={34} y={34} width={12} height={10} rx={2} fill="#9BD3F7" />
+      <Path d="M9 18l4-8h38l4 8v4a5.5 5.5 0 0 1-11 0 5.5 5.5 0 0 1-11 0 5.5 5.5 0 0 1-11 0 5.5 5.5 0 0 1-11 0Z" fill="url(#awn)" />
+      <Path d="M20 10l-2 12M32 10v12M44 10l2 12" stroke="#FFFFFF" strokeOpacity={0.7} strokeWidth={2.4} />
+    </>
+  );
+}
+
+function SparkleArt() {
+  return (
+    <>
+      <Defs><GroundDef />{lin("spk", "#FFE07A", "#F2A516")}{lin("spk2", "#B9A8FF", "#7B61FF")}</Defs>
+      <Shadow rx={14} />
+      <Path d="M28 8c1.6 11.4 6.6 16.4 18 18-11.4 1.6-16.4 6.6-18 18-1.6-11.4-6.6-16.4-18-18 11.4-1.6 16.4-6.6 18-18Z" fill="url(#spk)" />
+      <Path d="M47 34c.8 5.4 3.2 7.8 8.6 8.6-5.4.8-7.8 3.2-8.6 8.6-.8-5.4-3.2-7.8-8.6-8.6 5.4-.8 7.8-3.2 8.6-8.6Z" fill="url(#spk2)" />
+    </>
+  );
+}
+
+function Heart() {
+  return (
+    <>
+      <Defs><GroundDef />{lin("heart", "#FF8FA3", "#E8364F")}</Defs>
+      <Shadow rx={17} />
+      <Path d="M32 53C14 41 8 32 8 23.5 8 16 13.8 10 21 10c4.6 0 8.6 2.4 11 6 2.4-3.6 6.4-6 11-6 7.2 0 13 6 13 13.5C56 32 50 41 32 53Z" fill="url(#heart)" />
+      <Path d="M15 21c.6-3.6 3.4-6 6.8-6" stroke="#FFFFFF" strokeOpacity={0.7} strokeWidth={2.8} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function Bookmark() {
+  return (
+    <>
+      <Defs><GroundDef />{lin("bm", "#7CC4FF", "#2F72D2")}</Defs>
+      <Shadow rx={14} />
+      <Path d="M18 9h28c1.7 0 3 1.3 3 3v42l-17-11-17 11V12c0-1.7 1.3-3 3-3Z" fill="url(#bm)" />
+      <Path d="M22 14v14" stroke="#FFFFFF" strokeOpacity={0.6} strokeWidth={2.6} strokeLinecap="round" />
+    </>
+  );
+}
+
+function Scooter() {
+  return (
+    <>
+      <Defs><GroundDef />{lin("sc", "#FF9A6B", "#E8492F")}</Defs>
+      <Shadow rx={24} cy={56} />
+      <Circle cx={15} cy={45} r={8} fill="#1F2937" /><Circle cx={15} cy={45} r={3.4} fill="#CBD5E1" />
+      <Circle cx={49} cy={45} r={8} fill="#1F2937" /><Circle cx={49} cy={45} r={3.4} fill="#CBD5E1" />
+      <Path d="M12 40c1-7 6-11 13-11h9l4 11H12Z" fill="url(#sc)" />
+      <Path d="M38 40l6-22h6" stroke="#475569" strokeWidth={3.4} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <Rect x={20} y={23} width={14} height={5} rx={2.5} fill="#1F2937" />
+      <Rect x={6} y={18} width={12} height={10} rx={2} fill="#F2B53A" />
+    </>
+  );
+}
+
+function Truck() {
+  return (
+    <>
+      <Defs><GroundDef />{lin("box2", "#FFFFFF", "#DCE5EE")}{lin("cab", "#4FB8A8", "#127A6E")}</Defs>
+      <Shadow rx={25} cy={56} />
+      <Rect x={5} y={16} width={34} height={27} rx={3} fill="url(#box2)" />
+      <Path d="M39 24h10l8 9v10H39Z" fill="url(#cab)" />
+      <Path d="M42 27h6l5 6H42Z" fill="#C9F1EC" />
+      <Circle cx={16} cy={45} r={6.5} fill="#1F2937" /><Circle cx={16} cy={45} r={2.6} fill="#CBD5E1" />
+      <Circle cx={47} cy={45} r={6.5} fill="#1F2937" /><Circle cx={47} cy={45} r={2.6} fill="#CBD5E1" />
+      <Path d="M10 22h20" stroke="#0FAF7A" strokeWidth={3} strokeLinecap="round" />
+    </>
+  );
+}
+
+function Compass() {
+  return (
+    <>
+      <Defs><GroundDef />{lin("cmp", "#5FC7C0", "#1E7F86")}</Defs>
+      <Shadow rx={18} />
+      <Circle cx={32} cy={31} r={22} fill="url(#cmp)" />
+      <Circle cx={32} cy={31} r={17} fill="#F4FAFB" />
+      <Path d="M32 16l5 15h-10Z" fill="#E8364F" />
+      <Path d="M32 46l-5-15h10Z" fill="#94A3B8" />
+      <Circle cx={32} cy={31} r={2.6} fill="#1F2937" />
+    </>
+  );
+}
+
+function CardArt() {
+  return (
+    <>
+      <Defs><GroundDef />{lin("card", "#8C9BFF", "#4B4FD1", false)}</Defs>
+      <Shadow rx={22} />
+      <G transform="rotate(-10 32 32)">
+        <Rect x={8} y={16} width={48} height={32} rx={6} fill="url(#card)" />
+        <Rect x={8} y={23} width={48} height={6} fill="#1E1B4B" opacity={0.55} />
+        <Rect x={14} y={35} width={10} height={7} rx={1.6} fill="#FFD36B" />
+        <Path d="M30 39h18" stroke="#FFFFFF" strokeOpacity={0.7} strokeWidth={2.4} strokeLinecap="round" />
+      </G>
+    </>
+  );
+}
+
+function Calendar() {
+  return (
+    <>
+      <Defs><GroundDef />{lin("calTop", "#FF7A6B", "#D7262B")}</Defs>
+      <Shadow rx={19} />
+      <Rect x={10} y={13} width={44} height={40} rx={7} fill="#FFFFFF" stroke="#DCE5EE" strokeWidth={1.2} />
+      <Path d="M10 20c0-3.9 3.1-7 7-7h30c3.9 0 7 3.1 7 7v6H10Z" fill="url(#calTop)" />
+      <Rect x={20} y={8} width={4} height={10} rx={2} fill="#475569" /><Rect x={40} y={8} width={4} height={10} rx={2} fill="#475569" />
+      <Path d="M18 34h6M29 34h6M40 34h6M18 43h6M29 43h6" stroke="#94A3B8" strokeWidth={3.4} strokeLinecap="round" />
+      <Rect x={38} y={39} width={10} height={8} rx={2} fill="#0FAF7A" />
+    </>
+  );
+}
+
+function Check() {
+  return (
+    <>
+      <Defs><GroundDef /><RadialGradient id="ok" cx="0.4" cy="0.35" r="0.7"><Stop offset="0" stopColor="#5BE3A4" /><Stop offset="1" stopColor="#0E9F63" /></RadialGradient></Defs>
+      <Shadow rx={17} />
+      <Circle cx={32} cy={30} r={21} fill="url(#ok)" />
+      <Path d="m22 30 7 7 13-14" stroke="#FFFFFF" strokeWidth={4.6} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <Path d="M17 21c2.4-4 6.4-6.8 11-7.4" stroke="#FFFFFF" strokeOpacity={0.55} strokeWidth={2.4} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function Magnifier() {
+  return (
+    <>
+      <Defs><GroundDef />{lin("handle", "#4B5563", "#111827")}<RadialGradient id="lens2" cx="0.38" cy="0.35" r="0.7"><Stop offset="0" stopColor="#E6F6FF" /><Stop offset="1" stopColor="#9BD3F7" /></RadialGradient></Defs>
+      <Shadow rx={18} />
+      <Path d="M38 38l14 14" stroke="url(#handle)" strokeWidth={7} strokeLinecap="round" />
+      <Circle cx={27} cy={26} r={16} fill="url(#lens2)" stroke="#2F72D2" strokeWidth={4} />
+      <Path d="M19 22c1.4-3.4 4.2-5.6 7.6-6" stroke="#FFFFFF" strokeWidth={2.8} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function Pencil() {
+  return (
+    <>
+      <Defs><GroundDef />{lin("pen", "#FFD36B", "#F0A21C", false)}</Defs>
+      <Shadow rx={18} />
+      <G transform="rotate(45 32 32)">
+        <Rect x={26} y={8} width={12} height={36} rx={2} fill="url(#pen)" />
+        <Rect x={26} y={4} width={12} height={7} rx={3} fill="#FF8FA3" />
+        <Rect x={26} y={10} width={12} height={3} fill="#CBD5E1" />
+        <Path d="M26 44h12l-6 12Z" fill="#F6D9B3" />
+        <Path d="M30 52h4l-2 4Z" fill="#1F2937" />
+      </G>
+    </>
+  );
+}
+
+function Play() {
+  return (
+    <>
+      <Defs><GroundDef />{lin("play", "#FF7A6B", "#D7262B")}</Defs>
+      <Shadow rx={17} />
+      <Circle cx={32} cy={30} r={21} fill="url(#play)" />
+      <Path d="M27 20.5v19c0 1.4 1.5 2.2 2.7 1.5l14.6-9.5c1-.7 1-2.3 0-3l-14.6-9.5c-1.2-.7-2.7.1-2.7 1.5Z" fill="#FFFFFF" />
+    </>
+  );
+}
+
 const menuArt = {
   orders: Parcel, favorites: StarBadge, history: Clock, coupons: Ticket, notifications: Bell, language: Globe,
   security: Shield, emergency: Siren, push: PhonePush, promotions: Megaphone, help: Lifebuoy, feedback: ChatHeart,
 } as const;
 export type MenuArtKind = keyof typeof menuArt;
+
+const extraArt = {
+  pin: Pin, people: People, store: Store, sparkle: SparkleArt, heart: Heart, bookmark: Bookmark, scooter: Scooter, truck: Truck,
+  compass: Compass, card: CardArt, calendar: Calendar, check: Check, search: Magnifier, pencil: Pencil, play: Play,
+} as const;
+const allArt = { ...menuArt, ...extraArt, bed: Bed, bath: Bath, area: FloorArea } as const;
+export type ArtKind = keyof typeof allArt;
+
+/** Any clay pictogram (menu, facts, extras) bare, at `size` points. Use instead of emoji. */
+export function Art3D({ kind, size = 24 }: { kind: ArtKind; size?: number }) {
+  const Art = allArt[kind];
+  return (
+    <Svg width={size} height={size} viewBox="0 0 64 64">
+      <Art />
+    </Svg>
+  );
+}
 // Glow colour behind each menu illustration (soft, borderless halo).
 const menuGlow: Record<MenuArtKind, string> = {
   orders: "#F2A65A", favorites: "#F7C531", history: "#3FB3AE", coupons: "#F26B4A", notifications: "#F5B524", language: "#4B92E8",

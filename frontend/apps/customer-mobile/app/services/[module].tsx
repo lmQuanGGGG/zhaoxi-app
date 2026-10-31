@@ -4,12 +4,14 @@ import { localizeServiceModuleName, localizeServiceName } from "@zhaoxi/i18n";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, { Extrapolation, FadeInDown, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, type SharedValue } from "react-native-reanimated";
 import { getFoodPricing, getNearbyServices, getOrganizationServices, getRestaurantStatuses, getService } from "../../src/api/endpoints";
 import type { Service } from "../../src/api/types";
 import { RestaurantCard } from "../../src/components/food";
 import { RequestsLink, useHousingFilters } from "../../src/components/HousingFilters";
 import { LocationBanner } from "../../src/components/LocationBanner";
+import { FeaturedCarousel, RankedRow, SectionTitle, cardMeta, priceUnit, sectionCopy } from "../../src/components/module-showcase";
 import { useCart } from "../../src/cart";
 import { TAB_BAR_SPACE } from "../../src/constants";
 import { imageUri, money } from "../../src/format";
@@ -18,10 +20,9 @@ import { useI18n } from "../../src/i18n";
 import { locate, pointKey, useLocationState } from "../../src/location";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
-import { AppImage, BackButton, EmptyState, ErrorState, HeaderFade, PressableScale, Screen, ServiceBadge, ServiceIcon, SkeletonList, ZxIcon } from "../../src/ui";
+import { AppImage, BackButton, EmptyState, ErrorState, HeaderFade, PressableScale, Screen, ServiceArt, ServiceBadge, SkeletonList, ZxIcon, servicePalettes } from "../../src/ui";
 
 const resultUnit = { "vi-VN": "kết quả", "en-US": "results", "zh-CN": "个结果", "zh-TW": "個結果" } as const;
-const monthUnit = { "vi-VN": "tháng", "en-US": "month", "zh-CN": "月", "zh-TW": "月" } as const;
 
 export default function ModuleBrowser() {
   const { module = "food" } = useLocalSearchParams<{ module: string }>();
@@ -60,13 +61,18 @@ export default function ModuleBrowser() {
   const previewLines = restaurants.flatMap((r) => r.menu.slice(0, 2)).map((item) => ({ id: item.id, quantity: 1 }));
   const pricing = useQuery({ queryKey: keys.foodPricing(previewLines.map((line) => line.id).join(",")), queryFn: () => getFoodPricing(previewLines), enabled: isFood && previewLines.length > 0 });
 
+  // Scroll position, header height and viewport height drive the 3D card stack on the UI thread.
+  const scrollY = useSharedValue(0);
+  const headerH = useSharedValue(0);
+  const viewportH = useSharedValue(800);
+  const onScroll = useAnimatedScrollHandler((event) => { scrollY.value = event.contentOffset.y; });
   const title = isFood ? t.browse.restaurants : localizeServiceModuleName(locale, module);
   const count = listed.length;
   const prefetchRestaurant = (id: string) => void client.prefetchQuery({ queryKey: keys.orgServices(id, locale), queryFn: () => getOrganizationServices(id, locale), staleTime: 60_000 });
   const prefetchService = (id: string) => void client.prefetchQuery({ queryKey: keys.service(id, locale), queryFn: () => getService(id, locale), staleTime: 60_000 });
 
   const header = (
-    <View style={{ paddingHorizontal: 14, gap: 12, paddingTop: 14, paddingBottom: 14 }}>
+    <View onLayout={(event) => { headerH.value = event.nativeEvent.layout.height; }} style={{ paddingHorizontal: 14, gap: 12, paddingTop: 14, paddingBottom: 14 }}>
       {/* Petrol header melting into the list as it scrolls */}
       <View style={{ position: "absolute", left: 0, right: 0, top: 0, height: 0 }}><HeaderFade /></View>
       <LocationBanner />
@@ -76,6 +82,13 @@ export default function ModuleBrowser() {
       </View>
       {module === "housing" || module === "travel" ? <RequestsLink kind={module} /> : null}
       {module === "housing" ? housing.ui : null}
+      {!isFood && listed.length >= 3 && !search.trim() ? (
+        <View style={{ marginHorizontal: -14 }}>
+          <FeaturedCarousel items={listed.slice(0, 7)} module={module} />
+          <RankedRow items={listed} module={module} />
+          <SectionTitle title={sectionCopy(locale).all} />
+        </View>
+      ) : null}
     </View>
   );
 
@@ -113,61 +126,87 @@ export default function ModuleBrowser() {
           )}
         />
       ) : (
-        <FlashList
+        <Animated.FlatList
           data={listed}
           keyExtractor={(item) => item.id}
           ListHeaderComponent={header}
           ListEmptyComponent={empty}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+          onLayout={(event) => { viewportH.value = event.nativeEvent.layout.height; }}
+          getItemLayout={(_, index) => ({ length: CARD_STEP, offset: CARD_STEP * index, index })}
+          initialNumToRender={5}
+          windowSize={7}
           refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} tintColor={colors.brand} />}
           contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }}
-          renderItem={({ item, index }) => <GenericServiceCard item={item} module={module} index={index} onPressIn={() => prefetchService(item.id)} />}
+          renderItem={({ item, index }) => <StackCard item={item} module={module} index={index} scrollY={scrollY} headerH={headerH} viewportH={viewportH} onPressIn={() => prefetchService(item.id)} />}
         />
       )}
     </Screen>
   );
 }
 
-const cardUnits = {
-  "vi-VN": { bed: "PN", person: "người" },
-  "en-US": { bed: "BR", person: "person" },
-  "zh-CN": { bed: "室", person: "人" },
-  "zh-TW": { bed: "房", person: "人" },
-} as const;
+const CARD_H = 236;
+const CARD_STEP = CARD_H + 18;
+const PARALLAX = 36;
 
-/** One short line of the facts that matter for the module (beds · m² · area, tour length) plus distance. */
-function cardMeta(item: Service, module: string, locale: keyof typeof cardUnits) {
-  const m = item.metadata || {};
-  const parts: string[] = [];
-  if (module === "housing") {
-    if (Number(m.bedrooms) > 0) parts.push(`${m.bedrooms} ${cardUnits[locale].bed}`);
-    if (Number(m.areaSqm) > 0) parts.push(`${m.areaSqm} m²`);
-    if (m.district) parts.push(String(m.district));
-  }
-  if (module === "travel" && m.duration) parts.push(String(m.duration));
-  if (item.distanceKm != null) parts.push(`${item.distanceKm.toFixed(1)} km`);
-  return parts.join(" · ");
-}
-
-/** Clean list card: picture, name, one fact line, price. Details live on the service page. */
-function GenericServiceCard({ item, module, index, onPressIn }: { item: Service; module: string; index: number; onPressIn: () => void }) {
+/**
+ * Immersive 3D card (Home "Khám phá" style): the photo fills the card, copy sits
+ * on a dark fade. While scrolling, a card leaving the top tilts back and shrinks
+ * into the distance, cards rising from the bottom grow into place, and the photo
+ * drifts with a parallax offset. Pure transforms, computed on the UI thread.
+ */
+function StackCard({ item, module, index, scrollY, headerH, viewportH, onPressIn }: { item: Service; module: string; index: number; scrollY: SharedValue<number>; headerH: SharedValue<number>; viewportH: SharedValue<number>; onPressIn: () => void }) {
   const { locale } = useI18n();
   const image = imageUri(item.metadata?.imageUrl);
   const meta = cardMeta(item, module, locale);
-  const unit = module === "housing" ? monthUnit[locale] : module === "travel" ? cardUnits[locale].person : "";
+  const unit = priceUnit(module, locale);
+  const palette = servicePalettes[module] || { tint: "#ECFDF5", accent: "#0FAF7A" };
+
+  const card = useAnimatedStyle(() => {
+    const top = headerH.value + index * CARD_STEP - scrollY.value; // card top inside the viewport
+    const leaving = interpolate(top, [-CARD_STEP, 0], [1, 0], Extrapolation.CLAMP);
+    const entering = interpolate(top, [viewportH.value - CARD_STEP * 0.4, viewportH.value], [0, 1], Extrapolation.CLAMP);
+    return {
+      opacity: 1 - leaving * 0.55,
+      transform: [
+        { perspective: 900 },
+        { translateY: leaving * CARD_STEP * 0.35 },
+        { rotateX: `${leaving * 24 - entering * 10}deg` },
+        { scale: 1 - leaving * 0.12 - entering * 0.06 },
+      ],
+    };
+  });
+  const photo = useAnimatedStyle(() => {
+    const top = headerH.value + index * CARD_STEP - scrollY.value;
+    return { transform: [{ translateY: interpolate(top, [-CARD_STEP, viewportH.value], [PARALLAX, -PARALLAX], Extrapolation.CLAMP) }] };
+  });
+
   return (
-    <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 40).duration(280)} style={{ paddingHorizontal: 14, paddingBottom: 12 }}>
-      <PressableScale onPressIn={onPressIn} onPress={() => router.push(`/service/${item.id}`)} scaleTo={0.985} style={[styles.serviceCard, shadow("card")]}>
-        {image ? <AppImage uri={image} style={styles.serviceImage} /> : (
-          <View style={styles.serviceIconBox}>
-            <ServiceIcon code={module} size={60} />
+    <Animated.View entering={FadeInDown.delay(Math.min(index, 6) * 50).duration(320)} style={styles.stackSlot}>
+      <Animated.View style={[styles.stackCard, card]}>
+        <PressableScale onPressIn={onPressIn} onPress={() => router.push(`/service/${item.id}`)} scaleTo={0.97} style={styles.stackPress}>
+          {image ? (
+            <Animated.View style={[styles.stackPhoto, photo]}>
+              <AppImage uri={image} style={StyleSheet.absoluteFill} />
+            </Animated.View>
+          ) : (
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: palette.tint, alignItems: "center", justifyContent: "center", paddingBottom: 60 }]}>
+              <ServiceArt code={module} size={120} />
+            </View>
+          )}
+          <LinearGradient colors={["rgba(0,20,24,0)", "rgba(0,20,24,0.25)", "rgba(0,20,24,0.82)"]} locations={[0.35, 0.6, 1]} style={StyleSheet.absoluteFill} pointerEvents="none" />
+          {meta ? <View style={styles.stackMeta}><Text style={styles.stackMetaText} numberOfLines={1}>{meta}</Text></View> : null}
+          <View style={styles.stackCopy}>
+            <Text style={styles.stackTitle} numberOfLines={2}>{localizeServiceName(locale, item.name || item.code)}</Text>
+            {Number(item.priceFrom || 0) > 0 ? (
+              <View style={styles.stackPrice}>
+                <Text style={styles.stackPriceText}>{money(item.priceFrom, item.currency)}{unit ? <Text style={styles.stackUnit}> / {unit}</Text> : null}</Text>
+              </View>
+            ) : null}
           </View>
-        )}
-        <View style={{ flex: 1, minWidth: 0, gap: 5 }}>
-          <Text style={styles.serviceTitle} numberOfLines={2}>{localizeServiceName(locale, item.name || item.code)}</Text>
-          {meta ? <Text style={styles.serviceMeta} numberOfLines={1}>{meta}</Text> : null}
-          {Number(item.priceFrom || 0) > 0 ? <Text style={styles.servicePrice}>{money(item.priceFrom, item.currency)}{unit ? <Text style={styles.perMonth}> / {unit}</Text> : null}</Text> : null}
-        </View>
-      </PressableScale>
+        </PressableScale>
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -181,11 +220,15 @@ const styles = StyleSheet.create({
   cartPillText: { color: colors.white, fontSize: 11, fontWeight: "800" },
   search: { height: 44, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   searchInput: { flex: 1, fontSize: 14, color: colors.text },
-  serviceCard: { flexDirection: "row", alignItems: "center", gap: 14, padding: 12, borderRadius: 22, backgroundColor: colors.white, ...shadow("card") },
-  serviceImage: { width: 84, height: 84, borderRadius: 18 },
-  serviceIconBox: { width: 84, height: 84, alignItems: "center", justifyContent: "center" },
-  serviceTitle: { fontSize: 15.5, fontWeight: "700", color: colors.ink, lineHeight: 20 },
-  serviceMeta: { fontSize: 12, fontWeight: "500", color: colors.slate },
-  servicePrice: { fontSize: 15, fontWeight: "800", color: colors.priceRose },
-  perMonth: { fontSize: 11.5, fontWeight: "600", color: colors.slate },
+  stackSlot: { height: CARD_STEP, paddingHorizontal: 16 },
+  stackCard: { height: CARD_H, borderRadius: 28, backgroundColor: "#0A3A40" },
+  stackPress: { flex: 1, borderRadius: 28, overflow: "hidden" },
+  stackPhoto: { position: "absolute", left: 0, right: 0, top: -PARALLAX, bottom: -PARALLAX },
+  stackMeta: { position: "absolute", left: 14, top: 14, maxWidth: "80%", paddingHorizontal: 11, height: 28, borderRadius: 14, justifyContent: "center", backgroundColor: "rgba(0,30,34,0.42)" },
+  stackMetaText: { fontSize: 12, fontWeight: "700", color: colors.white },
+  stackCopy: { position: "absolute", left: 18, right: 18, bottom: 16, gap: 8 },
+  stackTitle: { fontSize: 19, fontWeight: "800", color: colors.white, lineHeight: 24, letterSpacing: -0.2, textShadowColor: "rgba(0,0,0,0.25)", textShadowRadius: 6 },
+  stackPrice: { alignSelf: "flex-start", paddingHorizontal: 12, height: 30, borderRadius: 15, justifyContent: "center", backgroundColor: colors.white },
+  stackPriceText: { fontSize: 14, fontWeight: "800", color: colors.priceRose },
+  stackUnit: { fontSize: 12, fontWeight: "600", color: colors.slate },
 });

@@ -11,7 +11,7 @@ import { useSession } from "../hooks";
 import { useI18n } from "../i18n";
 import { keys } from "../query";
 import { colors, shadow } from "../theme";
-import { AppImage, Button, FactArt, Field, PhotoCounter, PressableScale, QuantityStepper, haptic, type FactArtKind } from "../ui";
+import { ArtLabel, Art3D, AppImage, Button, Field, PhotoCounter, PressableScale, QuantityStepper, haptic, type ArtKind } from "../ui";
 import { toast } from "../ui/toast";
 import { DateStrip, OptionPills, isoDay, nextDays } from "./pickers";
 
@@ -65,10 +65,10 @@ export function Gallery({ data }: { data: ServiceDetail }) {
   );
 }
 
-function Fact({ kind, icon, label, value }: { kind?: FactArtKind; icon?: string; label: string; value: string }) {
+function Fact({ kind, label, value }: { kind: ArtKind; label: string; value: string }) {
   return (
     <View style={styles.fact}>
-      {kind ? <FactArt kind={kind} size={40} /> : <Text style={{ fontSize: 18 }}>{icon}</Text>}
+      <Art3D kind={kind} size={40} />
       <Text style={styles.factLabel}>{label}</Text>
       <Text style={styles.factValue} numberOfLines={1}>{value}</Text>
     </View>
@@ -114,7 +114,7 @@ export function HousingFacts({ data }: { data: ServiceDetail }) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{t.property}</Text>
           {rows.map(([label, value]) => <Info key={label} label={label!} value={value!} />)}
-          {str(m.propertyAddress) ? <Text style={styles.address}>📍 {str(m.propertyAddress)}</Text> : null}
+          {str(m.propertyAddress) ? <ArtLabel kind="pin" size={16} style={styles.address}>{str(m.propertyAddress)}</ArtLabel> : null}
         </View>
       ) : null}
       {amenities.length ? (
@@ -136,9 +136,9 @@ export function TravelFacts({ data }: { data: ServiceDetail }) {
   return (
     <Animated.View entering={FadeInDown.duration(260)} style={{ gap: 12 }}>
       <View style={styles.facts}>
-        <Fact icon="📍" label={t.destination} value={str(m.destination) || "—"} />
-        <Fact icon="⏱" label={t.duration} value={str(m.duration) || "—"} />
-        <Fact icon="👥" label={t.guests} value={str(m.maxGuests) || "—"} />
+        <Fact kind="pin" label={t.destination} value={str(m.destination) || "—"} />
+        <Fact kind="history" label={t.duration} value={str(m.duration) || "—"} />
+        <Fact kind="people" label={t.guests} value={str(m.maxGuests) || "—"} />
       </View>
       {str(m.departurePoint) || str(m.serviceLanguage) || str(m.startTimes || m.startTime) ? (
         <View style={styles.card}>
@@ -194,7 +194,7 @@ function SentCard({ title, hint, code, kind }: { title: string; hint: string; co
   const s = shared[locale as Locale];
   return (
     <Animated.View entering={ZoomIn.springify().damping(16)} style={styles.sent}>
-      <View style={styles.sentIcon}><Text style={{ fontSize: 22, color: colors.white }}>✓</Text></View>
+      <Art3D kind="check" size={56} />
       <Text style={styles.sentTitle}>{title}</Text>
       <Text style={styles.sentHint}>{hint}</Text>
       {code ? <Text style={styles.sentCode}>{s.requestCode}: <Text style={{ fontWeight: "800", color: colors.ink }}>{code}</Text></Text> : null}
