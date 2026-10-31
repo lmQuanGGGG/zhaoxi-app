@@ -32,3 +32,11 @@ export function GlassFill({ radius, tint, clear = false }: { radius: number; tin
     </View>
   );
 }
+
+/**
+ * Static stand-in for `GlassFill` on controls repeated in lists (menu steppers,
+ * add-to-cart): dozens of live glass layers make scrolling stutter, a flat fill costs nothing.
+ */
+export function SolidFill({ radius, tint }: { radius: number; tint?: string }) {
+  return <View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: radius, backgroundColor: tint || "#EEF2F1" }]} />;
+}

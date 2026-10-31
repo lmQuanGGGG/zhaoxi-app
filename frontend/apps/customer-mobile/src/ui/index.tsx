@@ -8,14 +8,14 @@ import { colors, font, radius, shadow, space } from "../theme";
 import { PageHeader, TopBar } from "./chrome";
 import { haptic } from "./haptics";
 import { ZxIcon, type ZxIconName } from "./icons";
-import { GlassFill } from "./glass";
+import { GlassFill, SolidFill } from "./glass";
 import { ServiceArt, ServiceTile } from "./service-icons";
 
 export type IconName = ComponentProps<typeof Ionicons>["name"];
 export { Ionicons, haptic, ZxIcon, type ZxIconName };
 export { BackButton, DOCK_SPACE, PageHeader, ServicesGem, TopBar } from "./chrome";
 export { ServiceArt, ServiceTile, servicePalettes } from "./service-icons";
-export { Glass, GlassFill, LIQUID_GLASS } from "./glass";
+export { Glass, GlassFill, LIQUID_GLASS, SolidFill } from "./glass";
 
 // ---------------------------------------------------------------------------
 // Layout
@@ -120,17 +120,17 @@ export function Chip({ label, active, onPress, count, icon, tone = "green", imag
   );
 }
 
-/** PWA `menuQuantity`: round − / value / green + */
+/** PWA `menuQuantity`: round − / value / green +. Flat fills (not glass): it repeats on every menu row. */
 export function QuantityStepper({ value, onChange, min = 0, max = 99, disabled }: { value: number; onChange: (next: number) => void; min?: number; max?: number; disabled?: boolean; compact?: boolean }) {
   return (
     <View style={styles.stepper}>
       <PressableScale disabled={disabled || value <= min} onPress={() => { haptic.select(); onChange(Math.max(min, value - 1)); }} hapticOnPress={false} style={styles.stepMinus}>
-        <GlassFill radius={13} />
+        <SolidFill radius={13} />
         <ZxIcon name="minus" size={14} color="#334155" strokeWidth={2.4} />
       </PressableScale>
       <Text style={styles.stepperValue}>{value}</Text>
       <PressableScale disabled={disabled || value >= max} onPress={() => { haptic.select(); onChange(Math.min(max, value + 1)); }} hapticOnPress={false} style={styles.stepPlus}>
-        <GlassFill radius={13} tint="rgba(7,193,96,0.9)" />
+        <SolidFill radius={13} tint="#07C160" />
         <ZxIcon name="plus" size={14} color={colors.white} strokeWidth={2.6} />
       </PressableScale>
     </View>

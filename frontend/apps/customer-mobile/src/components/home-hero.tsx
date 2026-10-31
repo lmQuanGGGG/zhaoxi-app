@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, { Easing, Extrapolation, interpolate, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withSpring, withTiming, type SharedValue } from "react-native-reanimated";
+import Animated, { Easing, Extrapolation, interpolate, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withSpring, withTiming, type SharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Circle, ClipPath, Defs, Ellipse, Image as SvgImage, LinearGradient as SvgGradient, Path, RadialGradient, Rect, Stop } from "react-native-svg";
 import { scheduleOnRN } from "react-native-worklets";
@@ -274,8 +274,9 @@ function BackCard({ image, drag }: { image: number; drag: SharedValue<number> })
 
 const ITEM = 96;
 const LENS = 168;
-const ARC_HEADROOM = 48; // room above the items so the halo/sparkles are not clipped by the ScrollView
-const ARC_ICON_CENTER = 18 + 43; // arcSection paddingTop + half the 86pt centre icon
+const ARC_HEADROOM = 48; // room above the items so the halo is not clipped by the ScrollView
+const ARC_TOP = 18; // arcSection paddingTop
+const ARC_ICON_CENTER = ARC_TOP + 43; // + half the 86pt centre icon
 
 /** White dome with a snapping service carousel: the centred item is enlarged and raised, the rest follow the arc. */
 export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ code: string; name: string }>; onOpen: (code: string) => void; onPressIn?: (code: string) => void; more: string }) {
@@ -338,13 +339,8 @@ function ArcItem({ index, x, tile, onOpen, onPressIn }: { index: number; x: Shar
       ],
     };
   });
-  // Halo + coloured contact shadow + sparkles only light up on the centred item.
+  // Halo + coloured contact shadow only light up on the centred item.
   const lit = useAnimatedStyle(() => ({ opacity: interpolate(Math.abs(x.value - index * ITEM) / ITEM, [0, 0.7], [1, 0], Extrapolation.CLAMP) }));
-  const twinkle = useSharedValue(0);
-  useEffect(() => {
-    twinkle.value = withRepeat(withSequence(withTiming(1, { duration: 900, easing: Easing.inOut(Easing.quad) }), withTiming(0.25, { duration: 900, easing: Easing.inOut(Easing.quad) })), -1);
-  }, [twinkle]);
-  const sparkle = useAnimatedStyle(() => ({ opacity: twinkle.value, transform: [{ scale: 0.7 + twinkle.value * 0.4 }, { rotate: `${twinkle.value * 45}deg` }] }));
   return (
     <Pressable onPressIn={() => onPressIn?.(tile.code)} onPress={() => onOpen(tile.code)} style={{ width: ITEM, alignItems: "center" }}>
       <Animated.View style={[{ alignItems: "center", width: ITEM + 30 }, motion]}>
@@ -366,19 +362,9 @@ function ArcItem({ index, x, tile, onOpen, onPressIn }: { index: number; x: Shar
           </Svg>
         </Animated.View>
         <ServiceArt code={tile.code} size={86} />
-        <Animated.View pointerEvents="none" style={[styles.sparkleA, lit]}><Animated.View style={sparkle}><Sparkle size={16} color="#F6C453" /></Animated.View></Animated.View>
-        <Animated.View pointerEvents="none" style={[styles.sparkleB, lit]}><Animated.View style={sparkle}><Sparkle size={10} color="#FFFFFF" /></Animated.View></Animated.View>
         <Text style={styles.arcLabel} numberOfLines={2}>{tile.name}</Text>
       </Animated.View>
     </Pressable>
-  );
-}
-
-function Sparkle({ size, color }: { size: number; color: string }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Path d="M12 0c.8 6.4 5.6 11.2 12 12-6.4.8-11.2 5.6-12 12-.8-6.4-5.6-11.2-12-12C6.4 11.2 11.2 6.4 12 0Z" fill={color} />
-    </Svg>
   );
 }
 
@@ -426,7 +412,7 @@ const styles = StyleSheet.create({
   heroEyebrow: { fontSize: 10.5, fontWeight: "800", letterSpacing: 2, color: "rgba(255,255,255,0.9)" },
   heroTitle: { fontSize: 22, fontWeight: "800", color: colors.white, lineHeight: 27, letterSpacing: -0.4, marginTop: 4, textShadowColor: "rgba(0,0,0,0.25)", textShadowRadius: 8 },
   heroHighlight: { fontSize: 15, fontWeight: "800", color: "#F6D892", marginTop: 3 },
-  arcSection: { marginTop: -64, paddingTop: 18 },
+  arcSection: { marginTop: -64, paddingTop: ARC_TOP },
   dome: { position: "absolute", top: 0, backgroundColor: colors.white },
   lensWrap: { position: "absolute", top: ARC_ICON_CENTER - LENS / 2, width: LENS, height: LENS },
   lens: { width: LENS, height: LENS, borderRadius: LENS / 2 },
@@ -435,8 +421,6 @@ const styles = StyleSheet.create({
   lensRim: { position: "absolute", left: 0, top: 0, width: LENS, height: LENS, borderRadius: LENS / 2, borderWidth: 0.75, borderColor: "rgba(255,255,255,0.35)" },
   lensSheen: { position: "absolute", left: 18, top: 10, width: LENS * 0.56, height: LENS * 0.4, borderRadius: LENS },
   halo: { position: "absolute", top: -32, width: 150, height: 150 },
-  sparkleA: { position: "absolute", top: -2, right: 14 },
-  sparkleB: { position: "absolute", top: 22, left: 16 },
   arcLabel: { marginTop: 6, fontSize: 15, fontWeight: "700", color: "#17221F", textAlign: "center", lineHeight: 19 },
   moreLink: { alignSelf: "center", flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 6, marginTop: 2 },
   moreText: { fontSize: 17, fontWeight: "800", color: CORAL },

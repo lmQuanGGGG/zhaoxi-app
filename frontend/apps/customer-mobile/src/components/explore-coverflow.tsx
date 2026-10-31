@@ -1,8 +1,8 @@
 import { localizeServiceModuleName, localizeServiceName } from "@zhaoxi/i18n";
-import { router } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
-import Animated, { Easing, Extrapolation, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming, type SharedValue } from "react-native-reanimated";
+import Animated, { cancelAnimation, Easing, Extrapolation, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming, type SharedValue } from "react-native-reanimated";
 import type { Recommendation } from "../api/types";
 import { imageUri, money } from "../format";
 import { useI18n } from "../i18n";
@@ -120,9 +120,11 @@ function FlowCard({ item, index, x, last }: { item: Recommendation; index: numbe
 /** 3D service illustration floating over the panel corner (the reference mascot). */
 function Mascot({ code }: { code: string }) {
   const y = useSharedValue(0);
-  useEffect(() => {
+  // Bob only while Home is on screen; an endless loop on a hidden tab still costs frames.
+  useFocusEffect(useCallback(() => {
     y.value = withRepeat(withSequence(withTiming(-8, { duration: 1600, easing: Easing.inOut(Easing.sin) }), withTiming(0, { duration: 1600, easing: Easing.inOut(Easing.sin) })), -1);
-  }, [y]);
+    return () => cancelAnimation(y);
+  }, [y]));
   const bob = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }, { rotate: "-8deg" }] }));
   return (
     <Animated.View pointerEvents="none" style={[styles.mascot, bob]}>

@@ -11,7 +11,7 @@ import { imageUri, money, num, str } from "../format";
 import { useI18n } from "../i18n";
 import { colors, shadow } from "../theme";
 import { AppImage, PressableScale, QuantityStepper, haptic } from "../ui";
-import { GlassFill } from "../ui/glass";
+import { SolidFill } from "../ui/glass";
 import { CartIcon } from "../ui/icons";
 import { toast } from "../ui/toast";
 
@@ -53,7 +53,7 @@ export function MenuCard({ item, price, restaurantOpen }: { item: Service; price
         <View style={{ alignItems: "center", gap: 8 }}>
           <QuantityStepper value={quantity} onChange={setQuantity} />
           <PressableScale disabled={!quantity} onPress={add} style={styles.addButton}>
-            <GlassFill radius={14} tint={quantity > 0 ? "rgba(7,193,96,0.9)" : undefined} />
+            <SolidFill radius={14} tint={quantity > 0 ? "#07C160" : undefined} />
             <Text style={[styles.addText, quantity > 0 && { color: colors.white }]}>{t.detail.addCart}</Text>
           </PressableScale>
         </View>
@@ -123,7 +123,7 @@ export function RestaurantCard({ id, menu, status, pricing, index = 0, onOpen }:
       </Pressable>
       <View style={{ padding: 12 }}>
         <MenuGrid items={menu.slice(0, 2)} pricing={pricing} restaurantOpen={open} withDetailLink />
-        <PressableScale onPress={onOpen} style={styles.viewMore}><GlassFill radius={20} tint="rgba(15,175,122,0.14)" /><Text style={styles.viewMoreText}>{t.browse.viewMenu}{menu.length > 2 ? ` (${menu.length - 2})` : ""} ›</Text></PressableScale>
+        <PressableScale onPress={onOpen} style={styles.viewMore}><SolidFill radius={20} tint="#E3F6EE" /><Text style={styles.viewMoreText}>{t.browse.viewMenu}{menu.length > 2 ? ` (${menu.length - 2})` : ""} ›</Text></PressableScale>
       </View>
      </View>
     </Animated.View>
