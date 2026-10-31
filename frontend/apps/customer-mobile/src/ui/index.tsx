@@ -13,7 +13,7 @@ import { MenuArt, ServiceArt, ServiceTile, type MenuArtKind } from "./service-ic
 
 export type IconName = ComponentProps<typeof Ionicons>["name"];
 export { Ionicons, haptic, ZxIcon, type ZxIconName };
-export { BackButton, DOCK_SPACE, PageHeader, ServicesGem, TopBar } from "./chrome";
+export { BackButton, DOCK_SPACE, HeaderFade, PageHeader, ServicesGem, TopBar } from "./chrome";
 export { FactArt, MenuArt, ServiceArt, ServiceTile, servicePalettes, type FactArtKind, type MenuArtKind } from "./service-icons";
 export { Glass, GlassFill, LIQUID_GLASS, SolidFill } from "./glass";
 

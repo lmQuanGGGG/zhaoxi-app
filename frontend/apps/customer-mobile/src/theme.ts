@@ -20,6 +20,7 @@ export const colors = {
   glass: "rgba(255,255,255,0.74)",
   glassBorder: "rgba(255,255,255,0.92)",
   topbar: "rgba(246,244,239,0.72)",
+  header: "#00323A", // petrol teal of the Home header, shared by every screen header
   // lines
   border: "#E2E8F0",
   borderSoft: "#EEF2F6",

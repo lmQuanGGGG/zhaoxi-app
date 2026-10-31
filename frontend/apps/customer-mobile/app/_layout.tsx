@@ -79,6 +79,7 @@ function AppNavigator({ onboarded, locale }: { onboarded: boolean; locale: ZhaoX
         <Stack.Screen name="onboarding" options={{ animation: "fade", gestureEnabled: false }} />
         <Stack.Screen name="login" options={{ presentation: "transparentModal", animation: "fade" }} />
         <Stack.Screen name="cart" options={{ presentation: "card" }} />
+        <Stack.Screen name="location" options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }} />
         <Stack.Screen name="request-success" options={{ animation: "fade_from_bottom", gestureEnabled: false }} />
         <Stack.Screen name="language" options={{ presentation: "formSheet", sheetAllowedDetents: [0.55, 0.9], sheetGrabberVisible: true, sheetCornerRadius: 28 }} />
       </Stack>

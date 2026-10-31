@@ -14,7 +14,7 @@ import { getPromotionsPreference, pushPermissionGranted, registerForPush, setPro
 import { profileCopy } from "../../src/profile-copy";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
-import { ListRow, PressableScale, Screen, type MenuArtKind } from "../../src/ui";
+import { HeaderFade, ListRow, PressableScale, Screen, type MenuArtKind } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
 
 const feedbackLabel = { "vi-VN": "Gửi phản hồi Beta", "en-US": "Beta feedback", "zh-CN": "Beta 反馈", "zh-TW": "Beta 回饋" } as const;
@@ -50,8 +50,12 @@ export default function ProfileScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={{ padding: 14, gap: 12, paddingBottom: TAB_BAR_SPACE }}>
-        <Animated.View entering={FadeInDown.duration(300)} style={[styles.hero, { shadowColor: "#07C160", shadowOpacity: 0.2, shadowRadius: 18, shadowOffset: { width: 0, height: 15 } }]}>
-          <LinearGradient colors={["#08A855", "#07C160", "#43D28A"]} locations={[0, 0.58, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 24 }]} />
+        {/* The fade lives on an unshadowed wrapper: iOS would cast the hero's shadow from the whole gradient */}
+        <View>
+        <HeaderFade />
+        <Animated.View entering={FadeInDown.duration(300)} style={[styles.hero, { shadowColor: "#00323A", shadowOpacity: 0.28, shadowRadius: 18, shadowOffset: { width: 0, height: 14 } }]}>
+          <LinearGradient colors={["#0E5A63", "#0A4A52", "#167A80"]} locations={[0, 0.55, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 24 }]} />
+          <View style={[StyleSheet.absoluteFill, { borderRadius: 24, borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }]} />
           <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
             <View style={styles.avatar}><Text style={styles.avatarText}>{name.slice(0, 1).toUpperCase()}</Text></View>
             <View style={{ flex: 1, minWidth: 0 }}>
@@ -65,6 +69,7 @@ export default function ProfileScreen() {
           <View style={styles.completionRow}><Text style={styles.completionText}>{c.completion}</Text><Text style={styles.completionText}>{completion}%</Text></View>
           <View style={styles.track}><View style={[styles.trackFill, { width: `${completion}%` }]} /></View>
         </Animated.View>
+        </View>
 
         {unnamed ? (
           <View style={styles.nameCard}>
@@ -123,13 +128,13 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   hero: { paddingVertical: 20, paddingHorizontal: 18, borderRadius: 24 },
   avatar: { width: 62, height: 62, borderRadius: 18, backgroundColor: colors.white, alignItems: "center", justifyContent: "center" },
-  avatarText: { color: "#078343", fontSize: 26, fontWeight: "800" },
+  avatarText: { color: "#0A4A52", fontSize: 26, fontWeight: "800" },
   heroSmall: { fontSize: 12, color: "rgba(255,255,255,0.9)" },
   heroName: { fontSize: 21, fontWeight: "800", color: colors.white, marginTop: 2 },
   heroId: { fontSize: 11, color: "rgba(255,255,255,0.92)", marginTop: 3 },
   namePill: { alignSelf: "flex-start", marginTop: 6, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 999, backgroundColor: colors.white },
-  namePillText: { fontSize: 11, fontWeight: "800", color: "#078343" },
-  editButton: { paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.24)" },
+  namePillText: { fontSize: 11, fontWeight: "800", color: "#0A4A52" },
+  editButton: { paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.18)" },
   editText: { fontSize: 12, fontWeight: "800", color: colors.white },
   completionRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   completionText: { fontSize: 11, color: "rgba(255,255,255,0.92)", fontWeight: "600" },

@@ -2,7 +2,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { useI18n } from "../i18n";
-import { locate, useLocationState } from "../location";
+import { useLocationState } from "../location";
 import { colors, shadow } from "../theme";
 import { PressableScale, ZxIcon } from "../ui";
 
@@ -21,12 +21,12 @@ export function LocationBanner() {
   return (
     <View style={[styles.locBanner, shadow("card")]}>
       <LinearGradient colors={["#F7FBFA", "#DDF4F0"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 18 }]} />
-      <View style={{ flex: 1, minWidth: 0 }}>
+      <PressableScale onPress={() => router.push("/location")} scaleTo={0.99} style={{ flex: 1, minWidth: 0 }}>
         <Text style={styles.locTitle}>{c.title}</Text>
         <Text style={styles.locBody} numberOfLines={1}>{location.status === "locating" ? t.home.locating : location.label || c.hint}</Text>
-      </View>
-      <PressableScale onPress={() => router.push("/services/food")} style={styles.locMap}><ZxIcon name="map" size={17} color={colors.brandDeep} /></PressableScale>
-      <PressableScale onPress={() => void locate(true)} style={styles.locChoose}><Text style={styles.locChooseText}>{c.choose}</Text></PressableScale>
+      </PressableScale>
+      <PressableScale onPress={() => router.push("/location")} style={styles.locMap}><ZxIcon name="map" size={17} color={colors.brandDeep} /></PressableScale>
+      <PressableScale onPress={() => router.push("/location")} style={styles.locChoose}><Text style={styles.locChooseText}>{c.choose}</Text></PressableScale>
     </View>
   );
 }

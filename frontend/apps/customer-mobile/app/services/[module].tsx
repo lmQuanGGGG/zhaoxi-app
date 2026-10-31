@@ -1,7 +1,6 @@
 import { FlashList } from "@shopify/flash-list";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { localizeOrganizationName, localizeServiceModuleName, localizeServiceName } from "@zhaoxi/i18n";
-import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
@@ -19,7 +18,7 @@ import { useI18n } from "../../src/i18n";
 import { locate, pointKey, useLocationState } from "../../src/location";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
-import { AppImage, BackButton, EmptyState, ErrorState, PressableScale, Screen, ServiceBadge, ServiceIcon, SkeletonList, ZxIcon } from "../../src/ui";
+import { AppImage, BackButton, EmptyState, ErrorState, HeaderFade, PressableScale, Screen, ServiceBadge, ServiceIcon, SkeletonList, ZxIcon } from "../../src/ui";
 
 const resultUnit = { "vi-VN": "kết quả", "en-US": "results", "zh-CN": "个结果", "zh-TW": "個結果" } as const;
 const monthUnit = { "vi-VN": "tháng", "en-US": "month", "zh-CN": "月", "zh-TW": "月" } as const;
@@ -68,6 +67,8 @@ export default function ModuleBrowser() {
 
   const header = (
     <View style={{ paddingHorizontal: 14, gap: 12, paddingTop: 14, paddingBottom: 14 }}>
+      {/* Petrol header melting into the list as it scrolls */}
+      <View style={{ position: "absolute", left: 0, right: 0, top: 0, height: 0 }}><HeaderFade /></View>
       <LocationBanner />
       <View style={[styles.search, shadow("card")]}>
         <ZxIcon name="search" size={17} color="#64748B" />
@@ -85,7 +86,7 @@ export default function ModuleBrowser() {
   return (
     <Screen>
       <View style={styles.moduleHeader}>
-        <BackButton />
+        <BackButton light />
         <View style={styles.moduleTitle}>
           <ServiceBadge code={module} size={40} />
           <View style={{ flex: 1 }}>
@@ -135,8 +136,7 @@ function GenericServiceCard({ item, module, index, onPressIn }: { item: Service;
       <PressableScale onPressIn={onPressIn} onPress={() => router.push(`/service/${item.id}`)} scaleTo={0.985} style={[styles.serviceCard, shadow("card")]}>
         {image ? <AppImage uri={image} style={styles.serviceImage} /> : (
           <View style={styles.serviceIconBox}>
-            <LinearGradient colors={["#E7FFF2", "#D8F8E8"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 16 }]} />
-            <ServiceIcon code={module} size={44} />
+            <ServiceIcon code={module} size={56} />
           </View>
         )}
         <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
@@ -153,17 +153,17 @@ function GenericServiceCard({ item, module, index, onPressIn }: { item: Service;
 }
 
 const styles = StyleSheet.create({
-  moduleHeader: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 22, paddingVertical: 16, backgroundColor: "rgba(255,255,255,0.88)", borderBottomWidth: 1, borderBottomColor: "rgba(226,232,240,0.8)" },
+  moduleHeader: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 22, paddingTop: 8, paddingBottom: 14, backgroundColor: colors.header, zIndex: 2 },
   moduleTitle: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10 },
-  moduleName: { fontSize: 16, fontWeight: "800", color: colors.ink },
-  moduleCount: { fontSize: 11, color: colors.slate, marginTop: 1 },
+  moduleName: { fontSize: 17, fontWeight: "800", color: colors.white },
+  moduleCount: { fontSize: 11, color: "rgba(255,255,255,0.72)", marginTop: 1 },
   cartPill: { paddingHorizontal: 12, height: 32, borderRadius: 999, backgroundColor: colors.wechat, alignItems: "center", justifyContent: "center" },
   cartPillText: { color: colors.white, fontSize: 11, fontWeight: "800" },
   search: { height: 44, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   searchInput: { flex: 1, fontSize: 14, color: colors.text },
   serviceCard: { flexDirection: "row", alignItems: "center", gap: 18, paddingVertical: 14, paddingHorizontal: 16, borderRadius: 20, backgroundColor: colors.white, ...shadow("card") },
   serviceImage: { width: 72, height: 72, borderRadius: 16 },
-  serviceIconBox: { width: 72, height: 72, borderRadius: 16, alignItems: "center", justifyContent: "center", ...shadow("card") },
+  serviceIconBox: { width: 72, height: 72, alignItems: "center", justifyContent: "center" },
   serviceTitle: { fontSize: 15, fontWeight: "700", color: colors.ink },
   serviceSummary: { fontSize: 12, color: colors.slate },
   serviceOrg: { fontSize: 11, fontWeight: "600", color: "#059669" },

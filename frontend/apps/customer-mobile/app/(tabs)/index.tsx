@@ -115,7 +115,7 @@ export default function HomeScreen() {
             title={banner?.title || t.home.welcome}
             slides={landmarks.map((item) => ({ image: item.image, label: item.label[locale] }))}
             locationLabel={location.status === "locating" ? t.home.locating : location.label || lc.choose}
-            onLocate={() => void locate(true)}
+            onLocate={() => router.push("/location")}
           />
           <View style={{ height: 96 }} />
         </View>
@@ -124,7 +124,7 @@ export default function HomeScreen() {
 
         <QuickActions
           items={[
-            { key: "locate", icon: "location", label: quickCopy.locate, onPress: () => void locate(true) },
+            { key: "locate", icon: "location", label: quickCopy.locate, onPress: () => router.push("/location") },
             { key: "ai", icon: "assistant", label: quickCopy.ai, onPress: () => router.push("/support"), accent: "#F5A524" },
             { key: "coupons", icon: "ticket", label: quickCopy.coupons, onPress: () => router.push("/coupons"), accent: "#EC5B2C" },
             { key: "favorites", icon: "heart", label: quickCopy.favorites, onPress: () => router.push("/favorites"), accent: "#E2564A" },

@@ -629,17 +629,35 @@ const menuArt = {
   security: Shield, emergency: Siren, push: PhonePush, promotions: Megaphone, help: Lifebuoy, feedback: ChatHeart,
 } as const;
 export type MenuArtKind = keyof typeof menuArt;
-const menuTints: Record<MenuArtKind, string> = {
-  orders: "#FFF4E6", favorites: "#FFF8E1", history: "#E8F6F5", coupons: "#FFEEE8", notifications: "#FFF6E0", language: "#EAF3FE",
-  security: "#EEEFFF", emergency: "#FFECEC", push: "#E8F5F4", promotions: "#FFF0E6", help: "#FFEFEF", feedback: "#E7F8F1",
+// Glow colour behind each menu illustration (soft, borderless halo).
+const menuGlow: Record<MenuArtKind, string> = {
+  orders: "#F2A65A", favorites: "#F7C531", history: "#3FB3AE", coupons: "#F26B4A", notifications: "#F5B524", language: "#4B92E8",
+  security: "#6D6CF0", emergency: "#EF5350", push: "#2FA39F", promotions: "#F58A3C", help: "#EF6F6F", feedback: "#22B98A",
 };
 
-/** Clay menu illustration on its soft tinted tile (profile / settings rows). */
+/** Borderless, blurred colour halo that sits behind an illustration instead of a hard tile. */
+export function SoftGlow({ color, size, opacity = 0.32 }: { color: string; size: number; opacity?: number }) {
+  return (
+    <Svg pointerEvents="none" width={size} height={size} style={{ position: "absolute" }}>
+      <Defs>
+        <RadialGradient id="glow" cx="0.5" cy="0.52" r="0.5">
+          <Stop offset="0" stopColor={color} stopOpacity={opacity} />
+          <Stop offset="0.55" stopColor={color} stopOpacity={opacity * 0.45} />
+          <Stop offset="1" stopColor={color} stopOpacity={0} />
+        </RadialGradient>
+      </Defs>
+      <Circle cx={size / 2} cy={size / 2} r={size / 2} fill="url(#glow)" />
+    </Svg>
+  );
+}
+
+/** Clay menu illustration on a soft blurred halo (profile / settings rows). */
 export function MenuArt({ kind, size = 40 }: { kind: MenuArtKind; size?: number }) {
   const Art = menuArt[kind];
   return (
-    <View style={{ width: size, height: size, borderRadius: size * 0.32, backgroundColor: menuTints[kind], alignItems: "center", justifyContent: "center" }}>
-      <Svg width={size * 0.8} height={size * 0.8} viewBox="0 0 64 64">
+    <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
+      <SoftGlow color={menuGlow[kind]} size={size * 1.35} />
+      <Svg width={size * 0.86} height={size * 0.86} viewBox="0 0 64 64">
         <Art />
       </Svg>
     </View>
@@ -673,14 +691,11 @@ export function ServiceArt({ code, size = 48 }: { code?: string | null; size?: n
 export function ServiceTile({ code, size = 48, shadow = true }: { code?: string | null; size?: number; shadow?: boolean }) {
   if (size < 30) return <ServiceArt code={code} size={size} />;
   const palette = (code && servicePalettes[code]) || { tint: "#ECFDF5", accent: "#0FAF7A" };
+  // Borderless: the illustration floats on a blurred halo of its accent colour, no tile edge.
   return (
-    <View
-      style={[
-        { width: size, height: size, borderRadius: size * 0.3, backgroundColor: palette.tint, alignItems: "center", justifyContent: "center" },
-        shadow ? { shadowColor: palette.accent, shadowOpacity: 0.14, shadowRadius: size * 0.14, shadowOffset: { width: 0, height: size * 0.08 } } : null,
-      ]}
-    >
-      <ServiceArt code={code} size={size * 0.84} />
+    <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
+      <SoftGlow color={palette.accent} size={size * 1.3} opacity={shadow ? 0.26 : 0.2} />
+      <ServiceArt code={code} size={size * 0.9} />
     </View>
   );
 }
