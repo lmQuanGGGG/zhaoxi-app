@@ -36,7 +36,7 @@ export default function FavoritesScreen() {
         loading={favorites.isPending}
         refreshing={favorites.isRefetching}
         onRefresh={() => void favorites.refetch()}
-        emptyIcon="heart-outline"
+        emptyIcon="heart"
         emptyTitle={t.personal.favoritesEmpty}
         renderAction={(item) => <IconButton icon="heart" color={colors.danger} label={t.detail.unfavorite} onPress={() => remove.mutate(item)} />}
       />

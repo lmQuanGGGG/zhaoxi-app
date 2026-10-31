@@ -174,7 +174,17 @@ export type Order = {
 };
 export type OrderDetail = Order & { history: Array<{ id: string; toStatus: string; note?: string | null; createdAt: string }> };
 
-export type DeliveryTracking = { job?: { status?: string; driverName?: string; driverPhone?: string; etaMinutes?: number } & Record<string, unknown> } & Record<string, unknown>;
+// Mirrors `DeliveryTracking` from @zhaoxi/driver (not imported: that package also ships DOM components).
+export type DeliveryJobStatus = "searching_driver" | "assigned" | "picked_up" | "delivering" | "delivered" | "cancelled";
+export type DeliveryLocationPoint = { latitude: string; longitude: string; heading?: string; recordedAt?: string };
+export type DeliveryTracking = {
+  job: { id: string; status: DeliveryJobStatus; pickupAddress?: string; pickupLatitude?: string; pickupLongitude?: string; dropoffAddress?: string; dropoffLatitude?: string; dropoffLongitude?: string };
+  driver?: { id: string; displayName: string; avatarUrl?: string; vehicleType: string; plateNumber?: string } | null;
+  location?: DeliveryLocationPoint | null;
+  path?: DeliveryLocationPoint[];
+  timeline?: Array<{ id: string; toStatus?: DeliveryJobStatus; eventType?: string; createdAt: string }>;
+  telemetry?: { isLive: boolean; isStale?: boolean; locationAgeSeconds?: number; distanceRemainingKm?: number; etaMinutes?: number; targetType?: "pickup" | "dropoff" };
+};
 export type SupportConfig = { zaloQrUrl?: string | null; wechatQrUrl?: string | null; zaloChatUrl?: string | null; wechatChatUrl?: string | null };
 
 export type NotificationCategory = "order" | "housing" | "travel" | "payment" | "saved_search";
@@ -212,3 +222,37 @@ export type FavoriteItem = { id: string; code?: string; name?: string | null; su
 export type HelpArticle = { id: string; slug?: string; title: string; summary?: string | null; body?: string | null; category?: string | null };
 export type Payment = { id: string; requestId?: string | null; requestCode?: string | null; method?: string; status: string; amount: string | number; currency: string; createdAt: string };
 export type DeviceSession = { sessionId: string; role: string; deviceId?: string; deviceName?: string; lastSeenAt: string; createdAt: string; isCurrent?: boolean };
+
+// Housing inquiries & travel bookings (PWA /housing/requests, /travel/requests) ---------------
+export type InquiryMessage = { id: string; senderRole: "customer" | "partner"; body: string; createdAt: string; customerReadAt?: string | null };
+export type HousingAppointment = { status: "proposed" | "confirmed" | "completed" | "cancelled"; scheduledAt: string; proposedBy: "customer" | "partner"; note?: string | null; reminderAt?: string | null };
+export type FollowupEntry = { id?: string; actorRole?: string; action?: string; at?: string; note?: string | null; scheduledAt?: string | null };
+export type HousingInquiry = {
+  id: string;
+  requestCode: string;
+  status: string;
+  createdAt: string;
+  customerName: string;
+  housingLeadStage: string;
+  details?: Record<string, unknown>;
+  listing?: { id?: string | null; code?: string; imageUrl?: string } | null;
+};
+export type TravelStage = "requested" | "confirmed" | "completed" | "cancelled" | "rejected";
+export type TravelBooking = { id: string; requestCode: string; status: string; customerName: string; createdAt: string; details?: Record<string, unknown> };
+export type PartnerPaymentIntent = { status?: string; amount?: number | string; currency?: string; checkoutUrl?: string; qrPayload?: string };
+export type PartnerPaymentState = { status: string; intent?: PartnerPaymentIntent | null };
+export type PaymentSupportMessage = { id: string; sender: "customer" | "partner" | "admin"; body: string; createdAt: string; customerReadAt?: string | null };
+export type PaymentSupportTicket = { stage: string; slaDueAt?: string | null; refundEtaAt?: string | null; messages?: PaymentSupportMessage[] };
+export type TravelSlot = { date: string; time: string; maxGuests: number; remainingGuests: number; available: boolean };
+export type TravelPackage = {
+  id: string;
+  name: string;
+  pricingMode: "per_person" | "group";
+  adultPrice: number;
+  childPrice: number;
+  groupPrice: number;
+  surchargePerBooking: number;
+  minGuests: number;
+  maxGuests: number;
+  isEnabled: boolean;
+};

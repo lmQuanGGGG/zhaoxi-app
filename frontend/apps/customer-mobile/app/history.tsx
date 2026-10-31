@@ -13,7 +13,7 @@ export default function HistoryScreen() {
   return (
     <Screen>
       <Header title={t.profile.history} />
-      <ServiceList items={history.data || []} loading={history.isPending} refreshing={history.isRefetching} onRefresh={() => void history.refetch()} emptyIcon="time-outline" emptyTitle={t.personal.historyEmpty} />
+      <ServiceList items={history.data || []} loading={history.isPending} refreshing={history.isRefetching} onRefresh={() => void history.refetch()} emptyIcon="clock" emptyTitle={t.personal.historyEmpty} />
     </Screen>
   );
 }

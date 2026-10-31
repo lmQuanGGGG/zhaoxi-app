@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { getOrder, getOrders } from "../../src/api/endpoints";
+import { getHousingInquiries, getOrder, getOrders, getTravelBookings } from "../../src/api/endpoints";
 import type { Order } from "../../src/api/types";
 import { TAB_BAR_SPACE } from "../../src/constants";
 import { money, num, shortDate, str } from "../../src/format";
@@ -14,7 +14,7 @@ import { useI18n } from "../../src/i18n";
 import { keys } from "../../src/query";
 import { ACTIVE_STATUSES, CANCELLED_STATUSES } from "../../src/status";
 import { colors, shadow } from "../../src/theme";
-import { Chip, EmptyState, ErrorState, Header, PressableScale, Screen, SkeletonList } from "../../src/ui";
+import { Chip, EmptyState, ErrorState, Header, PressableScale, Screen, ServiceBadge, SkeletonList } from "../../src/ui";
 
 type Filter = "all" | "active" | "completed" | "cancelled";
 
@@ -29,6 +29,8 @@ export default function OrdersScreen() {
   const visible = useMemo(() => list.filter((o) => filter === "all" || (filter === "active" ? ACTIVE_STATUSES.has(o.status) : filter === "completed" ? o.status === "completed" : CANCELLED_STATUSES.has(o.status))), [list, filter]);
   const counts = { all: list.length, active: list.filter((o) => ACTIVE_STATUSES.has(o.status)).length, completed: list.filter((o) => o.status === "completed").length, cancelled: list.filter((o) => CANCELLED_STATUSES.has(o.status)).length };
   const sum = visible.reduce((n, o) => n + num(o.details?.totalAmount), 0);
+  const housing = useQuery({ queryKey: keys.housingInquiries(userId), queryFn: getHousingInquiries, enabled: Boolean(userId) });
+  const travel = useQuery({ queryKey: keys.travelBookings(userId), queryFn: getTravelBookings, enabled: Boolean(userId) });
   const prefetch = (id: string) => void client.prefetchQuery({ queryKey: keys.order(id, locale), queryFn: () => getOrder(id, locale), staleTime: 15_000 });
 
   const header = (
@@ -38,6 +40,10 @@ export default function OrdersScreen() {
         <View style={styles.summary}>
           <View style={[styles.sumCard, shadow("card")]}><Text style={styles.sumLabel}>{t.orders.count}</Text><Text style={styles.sumValue}>{visible.length}</Text></View>
           <View style={[styles.sumCard, shadow("card")]}><Text style={styles.sumLabel}>{t.orders.value}</Text><Text style={styles.sumValue}>{sum > 0 ? money(sum) : "—"}</Text></View>
+        </View>
+        <View style={styles.summary}>
+          <InquiryTile kind="housing" count={housing.data?.length} />
+          <InquiryTile kind="travel" count={travel.data?.length} />
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingTop: 2, paddingBottom: 6, paddingRight: 14 }} style={{ marginRight: -14 }}>
           {(["all", "active", "completed", "cancelled"] as const).map((key) => <Chip key={key} tone="dark" label={t.orders[key]} count={counts[key]} active={filter === key} onPress={() => setFilter(key)} />)}
@@ -67,6 +73,28 @@ export default function OrdersScreen() {
   );
 }
 
+const tileCopy = {
+  "vi-VN": { housing: "Yêu cầu thuê nhà", travel: "Booking du lịch" },
+  "en-US": { housing: "Rental inquiries", travel: "Travel bookings" },
+  "zh-CN": { housing: "租房意向", travel: "旅游预约" },
+  "zh-TW": { housing: "租房意向", travel: "旅遊預約" },
+} as const;
+
+/** Entry to the housing / travel trackers (PWA /housing/requests, /travel/requests). */
+function InquiryTile({ kind, count }: { kind: "housing" | "travel"; count?: number }) {
+  const { locale } = useI18n();
+  return (
+    <PressableScale onPress={() => router.push(`/inquiries/${kind}`)} scaleTo={0.97} style={[styles.tile, shadow("card")]}>
+      <ServiceBadge code={kind} size={34} />
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text style={styles.tileTitle} numberOfLines={1}>{tileCopy[locale][kind]}</Text>
+        <Text style={styles.tileCount}>{count ?? "—"}</Text>
+      </View>
+      <Text style={{ fontSize: 18, color: "#94A3B8" }}>›</Text>
+    </PressableScale>
+  );
+}
+
 /** PWA `orders.module.css .card`. */
 function OrderCard({ order, index, onPressIn }: { order: Order; index: number; onPressIn: () => void }) {
   const { t, locale } = useI18n();
@@ -75,7 +103,7 @@ function OrderCard({ order, index, onPressIn }: { order: Order; index: number; o
   const toneText = order.status === "completed" ? { color: colors.brand } : CANCELLED_STATUSES.has(order.status) ? { color: "#D86E60" } : { color: "#C58B22" };
   return (
     <Animated.View entering={FadeInDown.delay(Math.min(index, 6) * 40).duration(260)} style={{ paddingHorizontal: 14, paddingTop: 10 }}>
-      <PressableScale onPressIn={onPressIn} onPress={() => router.push(`/order/${order.id}`)} scaleTo={0.985} style={[styles.card, shadow("soft")]}>
+      <PressableScale onPressIn={onPressIn} onPress={() => router.push(order.moduleCode === "housing" || order.moduleCode === "travel" ? `/inquiries/${order.moduleCode}` : `/order/${order.id}`)} scaleTo={0.985} style={[styles.card, shadow("soft")]}>
         <View style={styles.row}>
           <Text style={styles.code} numberOfLines={1}>{order.requestCode}</Text>
           <View style={[styles.badge, tone]}><Text style={[styles.badgeText, toneText]}>{statusLabels[locale][order.status] || order.status}</Text></View>
@@ -96,6 +124,9 @@ function OrderCard({ order, index, onPressIn }: { order: Order; index: number; o
 const styles = StyleSheet.create({
   summary: { flexDirection: "row", gap: 7 },
   sumCard: { flex: 1, gap: 4, paddingVertical: 9, paddingHorizontal: 11, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  tile: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 9, paddingHorizontal: 10, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
+  tileTitle: { fontSize: 11, fontWeight: "700", color: colors.ink },
+  tileCount: { fontSize: 15, fontWeight: "800", color: colors.brandStrong, marginTop: 1 },
   sumLabel: { fontSize: 10, color: colors.textMuted },
   sumValue: { fontSize: 16, fontWeight: "700", color: colors.text },
   card: { padding: 14, borderRadius: 19, backgroundColor: "rgba(255,255,255,0.92)", borderWidth: 1, borderColor: colors.borderWarm },

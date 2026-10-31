@@ -1,9 +1,9 @@
 import { json, request, requestRaw } from "./client";
 import type {
   ApiModule, AvailableCoupon, CouponEvaluation, CustomerProfile, DeliveryQuote, DeliveryTracking, DeviceSession, DiscoveryResult,
-  FavoriteItem, FoodPrice, HelpArticle, HomeFeed, MessageThread, MessageThreadSummary, NotificationInbox, NotificationPreferences,
-  Order, OrderDetail, Payment, PaymentCapabilities, Point, Recommendation, RestaurantStatus, SavedAddress, Service, ServiceDetail,
-  SupportConfig, UiConfig, UnreadSummary,
+  FavoriteItem, FoodPrice, HelpArticle, HomeFeed, HousingInquiry, MessageThread, MessageThreadSummary, NotificationInbox, NotificationPreferences,
+  Order, OrderDetail, PartnerPaymentState, Payment, PaymentCapabilities, Point, Recommendation, RestaurantStatus, SavedAddress, Service, ServiceDetail,
+  SupportConfig, TravelBooking, TravelSlot, UiConfig, UnreadSummary,
 } from "./types";
 
 const q = (params: Record<string, string | number | undefined | null>) => {
@@ -71,6 +71,36 @@ export async function createServiceRequest(payload: Record<string, unknown>) {
 }
 export const createHousingInquiry = (payload: Record<string, unknown>) => request<CreatedRequest>("/api/housing-inquiries", { method: "POST", body: json(payload) });
 export const createTravelInquiry = (payload: Record<string, unknown>) => request<CreatedRequest>("/api/travel-inquiries", { method: "POST", body: json(payload) });
+
+export const getTravelAvailability = (serviceId: string, from: string) =>
+  request<{ slots?: TravelSlot[] }>(`/api/travel-availability?${q({ serviceId, from, days: 30 })}`);
+
+// Housing inquiries & travel bookings ------------------------------------------------------
+const enc = encodeURIComponent;
+export const getHousingInquiries = () => request<HousingInquiry[]>("/api/customer-housing-inquiries");
+export const housingAppointment = (id: string, payload: { action: "propose" | "confirm" | "cancel" | "note"; note?: string; scheduledAt?: string }) =>
+  request(`/api/customer-housing-inquiries/${enc(id)}/appointment`, { method: "PATCH", body: json(payload) });
+export const sendHousingMessage = (id: string, message: string) =>
+  request(`/api/customer-housing-inquiries/${enc(id)}/messages`, { method: "POST", body: json({ message }) });
+export const markHousingMessagesRead = (id: string) => request(`/api/customer-housing-inquiries/${enc(id)}/messages`, { method: "PATCH", body: "{}" });
+export const getTravelBookings = () => request<TravelBooking[]>("/api/customer-travel-inquiries");
+export const cancelTravelBooking = (id: string) => request(`/api/customer-travel-inquiries/${enc(id)}`, { method: "PATCH", body: json({ action: "cancel" }) });
+export const sendTravelMessage = (id: string, message: string) =>
+  request(`/api/customer-travel-inquiries/${enc(id)}/messages`, { method: "POST", body: json({ message }) });
+export const markTravelMessagesRead = (id: string) => request(`/api/customer-travel-inquiries/${enc(id)}/messages`, { method: "PATCH", body: "{}" });
+export const getTravelPayment = (id: string) => request<PartnerPaymentState>(`/api/customer-travel-inquiries/${enc(id)}/payment`);
+export const startTravelPayment = (id: string) =>
+  request<{ intent?: PartnerPaymentState["intent"] }>(`/api/customer-travel-inquiries/${enc(id)}/payment`, { method: "POST", body: "{}" });
+export const openPaymentSupport = (requestId: string, category: "payment" | "refund", message: string) =>
+  request(`/api/customer-payment-support/${enc(requestId)}`, { method: "POST", body: json({ category, message }) });
+export const sendPaymentSupportMessage = (requestId: string, message: string) =>
+  request(`/api/customer-payment-support/${enc(requestId)}/messages`, { method: "POST", body: json({ message }) });
+export const markPaymentSupportRead = (requestId: string) => request(`/api/customer-payment-support/${enc(requestId)}/messages`, { method: "PATCH", body: "{}" });
+
+// Beta feedback (PWA /feedback → backend /api/feedback) -------------------------------------
+export type FeedbackCategory = "general" | "bug" | "suggestion" | "payment" | "delivery" | "partner" | "account";
+export const sendFeedback = (input: { category: FeedbackCategory; rating: number; message: string; route?: string; release: string }) =>
+  request("/api/feedback", { method: "POST", body: json({ app: "customer", channel: "beta", ...input }) });
 
 // Orders & payments --------------------------------------------------------------------
 export const getOrders = (locale: string) => request<Order[]>(`/api/service-requests?${q({ locale, mine: 1 })}`);

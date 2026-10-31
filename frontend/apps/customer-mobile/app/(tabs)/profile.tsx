@@ -17,6 +17,8 @@ import { colors, shadow } from "../../src/theme";
 import { ListRow, PressableScale, Screen } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
 
+const feedbackLabel = { "vi-VN": "Gửi phản hồi Beta", "en-US": "Beta feedback", "zh-CN": "Beta 反馈", "zh-TW": "Beta 回饋" } as const;
+
 export default function ProfileScreen() {
   const { t, locale } = useI18n();
   const c = profileCopy[locale];
@@ -110,6 +112,7 @@ export default function ProfileScreen() {
           }} right={<Text style={{ color: push ? colors.wechat : colors.textMuted, fontSize: 16 }}>{push ? "✓" : "○"}</Text>} />
           <ListRow emoji="📣" title={c.promotions} right={<Switch value={promotions} trackColor={{ true: colors.wechat }} onValueChange={(value) => { setPromotions(value); void setPromotionsPreference(value, locale); }} />} />
           <ListRow emoji="❓" title={t.profile.help} onPress={() => router.push("/help")} />
+          <ListRow emoji="💬" title={feedbackLabel[locale]} onPress={() => router.push("/feedback")} />
         </View>
         <Text style={styles.version}>ZhaoXi · {t.profile.version} {APP_VERSION}</Text>
       </ScrollView>

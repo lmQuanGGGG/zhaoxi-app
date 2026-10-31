@@ -58,6 +58,7 @@ Payload luôn có `data.url` (đường dẫn kiểu PWA) để app mở đúng 
 ## Chưa port
 
 - WeChat Pay trong app (PWA dùng QR/WeChat JSAPI) — cần WeChat Open SDK native và merchant app id. App hiện hỗ trợ tiền mặt và chuyển khoản theo QR của quán.
-- Bản đồ theo dõi tài xế trực tiếp (`DeliveryLiveMap` của PWA dùng Leaflet) — app hiển thị tiến trình + thông tin tài xế, chưa có bản đồ.
 - Đăng nhập WeChat/QR handoff và đổi vai trò (role switch) sang partner/admin.
 - Lưu tìm kiếm có theo dõi (saved search alerts) và hub "Dành cho bạn" (`/discover`) chi tiết; Khám phá dùng chung gợi ý cá nhân hóa.
+
+Đã port thêm (đợt 3): theo dõi yêu cầu thuê nhà (lịch xem nhà, chat Partner) và booking du lịch (thanh toán trực tiếp cho Partner, hỗ trợ thanh toán/hoàn tiền) tại `app/inquiries/[kind].tsx`; form thuê nhà và đặt tour theo lịch trống thật; bộ lọc nhà; bản đồ theo dõi tài xế (`src/components/LiveDelivery.tsx`, react-native-maps); trung tâm thanh toán; phản hồi Beta (`app/feedback.tsx`).

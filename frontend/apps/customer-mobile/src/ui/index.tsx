@@ -170,7 +170,7 @@ export function ServiceBadge({ code, size = 52, mint = true }: { code?: string |
 export function AppImage({ uri, style, fallbackCode, ...props }: Omit<ImageProps, "source"> & { uri?: string; fallbackCode?: string | null }) {
   if (!uri) {
     return (
-      <View style={[{ backgroundColor: "#E2E8F0", alignItems: "center", justifyContent: "center", overflow: "hidden" }, style as StyleProp<ViewStyle>]}>
+      <View style={[{ backgroundColor: "#E9F7EF", alignItems: "center", justifyContent: "center", overflow: "hidden" }, style as StyleProp<ViewStyle>]}>
         <ServiceIcon code={fallbackCode} size={34} />
       </View>
     );

@@ -1,18 +1,18 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { localizeOrganizationName, localizeServiceName } from "@zhaoxi/i18n";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInDown, ZoomIn } from "react-native-reanimated";
-import { createHousingInquiry, createTravelInquiry, getFoodPricing, getProfile, getRestaurantStatus, recordView } from "../../src/api/endpoints";
+import { getFoodPricing, getRestaurantStatus, recordView } from "../../src/api/endpoints";
+import { Gallery, HousingFacts, HousingInquiryForm, TravelBookingForm, TravelFacts } from "../../src/components/inquiry";
 import { TAB_BAR_SPACE } from "../../src/constants";
-import { imageUri, money, num, str } from "../../src/format";
+import { imageUri, money, num } from "../../src/format";
 import { restaurantStatusLabel, useFavorite, useServiceDetail, useSession } from "../../src/hooks";
 import { useI18n } from "../../src/i18n";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
-import { AppImage, BackButton, Button, Field, PressableScale, Screen, ServiceIcon, Skeleton, StatusPill, haptic } from "../../src/ui";
-import { toast } from "../../src/ui/toast";
+import { AppImage, BackButton, Button, PressableScale, Screen, ServiceIcon, Skeleton, StatusPill } from "../../src/ui";
 
 const copy = {
   "vi-VN": { verified: "✓ Đối tác ZhaoXi xác thực", from: "Từ", info: "Thông tin dịch vụ", address: "Địa chỉ", phone: "Điện thoại", book: "Đặt dịch vụ" },
@@ -20,6 +20,8 @@ const copy = {
   "zh-CN": { verified: "✓ 赵喜认证商家", from: "起", info: "服务信息", address: "地址", phone: "电话", book: "预订服务" },
   "zh-TW": { verified: "✓ 趙喜認證商家", from: "起", info: "服務資訊", address: "地址", phone: "電話", book: "預訂服務" },
 } as const;
+
+const monthUnit = { "vi-VN": "tháng", "en-US": "month", "zh-CN": "月", "zh-TW": "月" } as const;
 
 export default function ServiceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -66,7 +68,7 @@ export default function ServiceDetailScreen() {
                 <Text style={styles.title}>{name}</Text>
                 {data.summary ? <Text style={styles.summary}>{data.summary}</Text> : null}
                 <View style={styles.priceRow}>
-                  <Text style={styles.price}>{priceText}</Text>
+                  <Text style={styles.price}>{priceText}{data.moduleCode === "housing" && unitPrice > 0 ? <Text style={styles.perMonth}> / {monthUnit[locale]}</Text> : null}</Text>
                   <Animated.View key={String(favorite.favorite)} entering={ZoomIn.springify().damping(14)}>
                     <PressableScale onPress={favorite.toggle} style={styles.favorite}>
                       <Text style={[styles.favoriteText, favorite.favorite && { color: colors.danger }]}>{favorite.favorite ? "★" : "☆"} {favorite.favorite ? t.detail.unfavorite : t.detail.favorite}</Text>
@@ -76,6 +78,10 @@ export default function ServiceDetailScreen() {
                 {isFood && status.data && !open ? <StatusPill tone="danger" label={restaurantStatusLabel(status.data, t)} /> : null}
               </Animated.View>
             ) : null}
+
+            {data && isInquiry ? <Gallery data={data} /> : null}
+            {data?.moduleCode === "housing" ? <HousingFacts data={data} /> : null}
+            {data?.moduleCode === "travel" ? <TravelFacts data={data} /> : null}
 
             {data?.organization ? (
               <View style={styles.infoCard}>
@@ -92,7 +98,9 @@ export default function ServiceDetailScreen() {
               </View>
             ) : null}
 
-            {data && isInquiry ? <InquiryForm serviceId={data.id} kind={data.moduleCode as "housing" | "travel"} /> : null}
+
+            {data?.moduleCode === "housing" ? <HousingInquiryForm data={data} /> : null}
+            {data?.moduleCode === "travel" ? <TravelBookingForm data={data} /> : null}
 
             {data && !isInquiry ? (
               <Button title={c.book} disabled={!available} onPress={() => router.push({ pathname: "/request/[serviceId]", params: { serviceId: data.id } })} style={{ marginTop: 30 }} />
@@ -105,44 +113,6 @@ export default function ServiceDetailScreen() {
   );
 }
 
-function InquiryForm({ serviceId, kind }: { serviceId: string; kind: "housing" | "travel" }) {
-  const { t, locale } = useI18n();
-  const profile = useQuery({ queryKey: keys.profile(useSession().userId), queryFn: getProfile });
-  const [form, setForm] = useState({ customerName: "", customerPhone: "", date: "", months: "12", people: "1", budget: "", notes: "" });
-  useEffect(() => {
-    const user = profile.data?.user;
-    if (user) setForm((value) => ({ ...value, customerName: value.customerName || str(user.displayName), customerPhone: value.customerPhone || str(user.phone) }));
-  }, [profile.data]);
-  const set = (key: keyof typeof form) => (value: string) => setForm((current) => ({ ...current, [key]: value }));
-  const mutation = useMutation({
-    mutationFn: () => kind === "housing"
-      ? createHousingInquiry({ serviceId, locale, customerName: form.customerName, moveInDate: form.date, leaseMonths: Number(form.months || 0), occupants: Number(form.people || 1), budget: Number(form.budget || 0), preferredContact: "phone", notes: form.notes })
-      : createTravelInquiry({ serviceId, locale, customerName: form.customerName, visitDate: form.date, visitTime: "", guests: Number(form.people || 1), adults: Number(form.people || 1), children: 0, notes: form.notes, packageId: "" }),
-    onSuccess: () => { haptic.success(); toast(t.detail.inquirySent); router.push("/orders"); },
-    onError: (error) => toast(error instanceof Error ? error.message : t.common.error, "error"),
-  });
-  const valid = form.customerName.trim() && form.customerPhone.trim();
-  return (
-    <View style={[styles.infoCard, { gap: 12 }]}>
-      <Text style={styles.infoTitle}>{t.detail.inquiry}</Text>
-      <Field label={t.checkout.name} value={form.customerName} onChangeText={set("customerName")} autoComplete="name" />
-      <Field label={t.checkout.phone} value={form.customerPhone} onChangeText={set("customerPhone")} keyboardType="phone-pad" autoComplete="tel" />
-      <View style={{ flexDirection: "row", gap: 10 }}>
-        <View style={{ flex: 1 }}><Field label={t.checkout.date} value={form.date} onChangeText={set("date")} placeholder="YYYY-MM-DD" /></View>
-        <View style={{ width: 96 }}><Field label={kind === "housing" ? "👥" : "🧳"} value={form.people} onChangeText={set("people")} keyboardType="number-pad" /></View>
-      </View>
-      {kind === "housing" ? (
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <View style={{ flex: 1 }}><Field label="📅" value={form.months} onChangeText={set("months")} keyboardType="number-pad" /></View>
-          <View style={{ flex: 2 }}><Field label="💰 VND" value={form.budget} onChangeText={set("budget")} keyboardType="number-pad" /></View>
-        </View>
-      ) : null}
-      <Field label={t.checkout.note} value={form.notes} onChangeText={set("notes")} multiline />
-      <Button title={t.detail.inquiry} loading={mutation.isPending} disabled={!valid} onPress={() => mutation.mutate()} />
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   hero: { height: 200, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, overflow: "hidden", backgroundColor: "#E9F4EE", borderWidth: 1, borderTopWidth: 0, borderColor: "rgba(255,255,255,0.3)" },
   back: { position: "absolute", top: 16, left: 14 },
@@ -152,8 +122,9 @@ const styles = StyleSheet.create({
   verifiedText: { fontSize: 10, fontWeight: "800", color: "#065F46" },
   title: { fontSize: 22, fontWeight: "800", color: colors.ink },
   summary: { fontSize: 13, color: colors.slate },
-  priceRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 4 },
-  price: { fontSize: 22, fontWeight: "800", color: colors.priceRose },
+  priceRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 4 },
+  price: { flexShrink: 1, fontSize: 22, fontWeight: "800", color: colors.priceRose },
+  perMonth: { fontSize: 14, fontWeight: "700", color: colors.slate },
   favorite: { paddingHorizontal: 14, height: 35, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, justifyContent: "center", shadowColor: "#71371B", shadowOpacity: 0.18, shadowRadius: 0, shadowOffset: { width: 0, height: 4 } },
   favoriteText: { fontSize: 12, fontWeight: "800", color: "#475569" },
   infoCard: { padding: 16, borderRadius: 20, backgroundColor: colors.surfaceMuted, borderWidth: 1, borderColor: colors.borderSoft, gap: 8 },

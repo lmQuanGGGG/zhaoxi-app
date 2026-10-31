@@ -9,6 +9,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { getFoodPricing, getNearbyServices, getOrganizationServices, getRestaurantStatuses, getService } from "../../src/api/endpoints";
 import type { Service } from "../../src/api/types";
 import { RestaurantCard } from "../../src/components/food";
+import { RequestsLink, useHousingFilters } from "../../src/components/HousingFilters";
 import { LocationBanner } from "../../src/components/LocationBanner";
 import { useCart } from "../../src/cart";
 import { TAB_BAR_SPACE } from "../../src/constants";
@@ -19,6 +20,9 @@ import { locate, pointKey, useLocationState } from "../../src/location";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
 import { AppImage, BackButton, EmptyState, ErrorState, PressableScale, Screen, ServiceBadge, ServiceIcon, SkeletonList, ZxIcon } from "../../src/ui";
+
+const resultUnit = { "vi-VN": "kết quả", "en-US": "results", "zh-CN": "个结果", "zh-TW": "個結果" } as const;
+const monthUnit = { "vi-VN": "tháng", "en-US": "month", "zh-CN": "月", "zh-TW": "月" } as const;
 
 export default function ModuleBrowser() {
   const { module = "food" } = useLocalSearchParams<{ module: string }>();
@@ -39,6 +43,9 @@ export default function ModuleBrowser() {
     return (services.data || []).filter((item) => !needle || `${item.name || ""} ${item.summary || ""} ${item.organizationName || ""}`.toLowerCase().includes(needle));
   }, [services.data, search]);
 
+  const housing = useHousingFilters(module === "housing" ? filtered : []);
+  const listed = module === "housing" ? housing.shown : filtered;
+
   const restaurants = useMemo(() => {
     if (!isFood) return [];
     const map = new Map<string, Service[]>();
@@ -55,7 +62,7 @@ export default function ModuleBrowser() {
   const pricing = useQuery({ queryKey: keys.foodPricing(previewLines.map((line) => line.id).join(",")), queryFn: () => getFoodPricing(previewLines), enabled: isFood && previewLines.length > 0 });
 
   const title = isFood ? t.browse.restaurants : localizeServiceModuleName(locale, module);
-  const count = isFood ? filtered.length : filtered.length;
+  const count = listed.length;
   const prefetchRestaurant = (id: string) => void client.prefetchQuery({ queryKey: keys.orgServices(id, locale), queryFn: () => getOrganizationServices(id, locale), staleTime: 60_000 });
   const prefetchService = (id: string) => void client.prefetchQuery({ queryKey: keys.service(id, locale), queryFn: () => getService(id, locale), staleTime: 60_000 });
 
@@ -66,6 +73,8 @@ export default function ModuleBrowser() {
         <ZxIcon name="search" size={17} color="#64748B" />
         <TextInput value={query} onChangeText={setQuery} placeholder={isFood ? t.browse.searchFood : t.browse.searchService} placeholderTextColor="#94A3B8" style={styles.searchInput} returnKeyType="search" clearButtonMode="while-editing" />
       </View>
+      {module === "housing" || module === "travel" ? <RequestsLink kind={module} /> : null}
+      {module === "housing" ? housing.ui : null}
     </View>
   );
 
@@ -81,7 +90,7 @@ export default function ModuleBrowser() {
           <ServiceBadge code={module} size={40} />
           <View style={{ flex: 1 }}>
             <Text style={styles.moduleName} numberOfLines={1}>{title}</Text>
-            <Text style={styles.moduleCount}>{count} {t.common.items}</Text>
+            <Text style={styles.moduleCount}>{count} {isFood ? t.common.items : resultUnit[locale]}</Text>
           </View>
         </View>
         {isFood && cart.count > 0 ? (
@@ -104,7 +113,7 @@ export default function ModuleBrowser() {
         />
       ) : (
         <FlashList
-          data={filtered}
+          data={listed}
           keyExtractor={(item) => item.id}
           ListHeaderComponent={header}
           ListEmptyComponent={empty}
@@ -135,7 +144,7 @@ function GenericServiceCard({ item, module, index, onPressIn }: { item: Service;
           {item.summary ? <Text style={styles.serviceSummary} numberOfLines={2}>{item.summary}</Text> : null}
           <Text style={styles.serviceOrg} numberOfLines={1}>{localizeOrganizationName(locale, item.organizationCode, item.organizationName, item.organizationMetadata)}</Text>
           {item.distanceKm != null ? <View style={styles.distance}><Text style={styles.distanceText}>⌖ {item.distanceKm.toFixed(1)} km</Text></View> : null}
-          {Number(item.priceFrom || 0) > 0 ? <Text style={styles.servicePrice}>{money(item.priceFrom, item.currency)}</Text> : null}
+          {Number(item.priceFrom || 0) > 0 ? <Text style={styles.servicePrice}>{money(item.priceFrom, item.currency)}{module === "housing" ? <Text style={styles.perMonth}> / {monthUnit[locale]}</Text> : null}</Text> : null}
         </View>
         <Text style={styles.chevron}>›</Text>
       </PressableScale>
@@ -161,5 +170,6 @@ const styles = StyleSheet.create({
   distance: { alignSelf: "flex-start", paddingHorizontal: 7, paddingVertical: 3, borderRadius: 999, backgroundColor: colors.brandSoft },
   distanceText: { fontSize: 8, fontWeight: "800", color: colors.brandStrong },
   servicePrice: { fontSize: 14, fontWeight: "700", color: colors.priceRose },
+  perMonth: { fontSize: 11, fontWeight: "600", color: colors.slate },
   chevron: { fontSize: 20, color: "#94A3B8" },
 });

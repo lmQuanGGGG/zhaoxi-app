@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import { Linking, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
 import { getDeliveryTracking, getOrder, getSupportConfig } from "../../src/api/endpoints";
+import { LiveDelivery } from "../../src/components/LiveDelivery";
 import { money, num, shortDate, str } from "../../src/format";
 import { useNow } from "../../src/hooks";
 import { useI18n } from "../../src/i18n";
@@ -90,6 +91,8 @@ export default function OrderDetailScreen() {
             ) : null}
           </GlassCard>
         </Animated.View>
+
+        {tracking.data?.job && !external ? <LiveDelivery tracking={tracking.data} /> : null}
 
         {items.length ? (
           <GlassCard style={{ gap: 4 }}>

@@ -53,4 +53,8 @@ export const keys = {
   help: (locale: string, query: string) => ["help", locale, query] as const,
   payments: (userId?: string) => ["payments", userId] as const,
   coupons: (orgId: string, subtotal: number) => ["coupons", orgId, subtotal] as const,
+  housingInquiries: (userId?: string) => ["housing-inquiries", userId] as const,
+  travelBookings: (userId?: string) => ["travel-bookings", userId] as const,
+  travelPayment: (id: string) => ["travel-payment", id] as const,
+  travelAvailability: (serviceId: string, from: string) => ["travel-availability", serviceId, from] as const,
 };

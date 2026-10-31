@@ -43,8 +43,9 @@ const staticRoutes: Record<string, string> = {
   "/help": "/help",
   "/language": "/language",
   "/services": "/services",
-  "/housing/requests": "/orders",
-  "/travel/requests": "/orders",
+  "/housing/requests": "/inquiries/housing",
+  "/travel/requests": "/inquiries/travel",
+  "/feedback": "/feedback",
   "/profile/security": "/account/security",
 };
 

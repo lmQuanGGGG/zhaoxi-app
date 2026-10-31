@@ -7,6 +7,7 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { getCoupons, getNearbyServices } from "../src/api/endpoints";
 import { money } from "../src/format";
+import { usePullRefresh } from "../src/hooks";
 import { useI18n } from "../src/i18n";
 import { pointKey, useLocationState } from "../src/location";
 import { keys } from "../src/query";
@@ -26,12 +27,13 @@ export default function CouponsScreen() {
   const couponQueries = useQueries({ queries: restaurants.map(([id]) => ({ queryKey: keys.coupons(id, 0), queryFn: () => getCoupons(id, 0), staleTime: 5 * 60_000 })) });
   const coupons = restaurants.flatMap(([id, name], index) => (couponQueries[index]?.data || []).map((coupon) => ({ ...coupon, organizationId: id, organizationName: name })));
   const loading = nearby.isPending || couponQueries.some((q) => q.isPending);
+  const pull = usePullRefresh(nearby.refetch, ...couponQueries.map((q) => q.refetch));
 
   return (
     <Screen>
       <Header title={t.profile.coupons} subtitle={t.personal.couponsHint} />
-      <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 4, gap: 12, paddingBottom: 48 }} refreshControl={<RefreshControl refreshing={nearby.isRefetching} onRefresh={() => { void nearby.refetch(); couponQueries.forEach((q) => void q.refetch()); }} tintColor={colors.brand} />}>
-        {loading && !coupons.length ? <SkeletonList count={4} image={false} /> : !coupons.length ? <EmptyState icon="pricetags-outline" title={t.personal.couponsEmpty} action={t.cart.continue} onAction={() => router.push("/services/food")} /> : coupons.map((coupon, index) => (
+      <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 4, gap: 12, paddingBottom: 48 }} refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} tintColor={colors.brand} />}>
+        {loading && !coupons.length ? <SkeletonList count={4} image={false} /> : !coupons.length ? <EmptyState zx="ticket" title={t.personal.couponsEmpty} action={t.cart.continue} onAction={() => router.push("/services/food")} /> : coupons.map((coupon, index) => (
           <Animated.View key={`${coupon.organizationId}-${coupon.id}`} entering={FadeInDown.delay(Math.min(index, 8) * 40)}>
             <View style={[styles.ticket, shadow(1)]}>
               <View style={styles.stub}>
