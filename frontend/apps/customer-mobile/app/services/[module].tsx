@@ -1,6 +1,6 @@
 import { FlashList } from "@shopify/flash-list";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { localizeOrganizationName, localizeServiceModuleName, localizeServiceName } from "@zhaoxi/i18n";
+import { localizeServiceModuleName, localizeServiceName } from "@zhaoxi/i18n";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
@@ -127,26 +127,46 @@ export default function ModuleBrowser() {
   );
 }
 
-/** PWA `genericServiceCard`. */
+const cardUnits = {
+  "vi-VN": { bed: "PN", person: "người" },
+  "en-US": { bed: "BR", person: "person" },
+  "zh-CN": { bed: "室", person: "人" },
+  "zh-TW": { bed: "房", person: "人" },
+} as const;
+
+/** One short line of the facts that matter for the module (beds · m² · area, tour length) plus distance. */
+function cardMeta(item: Service, module: string, locale: keyof typeof cardUnits) {
+  const m = item.metadata || {};
+  const parts: string[] = [];
+  if (module === "housing") {
+    if (Number(m.bedrooms) > 0) parts.push(`${m.bedrooms} ${cardUnits[locale].bed}`);
+    if (Number(m.areaSqm) > 0) parts.push(`${m.areaSqm} m²`);
+    if (m.district) parts.push(String(m.district));
+  }
+  if (module === "travel" && m.duration) parts.push(String(m.duration));
+  if (item.distanceKm != null) parts.push(`${item.distanceKm.toFixed(1)} km`);
+  return parts.join(" · ");
+}
+
+/** Clean list card: picture, name, one fact line, price. Details live on the service page. */
 function GenericServiceCard({ item, module, index, onPressIn }: { item: Service; module: string; index: number; onPressIn: () => void }) {
   const { locale } = useI18n();
   const image = imageUri(item.metadata?.imageUrl);
+  const meta = cardMeta(item, module, locale);
+  const unit = module === "housing" ? monthUnit[locale] : module === "travel" ? cardUnits[locale].person : "";
   return (
     <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 40).duration(280)} style={{ paddingHorizontal: 14, paddingBottom: 12 }}>
       <PressableScale onPressIn={onPressIn} onPress={() => router.push(`/service/${item.id}`)} scaleTo={0.985} style={[styles.serviceCard, shadow("card")]}>
         {image ? <AppImage uri={image} style={styles.serviceImage} /> : (
           <View style={styles.serviceIconBox}>
-            <ServiceIcon code={module} size={56} />
+            <ServiceIcon code={module} size={60} />
           </View>
         )}
-        <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
+        <View style={{ flex: 1, minWidth: 0, gap: 5 }}>
           <Text style={styles.serviceTitle} numberOfLines={2}>{localizeServiceName(locale, item.name || item.code)}</Text>
-          {item.summary ? <Text style={styles.serviceSummary} numberOfLines={2}>{item.summary}</Text> : null}
-          <Text style={styles.serviceOrg} numberOfLines={1}>{localizeOrganizationName(locale, item.organizationCode, item.organizationName, item.organizationMetadata)}</Text>
-          {item.distanceKm != null ? <View style={styles.distance}><Text style={styles.distanceText}>⌖ {item.distanceKm.toFixed(1)} km</Text></View> : null}
-          {Number(item.priceFrom || 0) > 0 ? <Text style={styles.servicePrice}>{money(item.priceFrom, item.currency)}{module === "housing" ? <Text style={styles.perMonth}> / {monthUnit[locale]}</Text> : null}</Text> : null}
+          {meta ? <Text style={styles.serviceMeta} numberOfLines={1}>{meta}</Text> : null}
+          {Number(item.priceFrom || 0) > 0 ? <Text style={styles.servicePrice}>{money(item.priceFrom, item.currency)}{unit ? <Text style={styles.perMonth}> / {unit}</Text> : null}</Text> : null}
         </View>
-        <Text style={styles.chevron}>›</Text>
       </PressableScale>
     </Animated.View>
   );
@@ -161,15 +181,11 @@ const styles = StyleSheet.create({
   cartPillText: { color: colors.white, fontSize: 11, fontWeight: "800" },
   search: { height: 44, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   searchInput: { flex: 1, fontSize: 14, color: colors.text },
-  serviceCard: { flexDirection: "row", alignItems: "center", gap: 18, paddingVertical: 14, paddingHorizontal: 16, borderRadius: 20, backgroundColor: colors.white, ...shadow("card") },
-  serviceImage: { width: 72, height: 72, borderRadius: 16 },
-  serviceIconBox: { width: 72, height: 72, alignItems: "center", justifyContent: "center" },
-  serviceTitle: { fontSize: 15, fontWeight: "700", color: colors.ink },
-  serviceSummary: { fontSize: 12, color: colors.slate },
-  serviceOrg: { fontSize: 11, fontWeight: "600", color: "#059669" },
-  distance: { alignSelf: "flex-start", paddingHorizontal: 7, paddingVertical: 3, borderRadius: 999, backgroundColor: colors.brandSoft },
-  distanceText: { fontSize: 8, fontWeight: "800", color: colors.brandStrong },
-  servicePrice: { fontSize: 14, fontWeight: "700", color: colors.priceRose },
-  perMonth: { fontSize: 11, fontWeight: "600", color: colors.slate },
-  chevron: { fontSize: 20, color: "#94A3B8" },
+  serviceCard: { flexDirection: "row", alignItems: "center", gap: 14, padding: 12, borderRadius: 22, backgroundColor: colors.white, ...shadow("card") },
+  serviceImage: { width: 84, height: 84, borderRadius: 18 },
+  serviceIconBox: { width: 84, height: 84, alignItems: "center", justifyContent: "center" },
+  serviceTitle: { fontSize: 15.5, fontWeight: "700", color: colors.ink, lineHeight: 20 },
+  serviceMeta: { fontSize: 12, fontWeight: "500", color: colors.slate },
+  servicePrice: { fontSize: 15, fontWeight: "800", color: colors.priceRose },
+  perMonth: { fontSize: 11.5, fontWeight: "600", color: colors.slate },
 });
