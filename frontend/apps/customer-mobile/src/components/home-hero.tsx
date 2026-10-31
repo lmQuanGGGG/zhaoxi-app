@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
   lens: { width: LENS, height: LENS, borderRadius: LENS / 2 },
   lensShadow: { position: "absolute", left: 6, right: 6, top: 6, bottom: 6, borderRadius: LENS / 2, backgroundColor: "#FFFFFF", shadowColor: "#C2410C", shadowOpacity: 0.22, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
   lensBody: { position: "absolute", left: 0, top: 0, width: LENS, height: LENS, borderRadius: LENS / 2 },
-  lensRim: { position: "absolute", left: 0, top: 0, width: LENS, height: LENS, borderRadius: LENS / 2, borderWidth: 1.5, borderColor: "rgba(255,255,255,0.95)" },
+  lensRim: { position: "absolute", left: 0, top: 0, width: LENS, height: LENS, borderRadius: LENS / 2, borderWidth: 0.75, borderColor: "rgba(255,255,255,0.35)" },
   lensSheen: { position: "absolute", left: 18, top: 10, width: LENS * 0.56, height: LENS * 0.4, borderRadius: LENS },
   halo: { position: "absolute", top: -32, width: 150, height: 150 },
   sparkleA: { position: "absolute", top: -2, right: 14 },

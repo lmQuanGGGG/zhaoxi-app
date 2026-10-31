@@ -8,12 +8,13 @@ import { imageUri, money } from "../format";
 import { useI18n } from "../i18n";
 import { routeForWebHref } from "../links";
 import { colors } from "../theme";
-import { AppImage, GlassFill, ServiceArt, ZxIcon, haptic } from "../ui";
+import { useDishColor } from "../dish-color";
+import { AppImage, GlassFill, ServiceArt, ZxIcon, haptic, servicePalettes } from "../ui";
 
 const CARD_W = 210;
 const CARD_H = 280;
-const STEP = CARD_W * 0.78;
-const SHADOW_ROOM = 34; // vertical room so card shadows fade out instead of being cut by the ScrollView // cards overlap so the side ones peek out from behind the centre one
+const STEP = CARD_W * 0.78; // cards overlap so the side ones peek out from behind the centre one
+const SHADOW_ROOM = 72; // vertical room so card shadows fade out instead of being cut by the ScrollView
 
 /**
  * "Khám phá thêm" as an immersive coverflow (My Viettel "Giải trí không giới hạn"):
@@ -89,13 +90,16 @@ function FlowCard({ item, index, x, last }: { item: Recommendation; index: numbe
     };
   });
   const price = Number(item.priceFrom || 0) > 0 ? money(item.priceFrom, item.currency) : "";
+  const uri = imageUri(item.imageUrl);
+  // Card glows in the dish's own dominant colour (service accent when there is no photo).
+  const glow = useDishColor(uri, servicePalettes[item.moduleCode || ""]?.accent || colors.brand);
   return (
     <Animated.View style={[{ width: STEP, height: CARD_H, alignItems: "center", marginRight: last ? CARD_W - STEP : 0 }, style]}>
-      <Pressable onPress={() => router.push(routeForWebHref(item.href))} style={styles.card}>
+      <Pressable onPress={() => router.push(routeForWebHref(item.href))} style={[styles.card, { shadowColor: glow }]}>
         <View style={styles.cardClip} />
         {/* Unclipped and without a background so iOS draws the shadow along the dish's own outline */}
         <View style={styles.dishShadow} pointerEvents="none">
-          <AppImage uri={imageUri(item.imageUrl)} fallbackCode={item.moduleCode} contentFit="contain" style={styles.dish} />
+          <AppImage uri={uri} fallbackCode={item.moduleCode} contentFit="contain" style={styles.dish} />
         </View>
         <View style={styles.cardContent} pointerEvents="none">
 
@@ -135,10 +139,10 @@ const styles = StyleSheet.create({
   tabs: { gap: 10, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 22 },
   tab: { height: 46, paddingHorizontal: 16, borderRadius: 23, flexDirection: "row", alignItems: "center", gap: 8 },
   tabText: { fontSize: 15, fontWeight: "700", color: "#334155" },
-  card: { width: CARD_W, height: CARD_H, borderRadius: 24, backgroundColor: colors.white },
+  card: { width: CARD_W, height: CARD_H, borderRadius: 24, backgroundColor: colors.white, shadowOpacity: 0.45, shadowRadius: 18, shadowOffset: { width: 0, height: 12 } },
   cardClip: { ...StyleSheet.absoluteFill, borderRadius: 24, backgroundColor: colors.white },
   cardContent: { ...StyleSheet.absoluteFill },
-  dishShadow: { position: "absolute", left: 18, right: 18, top: 40, bottom: 78, shadowColor: "#3B2410", shadowOpacity: 0.32, shadowRadius: 14, shadowOffset: { width: 0, height: 16 } },
+  dishShadow: { position: "absolute", left: 18, right: 18, top: 40, bottom: 78, shadowColor: "#3B2410", shadowOpacity: 0.22, shadowRadius: 12, shadowOffset: { width: 0, height: 14 } },
   dish: { width: "100%", height: "100%", backgroundColor: "transparent" },
   badge: { position: "absolute", left: 12, top: 12, width: 38, height: 38, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   info: { position: "absolute", left: 16, right: 16, bottom: 16 },
