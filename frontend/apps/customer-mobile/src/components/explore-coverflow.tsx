@@ -1,5 +1,4 @@
 import { localizeServiceModuleName, localizeServiceName } from "@zhaoxi/i18n";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
@@ -17,7 +16,7 @@ const STEP = CARD_W * 0.78; // cards overlap so the side ones peek out from behi
 
 /**
  * "Khám phá thêm" as an immersive coverflow (My Viettel "Giải trí không giới hạn"):
- * dark coral panel, highlighted title, glass module tabs, 3D carousel where the
+ * white card, highlighted title, glass module tabs, 3D carousel where the
  * centred card is straight and large and the neighbours rotate away in depth.
  */
 export function ExploreCoverflow({ items, title, highlight, more, allLabel }: { items: Recommendation[]; title: string; highlight: string; more: string; allLabel: string }) {
@@ -33,7 +32,6 @@ export function ExploreCoverflow({ items, title, highlight, more, allLabel }: { 
   if (!items.length) return null;
   return (
     <View style={styles.panel}>
-      <LinearGradient colors={["#B3301D", "#4A1710", "#1B1110"]} locations={[0, 0.45, 1]} start={{ x: 0, y: 0 }} end={{ x: 0.6, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 34 }]} />
       <Mascot code={mascot} />
       <Text style={styles.title} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
         {title} <Text style={styles.highlight}>{highlight}</Text>
@@ -43,8 +41,8 @@ export function ExploreCoverflow({ items, title, highlight, more, allLabel }: { 
           const active = tab === item.key;
           return (
             <Pressable key={item.key} onPress={() => { haptic.select(); setTab(item.key); }} style={({ pressed }) => [styles.tab, pressed && { transform: [{ scale: 0.95 }] }]}>
-              <GlassFill radius={24} clear={!active} tint={active ? "rgba(226,72,52,0.75)" : "rgba(255,255,255,0.08)"} />
-              {item.key !== "all" ? <ServiceArt code={item.key} size={22} /> : <ZxIcon name="services" size={18} color={active ? colors.white : "rgba(255,255,255,0.75)"} />}
+              <GlassFill radius={24} tint={active ? "rgba(226,72,52,0.9)" : "rgba(241,243,246,0.7)"} />
+              {item.key !== "all" ? <ServiceArt code={item.key} size={22} /> : <ZxIcon name="services" size={18} color={active ? colors.white : "#475569"} />}
               <Text style={[styles.tabText, active && { color: colors.white }]} numberOfLines={1}>{item.label}</Text>
             </Pressable>
           );
@@ -95,12 +93,12 @@ function FlowCard({ item, index, x, last }: { item: Recommendation; index: numbe
       <Pressable onPress={() => router.push(routeForWebHref(item.href))} style={styles.card}>
         <View style={styles.cardClip}>
           <AppImage uri={imageUri(item.imageUrl)} fallbackCode={item.moduleCode} style={StyleSheet.absoluteFill} />
-          <LinearGradient colors={["rgba(40,14,8,0)", "rgba(40,14,8,0.72)"]} locations={[0.55, 1]} style={StyleSheet.absoluteFill} />
           <View style={styles.badge}>
             <GlassFill radius={14} tint="rgba(255,255,255,0.4)" />
             <ServiceArt code={item.moduleCode} size={22} />
           </View>
           <View style={styles.info}>
+            <GlassFill radius={18} tint="rgba(255,255,255,0.78)" />
             <Text style={styles.cardTitle} numberOfLines={2}>{localizeServiceName(locale, item.title)}</Text>
             {price ? <Text style={styles.cardPrice}>{t.common.from} {price}</Text> : null}
           </View>
@@ -125,19 +123,19 @@ function Mascot({ code }: { code: string }) {
 }
 
 const styles = StyleSheet.create({
-  panel: { marginHorizontal: -16, marginTop: 28, paddingTop: 26, paddingBottom: 24, borderTopLeftRadius: 34, borderTopRightRadius: 34, borderBottomLeftRadius: 34, borderBottomRightRadius: 34, overflow: "visible" },
+  panel: { marginTop: 24, paddingTop: 26, paddingBottom: 22, borderRadius: 30, backgroundColor: colors.white, shadowColor: "#0F172A", shadowOpacity: 0.08, shadowRadius: 20, shadowOffset: { width: 0, height: 12 } },
   mascot: { position: "absolute", right: 12, top: -46 },
-  title: { paddingHorizontal: 22, paddingRight: 104, fontSize: 21, fontWeight: "800", color: colors.white, letterSpacing: -0.3 },
-  highlight: { color: "#FF7A5C" },
+  title: { paddingHorizontal: 22, paddingRight: 104, fontSize: 21, fontWeight: "800", color: "#17221F", letterSpacing: -0.3 },
+  highlight: { color: "#E2482F" },
   tabs: { gap: 10, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 },
   tab: { height: 46, paddingHorizontal: 16, borderRadius: 23, flexDirection: "row", alignItems: "center", gap: 8 },
-  tabText: { fontSize: 15, fontWeight: "700", color: "rgba(255,255,255,0.78)" },
-  card: { width: CARD_W, height: CARD_H, borderRadius: 24, backgroundColor: "#F7EFE7", shadowColor: "#000", shadowOpacity: 0.45, shadowRadius: 18, shadowOffset: { width: 0, height: 14 } },
-  cardClip: { flex: 1, borderRadius: 24, overflow: "hidden", backgroundColor: "#F7EFE7" },
+  tabText: { fontSize: 15, fontWeight: "700", color: "#334155" },
+  card: { width: CARD_W, height: CARD_H, borderRadius: 24, backgroundColor: colors.white, shadowColor: "#0F172A", shadowOpacity: 0.16, shadowRadius: 16, shadowOffset: { width: 0, height: 14 } },
+  cardClip: { flex: 1, borderRadius: 24, overflow: "hidden", backgroundColor: colors.white },
   badge: { position: "absolute", left: 12, top: 12, width: 38, height: 38, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  info: { position: "absolute", left: 14, right: 14, bottom: 14 },
-  cardTitle: { fontSize: 17, fontWeight: "800", color: colors.white, lineHeight: 21, textShadowColor: "rgba(0,0,0,0.4)", textShadowRadius: 6 },
-  cardPrice: { marginTop: 4, fontSize: 13, fontWeight: "800", color: "#FFD7A8" },
+  info: { position: "absolute", left: 10, right: 10, bottom: 10, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 18 },
+  cardTitle: { fontSize: 16, fontWeight: "800", color: "#17221F", lineHeight: 20 },
+  cardPrice: { marginTop: 3, fontSize: 13, fontWeight: "800", color: colors.priceRose },
   more: { alignSelf: "center", marginTop: 8, height: 52, paddingHorizontal: 28, borderRadius: 26, flexDirection: "row", alignItems: "center", gap: 6 },
   moreText: { fontSize: 18, fontWeight: "800", color: colors.white },
 });

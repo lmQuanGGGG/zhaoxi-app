@@ -10,7 +10,7 @@ import { PageHeader, TopBar } from "./chrome";
 import { haptic } from "./haptics";
 import { ZxIcon, type ZxIconName } from "./icons";
 import { GlassFill } from "./glass";
-import { ServiceArt, ServiceTile, servicePalettes } from "./service-icons";
+import { ServiceArt, ServiceTile } from "./service-icons";
 
 export type IconName = ComponentProps<typeof Ionicons>["name"];
 export { Ionicons, haptic, ZxIcon, type ZxIconName };
@@ -165,17 +165,16 @@ export function AppImage({ uri, style, fallbackCode, ...props }: Omit<ImageProps
   return <Image source={{ uri }} cachePolicy="memory-disk" transition={200} contentFit="cover" recyclingKey={uri} placeholder={{ blurhash: "L6PZfSi_.AyE_3t7t7R**0o#DgR4" }} style={style} {...props} />;
 }
 
-/** No photo: the 3D service illustration scaled to the frame on a service-tinted gradient with a soft glow. */
+/** No photo: the 3D service illustration scaled to the frame on a clean white backdrop with a faint neutral halo. */
 function ArtFallback({ code, style }: { code?: string | null; style?: StyleProp<ViewStyle> }) {
   const [box, setBox] = useState({ w: 0, h: 0 });
-  const palette = servicePalettes[code || ""] || { tint: "#ECFDF5", accent: colors.brand };
   const size = Math.max(28, Math.min(box.w, box.h) * 0.66);
   return (
-    <View onLayout={(event) => setBox({ w: event.nativeEvent.layout.width, h: event.nativeEvent.layout.height })} style={[{ alignItems: "center", justifyContent: "center", overflow: "hidden", backgroundColor: palette.tint }, style]}>
-      <LinearGradient colors={[palette.tint, "#FFFFFF", palette.tint]} locations={[0, 0.55, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+    <View onLayout={(event) => setBox({ w: event.nativeEvent.layout.width, h: event.nativeEvent.layout.height })} style={[{ alignItems: "center", justifyContent: "center", overflow: "hidden", backgroundColor: colors.white }, style]}>
+      <LinearGradient colors={["#FFFFFF", "#F4F6F8"]} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} />
       {box.w ? (
         <>
-          <View style={{ position: "absolute", width: size * 1.25, height: size * 1.25, borderRadius: size, backgroundColor: palette.accent, opacity: 0.12 }} />
+          <View style={{ position: "absolute", width: size * 1.25, height: size * 1.25, borderRadius: size, backgroundColor: "#0F172A", opacity: 0.035 }} />
           <ServiceArt code={code} size={size} />
         </>
       ) : null}
