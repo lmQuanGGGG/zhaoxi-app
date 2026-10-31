@@ -11,7 +11,7 @@ import {
 } from "@/db/schema";
 import { errorResponse, json } from "@/lib/api";
 import { localeFromRequest } from "@/lib/locale";
-import { completeExpiredOrders } from "@/lib/order-timers";
+import { scheduleOrderTimerSweep } from "@/lib/background-sweeps";
 import { mayAccessRequest, requireSession } from "@/lib/security/route-authorization";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +23,9 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     if (!gate.ok) return gate.response;
     const access = await mayAccessRequest(gate.session, id);
     if (!access.exists || !access.allowed) return errorResponse("Service request not found.", 404);
-    await completeExpiredOrders();
+    // Reconcile expired timers after the response, throttled per instance; the
+    // detail screen picks up the new status on its next poll (push covers the gap).
+    scheduleOrderTimerSweep();
     const locale = localeFromRequest(request);
     const db = getDb();
     const [requestRow] = await db

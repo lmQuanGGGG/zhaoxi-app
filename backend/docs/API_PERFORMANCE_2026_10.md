@@ -25,7 +25,7 @@
 | Thay QR base64 bằng URL `/api/organization-payment-qr` ngay trong SQL; tìm kiếm và gợi ý chỉ lấy toạ độ, banner, logo | `lib/services/organization-metadata-projection.ts`, nearby, `services/[id]`, search, smart search, recommendations |
 | Gợi ý: chạy song song các truy vấn và cache danh mục đã xếp hạng 30 s trong mỗi instance | `marketplace-` và `personalized-recommendation-service.ts`, `lib/ttl-cache.ts` |
 | Notifications: các tác vụ quét chạy sau khi trả response (`after()`), tối đa 1 lần mỗi 15 s; quét thanh toán chỉ đọc các đơn có ticket còn mở | `lib/background-sweeps.ts`, `app/api/notifications/route.ts`, `payment-notification-automation-service.ts` |
-| `GET /api/service-requests`: giới hạn tần suất quét đơn hết hạn | `app/api/service-requests/route.ts` |
+| Quét đơn hết hạn (`completeExpiredOrders`): chỉ đọc các đơn có `estimatedCompletionAt`; danh sách đơn và chi tiết đơn chạy quét sau response, tối đa 1 lần mỗi 15 s | `lib/order-timers.ts`, `app/api/service-requests/route.ts`, `app/api/service-requests/[id]/route.ts` |
 | `account/me`, message center, notification center: chạy song song và chỉ chọn cột cần dùng | `account-service.ts`, `customer-message-center-service.ts`, `customer-notification-center-service.ts` |
 | Thêm `Cache-Control: public, s-maxage, stale-while-revalidate` cho dữ liệu công khai, không phụ thuộc người gọi | modules (300 s), customer-ui-config, support-config (60 s), feature-flags, services, `services/[id]`, public/discovery (30 s), runtime-control (15 s) |
 | `json()` giữ nguyên `cache-control` do route đặt; mặc định vẫn là `no-store` | `lib/core/api-response.ts` |
@@ -94,7 +94,9 @@ customer-recommendations 5,5–8,5 s, services 1,0–1,9 s, health 0,88 s.
   trong vòng 60 s có thể vẫn thấy bản cũ; menu đã publish hiển thị cho khách chậm tối đa 30 s. Danh sách bản nháp
   của partner (`includeDrafts=1`) và mọi response phụ thuộc người gọi vẫn là `no-store`.
 - Sự kiện tự động (đơn tự hoàn tất, nhắc lịch, SLA thanh toán) xuất hiện ở lần poll **kế tiếp**, chậm tối đa khoảng
-  15 s cộng chu kỳ poll, thay vì ngay trong response hiện tại. Trang chi tiết đơn (`/api/service-requests/[id]`)
-  vẫn quét đồng bộ, nên trạng thái hiển thị ở đó luôn đúng.
+  15 s cộng chu kỳ poll, thay vì ngay trong response hiện tại. Điều này áp dụng cả cho trang chi tiết đơn
+  (`/api/service-requests/[id]`); push cho khách vẫn được gửi ngay khi sweep chạy.
+- Sweep vẫn được kích hoạt bởi các request đọc. Vercel Cron có thể thay thế, nhưng gói Hobby chỉ cho chạy cron
+  1 lần/ngày, nên chỉ nên chuyển sang cron (mỗi phút) khi project ở gói Pro.
 - `checked` trong kết quả `POST /api/payment-notification-automation/evaluate` giờ đếm số đơn có ticket còn mở,
   không còn đếm toàn bộ đơn.
