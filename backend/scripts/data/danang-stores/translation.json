@@ -1,0 +1,359 @@
+{
+  "module": "translation",
+  "org": {
+    "code": "ZX-TRANS-DN",
+    "type": "translation-interpreting",
+    "name": "ZhaoXi Dịch thuật Đà Nẵng",
+    "description": "Dịch vụ phiên dịch và biên dịch Trung – Việt (kèm Trung – Anh) cho khách nói tiếng Trung tại Đà Nẵng: đi kèm, gặp gỡ đối tác, tham quan nhà máy, dịch tài liệu và hỗ trợ chứng thực bản dịch. Báo giá minh bạch, phí nhà nước (nếu có) thu đúng theo thực tế.",
+    "addressText": "Hải Châu, Đà Nẵng",
+    "latitude": 16.0544,
+    "longitude": 108.2022,
+    "bannerUrl": "https://images.unsplash.com/photo-1781963577464-aae78aa7be67?auto=format&fit=crop&w=1400&q=80"
+  },
+  "items": [
+    {
+      "code": "ZX-TRANS-DN-01",
+      "price": 400000,
+      "imageUrl": "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1730040353977-ac38d7d0992e?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/KdeqA3aTnBY",
+        "https://unsplash.com/photos/a-chinese-calligraphy-written-in-two-different-languages-dkkznTjmjcQ"
+      ],
+      "meta": {
+        "unit": "giờ",
+        "minimumHours": 2,
+        "languages": ["zh-CN", "vi-VN"],
+        "mode": "trực tiếp (dịch đuổi)",
+        "area": "Nội thành Đà Nẵng"
+      },
+      "t": {
+        "vi-VN": [
+          "Phiên dịch Trung – Việt theo giờ (tối thiểu 2 giờ)",
+          "Phiên dịch viên Trung – Việt đi cùng bạn trong nội thành Đà Nẵng, 400.000đ/giờ, đặt tối thiểu 2 giờ.",
+          "Phù hợp cho việc ngắn: làm việc với chủ nhà, đi ngân hàng, khám bệnh, mua sắm, làm thủ tục. Phiên dịch theo hình thức dịch đuổi (nói lần lượt), tính giờ từ lúc gặp tại điểm hẹn. Chi phí đi lại ngoài nội thành, vé vào cửa, ăn uống của phiên dịch viên (nếu có) do khách chi trả và được báo trước."
+        ],
+        "en-US": [
+          "Chinese–Vietnamese interpreter by the hour (2-hour minimum)",
+          "A Chinese–Vietnamese interpreter accompanies you within Đà Nẵng city, 400,000 VND/hour, 2-hour minimum booking.",
+          "Ideal for short tasks: meeting your landlord, visiting a bank or clinic, shopping or handling paperwork. Consecutive interpreting, billed from the time you meet at the agreed point. Travel outside the city centre, entrance tickets or meals for the interpreter (if any) are paid by the customer and quoted in advance."
+        ],
+        "zh-CN": [
+          "中越翻译按小时计费（最少2小时）",
+          "中越翻译陪同您在岘港市区办事，400,000越南盾/小时，最少预约2小时。",
+          "适合短时事务：与房东沟通、去银行或诊所、购物、办理手续等。采用交替传译，从约定地点见面起计时。市区以外的交通费、门票或翻译人员餐费（如有）由客户承担，并会提前告知。"
+        ],
+        "zh-TW": [
+          "中越口譯按小時計費（最少2小時）",
+          "中越口譯員陪同您在峴港市區辦事，400,000越南盾／小時，最少預約2小時。",
+          "適合短時事務：與房東溝通、前往銀行或診所、購物、辦理手續等。採用逐步口譯，自約定地點會合起計時。市區以外的交通費、門票或口譯員餐費（如有）由客戶負擔，並會事先告知。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-TRANS-DN-02",
+      "price": 1200000,
+      "imageUrl": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1781963577464-aae78aa7be67?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/people-walking-on-bridge-during-daytime-PknaOrb1lVo",
+        "https://unsplash.com/photos/dragon-bridge-over-river-city-skyline-and-palm-trees-6Oy-fhKD7Y4"
+      ],
+      "meta": {
+        "unit": "buổi (4 giờ)",
+        "duration": "4 giờ",
+        "languages": ["zh-CN", "vi-VN"],
+        "overtime": "Hệ số 1,5 cho giờ vượt"
+      },
+      "t": {
+        "vi-VN": [
+          "Phiên dịch Trung – Việt nửa ngày (4 giờ)",
+          "Phiên dịch viên đi kèm trọn một buổi 4 giờ tại Đà Nẵng, 1.200.000đ/buổi.",
+          "Dành cho tham quan, mua sắm, xem nhà thuê, khám bệnh hoặc làm việc với cơ quan, đối tác trong một buổi sáng hoặc chiều. Giờ vượt quá 4 giờ tính theo hệ số 1,5 trên đơn giá giờ. Chi phí di chuyển, vé tham quan và ăn uống của phiên dịch viên (nếu phát sinh) do khách chi trả."
+        ],
+        "en-US": [
+          "Chinese–Vietnamese interpreter, half day (4 hours)",
+          "An interpreter accompanies you for one 4-hour session in Đà Nẵng, 1,200,000 VND per half day.",
+          "For sightseeing, shopping, viewing rentals, medical visits or meetings with offices and partners during one morning or afternoon. Time beyond 4 hours is charged at 1.5× the hourly rate. Transport, entrance tickets and the interpreter's meals (if any) are paid by the customer."
+        ],
+        "zh-CN": [
+          "中越翻译半天（4小时）",
+          "翻译人员在岘港全程陪同一个4小时时段，1,200,000越南盾/半天。",
+          "适用于游览、购物、看租房、就医，或在上午/下午与机构、合作方办事。超过4小时的部分按小时单价1.5倍计费。交通、景点门票及翻译人员餐费（如有）由客户承担。"
+        ],
+        "zh-TW": [
+          "中越口譯半天（4小時）",
+          "口譯員在峴港全程陪同一個4小時時段，1,200,000越南盾／半天。",
+          "適用於觀光、購物、看租屋、就醫，或在上午／下午與機關、合作夥伴洽公。超過4小時的部分按小時單價1.5倍計費。交通、景點門票及口譯員餐費（如有）由客戶負擔。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-TRANS-DN-03",
+      "price": 2000000,
+      "imageUrl": "https://images.unsplash.com/photo-1603852452378-a4e8d84324a2?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/giant-stone-hand-bridge-in-vietnam-5QbZIJV8k4E",
+        "https://unsplash.com/photos/people-walking-on-bridge-during-daytime-PknaOrb1lVo"
+      ],
+      "meta": {
+        "unit": "ngày (8 giờ)",
+        "duration": "8 giờ",
+        "languages": ["zh-CN", "vi-VN"],
+        "overtime": "Hệ số 1,5 cho giờ vượt"
+      },
+      "t": {
+        "vi-VN": [
+          "Phiên dịch Trung – Việt cả ngày (8 giờ)",
+          "Phiên dịch viên đi kèm cả ngày 8 giờ cho du lịch, công việc thông thường, 2.000.000đ/ngày.",
+          "Phiên dịch giao tiếp thông thường: du lịch Đà Nẵng – Hội An (会安) – Bà Nà (巴拿山), mua sắm, đám cưới, thủ tục hành chính đơn giản. Ngày làm việc tối đa 8 giờ, giờ vượt tính hệ số 1,5. Đi tỉnh khác hoặc ở lại qua đêm: khách chi trả đi lại, ăn ở của phiên dịch viên, báo giá trước khi xác nhận."
+        ],
+        "en-US": [
+          "Chinese–Vietnamese interpreter, full day (8 hours)",
+          "A full-day (8-hour) interpreter for travel and everyday matters, 2,000,000 VND per day.",
+          "General interpreting for trips around Đà Nẵng, Hội An and Bà Nà Hills, shopping, weddings and simple paperwork. A working day is up to 8 hours; overtime is charged at 1.5×. For trips to other provinces or overnight stays, the customer covers the interpreter's travel, meals and lodging, quoted before confirmation."
+        ],
+        "zh-CN": [
+          "中越翻译全天（8小时）",
+          "全天8小时陪同翻译，适合旅游和日常事务，2,000,000越南盾/天。",
+          "日常交流翻译：岘港—会安（Hội An）—巴拿山（Bà Nà Hills）旅游、购物、婚礼、简单行政手续等。每个工作日最长8小时，超时按1.5倍计费。如需去外省或过夜，翻译人员的交通、食宿由客户承担，确认前会先报价。"
+        ],
+        "zh-TW": [
+          "中越口譯全天（8小時）",
+          "全天8小時陪同口譯，適合旅遊和日常事務，2,000,000越南盾／天。",
+          "日常溝通口譯：峴港—會安（Hội An）—巴拿山（Bà Nà Hills）旅遊、購物、婚禮、簡單行政手續等。每個工作日最長8小時，超時按1.5倍計費。如需前往外省或過夜，口譯員的交通、食宿由客戶負擔，確認前會先報價。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-TRANS-DN-04",
+      "price": 3200000,
+      "imageUrl": "https://images.unsplash.com/photo-1589793463357-5fb813435467?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1573164574572-cb89e39749b4?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1581091212991-8891c7d4bd9b?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/people-working-at-factory-assembly-line-KP6XQIEjjPA",
+        "https://unsplash.com/photos/faEfWCdOKIg",
+        "https://unsplash.com/photos/engineers-working-in-automotive-factory-WjOWazUPAss"
+      ],
+      "meta": {
+        "unit": "ngày (8 giờ)",
+        "duration": "8 giờ",
+        "halfDayPrice": 1800000,
+        "languages": ["zh-CN", "vi-VN"],
+        "prepRequired": "Gửi tài liệu, thuật ngữ trước ít nhất 24 giờ"
+      },
+      "t": {
+        "vi-VN": [
+          "Phiên dịch thương mại: đàm phán, họp đối tác, tham quan nhà máy",
+          "Phiên dịch Trung – Việt có kinh nghiệm thương mại, kỹ thuật, 3.200.000đ/ngày 8 giờ (nửa ngày 1.800.000đ).",
+          "Dịch đuổi cho họp đối tác, đàm phán hợp đồng, khảo sát nhà xưởng, khu công nghiệp tại Đà Nẵng và vùng lân cận. Khách vui lòng gửi tài liệu, danh mục sản phẩm hoặc thuật ngữ trước ít nhất 24 giờ để phiên dịch viên chuẩn bị. Phiên dịch viên giữ bảo mật nội dung; giờ vượt tính hệ số 1,5, chi phí đi tỉnh báo trước."
+        ],
+        "en-US": [
+          "Business interpreting: negotiations, partner meetings, factory visits",
+          "A Chinese–Vietnamese interpreter experienced in business and technical topics, 3,200,000 VND per 8-hour day (half day 1,800,000 VND).",
+          "Consecutive interpreting for partner meetings, contract negotiations and visits to factories or industrial parks in and around Đà Nẵng. Please send documents, product lists or glossaries at least 24 hours ahead so the interpreter can prepare. Content is kept confidential; overtime is charged at 1.5×, and out-of-province travel costs are quoted in advance."
+        ],
+        "zh-CN": [
+          "商务翻译：谈判、客户会议、工厂考察",
+          "具备商务与技术背景的中越翻译，3,200,000越南盾/天（8小时），半天1,800,000越南盾。",
+          "为客户会议、合同谈判、岘港及周边工厂和工业区考察提供交替传译。请至少提前24小时发送资料、产品目录或专业术语，以便翻译做准备。翻译内容严格保密；超时按1.5倍计费，外省差旅费用提前报价。"
+        ],
+        "zh-TW": [
+          "商務口譯：談判、客戶會議、工廠參訪",
+          "具備商務與技術背景的中越口譯員，3,200,000越南盾／天（8小時），半天1,800,000越南盾。",
+          "為客戶會議、合約談判、峴港及周邊工廠與工業區參訪提供逐步口譯。請至少提前24小時提供資料、產品目錄或專業術語，以便口譯員準備。口譯內容嚴格保密；超時按1.5倍計費，外縣市差旅費用事先報價。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-TRANS-DN-05",
+      "price": 80000,
+      "imageUrl": "https://images.unsplash.com/photo-1583389409210-0234eee7cdce?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1673515335152-f2589ba8bb7a?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/person-writing-on-white-paper-U5fVbJbZPLc",
+        "https://unsplash.com/photos/a-wooden-block-that-says-translation-on-it-p5VW_ZUon7o"
+      ],
+      "meta": {
+        "unit": "trang",
+        "pageDefinition": "Trang A4 bản dịch, khoảng 300 từ tiếng Việt",
+        "languages": ["zh-CN", "zh-TW", "vi-VN"],
+        "turnaround": "1–3 ngày làm việc tùy số trang"
+      },
+      "t": {
+        "vi-VN": [
+          "Dịch tài liệu Trung ↔ Việt",
+          "Dịch văn bản tiếng Trung (giản thể/phồn thể) sang tiếng Việt và ngược lại, từ 80.000đ/trang.",
+          "Áp dụng cho hợp đồng thuê nhà, thư từ, giấy tờ cá nhân, tài liệu giới thiệu sản phẩm. Tính theo trang A4 bản dịch (khoảng 300 từ); tài liệu chuyên ngành sâu (y khoa, kỹ thuật, pháp lý) hoặc cần gấp sẽ báo giá riêng trước khi làm. Bản dịch này chưa bao gồm chứng thực; nếu cần nộp cơ quan nhà nước, chọn gói Dịch + chứng thực chữ ký người dịch."
+        ],
+        "en-US": [
+          "Document translation Chinese ↔ Vietnamese",
+          "Translation of Chinese (Simplified/Traditional) documents into Vietnamese and vice versa, from 80,000 VND per page.",
+          "For rental contracts, letters, personal papers and product materials. Charged per A4 page of translation (about 300 words); highly specialised (medical, technical, legal) or urgent jobs are quoted separately before work begins. This translation is not certified; if it must be submitted to a government office, choose the Translation + translator-signature certification package."
+        ],
+        "zh-CN": [
+          "中越文件笔译",
+          "中文（简体/繁体）文件译成越南语或越南语译成中文，80,000越南盾/页起。",
+          "适用于租房合同、信函、个人证件、产品介绍资料等。按译文A4页计费（约300个越南语词）；医学、技术、法律等专业性强或加急的文件，开工前单独报价。本服务不含认证；如需提交政府机关，请选择“翻译+译者签名认证”套餐。"
+        ],
+        "zh-TW": [
+          "中越文件筆譯",
+          "中文（簡體／繁體）文件譯成越南語或越南語譯成中文，80,000越南盾／頁起。",
+          "適用於租屋合約、信函、個人證件、產品介紹資料等。按譯文A4頁計費（約300個越南語詞）；醫學、技術、法律等專業性高或急件，開工前另行報價。本服務不含認證；如需提交政府機關，請選擇「翻譯＋譯者簽名認證」方案。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-TRANS-DN-06",
+      "price": 150000,
+      "imageUrl": "https://images.unsplash.com/photo-1774891937400-b5e32f719fae?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1763729805496-b5dbf7f00c79?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1619418602850-35ad20aa1700?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/a-wooden-stamp-sits-on-a-wooden-desk-_l_tinAY71Q",
+        "https://unsplash.com/photos/man-signing-a-document-with-a-pen-QI6NLgN5XnM",
+        "https://unsplash.com/photos/rubber-stamp-on-legal-document-7PMGUqYQpYc"
+      ],
+      "meta": {
+        "unit": "trang (bản dịch 1 trang)",
+        "governmentFee": "Lệ phí chứng thực chữ ký người dịch 10.000đ/trường hợp (Thông tư 226/2016/TT-BTC), thu theo thực tế",
+        "certifiedBy": "UBND xã/phường hoặc tổ chức hành nghề công chứng",
+        "turnaround": "2–4 ngày làm việc"
+      },
+      "t": {
+        "vi-VN": [
+          "Dịch + chứng thực chữ ký người dịch (thay công chứng bản dịch)",
+          "Dịch Trung ↔ Việt và lo thủ tục chứng thực chữ ký người dịch, phí dịch vụ từ 150.000đ/trang; lệ phí nhà nước thu riêng theo thực tế.",
+          "Từ 01/7/2025, Luật Công chứng 2024 không còn công chứng bản dịch; bản dịch dùng cho thủ tục hành chính được chứng thực chữ ký người dịch tại UBND xã/phường hoặc tổ chức hành nghề công chứng. ZhaoXi dịch, bố trí người dịch đủ điều kiện ký trước người chứng thực, nộp và nhận kết quả cho bạn. Phí 150.000đ/trang là phí dịch và dịch vụ của ZhaoXi; lệ phí chứng thực (hiện 10.000đ/trường hợp) và phí sao y (nếu cần) thu đúng biên lai. Giấy tờ do nước ngoài cấp có thể phải hợp pháp hóa lãnh sự trước; ZhaoXi không cam kết cơ quan nhận hồ sơ sẽ chấp nhận."
+        ],
+        "en-US": [
+          "Translation + translator-signature certification (replaces notarisation)",
+          "Chinese ↔ Vietnamese translation plus handling the translator-signature certification, service fee from 150,000 VND per page; government fees charged separately at cost.",
+          "Since 1 July 2025, the 2024 Law on Notarisation no longer covers notarising translations; translations for official procedures are certified by certifying the translator's signature at a commune/ward People's Committee or a notary practice. ZhaoXi translates, arranges a qualified translator to sign before the certifying officer, and files and collects the result for you. The 150,000 VND/page covers ZhaoXi's translation and service; the certification fee (currently 10,000 VND per case) and any certified-copy fees are charged exactly as receipted. Documents issued abroad may first need consular legalisation; ZhaoXi cannot guarantee acceptance by the receiving authority."
+        ],
+        "zh-CN": [
+          "翻译 + 译者签名认证（替代原“公证翻译件”）",
+          "中越互译并代办译者签名认证，服务费150,000越南盾/页起；政府规费按实际另收。",
+          "自2025年7月1日起，越南《2024年公证法》不再办理“翻译件公证”，用于行政手续的译文改为在乡/坊人民委员会或公证机构办理“译者签名认证”。ZhaoXi负责翻译，安排具备资格的译者在认证人员面前签名，并代为递交和领取。150,000越南盾/页为ZhaoXi的翻译及服务费；认证规费（目前为每件10,000越南盾）及复印件认证费（如需）凭收据按实收取。国外签发的文件可能需先办理领事认证；ZhaoXi不保证接收机关一定受理。"
+        ],
+        "zh-TW": [
+          "翻譯＋譯者簽名認證（取代原「公證翻譯件」）",
+          "中越互譯並代辦譯者簽名認證，服務費150,000越南盾／頁起；政府規費按實際另收。",
+          "自2025年7月1日起，越南《2024年公證法》不再辦理「翻譯件公證」，用於行政程序的譯文改為在鄉／坊人民委員會或公證機構辦理「譯者簽名認證」。ZhaoXi負責翻譯，安排具備資格的譯者在認證人員面前簽名，並代為遞件及領件。150,000越南盾／頁為ZhaoXi的翻譯及服務費；認證規費（目前每件10,000越南盾）及影本認證費（如需）憑收據按實收取。國外核發的文件可能須先辦理領事認證；ZhaoXi不保證受理機關一定接受。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-TRANS-DN-07",
+      "price": 150000,
+      "imageUrl": "https://images.unsplash.com/photo-1512428559087-560fa5ceab42?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1423784346385-c1d4dac9893a?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/person-holding-white-android-smartphone-in-white-shirt-q8U1YgBaRQk",
+        "https://unsplash.com/photos/silhouette-photo-of-person-holding-smartphone-pb_lF8VWaPU"
+      ],
+      "meta": {
+        "unit": "30 phút",
+        "channels": ["WeChat", "Zalo", "Điện thoại"],
+        "languages": ["zh-CN", "vi-VN"],
+        "bookingNotice": "Đặt trước ít nhất 2 giờ"
+      },
+      "t": {
+        "vi-VN": [
+          "Phiên dịch từ xa qua WeChat / điện thoại (30 phút)",
+          "Phiên dịch Trung – Việt qua cuộc gọi WeChat, Zalo hoặc điện thoại, 150.000đ/30 phút.",
+          "Dùng khi cần nói chuyện với tài xế, chủ nhà, lễ tân, cửa hàng hoặc nhân viên giao hàng mà không cần phiên dịch có mặt. Đặt trước ít nhất 2 giờ; phiên dịch viên gọi nhóm 3 bên hoặc bạn bật loa ngoài. Tính theo block 30 phút, phần lẻ tính thêm 1 block; không dùng cho nội dung y khoa khẩn cấp hoặc pháp lý cần biên bản."
+        ],
+        "en-US": [
+          "Remote interpreting via WeChat / phone (30 minutes)",
+          "Chinese–Vietnamese interpreting over WeChat, Zalo or a phone call, 150,000 VND per 30 minutes.",
+          "Useful for talking with drivers, landlords, receptionists, shops or delivery staff without an interpreter on site. Book at least 2 hours ahead; the interpreter sets up a three-way call or you use speakerphone. Billed in 30-minute blocks, with any part of a block counted as a full block; not intended for medical emergencies or legal matters that require minutes."
+        ],
+        "zh-CN": [
+          "微信/电话远程翻译（30分钟）",
+          "通过微信、Zalo或电话进行中越翻译，150,000越南盾/30分钟。",
+          "适合与司机、房东、前台、商家或外卖员沟通，无需翻译到场。请至少提前2小时预约；翻译可发起三方通话，或由您开启免提。按30分钟为一个计费单位，不足部分按一个单位计；不适用于紧急医疗或需要书面记录的法律事务。"
+        ],
+        "zh-TW": [
+          "微信／電話遠端口譯（30分鐘）",
+          "透過微信、Zalo或電話進行中越口譯，150,000越南盾／30分鐘。",
+          "適合與司機、房東、櫃檯、店家或外送員溝通，無需口譯員到場。請至少提前2小時預約；口譯員可發起三方通話，或由您開啟擴音。以30分鐘為一個計費單位，不足部分按一個單位計；不適用於緊急醫療或需書面紀錄的法律事務。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-TRANS-DN-08",
+      "price": 450000,
+      "imageUrl": "https://images.unsplash.com/photo-1673515335152-f2589ba8bb7a?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/a-wooden-block-that-says-translation-on-it-p5VW_ZUon7o",
+        "https://unsplash.com/photos/5fNmWej4tAA"
+      ],
+      "meta": {
+        "unit": "giờ",
+        "minimumHours": 2,
+        "languages": ["zh-CN", "en-US", "vi-VN"],
+        "documentRate": "Dịch tài liệu Trung ↔ Anh từ 100.000đ/trang (báo giá theo tài liệu)"
+      },
+      "t": {
+        "vi-VN": [
+          "Phiên dịch Trung – Anh / Anh – Việt theo giờ (tối thiểu 2 giờ)",
+          "Phiên dịch Trung – Anh hoặc Anh – Việt cho nhóm đa quốc tịch, 450.000đ/giờ, tối thiểu 2 giờ.",
+          "Dành cho buổi làm việc có cả đối tác nói tiếng Anh, ví dụ họp với khách sạn, trường quốc tế hoặc công ty nước ngoài tại Đà Nẵng. Hình thức dịch đuổi; cần dịch tài liệu Trung ↔ Anh sẽ báo giá theo từng tài liệu (từ khoảng 100.000đ/trang). Chi phí đi lại ngoài nội thành do khách chi trả."
+        ],
+        "en-US": [
+          "Chinese–English / English–Vietnamese interpreter by the hour (2-hour minimum)",
+          "Chinese–English or English–Vietnamese interpreting for mixed-nationality groups, 450,000 VND/hour, 2-hour minimum.",
+          "For meetings that include English-speaking parties, such as hotels, international schools or foreign companies in Đà Nẵng. Consecutive interpreting; Chinese ↔ English document translation is quoted per document (from about 100,000 VND per page). Travel outside the city centre is paid by the customer."
+        ],
+        "zh-CN": [
+          "中英/英越翻译按小时计费（最少2小时）",
+          "为多国籍团队提供中英或英越口译，450,000越南盾/小时，最少2小时。",
+          "适用于有英语方参加的会谈，例如与岘港的酒店、国际学校或外资公司开会。采用交替传译；中英文件笔译按文件报价（约100,000越南盾/页起）。市区以外交通费由客户承担。"
+        ],
+        "zh-TW": [
+          "中英／英越口譯按小時計費（最少2小時）",
+          "為多國籍團隊提供中英或英越口譯，450,000越南盾／小時，最少2小時。",
+          "適用於有英語方參與的會議，例如與峴港的飯店、國際學校或外商公司開會。採用逐步口譯；中英文件筆譯按文件報價（約100,000越南盾／頁起）。市區以外交通費由客戶負擔。"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    "https://dichthuatphuongdong.com/bao-gia-phien-dich/",
+    "https://dich123.vn/gia-dich-thuat-tieng-trung.html",
+    "https://achautrans.com/bao-gia-phien-dich",
+    "https://www.dichthuatso1.com/en/gia-phien-dich-tieng-trung-1-ngay/",
+    "https://dichthuata2z.com/bao-gia-phien-dich/bao-gia-phien-dich",
+    "https://accgroup.vn/gia-dich-thuat-da-nang",
+    "https://accgroup.vn/bao-gia-dich-thuat-cong-chung",
+    "https://toplist.vn/top-list/dia-chi-dich-thuat-uy-tin-nhat-tai-da-nang-13892.htm",
+    "https://lsvn.vn/se-khong-con-can-thuc-hien-cong-chung-ban-dich-tu-01-7-a159826.html",
+    "https://nhandan.vn/post-824056.html",
+    "https://thuvienphapluat.vn/hoi-dap-phap-luat/thuc-hien-thu-tuc-chung-thuc-chu-ky-nguoi-dich-thay-cho-cong-chung-ban-dich-tu-0172025-dung-khong-138055412.html",
+    "https://luatvietnam.vn/hanh-chinh/cap-xa-duoc-giao-nhung-tham-quyen-gi-trong-linh-vuc-tu-phap-tu-ngay-01-7-2025-570-102690-article.html",
+    "https://vbpl.vn/FileData/TW/Lists/vbpq/Attachments/119170/VanBanGoc_226-2016-TT-BTC.pdf",
+    "https://portal.mof.gov.vn/hoidapcstc/home/cthoidap/163540",
+    "https://hethongphapluat.com/phap-luat/node/13505/amp"
+  ],
+  "notes": "Giá thị trường: các bảng giá công khai (Phương Đông cập nhật 15/10/2026: tiếng Trung cấp 1 60–100 USD/8h, cấp 2 thương mại/hiện trường 110–150 USD/8h; Dịch 123: 30 USD/giờ, 80–90 USD/ngày; Á Châu: 40 USD/giờ, 60–80 USD/ngày; đều chưa VAT, làm thêm giờ hệ số 1,5) chủ yếu của công ty Hà Nội/TP.HCM áp dụng toàn quốc — không tìm thấy bảng giá phiên dịch riêng Đà Nẵng; giá ZhaoXi đặt ở mức trung bình–thấp của các khoảng này (quy đổi USD xấp xỉ, chủ cần kiểm tra lại tỷ giá). Dịch tài liệu tiếng Trung tại Đà Nẵng tham khảo 55.000–100.000đ/trang. Giá phiên dịch từ xa (item 07) và Trung–Anh (item 08) là đề xuất của ZhaoXi suy ra từ đơn giá giờ, không có bảng giá công khai để đối chiếu. Giá chưa nêu VAT — chủ quyết định đã gồm hay cộng thêm VAT. PHÁP LÝ: (1) Từ 01/7/2025 Luật Công chứng 2024 bỏ 'công chứng bản dịch'; thay bằng chứng thực chữ ký người dịch (UBND cấp xã/phường theo NĐ 120/2025, hoặc công chứng viên theo pháp luật chứng thực; NĐ 23/2015 đã sửa đổi bởi NĐ 280/2025 — cần đối chiếu điều khoản cụ thể). Người dịch phải đủ điều kiện theo pháp luật chứng thực (thường là cử nhân ngoại ngữ đúng thứ tiếng hoặc tốt nghiệp ĐH học bằng thứ tiếng đó) và là cộng tác viên đã đăng ký hoặc ký trước mặt người chứng thực — ZhaoXi phải có người dịch đủ điều kiện thật trước khi bán item 06. (2) Lệ phí chứng thực chữ ký 10.000đ/trường hợp theo TT 226/2016/TT-BTC — xác minh lại mức hiện hành trước khi niêm yết. (3) Giấy tờ do Trung Quốc cấp có thể phải hợp pháp hóa lãnh sự hoặc được miễn theo điều ước song phương — kiểm tra từng trường hợp; không hứa hẹn kết quả. (4) Không cung cấp dịch thuật 'có dấu' giả mạo hay dịch vụ dấu của đơn vị khác. Ảnh banner: https://unsplash.com/photos/dragon-bridge-over-river-city-skyline-and-palm-trees-6Oy-fhKD7Y4 (cầu Rồng, Đà Nẵng)."
+}

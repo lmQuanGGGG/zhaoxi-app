@@ -1,0 +1,295 @@
+{
+  "module": "community",
+  "org": {
+    "code": "ZX-COMMUNITY-DN",
+    "type": "community-hub",
+    "name": "ZhaoXi Cộng Đồng Hoa Ngữ Đà Nẵng",
+    "description": "Không gian kết nối cộng đồng người Hoa tại Đà Nẵng do ZhaoXi tổ chức, với các buổi giao lưu, trao đổi ngôn ngữ, định hướng cho người mới và họp mặt dịp lễ diễn ra định kỳ. Lịch cụ thể của từng hoạt động được xác nhận khi đăng ký.",
+    "addressText": "Hải Châu, Đà Nẵng",
+    "latitude": 16.0678,
+    "longitude": 108.2208,
+    "bannerUrl": "https://images.unsplash.com/photo-1674296067534-0f9769040781?auto=format&fit=crop&w=1400&q=80"
+  },
+  "items": [
+    {
+      "code": "ZX-COMMUNITY-DN-01",
+      "price": 200000,
+      "imageUrl": "https://images.unsplash.com/photo-1768508663341-ed48fd1e69d8?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [],
+      "photoSources": [
+        "https://unsplash.com/photos/OOlgnLwkfZ8"
+      ],
+      "meta": {
+        "unit": "người",
+        "frequency": "Hằng tháng (buổi tối cuối tuần)",
+        "duration": "2–3 giờ",
+        "includes": "1 đồ uống + đồ ăn nhẹ",
+        "languages": [
+          "zh-CN",
+          "vi-VN"
+        ],
+        "schedule": "Lịch cụ thể xác nhận khi đăng ký"
+      },
+      "t": {
+        "vi-VN": [
+          "Buổi gặp mặt & giao lưu cộng đồng người Hoa hằng tháng",
+          "Tối giao lưu kết nối cộng đồng người Hoa tại Đà Nẵng, 200.000đ/người.",
+          "Buổi tối giao lưu định kỳ mỗi tháng do ZhaoXi tổ chức cho người Hoa đang sống, làm việc hoặc du lịch tại Đà Nẵng: làm quen, chia sẻ kinh nghiệm sinh sống và mở rộng quan hệ. Phí bao gồm 1 đồ uống và đồ ăn nhẹ. Địa điểm là quán/không gian khu Hải Châu; ngày giờ cụ thể xác nhận khi đăng ký."
+        ],
+        "en-US": [
+          "Monthly Chinese Community Meetup & Networking Evening",
+          "A monthly social evening for the Chinese community in Đà Nẵng, 200,000 VND per person.",
+          "A recurring monthly evening hosted by ZhaoXi for Chinese speakers living, working or travelling in Đà Nẵng – meet new people, swap tips on daily life and grow your network. The fee covers one drink and light snacks. Held at a café/venue in Hải Châu; exact date and time are confirmed when you register."
+        ],
+        "zh-CN": [
+          "岘港华人社区月度聚会·交流之夜",
+          "每月一次的岘港华人交流晚会，200,000越南盾/人。",
+          "由ZhaoXi每月定期举办，面向在岘港生活、工作或旅行的华人朋友：认识新朋友、交流生活经验、拓展人脉。费用含一杯饮品和小食。地点位于海洲郡（Hải Châu）的咖啡馆或活动空间，具体日期和时间在报名时确认。"
+        ],
+        "zh-TW": [
+          "峴港華人社群每月聚會·交流之夜",
+          "每月一次的峴港華人交流晚會，200,000越南盾/人。",
+          "由ZhaoXi每月定期舉辦，對象為在峴港生活、工作或旅行的華人朋友：認識新朋友、交流生活經驗、拓展人脈。費用含一杯飲品和小點心。地點位於海洲郡（Hải Châu）的咖啡館或活動空間，確切日期與時間於報名時確認。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-COMMUNITY-DN-02",
+      "price": 50000,
+      "imageUrl": "https://images.unsplash.com/photo-1783928263139-8227a4eeeed8?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1673515334717-da4d85aaf38b?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/a-fountain-pen-next-to-a-paper-with-chinese-calligraphy-g6CMg9G9zsQ",
+        "https://unsplash.com/photos/the-word-learn-languages-spelled-out-of-scrabble-tiles-TFtIBULUMP0"
+      ],
+      "meta": {
+        "unit": "người/buổi",
+        "frequency": "Hằng tuần",
+        "duration": "2 giờ",
+        "includes": "1 đồ uống",
+        "languages": [
+          "zh-CN",
+          "vi-VN"
+        ],
+        "schedule": "Lịch cụ thể xác nhận khi đăng ký"
+      },
+      "t": {
+        "vi-VN": [
+          "Góc trao đổi ngôn ngữ Trung – Việt hằng tuần",
+          "Luyện nói tiếng Trung và tiếng Việt cùng người bản xứ, 50.000đ/người/buổi (kèm 1 đồ uống).",
+          "Mỗi tuần một buổi gặp tại quán cà phê khu Hải Châu: người Hoa luyện tiếng Việt, người Việt luyện tiếng Trung, chia nhóm nhỏ theo trình độ và đổi vai sau mỗi hiệp. Có người điều phối gợi ý chủ đề, không phải lớp học có giáo trình. Phí 50.000đ đã gồm 1 đồ uống; lịch cụ thể xác nhận khi đăng ký."
+        ],
+        "en-US": [
+          "Weekly Chinese–Vietnamese Language Exchange Corner",
+          "Practise Chinese and Vietnamese with native speakers, 50,000 VND per person per session (one drink included).",
+          "A weekly meetup at a café in Hải Châu: Chinese speakers practise Vietnamese and Vietnamese speakers practise Chinese, in small groups by level, switching languages each round. A host suggests topics – it is a conversation club, not a formal course. The 50,000 VND fee includes one drink; the exact schedule is confirmed on registration."
+        ],
+        "zh-CN": [
+          "每周中越语言交换角",
+          "与母语者练习中文和越南语，50,000越南盾/人/次（含一杯饮品）。",
+          "每周一次在海洲郡（Hải Châu）咖啡馆举行：华人练越南语、越南人练中文，按水平分小组，每轮互换语言。现场有主持人提供话题，属于交流会而非正式课程。费用50,000越南盾已含一杯饮品，具体时间报名时确认。"
+        ],
+        "zh-TW": [
+          "每週中越語言交換角",
+          "與母語者練習中文與越南語，50,000越南盾/人/次（含一杯飲品）。",
+          "每週一次在海洲郡（Hải Châu）咖啡館舉行：華人練越南語、越南人練中文，依程度分小組，每輪互換語言。現場有主持人提供話題，屬於交流會而非正式課程。費用50,000越南盾已含一杯飲品，確切時間於報名時確認。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-COMMUNITY-DN-03",
+      "price": 250000,
+      "imageUrl": "https://images.unsplash.com/photo-1782029680974-e07c93389f52?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1695896096099-8a83cea6e929?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1519181245277-cffeb31da2e3?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/TA1Si7xH1-8",
+        "https://unsplash.com/photos/T6ESHZwAOY8",
+        "https://unsplash.com/photos/red-paper-lanterns-3JFVNo4ukKQ"
+      ],
+      "meta": {
+        "unit": "người",
+        "frequency": "Theo mùa: Trung Thu (tháng 8 âm lịch) & Tết Nguyên Đán",
+        "duration": "3 giờ",
+        "includes": "Bánh trung thu/sủi cảo, trà, hoạt động tập thể",
+        "priceNote": "Từ 250.000đ; buổi Tết có thể cao hơn tùy thực đơn",
+        "schedule": "Lịch cụ thể xác nhận khi đăng ký"
+      },
+      "t": {
+        "vi-VN": [
+          "Họp mặt cộng đồng dịp Trung Thu & Tết Nguyên Đán",
+          "Họp mặt người Hoa xa quê dịp lễ truyền thống, từ 250.000đ/người.",
+          "Hai dịp họp mặt theo mùa mỗi năm: Trung Thu với bánh trung thu, trà và lồng đèn; Tết Nguyên Đán với gói sủi cảo, viết câu đối và chúc Tết. Giá từ 250.000đ/người, buổi Tết có thể cao hơn tùy thực đơn và sẽ báo rõ trước khi thanh toán. Địa điểm khu Hải Châu; lịch cụ thể xác nhận khi đăng ký."
+        ],
+        "en-US": [
+          "Mid-Autumn & Lunar New Year Community Gatherings",
+          "Festive get-togethers for Chinese residents away from home, from 250,000 VND per person.",
+          "Two seasonal gatherings each year: Mid-Autumn with mooncakes, tea and lanterns, and Lunar New Year with dumpling-making, couplet writing and New Year greetings. From 250,000 VND per person; the New Year event may cost more depending on the menu, which is stated before payment. Venue in Hải Châu; exact dates are confirmed when you register."
+        ],
+        "zh-CN": [
+          "中秋·春节华人社区团聚活动",
+          "异乡华人传统节日团聚，250,000越南盾/人起。",
+          "每年两次节令聚会：中秋赏月吃月饼、品茶、提灯笼；春节一起包饺子、写春联、互相拜年。250,000越南盾/人起，春节场视菜单可能略高，付款前会明确告知。地点位于海洲郡（Hải Châu），具体日期报名时确认。"
+        ],
+        "zh-TW": [
+          "中秋·春節華人社群團聚活動",
+          "異鄉華人傳統節日團聚，250,000越南盾/人起。",
+          "每年兩次節令聚會：中秋賞月吃月餅、品茶、提燈籠；春節一起包水餃、寫春聯、互相拜年。250,000越南盾/人起，春節場依菜單可能略高，付款前會明確告知。地點位於海洲郡（Hải Châu），確切日期於報名時確認。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-COMMUNITY-DN-04",
+      "price": 150000,
+      "imageUrl": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1674296067534-0f9769040781?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/F2KRf_QfCqw",
+        "https://unsplash.com/photos/an-aerial-view-of-a-beach-and-a-city-w_0Dk0_JN3A"
+      ],
+      "meta": {
+        "unit": "người",
+        "frequency": "Hằng tháng",
+        "duration": "2,5 giờ",
+        "includes": "Tài liệu hướng dẫn tiếng Trung + trà",
+        "languages": [
+          "zh-CN"
+        ],
+        "schedule": "Lịch cụ thể xác nhận khi đăng ký"
+      },
+      "t": {
+        "vi-VN": [
+          "Buổi định hướng cho người Hoa mới đến Đà Nẵng",
+          "Hướng dẫn sinh sống cơ bản bằng tiếng Trung cho người mới đến, 150.000đ/người.",
+          "Buổi chia sẻ thực tế bằng tiếng Trung: mua SIM và đăng ký chính chủ, mở tài khoản ngân hàng, thuê nhà và khai báo tạm trú, đi lại, khám bệnh, an toàn và văn hóa ứng xử tại Đà Nẵng. Kèm tài liệu tóm tắt và thời gian hỏi đáp. Đây là thông tin tham khảo chung, không phải tư vấn pháp lý hay làm thủ tục thay; lịch cụ thể xác nhận khi đăng ký."
+        ],
+        "en-US": [
+          "Newcomer Orientation for Chinese Arrivals in Đà Nẵng",
+          "A practical Chinese-language intro to life in Đà Nẵng, 150,000 VND per person.",
+          "A hands-on session in Chinese covering SIM cards and registration, opening a bank account, renting a home and temporary-residence declaration, getting around, seeing a doctor, safety and local etiquette. Includes a printed summary and Q&A time. This is general information, not legal advice or a paperwork service; the exact date is confirmed when you register."
+        ],
+        "zh-CN": [
+          "岘港新到华人生活入门讲座",
+          "中文讲解岘港生活必备知识，150,000越南盾/人。",
+          "全程中文的实用分享：办理手机卡及实名登记、开银行账户、租房与暂住登记、交通出行、看病就医、安全与当地礼仪。附中文资料摘要并留有问答时间。内容仅为一般性参考信息，不构成法律意见，也不代办手续；具体日期报名时确认。"
+        ],
+        "zh-TW": [
+          "峴港新到華人生活入門講座",
+          "中文講解峴港生活必備知識，150,000越南盾/人。",
+          "全程中文的實用分享：辦理手機卡及實名登記、開立銀行帳戶、租屋與暫住登記、交通出行、看病就醫、安全與當地禮儀。附中文資料摘要並保留問答時間。內容僅為一般參考資訊，不構成法律意見，也不代辦手續；確切日期於報名時確認。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-COMMUNITY-DN-05",
+      "price": 250000,
+      "imageUrl": "https://images.unsplash.com/photo-1678839040082-6e709fd06610?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1704283735270-f973e7e9c14e?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/a-wooden-table-topped-with-plates-of-food-and-cups-of-coffee-YCehgs5pNvM",
+        "https://unsplash.com/photos/a-plate-of-croissants-and-a-cup-of-coffee-Vr2TeXxV7jo"
+      ],
+      "meta": {
+        "unit": "người",
+        "frequency": "Hằng tháng (sáng trong tuần)",
+        "duration": "7:30–9:00",
+        "includes": "Bữa sáng + cà phê/trà",
+        "languages": [
+          "zh-CN",
+          "vi-VN"
+        ],
+        "schedule": "Lịch cụ thể xác nhận khi đăng ký"
+      },
+      "t": {
+        "vi-VN": [
+          "Bữa sáng kết nối doanh nhân người Hoa tại Đà Nẵng",
+          "Gặp gỡ, giới thiệu doanh nghiệp buổi sáng, 250.000đ/người (gồm bữa sáng).",
+          "Buổi sáng định kỳ hằng tháng dành cho chủ doanh nghiệp, nhà quản lý và người kinh doanh tự do nói tiếng Trung tại Đà Nẵng: mỗi người giới thiệu ngắn, sau đó giao lưu tự do và chia sẻ kinh nghiệm kinh doanh tại địa phương. Phí gồm bữa sáng và cà phê/trà. Không phải hội thảo đầu tư hay tư vấn pháp lý; lịch cụ thể xác nhận khi đăng ký."
+        ],
+        "en-US": [
+          "Chinese Entrepreneurs' Networking Breakfast",
+          "A morning meetup to connect and introduce your business, 250,000 VND per person (breakfast included).",
+          "A recurring monthly breakfast for Chinese-speaking business owners, managers and freelancers in Đà Nẵng: quick self-introductions, then open networking and sharing of local business experience. The fee covers breakfast and coffee/tea. It is not an investment seminar or legal consultation; the exact date is confirmed when you register."
+        ],
+        "zh-CN": [
+          "岘港华人企业家早餐交流会",
+          "早晨结识同行、介绍业务，250,000越南盾/人（含早餐）。",
+          "每月一次的早餐交流会，面向在岘港讲中文的企业主、管理者和自由职业者：每人简短自我介绍后自由交流，分享在当地经营的经验。费用含早餐及咖啡/茶。本活动不是投资推介会，也不提供法律咨询；具体日期报名时确认。"
+        ],
+        "zh-TW": [
+          "峴港華人企業家早餐交流會",
+          "早晨結識同業、介紹業務，250,000越南盾/人（含早餐）。",
+          "每月一次的早餐交流會，對象為在峴港說中文的企業主、管理者與自由工作者：每人簡短自我介紹後自由交流，分享在地經營經驗。費用含早餐及咖啡/茶。本活動並非投資說明會，也不提供法律諮詢；確切日期於報名時確認。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-COMMUNITY-DN-06",
+      "price": 150000,
+      "imageUrl": "https://images.unsplash.com/photo-1781963577464-aae78aa7be67?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1558002890-c0b30998d1e6?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1585926449367-64689895b3fe?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/dragon-bridge-over-river-city-skyline-and-palm-trees-6Oy-fhKD7Y4",
+        "https://unsplash.com/photos/concrete-bridge-near-city-6sR0V_ZoC_s",
+        "https://unsplash.com/photos/people-riding-on-boat-on-river-during-daytime-SrYiMfp4edw"
+      ],
+      "meta": {
+        "unit": "người",
+        "frequency": "Cuối tuần",
+        "duration": "3–4 giờ",
+        "includes": "Người dẫn nhóm nói tiếng Trung, nước uống",
+        "excludes": "Vé tham quan, ăn uống, di chuyển ra Hội An (nếu có)",
+        "languages": [
+          "zh-CN"
+        ],
+        "schedule": "Lịch cụ thể xác nhận khi đăng ký"
+      },
+      "t": {
+        "vi-VN": [
+          "Nhóm dạo phố & khám phá văn hóa cuối tuần",
+          "Đi bộ khám phá Đà Nẵng cùng nhóm nói tiếng Trung, 150.000đ/người.",
+          "Nhóm đi bộ cuối tuần qua các điểm quen thuộc của Đà Nẵng như sông Hàn, cầu Rồng, chợ Hàn và các khu phố ẩm thực; thỉnh thoảng đổi sang buổi khám phá phố cổ Hội An. Phí gồm người dẫn nhóm nói tiếng Trung và nước uống, chưa gồm vé tham quan, ăn uống và chi phí di chuyển. Lộ trình và lịch cụ thể xác nhận khi đăng ký."
+        ],
+        "en-US": [
+          "Weekend City Walk & Cultural Outing Group",
+          "Explore Đà Nẵng on foot with a Chinese-speaking group, 150,000 VND per person.",
+          "A weekend walking group around Đà Nẵng favourites – the Hàn River, Dragon Bridge, Hàn Market and local food streets – with an occasional outing to Hội An Ancient Town instead. The fee covers a Chinese-speaking group host and drinking water; entrance tickets, food and transport are extra. Route and date are confirmed when you register."
+        ],
+        "zh-CN": [
+          "周末城市漫步·文化探索小组",
+          "跟着中文小组步行探索岘港，150,000越南盾/人。",
+          "周末步行游览岘港经典地点：汉江、龙桥（Cầu Rồng）、韩市场（Chợ Hàn）和本地美食街；不定期改为会安（Hội An）古镇探索。费用含中文领队和饮用水，不含门票、餐饮及交通费用。路线和日期报名时确认。"
+        ],
+        "zh-TW": [
+          "週末城市漫步·文化探索小組",
+          "跟著中文小組步行探索峴港，150,000越南盾/人。",
+          "週末步行遊覽峴港經典景點：漢江、龍橋（Cầu Rồng）、韓市場（Chợ Hàn）及在地美食街；不定期改為會安（Hội An）古鎮探索。費用含中文領隊與飲用水，不含門票、餐飲及交通費用。路線與日期於報名時確認。"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    "https://www.blablacommunity.com/events/da-nang-blabla-language-exchange-1",
+    "https://www.blablacommunity.com/events/da-nang-blabla-language-exchange-free-event-2",
+    "https://onhuddle.co/fr/event/language-exchange-digital-nomads-meetup-da-nang-after-2h-pubcrawl-39614",
+    "https://www.whatsupdanang.com/events/ev_s_36hhdIcc7viU79jsoaidVaLT5SF/wednesday-spanish-language-exchange-6",
+    "https://enostaspace.com/viet-nam-australia-business-networking-2023-in-da-nang/",
+    "https://danangchillride.com/da-nangs-nightlife-bars-clubs-and-evening-entertainment-2026/",
+    "https://www.novotel-danang-premier.com/news/breakfast-da-nang/",
+    "https://johnnyafrica.com/best-work-cafes-danang/",
+    "https://sg.trip.com/things-to-do/detail/101203700/",
+    "https://www.machupicchu.org/da-nang-best-tours-walking-routes-2026-complete-travel-guide.htm"
+  ],
+  "notes": "Đây là các hoạt động định kỳ, KHÔNG có ngày cố định; mọi mô tả ghi 'lịch cụ thể xác nhận khi đăng ký' – chủ cửa hàng phải chốt ngày/giờ/địa điểm (khu Hải Châu) trước khi nhận thanh toán. Giá tham chiếu: language exchange ở Đà Nẵng thường miễn phí nhưng yêu cầu gọi đồ uống (nên 50.000đ đã gồm 1 đồ uống); sự kiện networking tối của AusCham Đà Nẵng 300.000đ/khách không là hội viên; cover có đồ uống ở quán 50–200k; bữa sáng quán/khách sạn 80–150k. Rủi ro pháp lý: (1) sự kiện tụ tập đông người/có biểu diễn ở nơi công cộng có thể phải thông báo chính quyền địa phương theo Nghị định 144/2020 – kiểm tra khi quy mô lớn (đặc biệt họp mặt Trung Thu/Tết); (2) nhóm dạo phố mô tả là hoạt động cộng đồng có người dẫn nhóm, không phải tour lữ hành – nếu thu phí để thuyết minh/hướng dẫn du lịch thì cần hướng dẫn viên có thẻ và doanh nghiệp có giấy phép lữ hành theo Luật Du lịch 2017; (3) buổi định hướng chỉ cung cấp thông tin chung, không tư vấn pháp lý/làm thủ tục cư trú thay; (4) bữa sáng doanh nhân không được dùng để gọi vốn/chào mời đầu tư. Ảnh sự kiện là ảnh minh họa Unsplash (không phải ảnh sự kiện ZhaoXi), đã tránh ảnh cận mặt."
+}

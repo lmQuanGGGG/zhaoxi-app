@@ -1,0 +1,370 @@
+{
+  "module": "market",
+  "org": {
+    "code": "ZX-MARKET-DN",
+    "type": "grocery-store",
+    "name": "ZhaoXi Chợ Hoa Đà Nẵng",
+    "description": "Cửa hàng tạp hóa Trung Hoa của ZhaoXi tại Đà Nẵng, giao tận nơi các gia vị, mì, trà và thực phẩm đông lạnh quen thuộc cho cộng đồng người Hoa. Hàng nhập khẩu có nguồn gốc rõ ràng, giá niêm yết minh bạch.",
+    "addressText": "Hải Châu, Đà Nẵng",
+    "latitude": 16.0678,
+    "longitude": 108.2208,
+    "bannerUrl": "https://images.unsplash.com/photo-1765850909380-2bdfc1c33422?auto=format&fit=crop&w=1400&q=80"
+  },
+  "items": [
+    {
+      "code": "ZX-MARKET-DN-01",
+      "price": 60000,
+      "imageUrl": "https://images.unsplash.com/photo-1791321829277-b08b323e0627?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1768326119244-6b7055143e5f?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/chili-oil-with-spoon-in-cup-RwFbEFctdIw",
+        "https://unsplash.com/photos/a-bowl-of-rice-with-toppings-chili-oil-and-chopsticks-EXfWNPsiu8s"
+      ],
+      "meta": {
+        "packSize": "280g",
+        "unit": "hũ",
+        "origin": "Trung Quốc",
+        "storage": "Nơi khô mát; sau khi mở nắp bảo quản tủ lạnh, dùng muỗng khô"
+      },
+      "t": {
+        "vi-VN": [
+          "Ớt chưng dầu tàu xì Lão Can Ma (老干妈) – hũ 280g",
+          "Ớt chưng dầu vị đậu đen lên men nhập khẩu Trung Quốc, 60.000đ/hũ 280g.",
+          "Ớt chưng dầu vị tàu xì (đậu đen lên men) Lão Can Ma, hũ thủy tinh 280g nhập khẩu từ Trung Quốc. Dùng chấm sủi cảo, trộn mì, xào rau hoặc ăn kèm cơm. Hạn sử dụng in trên nắp; sau khi mở nên bảo quản tủ lạnh. Ảnh chỉ mang tính minh họa."
+        ],
+        "en-US": [
+          "Lao Gan Ma Black Bean Chili Crisp (老干妈) – 280g jar",
+          "Imported Chinese chili oil with fermented black beans, 60,000 VND per 280g jar.",
+          "Lao Gan Ma chili crisp with fermented black beans in a 280g glass jar, imported from China. Great as a dip for dumplings, tossed with noodles, in stir-fries or simply with rice. Best-before date is printed on the lid; refrigerate after opening. Photo is for illustration only."
+        ],
+        "zh-CN": [
+          "老干妈风味豆豉油制辣椒 – 280g/瓶",
+          "中国进口豆豉辣椒油，60,000越南盾/瓶（280g）。",
+          "老干妈风味豆豉油制辣椒，280g玻璃瓶装，中国原装进口。可蘸饺子、拌面、炒菜或直接下饭。保质期见瓶盖，开封后请冷藏。图片仅供参考。"
+        ],
+        "zh-TW": [
+          "老乾媽風味豆豉油製辣椒 – 280g/瓶",
+          "中國進口豆豉辣椒油，60,000越南盾/瓶（280g）。",
+          "老乾媽風味豆豉油製辣椒，280g玻璃瓶裝，中國原裝進口。可沾水餃、拌麵、炒菜或直接配飯。保存期限見瓶蓋，開封後請冷藏。圖片僅供參考。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-MARKET-DN-02",
+      "price": 360000,
+      "imageUrl": "https://images.unsplash.com/photo-1612927601601-6638404737ce?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/ramen-bowl-with-egg-and-chili-RwAXb8Hv_sU",
+        "https://unsplash.com/photos/round-white-bowl-with-ramen-and-egg-rAyCBQTH7ws"
+      ],
+      "meta": {
+        "packSize": "Thùng 24 gói (~100–110g/gói, tùy lô)",
+        "unit": "thùng",
+        "flavor": "Bò hầm (红烧牛肉)",
+        "origin": "Trung Quốc",
+        "storage": "Nơi khô mát, tránh ánh nắng"
+      },
+      "t": {
+        "vi-VN": [
+          "Mì Khang Sư Phụ (康师傅) vị bò hầm – thùng 24 gói",
+          "Mì ăn liền nội địa Trung Quốc, 360.000đ/thùng 24 gói (khoảng 15.000đ/gói).",
+          "Thùng 24 gói mì Khang Sư Phụ vị bò hầm kinh điển (红烧牛肉面), hàng nội địa Trung Quốc, mỗi gói khoảng 100–110g tùy lô. Mỗi gói có vắt mì, gói dầu và gói súp. Giao nguyên thùng trong nội thành Đà Nẵng; vị khác (dưa chua bò, tôm cá…) tùy hàng sẵn có, vui lòng hỏi trước. Ảnh chỉ mang tính minh họa."
+        ],
+        "en-US": [
+          "Master Kong (康师傅) Braised Beef Instant Noodles – case of 24",
+          "Mainland-China instant noodles, 360,000 VND per case of 24 packs (about 15,000 VND/pack).",
+          "A case of 24 Master Kong classic braised-beef noodles (红烧牛肉面), mainland-China edition, roughly 100–110g per pack depending on batch. Each pack includes noodles, seasoning oil and soup powder. Delivered as a full case within central Đà Nẵng; other flavours (pickled-cabbage beef, seafood, etc.) depend on stock – please ask first. Photo is for illustration only."
+        ],
+        "zh-CN": [
+          "康师傅红烧牛肉面 – 整箱24包",
+          "国内版康师傅方便面，360,000越南盾/箱（24包，约15,000越南盾/包）。",
+          "康师傅经典红烧牛肉面整箱24包，国内版，每包约100–110g（视批次而定），含面饼、酱包和粉包。岘港市区整箱配送；老坛酸菜等其他口味视库存而定，请先咨询。图片仅供参考。"
+        ],
+        "zh-TW": [
+          "康師傅紅燒牛肉麵 – 整箱24包",
+          "中國大陸版康師傅泡麵，360,000越南盾/箱（24包，約15,000越南盾/包）。",
+          "康師傅經典紅燒牛肉麵整箱24包，中國大陸版，每包約100–110g（依批次而定），內含麵餅、醬包和粉包。峴港市區整箱配送；老罈酸菜等其他口味視庫存而定，請先詢問。圖片僅供參考。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-MARKET-DN-03",
+      "price": 140000,
+      "imageUrl": "https://images.unsplash.com/photo-1601226809816-b8c32440158a?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1464500542410-1396074bf230?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1788601299617-3052a7c8fa70?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/vegetable-dish-on-black-cooking-pan-w3awZjfVa6w",
+        "https://unsplash.com/photos/black-steel-wok-r8lDTtSWGUc",
+        "https://unsplash.com/photos/noodles-with-vegetables-in-black-bowl-t2XScZ1IGH0"
+      ],
+      "meta": {
+        "packSize": "510g",
+        "unit": "chai",
+        "origin": "Hồng Kông / Trung Quốc (theo nhãn từng lô)",
+        "storage": "Nơi khô mát; sau khi mở bảo quản tủ lạnh"
+      },
+      "t": {
+        "vi-VN": [
+          "Dầu hào Lee Kum Kee (李锦记) Đặc Biệt – chai 510g",
+          "Dầu hào cao cấp cho món xào, kho, ướp, 140.000đ/chai 510g.",
+          "Dầu hào Lee Kum Kee dòng Đặc Biệt (Premium Oyster Sauce), chai 510g, hàng nhập khẩu. Vị ngọt đậm tự nhiên, dùng cho rau xào, thịt bò xào, mì xào, nước ướp và nước chấm kiểu Quảng Đông. Sau khi mở nắp nên bảo quản tủ lạnh. Ảnh chỉ mang tính minh họa."
+        ],
+        "en-US": [
+          "Lee Kum Kee (李锦记) Premium Oyster Sauce – 510g bottle",
+          "Premium oyster sauce for stir-fries, braises and marinades, 140,000 VND per 510g bottle.",
+          "Lee Kum Kee Premium Oyster Sauce in a 510g bottle, imported. Rich, naturally savoury-sweet flavour for stir-fried greens, beef, fried noodles, marinades and Cantonese-style dips. Refrigerate after opening. Photo is for illustration only."
+        ],
+        "zh-CN": [
+          "李锦记特级蚝油 – 510g/瓶",
+          "炒菜、红烧、腌制必备，140,000越南盾/瓶（510g）。",
+          "李锦记特级蚝油，510g瓶装，进口商品。鲜香浓郁，适合蚝油生菜、蚝油牛肉、炒面、腌肉及粤式蘸料。开封后请冷藏保存。图片仅供参考。"
+        ],
+        "zh-TW": [
+          "李錦記特級蠔油 – 510g/瓶",
+          "熱炒、紅燒、醃漬必備，140,000越南盾/瓶（510g）。",
+          "李錦記特級蠔油，510g瓶裝，進口商品。鮮香濃郁，適合蠔油生菜、蠔油牛肉、炒麵、醃肉及粵式沾醬。開封後請冷藏保存。圖片僅供參考。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-MARKET-DN-04",
+      "price": 65000,
+      "imageUrl": "https://images.unsplash.com/photo-1784429611794-aecb6ebaef48?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1614104030967-5ca61a54247b?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1608229642114-0061d4e6a9ab?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/U_jfjAxoD4g",
+        "https://unsplash.com/photos/muV_8wy4mzw",
+        "https://unsplash.com/photos/fGZpTE1tEMA"
+      ],
+      "meta": {
+        "packSize": "220g",
+        "unit": "gói",
+        "flavor": "Cay tê Tứ Xuyên (麻辣)",
+        "origin": "Trung Quốc",
+        "storage": "Nơi khô mát; dầu bơ có thể đông đặc khi lạnh"
+      },
+      "t": {
+        "vi-VN": [
+          "Cốt lẩu cay tê Tứ Xuyên Haidilao (海底捞) – gói 220g",
+          "Cốt lẩu mala chính hãng nhập khẩu Trung Quốc, 65.000đ/gói 220g.",
+          "Cốt lẩu Haidilao vị cay tê Tứ Xuyên (麻辣), gói 220g nhập khẩu từ Trung Quốc. Chỉ cần thêm nước sôi là có nồi lẩu cay kiểu Trùng Khánh – Tứ Xuyên cho bữa lẩu gia đình; nhúng thịt bò, rau, nấm, đậu phụ tùy thích. Vị khác (cà chua, nấm, bò cay) tùy hàng sẵn có. Ảnh chỉ mang tính minh họa."
+        ],
+        "en-US": [
+          "Haidilao (海底捞) Sichuan Mala Hot Pot Base – 220g pack",
+          "Imported numbing-spicy hot pot base from China, 65,000 VND per 220g pack.",
+          "Haidilao Sichuan mala (numbing and spicy) hot pot soup base, 220g pack imported from China. Just add boiling water for a Chongqing–Sichuan style hot pot at home, then cook beef, greens, mushrooms or tofu as you like. Other flavours (tomato, mushroom, spicy beef) depend on stock. Photo is for illustration only."
+        ],
+        "zh-CN": [
+          "海底捞麻辣火锅底料 – 220g/袋",
+          "中国进口正宗麻辣火锅底料，65,000越南盾/袋（220g）。",
+          "海底捞麻辣火锅底料，220g袋装，中国原装进口。加入开水即可在家煮一锅川渝风味麻辣火锅，涮牛肉、蔬菜、菌菇、豆腐都合适。番茄、菌汤、牛油等其他口味视库存而定。图片仅供参考。"
+        ],
+        "zh-TW": [
+          "海底撈麻辣火鍋底料 – 220g/袋",
+          "中國進口正宗麻辣火鍋底料，65,000越南盾/袋（220g）。",
+          "海底撈麻辣火鍋底料，220g袋裝，中國原裝進口。加入滾水即可在家煮一鍋川渝風味麻辣火鍋，涮牛肉、蔬菜、菇類、豆腐都合適。番茄、菌菇、牛油等其他口味視庫存而定。圖片僅供參考。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-MARKET-DN-05",
+      "price": 50000,
+      "imageUrl": "https://images.unsplash.com/photo-1788603930622-636954e00065?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1791323067479-e4f46372f522?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/mapo-tofu-with-green-onions-zEY4cH_QADs",
+        "https://unsplash.com/photos/spicy-tofu-dish-in-paper-bowl-7jiOoZGfWkI"
+      ],
+      "meta": {
+        "packSize": "500g",
+        "unit": "hũ",
+        "origin": "Bì Huyện, Tứ Xuyên – Trung Quốc",
+        "storage": "Nơi khô mát; sau khi mở đậy kín, bảo quản tủ lạnh"
+      },
+      "t": {
+        "vi-VN": [
+          "Tương đậu bản Bì Huyện (郫县豆瓣酱) – hũ 500g",
+          "Tương ớt đậu tằm lên men Tứ Xuyên, 50.000đ/hũ 500g.",
+          "Tương đậu bản Bì Huyện – linh hồn của đậu phụ Ma Bà, thịt xào hồi oa và lẩu Tứ Xuyên – làm từ đậu tằm và ớt lên men, hũ 500g nhập khẩu Trung Quốc. Phi thơm với dầu trước khi xào để dậy màu đỏ và mùi thơm. Nhãn hiệu sản xuất có thể thay đổi theo lô nhập. Ảnh chỉ mang tính minh họa."
+        ],
+        "en-US": [
+          "Pixian Doubanjiang Chili Bean Paste (郫县豆瓣酱) – 500g tub",
+          "Fermented Sichuan broad-bean chili paste, 50,000 VND per 500g tub.",
+          "Pixian doubanjiang – the backbone of mapo tofu, twice-cooked pork and Sichuan hot pot – made from fermented broad beans and chillies, 500g tub imported from China. Fry it in oil first to release the red colour and aroma. The producer brand may vary by shipment. Photo is for illustration only."
+        ],
+        "zh-CN": [
+          "郫县豆瓣酱 – 500g/瓶",
+          "正宗四川发酵蚕豆辣酱，50,000越南盾/瓶（500g）。",
+          "郫县豆瓣酱是麻婆豆腐、回锅肉和四川火锅的灵魂，以蚕豆和辣椒发酵而成，500g装，中国进口。下锅先用油炒出红油和香味再加入食材。生产品牌可能随批次不同。图片仅供参考。"
+        ],
+        "zh-TW": [
+          "郫縣豆瓣醬 – 500g/罐",
+          "正宗四川發酵蠶豆辣醬，50,000越南盾/罐（500g）。",
+          "郫縣豆瓣醬是麻婆豆腐、回鍋肉和四川火鍋的靈魂，以蠶豆和辣椒發酵而成，500g裝，中國進口。下鍋先用油炒出紅油和香氣再加入食材。生產品牌可能隨批次不同。圖片僅供參考。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-MARKET-DN-06",
+      "price": 60000,
+      "imageUrl": "https://images.unsplash.com/photo-1499126167718-c87f5c1387e8?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1768046308289-469b32eeec5c?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/uaMwBQ_wjng",
+        "https://unsplash.com/photos/fried-dumplings-arranged-on-a-plate-with-dipping-sauce-BKHhTsvDnZw"
+      ],
+      "meta": {
+        "packSize": "500ml",
+        "unit": "chai",
+        "origin": "Trấn Giang, Giang Tô – Trung Quốc",
+        "storage": "Nơi khô mát, đậy kín nắp"
+      },
+      "t": {
+        "vi-VN": [
+          "Giấm đen Trấn Giang (镇江香醋) – chai 500ml",
+          "Giấm gạo nếp lên men kiểu Giang Tô, 60.000đ/chai 500ml.",
+          "Giấm thơm Trấn Giang ủ từ gạo nếp, màu nâu đen, vị chua dịu và thơm mạch nha, chai 500ml nhập khẩu Trung Quốc. Dùng pha nước chấm sủi cảo, tiểu long bao, trộn gỏi hoặc nấu sườn chua ngọt. Thương hiệu có thể thay đổi theo lô nhập. Ảnh chỉ mang tính minh họa."
+        ],
+        "en-US": [
+          "Zhenjiang Black Vinegar (镇江香醋) – 500ml bottle",
+          "Aged Jiangsu-style glutinous-rice vinegar, 60,000 VND per 500ml bottle.",
+          "Zhenjiang aromatic black vinegar brewed from glutinous rice – dark, mellow and malty – in a 500ml bottle imported from China. Use it for dumpling and xiaolongbao dips, cold salads or sweet-and-sour ribs. The brand may vary by shipment. Photo is for illustration only."
+        ],
+        "zh-CN": [
+          "镇江香醋 – 500ml/瓶",
+          "江苏糯米酿造香醋，60,000越南盾/瓶（500ml）。",
+          "镇江香醋以糯米酿造，色泽深褐，酸而不涩、香而微甜，500ml瓶装，中国进口。蘸饺子、小笼包，拌凉菜或做糖醋排骨都很合适。品牌可能随批次不同。图片仅供参考。"
+        ],
+        "zh-TW": [
+          "鎮江香醋 – 500ml/瓶",
+          "江蘇糯米釀造香醋，60,000越南盾/瓶（500ml）。",
+          "鎮江香醋以糯米釀造，色澤深褐，酸而不澀、香而微甜，500ml瓶裝，中國進口。沾水餃、小籠包，拌涼菜或做糖醋排骨都很合適。品牌可能隨批次不同。圖片僅供參考。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-MARKET-DN-07",
+      "price": 180000,
+      "imageUrl": "https://images.unsplash.com/photo-1765153743332-949b8d623d92?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1577016029703-cc22a7c0c28c?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1562547256-2c5ee93b60b7?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/various-cups-of-tea-and-tea-leaves-arranged-3woG_-iMA20",
+        "https://unsplash.com/photos/selective-focus-photography-of-cup-of-bowl-beside-brown-teapot-szmge3ABe94",
+        "https://unsplash.com/photos/tea-pours-into-white-teacup-oBoELXgJR1w"
+      ],
+      "meta": {
+        "packSize": "250g (gói nhỏ hút chân không)",
+        "unit": "hộp",
+        "origin": "An Khê, Phúc Kiến – Trung Quốc",
+        "storage": "Nơi khô mát, tránh ẩm và mùi lạ"
+      },
+      "t": {
+        "vi-VN": [
+          "Trà Thiết Quan Âm An Khê (安溪铁观音) – 250g",
+          "Trà ô long Phúc Kiến hương hoa lan, 180.000đ/hộp 250g.",
+          "Trà Thiết Quan Âm vùng An Khê, Phúc Kiến – dòng ô long xanh hương hoa lan, nước vàng trong, hậu ngọt. Hộp 250g chia gói nhỏ hút chân không, tiện pha ấm hoặc làm quà. Đây là loại phổ thông dùng hằng ngày, không phải hàng tuyển cao cấp. Ảnh chỉ mang tính minh họa."
+        ],
+        "en-US": [
+          "Anxi Tieguanyin Oolong Tea (安溪铁观音) – 250g",
+          "Fujian oolong with an orchid-like aroma, 180,000 VND per 250g box.",
+          "Tieguanyin from Anxi, Fujian – a light, orchid-scented oolong with a clear golden liquor and sweet finish. The 250g box is split into small vacuum-sealed sachets, handy for a teapot or as a gift. This is an everyday grade, not a premium competition grade. Photo is for illustration only."
+        ],
+        "zh-CN": [
+          "安溪铁观音 – 250g/盒",
+          "福建乌龙茶，兰花香，180,000越南盾/盒（250g）。",
+          "福建安溪铁观音，清香型乌龙，汤色金黄清亮、回甘明显。250g盒装，内为真空小包，方便冲泡或送礼。本品为日常口粮茶等级，非高端特级茶。图片仅供参考。"
+        ],
+        "zh-TW": [
+          "安溪鐵觀音 – 250g/盒",
+          "福建烏龍茶，蘭花香，180,000越南盾/盒（250g）。",
+          "福建安溪鐵觀音，清香型烏龍，茶湯金黃清亮、回甘明顯。250g盒裝，內為真空小包，方便沖泡或送禮。本品為日常口糧茶等級，非高端特級茶。圖片僅供參考。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-MARKET-DN-08",
+      "price": 160000,
+      "imageUrl": "https://images.unsplash.com/photo-1780375578701-80a4b979c323?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1769610712810-ec91babfccd3?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/a-hand-arranging-many-raw-dumplings-on-a-cloth-F7S5-V9lkX0",
+        "https://unsplash.com/photos/dumplings-cooking-in-a-pan-szlnBOdoWVw",
+        "https://unsplash.com/photos/dumpling-dishes-LR559Dcst70"
+      ],
+      "meta": {
+        "packSize": "1kg (~50 viên)",
+        "unit": "túi",
+        "filling": "Bắp cải & thịt heo",
+        "origin": "Sản xuất tại Việt Nam (công thức kiểu Hoa/Đài)",
+        "storage": "Ngăn đông ≤ -18°C; không rã đông rồi cấp đông lại"
+      },
+      "t": {
+        "vi-VN": [
+          "Sủi cảo đông lạnh nhân bắp cải thịt heo (速冻水饺) – túi 1kg",
+          "Sủi cảo kiểu Hoa nấu nhanh tại nhà, 160.000đ/túi 1kg (~50 viên).",
+          "Sủi cảo (thủy giảo) đông lạnh nhân bắp cải và thịt heo theo công thức kiểu Hoa/Đài, túi 1kg khoảng 50 viên, sản xuất tại Việt Nam. Luộc từ trạng thái đông lạnh 6–8 phút hoặc áp chảo; ăn kèm giấm đen và ớt dầu. Giao trong nội thành Đà Nẵng bằng túi giữ lạnh; cho vào ngăn đông ngay khi nhận. Ảnh chỉ mang tính minh họa."
+        ],
+        "en-US": [
+          "Frozen Pork & Cabbage Dumplings (速冻水饺) – 1kg bag",
+          "Chinese-style boiled dumplings ready in minutes, 160,000 VND per 1kg bag (~50 pieces).",
+          "Frozen shuijiao filled with cabbage and pork, made in Vietnam to a Chinese/Taiwanese-style recipe, about 50 pieces per 1kg bag. Boil straight from frozen for 6–8 minutes or pan-fry; serve with black vinegar and chili oil. Delivered within central Đà Nẵng in an insulated cool bag – please freeze immediately on arrival. Photo is for illustration only."
+        ],
+        "zh-CN": [
+          "速冻白菜猪肉水饺 – 1kg/袋",
+          "中式水饺，几分钟即可上桌，160,000越南盾/袋（1kg，约50个）。",
+          "白菜猪肉馅速冻水饺，按中式/台式配方在越南生产，每袋1kg约50个。冷冻状态直接下锅煮6–8分钟，或煎成锅贴；配香醋和辣椒油更香。岘港市区使用保冷袋配送，收货后请立即冷冻。图片仅供参考。"
+        ],
+        "zh-TW": [
+          "冷凍高麗菜豬肉水餃 – 1kg/袋",
+          "中式水餃，幾分鐘即可上桌，160,000越南盾/袋（1kg，約50顆）。",
+          "高麗菜豬肉餡冷凍水餃，依中式／台式配方在越南生產，每袋1kg約50顆。冷凍狀態直接下鍋煮6–8分鐘，或煎成鍋貼；搭配香醋與辣油更香。峴港市區以保冷袋配送，收貨後請立即冷凍。圖片僅供參考。"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    "https://havamall.vn/en/shop/ot-chung-dau-dau-den-280gr/",
+    "https://yumeifoods.com/ot-chung-dau-laoganma-vi-ga-280gr",
+    "https://giavinguyenduc.com/san-pham/ot-chung-dau-laoganma-tau-xi-280g/",
+    "https://giavinamdung.com/san-pham/ot-chung-dau-laoganma-sate-laoganma/",
+    "https://www.sendo.vn/thung-24-goi-mi-bo-ham-hieu-khang-su-phu-noi-dia-trung-mi-tom-trung-quoc-thom-ngon-41262063.html",
+    "https://www.lazada.vn/products/1-thung-mi-tom-trung-quoc-hieu-khang-su-phu-thung-24-goi-mix-ngau-nhien-my-tom-trung-quoc-sieu-ngon-date-moi-i1739622991.html",
+    "https://vn.biggo.com/s/M%C3%AC%20Khang%20S%C6%B0%20PH%E1%BB%A5",
+    "https://www.lottemart.vn/vi-bdg/product/dau-hao-lee-kum-kee-dac-biet-510g-0078895100020-p3192",
+    "https://namanmarket.com/products/dau-hao-dac-biet-lee-kum-kee-510g",
+    "https://cooponline.vn/cot-lau-cay-mala-haidilao-220g--s250512882",
+    "https://sala.emartmall.com.vn/index.php?route=product/product&path=156&product_id=51341",
+    "https://havamall.vn/en/shop/cot-lau-cay-haidilao-spicy-hot-pot-sauce-220g/",
+    "https://giaviutxinh.com/tuong-dau-ban-nap-do-500g-tuong-lam-dau-hu-tu-xuyen-pixian-douban",
+    "https://bachhoa.extra.vn/tuong-dau-ban-tu-xuyen-doubanjiang-pixian-500g-s18817344328.html",
+    "https://havamall.com/en/shop/giam-den-hengshun-500ml-%E6%81%92%E9%A1%BA%E6%96%B0b%E9%A6%99%E9%95%87%E6%B1%9F%E9%A6%99%E9%86%8B500ml/",
+    "https://yumeifoods.com/giam-den-chinkiang-tran-giang-550ml-lam-gio-heo-giam-nuoc-cham",
+    "https://www.lazada.vn/products/giam-den-chinkiang-tran-giang-550ml-lam-gio-heo-giam-nuoc-cham-i927546954.html",
+    "https://websosanh.vn/s/tr%C3%A0+thi%E1%BA%BFt+quan+%C3%A2m.htm",
+    "https://khaytradao.com/tu-khoa/tra-thiet-quan-am/",
+    "https://cuuduc.com/c031-cuuducsui-cao-bap-cai-1kg-p14780578.html",
+    "https://namanmarket.com/products/sui-cao-thit-dong-lanh-dai-phat-380g-70"
+  ],
+  "notes": "Giá đặt ở mức thị trường lẻ VN (khảo sát 10–11/2026): Lão Can Ma 280g 50–88k; Khang Sư Phụ thùng 24 gói 309–380k; dầu hào LKK Đặc Biệt 510g 137,9k (Lotte) – 154,9k (Naman); Haidilao 220g 52,8–75k; tương đậu bản Pixian 500g 40–58k; giấm Trấn Giang 500–550ml 55–65k; Thiết Quan Âm 250g phổ thông 119–175k trên Shopee (hàng tuyển chọn 600k+); sủi cảo bắp cải thịt 1kg 140–170k. Chủ cửa hàng cần: (1) chỉ bán hàng nhập khẩu chính ngạch có nhãn phụ tiếng Việt (Nghị định 43/2017, 111/2021) và hồ sơ công bố/tự công bố sản phẩm – không bán hàng xách tay không nhãn phụ; (2) xác nhận nhà cung cấp và nhãn hiệu thực tế cho tương đậu bản, giấm đen và trà (để ghi đúng xuất xứ); (3) sủi cảo đông lạnh cần chuỗi lạnh (tủ đông + túi giữ lạnh) – giá tham chiếu từ sản phẩm 1kg/50 viên của Cửu Đức, nếu nhập nhà cung cấp khác phải sửa quy cách; (4) ảnh là ảnh minh họa chung trên Unsplash, không phải ảnh sản phẩm/thương hiệu; tên thương hiệu chỉ dùng để mô tả hàng hóa thật, không ngụ ý ZhaoXi là đại lý chính thức."
+}
