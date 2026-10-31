@@ -42,7 +42,7 @@ export default function ServicesHub() {
   }, [modules.data, locale, group, query]);
 
   return (
-    <Screen>
+    <Screen tab>
       <ScrollView contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }} keyboardShouldPersistTaps="handled">
         <Header title={c.title} subtitle={c.subtitle} back={false} />
         <View style={{ paddingHorizontal: 14, gap: 14, paddingTop: 6 }}>

@@ -6,7 +6,7 @@ import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { GlassView } from "expo-glass-effect";
 import { Alert, Platform, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { logout } from "../api/client";
 import { useCart } from "../cart";
@@ -151,13 +151,17 @@ export function Dock() {
   const slot = useSharedValue(Math.max(index, 0));
   useEffect(() => { if (index >= 0) slot.value = withSpring(index, { damping: 18, stiffness: 210, mass: 0.8 }); }, [index, slot]);
   const lens = useAnimatedStyle(() => ({ transform: [{ translateX: slot.value * ITEM_WIDTH }] }));
-  // Tab roots only: once the user drills into a pushed screen the dock gets out of the way.
-  if (index < 0 || dockItems[index].href !== pathname) return null;
+  // Tab roots + the services hub only. The dock stays mounted and just slides away on
+  // pushed screens: re-creating the Liquid Glass views on every return made it appear late.
+  const visible = (index >= 0 && dockItems[index].href === pathname) || pathname === "/services";
+  const shown = useSharedValue(visible ? 1 : 0);
+  useEffect(() => { shown.value = withTiming(visible ? 1 : 0, { duration: visible ? 220 : 160 }); }, [visible, shown]);
+  const slide = useAnimatedStyle(() => ({ opacity: shown.value, transform: [{ translateY: (1 - shown.value) * 110 }] }));
   const labels = { home: t.tabs.home, orders: t.tabs.orders, messages: t.tabs.messages, profile: t.tabs.profile };
   // The glass is a non-touchable backdrop; the buttons sit in plain views above it.
   // Pressables nested inside GlassView let taps fall through to the page on iOS 26+.
   return (
-    <View pointerEvents="box-none" style={[styles.dockWrap, { bottom: Math.max(insets.bottom - 14, 10) }]}>
+    <Animated.View pointerEvents={visible ? "box-none" : "none"} style={[styles.dockWrap, { bottom: Math.max(insets.bottom - 14, 10) }, slide]}>
       <View style={styles.dockRow}>
         <View style={[styles.dockPill, !LIQUID_GLASS && shadow("dock")]}>
           <View pointerEvents="none" style={StyleSheet.absoluteFill}><GlassSurface style={[StyleSheet.absoluteFill, { borderRadius: 32 }]} /></View>
@@ -173,7 +177,7 @@ export function Dock() {
           </Pressable>
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 

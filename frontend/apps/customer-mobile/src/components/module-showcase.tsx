@@ -187,7 +187,6 @@ const RANK_STEP = WIDE_W + 14;
 /** Best value: landscape cards that lean in 3D by their place in the row, with an inset photo and a price tag. */
 export function RankedRow({ items, module }: { items: Service[]; module: string }) {
   const { locale } = useI18n();
-  const { width } = useWindowDimensions();
   const ranked = useMemo(() => [...items].filter((x) => Number(x.priceFrom || 0) > 0).sort((a, b) => Number(a.priceFrom) - Number(b.priceFrom)).slice(0, 6), [items]);
   const row = useAnimatedRef<Animated.ScrollView>();
   const x = useSharedValue(0);
@@ -199,7 +198,6 @@ export function RankedRow({ items, module }: { items: Service[]; module: string 
     row.current?.scrollTo({ x: at.current * RANK_STEP, animated: true });
   }, AUTOPLAY_MS + 600);
   if (ranked.length < 2) return null;
-  const side = (width - WIDE_W) / 2;
   return (
     <View style={{ marginTop: 26 }}>
       <Text style={styles.rowTitle}>{copy[locale].best}</Text>
@@ -213,7 +211,7 @@ export function RankedRow({ items, module }: { items: Service[]; module: string 
         scrollEventThrottle={16}
         onScrollBeginDrag={auto.hold}
         onMomentumScrollEnd={(event) => { at.current = Math.round(event.nativeEvent.contentOffset.x / RANK_STEP); auto.release(); }}
-        contentContainerStyle={{ paddingHorizontal: side, paddingTop: 18, paddingBottom: 8, gap: 14 }}
+        contentContainerStyle={{ paddingLeft: 18, paddingRight: 18, paddingTop: 18, paddingBottom: 8, gap: 14 }}
       >
         {ranked.map((item, i) => <WideCard key={item.id} item={item} module={module} index={i} x={x} />)}
       </Animated.ScrollView>
@@ -225,15 +223,16 @@ function WideCard({ item, module, index, x }: { item: Service; module: string; i
   const { locale } = useI18n();
   const meta = cardMeta(item, module, locale);
   const unit = priceUnit(module, locale);
-  // Posters lean towards each other: left ones turn their face right, right ones turn it left,
-  // the one in the middle stands straight (a shallow concave arc).
+  // Posters lean towards each other in pairs (1 faces right, 2 faces left, 3 right…),
+  // like a row of standing cards; the one at the start of the row lifts slightly.
+  const facing = index % 2 === 0 ? -1 : 1; // -1 faces right, +1 faces left
   const lean = useAnimatedStyle(() => {
-    const d = (index * RANK_STEP - x.value) / RANK_STEP; // <0 left of centre
+    const a = Math.abs((index * RANK_STEP - x.value) / RANK_STEP);
     return {
       transform: [
         { perspective: 600 },
-        { rotateY: `${interpolate(d, [-1.5, -1, 0, 1, 1.5], [-34, -28, 0, 28, 34], Extrapolation.CLAMP)}deg` },
-        { scale: interpolate(Math.abs(d), [0, 1], [1, 0.9], Extrapolation.CLAMP) },
+        { rotateY: `${facing * 18}deg` },
+        { scale: interpolate(a, [0, 1], [1, 0.95], Extrapolation.CLAMP) },
       ],
     };
   });
