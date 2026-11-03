@@ -88,7 +88,8 @@ function deviceName() {
 // ---------------------------------------------------------------------------
 async function raw(path: string, init: RequestInit = {}) {
   const headers: Record<string, string> = { accept: "application/json" };
-  if (init.body !== undefined) headers["content-type"] = "application/json";
+  // Multipart uploads set their own boundary header.
+  if (init.body !== undefined && !(init.body instanceof FormData)) headers["content-type"] = "application/json";
   if (auth?.accessToken) headers.authorization = `Bearer ${auth.accessToken}`;
   return fetch(`${API_URL}${path}`, { ...init, headers: { ...headers, ...(init.headers as Record<string, string> | undefined) } });
 }
