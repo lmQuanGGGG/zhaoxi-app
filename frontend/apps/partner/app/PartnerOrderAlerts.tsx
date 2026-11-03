@@ -5,6 +5,7 @@ import {useZhaoXiLocale} from "@zhaoxi/i18n";
 import {useVisiblePolling} from "@zhaoxi/hooks";
 import type{ServiceRequestRow}from"@zhaoxi/sdk";
 import {IosPersonIcon,IosPhoneIcon} from "./IosIcons";
+import {ServiceOrderFacts,newOrderLabel,orderKindOf,runServiceOrderAction} from "./PartnerServiceOrder";
 const copy={
  "zh-CN":{newOrder:"新订单",customer:"客户",customerPhone:"客户电话",address:"配送地址",total:"订单总额",accept:"接单",reject:"拒绝",eta:"预计完成时间",minutes:"分钟",confirm:"确认接单",cancel:"返回",auto:"倒计时结束后，餐品会标记为已准备，等待外部配送安排。",shipVia:"指定配送",customerSelfPay:"客户自付配送费",authExpired:"登录状态已过期，请重新登录后确认订单。",confirmFailed:"无法确认订单，请重试。",confirming:"正在确认…"},
  "zh-TW":{newOrder:"新訂單",customer:"客戶",customerPhone:"客戶電話",address:"配送地址",total:"訂單總額",accept:"接單",reject:"拒絕",eta:"預計完成時間",minutes:"分鐘",confirm:"確認接單",cancel:"返回",auto:"倒數結束後，餐點會標記為已準備，等待外部配送安排。",shipVia:"指定配送",customerSelfPay:"客戶自付運費",authExpired:"登入狀態已過期，請重新登入後確認訂單。",confirmFailed:"無法確認訂單，請再試一次。",confirming:"正在確認…"},
@@ -60,13 +61,27 @@ function playLoudOrderChime() {
 }
 
 export default function PartnerOrderAlerts(){const session=useZhaoXiSession();const{locale}=useZhaoXiLocale();const t=copy[locale];const orgId=session?.organizationId||"";const[order,setOrder]=useState<ServiceRequestRow|null>(null);const[step,setStep]=useState<"order"|"eta">("order");const[eta,setEta]=useState(15);const[confirming,setConfirming]=useState(false);const[notice,setNotice]=useState("");const seen=useRef(new Set<string>());
- const poll=useCallback(async()=>{if(!orgId)return;try{const r=await fetch(`/api/platform-requests?scope=operations&organizationId=${encodeURIComponent(orgId)}&locale=${locale}`,{cache:"no-store"});const p=await r.json().catch(()=>null);const next=(Array.isArray(p?.data)?p.data:[]).find((x:ServiceRequestRow)=>x.status==="assigned"&&x.details?.deliveryFulfillmentMode==="external_manual"&&(x.details?.paymentMethod!=="bank_transfer"||Boolean(x.details?.paymentCustomerReportedAt))&&!seen.current.has(x.id));if(next&&!order){setOrder(next);window.dispatchEvent(new CustomEvent("zhaoxi:new-order",{detail:next}))}}catch{}},[orgId,locale,order]);
+ const poll=useCallback(async()=>{if(!orgId)return;try{const r=await fetch(`/api/platform-requests?scope=operations&organizationId=${encodeURIComponent(orgId)}&locale=${locale}`,{cache:"no-store"});const p=await r.json().catch(()=>null);const next=(Array.isArray(p?.data)?p.data:[]).find((x:ServiceRequestRow)=>x.status==="assigned"&&(orderKindOf(x)!=="food_delivery"||x.details?.deliveryFulfillmentMode==="external_manual")&&(x.details?.paymentMethod!=="bank_transfer"||Boolean(x.details?.paymentCustomerReportedAt))&&!seen.current.has(x.id));if(next&&!order){setOrder(next);window.dispatchEvent(new CustomEvent("zhaoxi:new-order",{detail:next}))}}catch{}},[orgId,locale,order]);
  useVisiblePolling(poll,{enabled:Boolean(orgId),intervalMs:15_000});
  useEffect(()=>{const open=(event:Event)=>{const next=(event as CustomEvent<ServiceRequestRow>).detail;if(next){setOrder(next);setStep("eta")}};window.addEventListener("zhaoxi-open-order",open);return()=>window.removeEventListener("zhaoxi-open-order",open)},[]);
  useEffect(()=>{if(!order)return;playLoudOrderChime();const chimeTimer=setInterval(()=>playLoudOrderChime(),3200);return()=>clearInterval(chimeTimer)},[order]);
  useEffect(()=>{const unlock=()=>{try{const AudioCtx=window.AudioContext||(window as unknown as {webkitAudioContext:typeof AudioContext}).webkitAudioContext;if(AudioCtx){const c=new AudioCtx();c.resume().then(()=>c.close()).catch(()=>{})}}catch{}};window.addEventListener("click",unlock,{once:true});window.addEventListener("touchstart",unlock,{once:true});window.addEventListener("keydown",unlock,{once:true});return()=>{window.removeEventListener("click",unlock);window.removeEventListener("touchstart",unlock);window.removeEventListener("keydown",unlock)}},[]);
  function close(mark=true){if(order&&mark)seen.current.add(order.id);setOrder(null);setStep("order");setEta(15)}
- async function reject(){if(!order)return;await fetch(`/api/partner-fulfillment/${order.id}`,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({action:"cancelled",note:"partner_cancelled_before_accept"})});close()}
+ async function reject(){if(!order)return;if(orderKindOf(order)!=="food_delivery"){await runServiceOrderAction(order,"reject",orgId).catch(()=>undefined);window.dispatchEvent(new CustomEvent("zhaoxi:fulfillment-updated",{detail:{id:order.id,action:"reject"}}));close();return}await fetch(`/api/partner-fulfillment/${order.id}`,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({action:"cancelled",note:"partner_cancelled_before_accept"})});close()}
+ // Non-food orders have no preparation ETA: accepting is a single step on the module's own endpoint.
+ async function acceptService(){
+  if(!order||confirming)return;
+  const pendingOrder=order;
+  setConfirming(true);setNotice("");
+  try{
+   await runServiceOrderAction(pendingOrder,"accept",orgId);
+   close();
+   window.dispatchEvent(new CustomEvent("zhaoxi:fulfillment-updated",{detail:{id:pendingOrder.id,action:"accept"}}));
+  }catch(error){
+   const message=error instanceof Error?error.message:"";
+   setNotice(/401|403|AUTH/.test(message)?t.authExpired:message||t.confirmFailed);
+  }finally{setConfirming(false)}
+ }
  async function confirm(){
   if(!order||confirming)return;
   const pendingOrder=order;
@@ -97,7 +112,7 @@ export default function PartnerOrderAlerts(){const session=useZhaoXiSession();co
    setNotice(t.confirmFailed);
   }finally{setConfirming(false)}
  }
- if(!order)return null;const d=order.details||{};const bankTransferReported=d.paymentMethod==="bank_transfer"&&Boolean(d.paymentCustomerReportedAt);
+ if(!order)return null;const d=order.details||{};const kind=orderKindOf(order);const isService=kind!=="food_delivery";const bankTransferReported=d.paymentMethod==="bank_transfer"&&Boolean(d.paymentCustomerReportedAt);
  const displayPhone = (typeof d.recipientPhone === "string" && d.recipientPhone.trim()) ? d.recipientPhone.trim() : (order.customerPhone || "");
  const isFriend = Boolean(typeof d.recipientPhone === "string" && d.recipientPhone.trim() && d.recipientPhone.trim() !== order.customerPhone);
  return <div className="zx-order-modal-backdrop" role="dialog" aria-modal="true">
@@ -105,7 +120,7 @@ export default function PartnerOrderAlerts(){const session=useZhaoXiSession();co
     {step==="order"?<>
       <div className="zx-order-bell" onClick={playLoudOrderChime} style={{cursor:"pointer"}} title="Bấm để thử chuông">🔔</div>
       <small>ZHAOXI PARTNER</small>
-      <h2>{bankTransferReported?(locale==="vi-VN"?"Khách đã báo chuyển khoản":locale==="en-US"?"Customer reported a transfer":locale==="zh-TW"?"客戶已回報轉帳":"顾客已报告转账"):t.newOrder}</h2>
+      <h2>{bankTransferReported?(locale==="vi-VN"?"Khách đã báo chuyển khoản":locale==="en-US"?"Customer reported a transfer":locale==="zh-TW"?"客戶已回報轉帳":"顾客已报告转账"):isService?newOrderLabel(kind,locale):t.newOrder}</h2>
       <strong className="zx-order-code">{order.requestCode}</strong>
       <h3>{order.serviceName||order.title}</h3>
       {bankTransferReported&&<p style={{margin:"0 0 10px",padding:"10px 12px",borderRadius:12,background:"#fff7ed",color:"#9a3412",fontWeight:800}}>{locale==="vi-VN"?"Khách báo đã chuyển khoản. Hãy kiểm tra tiền vào tài khoản rồi nhận đơn.":locale==="en-US"?"The customer reported a transfer. Check the incoming payment before accepting.":locale==="zh-TW"?"客戶已回報轉帳；請確認款項入帳後再接單。":"顾客已报告转账；请确认款项到账后再接单。"}</p>}
@@ -118,10 +133,12 @@ export default function PartnerOrderAlerts(){const session=useZhaoXiSession();co
         </div>
         {order.addressText&&<div style={{fontSize:13,color:"#1F2937",lineHeight:1.4}}>📍 <b>{t.address}:</b> {order.addressText}</div>}
         {Boolean(d.deliveryProvider)&&<div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"4px 10px",borderRadius:999,background:d.deliveryProvider==="grab"?"#dcfce7":"#ccfbf1",color:d.deliveryProvider==="grab"?"#15803d":"#0f766e",fontWeight:850,fontSize:13,width:"fit-content"}}><img src={d.deliveryProvider==="grab"?"/couriers/grab.png":"/couriers/green-sm.png"} alt={d.deliveryProvider==="grab"?"Grab":"Green SM"} style={{height:15,width:"auto",objectFit:"contain",verticalAlign:"middle"}}/><span>{t.shipVia} {d.deliveryProvider==="grab"?"Grab":"Xanh SM"} ({t.customerSelfPay})</span></div>}
-        {d.totalAmount!=null&&<div style={{fontSize:14,fontWeight:800,color:"#078343",marginTop:2}}>💰 {t.total}: {money(d.totalAmount)}</div>}
+        {!isService&&d.totalAmount!=null&&<div style={{fontSize:14,fontWeight:800,color:"#078343",marginTop:2}}>💰 {t.total}: {money(d.totalAmount)}</div>}
+        {isService&&<ServiceOrderFacts row={order} locale={locale}/>}
       </div>
+      {isService&&notice&&<p role="alert" style={{margin:"0 0 10px",padding:"9px 11px",borderRadius:10,background:"#fff1f2",color:"#b42318",fontSize:13,fontWeight:700}}>{notice}</p>}
       <div className="zx-order-actions">
-        <button className="primary" onClick={()=>setStep("eta")}>{t.accept}</button>
+        <button className="primary" disabled={confirming} onClick={()=>isService?void acceptService():setStep("eta")}>{isService&&confirming?t.confirming:t.accept}</button>
         <button className="danger" onClick={()=>void reject()}>{t.reject}</button>
       </div>
     </>:<>
