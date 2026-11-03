@@ -42,6 +42,51 @@ const sampleEdgeColors = `(function () {
   check(); setInterval(check, 500); window.addEventListener("scroll", check, { passive: true });
 })(); true;`;
 
+// Hold the left or right third of a playing video for ~0.4 s to watch at 2x (like short-video apps);
+// lifting the finger restores the speed. The click that ends the hold is swallowed so the site's own
+// tap (pause / show controls) does not fire too.
+const holdForDoubleSpeed = `(function () {
+  var timer = null, boosted = [], swallow = false, badge = null;
+  function playingVideos() {
+    return Array.prototype.filter.call(document.querySelectorAll("video"), function (v) { return !v.paused && !v.ended; });
+  }
+  function showBadge(on) {
+    if (!badge) {
+      badge = document.createElement("div");
+      badge.textContent = "2x \u25B6\u25B6";
+      badge.style.cssText = "position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:2147483647;padding:6px 14px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font:700 14px -apple-system,system-ui;letter-spacing:.5px;pointer-events:none;transition:opacity .15s";
+      document.body.appendChild(badge);
+    }
+    badge.style.opacity = on ? "1" : "0";
+  }
+  function stop() {
+    clearTimeout(timer); timer = null;
+    if (boosted.length) {
+      boosted.forEach(function (b) { b.v.playbackRate = b.rate; });
+      boosted = []; showBadge(false); swallow = true;
+      setTimeout(function () { swallow = false; }, 400);
+    }
+  }
+  document.addEventListener("touchstart", function (e) {
+    if (e.touches.length !== 1) return stop();
+    var x = e.touches[0].clientX, w = window.innerWidth;
+    if (x > w * 0.3 && x < w * 0.7) return;
+    timer = setTimeout(function () {
+      var vids = playingVideos();
+      if (!vids.length) return;
+      boosted = vids.map(function (v) { var b = { v: v, rate: v.playbackRate }; v.playbackRate = 2; return b; });
+      showBadge(true);
+    }, 400);
+  }, { passive: true, capture: true });
+  document.addEventListener("touchmove", function () { if (!boosted.length) { clearTimeout(timer); timer = null; } }, { passive: true, capture: true });
+  document.addEventListener("touchend", stop, { capture: true });
+  document.addEventListener("touchcancel", stop, { capture: true });
+  document.addEventListener("click", function (e) { if (swallow) { e.stopPropagation(); e.preventDefault(); swallow = false; } }, true);
+  var style = document.createElement("style");
+  style.textContent = "video{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}";
+  document.head.appendChild(style);
+})(); true;`;
+
 /** Perceived brightness of an \`rgb()/rgba()\` string, 0–255. */
 function brightness(color: string) {
   const [r = 0, g = 0, b = 0] = (color.match(/\d+(\.\d+)?/g) || []).map(Number);
@@ -83,7 +128,7 @@ export default function EmbedScreen() {
           // Framed between the notch and the home bar: the site pins its player controls and sheets to
           // the bottom without safe-area padding, and a content inset would push them off screen.
           style={[styles.web, { marginTop: insets.top, marginBottom: insets.bottom }]}
-          injectedJavaScript={sampleEdgeColors}
+          injectedJavaScript={`${sampleEdgeColors}\n${holdForDoubleSpeed}`}
           onMessage={(event) => {
             try {
               const data = JSON.parse(event.nativeEvent.data) as { top?: string; bottom?: string };
@@ -111,8 +156,8 @@ export default function EmbedScreen() {
       <View pointerEvents="none" style={[styles.band, { bottom: 0, height: insets.bottom, backgroundColor: edges.bottom }]} />
       <LinearGradient pointerEvents="none" colors={[withAlpha(edges.bottom, 0), withAlpha(edges.bottom, 0.85)]} style={[styles.fade, { bottom: insets.bottom }]} />
       {loading && !failed ? <ActivityIndicator style={StyleSheet.absoluteFill} color={colors.header} /> : null}
-      {/* Level with the site's tab row, whose right side is empty, so it hides no controls. */}
-      <View style={[styles.pill, { top: insets.top + 58 }]}>
+      {/* Just under the status bar, top right, where it is always in reach. */}
+      <View style={[styles.pill, { top: insets.top + 6 }]}>
         <BlurView intensity={40} tint="dark" style={[StyleSheet.absoluteFill, styles.pillBlur]} />
         {/* Back walks the site's own history first, then leaves the screen. */}
         <Pressable accessibilityLabel="Back" hitSlop={6} onPress={() => (canGoBack ? web.current?.goBack() : close())} style={({ pressed }) => [styles.pillButton, pressed && styles.pressed]}>
