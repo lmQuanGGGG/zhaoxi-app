@@ -1,4 +1,5 @@
-import { sql } from "drizzle-orm";
+import { sql, type SQL } from "drizzle-orm";
+import { getDb } from "@/db";
 import { organizations } from "@/db/schema";
 
 // Partners may store their bank QR inline as a data: URI (~300 KB). Customer
@@ -18,6 +19,19 @@ export function publicOrganizationMetadata(requestUrl: string) {
       ${new URL("/api/organization-payment-qr", requestUrl).href}::text || '?id=' || ${organizations.id}::text
       || '&v=' || md5(${organizations.metadata}->>'paymentQrUrl')
     )) else ${organizations.metadata} end`;
+}
+
+/**
+ * publicOrganizationMetadata() for every organization matching `where`, keyed by
+ * id. The QR check and hash read the whole metadata value, so list endpoints
+ * compute it once per organization here instead of once per joined service row
+ * (240 rows x 300 KB took ~150 ms of database time), then attach it in JS.
+ */
+export async function loadPublicOrganizationMetadata(requestUrl: string, where: SQL | undefined) {
+  const rows = await getDb()
+    .select({ id: organizations.id, metadata: publicOrganizationMetadata(requestUrl) })
+    .from(organizations).where(where);
+  return new Map(rows.map((row) => [row.id, row.metadata]));
 }
 
 /**

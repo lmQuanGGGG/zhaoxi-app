@@ -100,3 +100,37 @@ customer-recommendations 5,5–8,5 s, services 1,0–1,9 s, health 0,88 s.
   1 lần/ngày, nên chỉ nên chuyển sang cron (mỗi phút) khi project ở gói Pro.
 - `checked` trong kết quả `POST /api/payment-notification-automation/evaluate` giờ đếm số đơn có ticket còn mở,
   không còn đếm toàn bộ đơn.
+
+## Đợt 2 (2026-11-04): API nóng của app khách sau khi chuyển sang sin1
+
+Production lúc đo (`f1c842f`) mới có `vercel.json` (sin1), **chưa** có các commit tối ưu ở trên. Từ Việt Nam, gọi qua
+HTTP: `customer-nearby-services?limit=100&lat&lng` mất 1,3–2,6 s và nặng **17,7 MB** khi chưa nén, trong đó 98%
+là `paymentQrUrl` base64.
+
+Thay đổi trong đợt này:
+
+| Vấn đề | Sửa | File |
+|---|---|---|
+| Phép thay QR trong SQL chạy cho **từng dòng dịch vụ**: regex và `md5` trên 300 KB × 240 dòng, tốn 152 ms DB mỗi request | Tính một lần cho mỗi đối tác bằng truy vấn riêng chạy song song, rồi gắn vào từng dòng (truy vấn chính còn 0,2 ms) | `organization-metadata-projection.ts` (`loadPublicOrganizationMetadata`), `customer-location-service.ts`, `app/api/services/route.ts` |
+| `nearby` có lat/lng chờ reverse-geocode Photon (máy chủ ở Đức) trước khi truy vấn; không có timeout, nên khi Photon không phản hồi request treo 9–25 s | `nearby` không chờ nhãn địa chỉ: có cache thì dùng, không thì làm nóng cache ở nền (PWA và app mobile đều không đọc `context` của `nearby`). Photon có timeout 1,2 s; truy vấn địa chỉ đã lưu chạy song song với truy vấn danh mục | `customer-location-service.ts` |
+| `unified-service-discovery-service.search()` (home-feed, gợi ý ở trang dịch vụ, `public/discovery`) đọc **toàn bộ** services, translations và organizations, kể cả QR, ở mỗi lần gọi | Chỉ lấy các cột và 4 khoá metadata cần dùng; cache catalog 30 s theo instance | `unified-service-discovery-service.ts` |
+
+Đo trên Postgres local (212 dịch vụ, 9 đối tác, 6 đối tác có QR ~317 KB, 20k đơn), proxy RTT 2 ms (mô phỏng sin1↔Neon),
+production build, p50 của 7 lần gọi, có Bearer token khách. Máy đo đang tải nặng (load average 40–180), nên số
+tuyệt đối sẽ thấp hơn khi máy rảnh.
+
+| Endpoint | Trước (`origin/main`) | Sau | Payload trước → sau |
+|---|---:|---:|---:|
+| `customer-nearby-services?module=food&limit=20` | 1714 ms | 36 ms | 5,3 MB → 23 KB |
+| `customer-nearby-services?limit=100&lat&lng` | 2025 ms (p90 6,4 s) | 40 ms | 8–30 MB → 116 KB |
+| `customer-home-feed` | 368 ms | 50 ms | 16 KB |
+| `customer-recommendations` (đã đăng nhập) | 1314 ms | 28 ms | 6 KB |
+| `customer-unread-summary` | 375 ms | 57 ms | — |
+| `customer-notifications` | 169 ms | 38 ms | 4 KB |
+| `service-requests?mine=1` | 671 ms | 31 ms | 6 KB |
+| `customer-messages` | 198 ms | 62 ms | — |
+| `public/discovery` | 207 ms | 46 ms | 27 KB |
+
+Tôi so sánh JSON giữa `origin/main` và nhánh trên cùng DB cho 12 request: giống hệt nhau, có hai ngoại lệ.
+`paymentQrUrl` giờ là URL. Với `nearby`, 97/100 mục giống hệt; 3 mục khác là do truy vấn gốc dùng `LIMIT 240` không có
+`ORDER BY`, nên tập dòng không cố định. Production chỉ có khoảng 200 dịch vụ nên không bị ảnh hưởng.
