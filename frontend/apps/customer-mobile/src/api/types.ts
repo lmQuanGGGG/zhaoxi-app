@@ -211,7 +211,9 @@ export type UnreadSummary = { messages: number; notifications: number; total: nu
 
 export type ThreadKind = "support" | "housing" | "travel" | "payment" | "order";
 export type MessageThreadSummary = { id: string; kind: ThreadKind; title: string; subtitle?: string; lastMessage: string; lastMessageAt: string; unreadCount: number; status?: string; requestId?: string; moduleCode?: string };
-export type ChatMessage = { id: string; body: string; createdAt: string; senderRole?: string; sender?: string; customerReadAt?: string | null; clientMessageId?: string | null; pending?: boolean };
+/** A chat photo; `url` is a backend path that needs the bearer token. */
+export type ChatAttachment = { id: string; url: string; mimeType: string; width: number | null; height: number | null };
+export type ChatMessage = { id: string; body: string; createdAt: string; senderRole?: string; sender?: string; customerReadAt?: string | null; clientMessageId?: string | null; attachments?: ChatAttachment[]; pending?: boolean };
 /** Order threads also carry the order reference and the store's read cursor. */
 export type MessageThread = { thread: { id: string; kind: ThreadKind; title: string; status?: string; subtitle?: string; requestId?: string; requestCode?: string; moduleCode?: string; canSend?: boolean; counterpartReadAt?: string | null }; messages: ChatMessage[] };
 

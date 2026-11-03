@@ -1,7 +1,7 @@
 import { after } from "next/server";
-import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { modules, orderConversations, orderMessages, organizationMembers, organizations, serviceRequests } from "@/db/schema";
+import { modules, orderConversations, orderMessageAttachments, orderMessages, organizationMembers, organizations, serviceRequests } from "@/db/schema";
 import { customerMobilePushService } from "@/lib/services/customer-mobile-push-service";
 import { partnerOrderMessagePushService } from "@/lib/services/partner-order-message-push-service";
 
@@ -12,13 +12,26 @@ import { partnerOrderMessagePushService } from "@/lib/services/partner-order-mes
 
 export type OrderChatSide = "customer" | "partner";
 
+export type OrderChatAttachment = {
+  id: string;
+  /** Path on the backend; fetch it with the same bearer token as the chat. */
+  url: string;
+  mimeType: string;
+  width: number | null;
+  height: number | null;
+  sizeBytes: number;
+};
+
 export type OrderChatMessage = {
   id: string;
   senderRole: OrderChatSide;
   body: string;
   createdAt: string;
   clientMessageId: string | null;
+  attachments: OrderChatAttachment[];
 };
+
+export type OrderChatUpload = { bytes: Uint8Array; width?: unknown; height?: unknown };
 
 export type OrderChatThread = {
   thread: {
@@ -65,6 +78,12 @@ type OrderRow = {
 
 const MAX_BODY = 2000;
 const PAGE = 200;
+export const MAX_ATTACHMENTS = 5;
+export const MAX_ATTACHMENT_BYTES = 2 * 1024 * 1024;
+/** Uploaded but not yet sent photos one person may hold in a conversation (24h). */
+const MAX_PENDING_UPLOADS = 20;
+export const PHOTO_PREVIEW = "[Ảnh]";
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const EPOCH = sql`'epoch'::timestamptz`;
 
 function clean(value: unknown) {
@@ -85,8 +104,53 @@ function iso(value: Date | null | undefined) {
   return value ? value.toISOString() : null;
 }
 
-function toMessage(row: typeof orderMessages.$inferSelect): OrderChatMessage {
-  return { id: row.id, senderRole: row.senderRole as OrderChatSide, body: row.body, createdAt: row.createdAt.toISOString(), clientMessageId: row.clientMessageId };
+const attachmentColumns = {
+  id: orderMessageAttachments.id,
+  messageId: orderMessageAttachments.messageId,
+  mimeType: orderMessageAttachments.mimeType,
+  width: orderMessageAttachments.width,
+  height: orderMessageAttachments.height,
+  sizeBytes: orderMessageAttachments.sizeBytes,
+};
+type AttachmentRow = { id: string; messageId: string | null; mimeType: string; width: number | null; height: number | null; sizeBytes: number };
+
+function toAttachment(row: AttachmentRow): OrderChatAttachment {
+  return { id: row.id, url: `/api/order-chat-attachments/${row.id}`, mimeType: row.mimeType, width: row.width, height: row.height, sizeBytes: row.sizeBytes };
+}
+
+function toMessage(row: typeof orderMessages.$inferSelect, attachments: AttachmentRow[] = []): OrderChatMessage {
+  return {
+    id: row.id,
+    senderRole: row.senderRole as OrderChatSide,
+    body: row.body,
+    createdAt: row.createdAt.toISOString(),
+    clientMessageId: row.clientMessageId,
+    attachments: attachments.filter((a) => a.messageId === row.id).map(toAttachment),
+  };
+}
+
+/** The real image type from the file's magic bytes; the client's MIME type is not trusted. */
+function sniffImage(bytes: Uint8Array): "image/jpeg" | "image/png" | "image/webp" | "heic" | null {
+  const ascii = (from: number, to: number) => String.fromCharCode(...bytes.subarray(from, to));
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
+  if (bytes[0] === 0x89 && ascii(1, 4) === "PNG") return "image/png";
+  if (ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP") return "image/webp";
+  if (ascii(4, 8) === "ftyp" && /^(heic|heix|hevc|hevx|heim|heis|mif1|msf1)$/.test(ascii(8, 12))) return "heic";
+  return null;
+}
+
+function dimension(value: unknown) {
+  const n = Math.round(Number(value));
+  return Number.isFinite(n) && n > 0 && n <= 20000 ? n : null;
+}
+
+function attachmentIdsOf(value: unknown) {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value)) throw new Error("ATTACHMENT_INVALID");
+  const ids = [...new Set(value.map((x) => String(x)))];
+  if (ids.length > MAX_ATTACHMENTS) throw new Error("ATTACHMENT_LIMIT");
+  if (ids.some((id) => !UUID.test(id))) throw new Error("ATTACHMENT_INVALID");
+  return ids;
 }
 
 /** Runs after the HTTP response when called inside a request, otherwise immediately. */
@@ -170,6 +234,9 @@ export class OrderChatService {
     const rows = conversation
       ? await getDb().select().from(orderMessages).where(eq(orderMessages.conversationId, conversation.id)).orderBy(desc(orderMessages.createdAt)).limit(PAGE)
       : [];
+    const attachments = rows.length
+      ? await getDb().select(attachmentColumns).from(orderMessageAttachments).where(inArray(orderMessageAttachments.messageId, rows.map((m) => m.id)))
+      : [];
     return {
       thread: {
         id: `order:${order.id}`,
@@ -183,28 +250,59 @@ export class OrderChatService {
         canSend: Boolean(order.customerId && order.organizationId),
         counterpartReadAt: iso(side === "customer" ? conversation?.partnerLastReadAt : conversation?.customerLastReadAt),
       },
-      messages: rows.reverse().map(toMessage),
+      messages: rows.reverse().map((row) => toMessage(row, attachments)),
     };
   }
 
-  private async send(side: OrderChatSide, senderUserId: string, order: OrderRow, bodyInput: unknown, clientIdInput?: unknown) {
+  private async messageWithAttachments(row: typeof orderMessages.$inferSelect) {
+    const attachments = await getDb().select(attachmentColumns).from(orderMessageAttachments).where(eq(orderMessageAttachments.messageId, row.id));
+    return toMessage(row, attachments);
+  }
+
+  private async send(side: OrderChatSide, senderUserId: string, order: OrderRow, bodyInput: unknown, clientIdInput?: unknown, attachmentInput?: unknown) {
     const body = clean(bodyInput);
-    if (!body) throw new Error("ORDER_MESSAGE_REQUIRED");
+    const attachmentIds = attachmentIdsOf(attachmentInput);
+    if (!body && !attachmentIds.length) throw new Error("ORDER_MESSAGE_REQUIRED");
     const clientMessageId = cleanClientId(clientIdInput);
     const conversation = await this.ensureConversation(order);
     const db = getDb();
-    const [inserted] = await db
-      .insert(orderMessages)
-      .values({ conversationId: conversation.id, senderRole: side, senderUserId, body, clientMessageId })
-      .onConflictDoNothing()
-      .returning();
     // A retried send (same clientMessageId) returns the original and does not notify again.
-    if (!inserted) {
+    const existing = async () => {
       const [original] = clientMessageId
         ? await db.select().from(orderMessages).where(and(eq(orderMessages.conversationId, conversation.id), eq(orderMessages.clientMessageId, clientMessageId))).limit(1)
         : [];
+      return original ? this.messageWithAttachments(original) : null;
+    };
+    const retried = await existing();
+    if (retried) return retried;
+    // The message and its photos land together: photos must be this sender's own
+    // unsent uploads in this conversation, otherwise nothing is written.
+    const inserted = await db.transaction(async (tx) => {
+      const [message] = await tx
+        .insert(orderMessages)
+        .values({ conversationId: conversation.id, senderRole: side, senderUserId, body, clientMessageId })
+        .onConflictDoNothing()
+        .returning();
+      if (!message) return null;
+      if (attachmentIds.length) {
+        const claimed = await tx
+          .update(orderMessageAttachments)
+          .set({ messageId: message.id })
+          .where(and(
+            inArray(orderMessageAttachments.id, attachmentIds),
+            eq(orderMessageAttachments.conversationId, conversation.id),
+            eq(orderMessageAttachments.uploaderUserId, senderUserId),
+            isNull(orderMessageAttachments.messageId),
+          ))
+          .returning({ id: orderMessageAttachments.id });
+        if (claimed.length !== attachmentIds.length) throw new Error("ATTACHMENT_INVALID");
+      }
+      return message;
+    });
+    if (!inserted) {
+      const original = await existing();
       if (!original) throw new Error("ORDER_MESSAGE_FAILED");
-      return toMessage(original);
+      return original;
     }
     const at = inserted.createdAt;
     await db
@@ -212,14 +310,63 @@ export class OrderChatService {
       .set({
         organizationId: order.organizationId!,
         lastMessageAt: at,
-        lastMessagePreview: preview(body),
+        lastMessagePreview: preview(body || PHOTO_PREVIEW),
         lastSenderRole: side,
         updatedAt: at,
         ...(side === "customer" ? { customerLastReadAt: at } : { partnerLastReadAt: at }),
       })
       .where(eq(orderConversations.id, conversation.id));
-    runInBackground(() => this.notify(side, order, body));
-    return toMessage(inserted);
+    runInBackground(() => this.notify(side, order, body || (attachmentIds.length > 1 ? `${PHOTO_PREVIEW} ×${attachmentIds.length}` : PHOTO_PREVIEW)));
+    return this.messageWithAttachments(inserted);
+  }
+
+  private async upload(side: OrderChatSide, uploaderUserId: string, order: OrderRow, file: OrderChatUpload): Promise<OrderChatAttachment> {
+    if (!file.bytes.length) throw new Error("ATTACHMENT_REQUIRED");
+    if (file.bytes.length > MAX_ATTACHMENT_BYTES) throw new Error("IMAGE_TOO_LARGE");
+    const type = sniffImage(file.bytes);
+    // HEIC is converted to JPEG on the device before upload; the server cannot decode it.
+    if (type === "heic") throw new Error("IMAGE_HEIC_UNSUPPORTED");
+    if (!type) throw new Error("IMAGE_TYPE_UNSUPPORTED");
+    const conversation = await this.ensureConversation(order);
+    const db = getDb();
+    const [pending] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(orderMessageAttachments)
+      .where(and(
+        eq(orderMessageAttachments.conversationId, conversation.id),
+        eq(orderMessageAttachments.uploaderUserId, uploaderUserId),
+        isNull(orderMessageAttachments.messageId),
+        gt(orderMessageAttachments.createdAt, new Date(Date.now() - 24 * 3600_000)),
+      ));
+    if (Number(pending?.count || 0) >= MAX_PENDING_UPLOADS) throw new Error("TOO_MANY_PENDING_UPLOADS");
+    const [row] = await db
+      .insert(orderMessageAttachments)
+      .values({ conversationId: conversation.id, uploaderRole: side, uploaderUserId, mimeType: type, sizeBytes: file.bytes.length, width: dimension(file.width), height: dimension(file.height), data: Buffer.from(file.bytes) })
+      .returning(attachmentColumns);
+    return toAttachment(row);
+  }
+
+  /** Photo bytes for someone in the conversation; unsent uploads only for their uploader. */
+  async attachment(viewer: { userId: string; role: string; organizationId?: string | null }, attachmentId: string) {
+    if (!UUID.test(attachmentId)) throw new Error("ATTACHMENT_NOT_FOUND");
+    const [row] = await getDb()
+      .select({
+        mimeType: orderMessageAttachments.mimeType,
+        data: orderMessageAttachments.data,
+        messageId: orderMessageAttachments.messageId,
+        uploaderUserId: orderMessageAttachments.uploaderUserId,
+        requestId: orderConversations.serviceRequestId,
+      })
+      .from(orderMessageAttachments)
+      .innerJoin(orderConversations, eq(orderConversations.id, orderMessageAttachments.conversationId))
+      .where(eq(orderMessageAttachments.id, attachmentId))
+      .limit(1);
+    if (!row) throw new Error("ATTACHMENT_NOT_FOUND");
+    if (viewer.role === "customer") await this.customerOrder(viewer.userId, row.requestId);
+    else if (viewer.role === "partner") await this.partnerOrder(viewer.userId, String(viewer.organizationId || ""), row.requestId);
+    else throw new Error("ATTACHMENT_NOT_FOUND");
+    if (!row.messageId && row.uploaderUserId !== viewer.userId) throw new Error("ATTACHMENT_NOT_FOUND");
+    return { mimeType: row.mimeType, data: row.data };
   }
 
   private async notify(side: OrderChatSide, order: OrderRow, body: string) {
@@ -294,8 +441,11 @@ export class OrderChatService {
   async customerThread(userId: string, requestId: string) {
     return this.thread("customer", await this.customerOrder(userId, requestId));
   }
-  async customerSend(userId: string, requestId: string, body: unknown, clientMessageId?: unknown) {
-    return this.send("customer", userId, await this.customerOrder(userId, requestId), body, clientMessageId);
+  async customerSend(userId: string, requestId: string, body: unknown, clientMessageId?: unknown, attachmentIds?: unknown) {
+    return this.send("customer", userId, await this.customerOrder(userId, requestId), body, clientMessageId, attachmentIds);
+  }
+  async customerUpload(userId: string, requestId: string, file: OrderChatUpload) {
+    return this.upload("customer", userId, await this.customerOrder(userId, requestId), file);
   }
   async customerRead(userId: string, requestId: string) {
     return this.markRead("customer", await this.customerOrder(userId, requestId));
@@ -324,8 +474,11 @@ export class OrderChatService {
   async partnerThread(userId: string, organizationId: string, requestId: string) {
     return this.thread("partner", await this.partnerOrder(userId, organizationId, requestId));
   }
-  async partnerSend(userId: string, organizationId: string, requestId: string, body: unknown, clientMessageId?: unknown) {
-    return this.send("partner", userId, await this.partnerOrder(userId, organizationId, requestId), body, clientMessageId);
+  async partnerSend(userId: string, organizationId: string, requestId: string, body: unknown, clientMessageId?: unknown, attachmentIds?: unknown) {
+    return this.send("partner", userId, await this.partnerOrder(userId, organizationId, requestId), body, clientMessageId, attachmentIds);
+  }
+  async partnerUpload(userId: string, organizationId: string, requestId: string, file: OrderChatUpload) {
+    return this.upload("partner", userId, await this.partnerOrder(userId, organizationId, requestId), file);
   }
   async partnerRead(userId: string, organizationId: string, requestId: string) {
     return this.markRead("partner", await this.partnerOrder(userId, organizationId, requestId));
@@ -336,7 +489,22 @@ export const orderChatService = new OrderChatService();
 
 /** HTTP status for an order chat error code. */
 export function orderChatErrorStatus(code: string) {
-  if (code === "ORDER_CHAT_NOT_FOUND") return 404;
+  if (code === "ORDER_CHAT_NOT_FOUND" || code === "ATTACHMENT_NOT_FOUND") return 404;
   if (code === "PARTNER_FORBIDDEN") return 403;
+  if (code === "ATTACHMENT_LIMIT" || code === "ATTACHMENT_REQUIRED") return 400;
+  if (code === "IMAGE_TOO_LARGE") return 413;
+  if (code === "IMAGE_TYPE_UNSUPPORTED" || code === "IMAGE_HEIC_UNSUPPORTED") return 415;
+  if (code === "TOO_MANY_PENDING_UPLOADS") return 429;
   return 422;
+}
+
+/** Reads the single `file` part of a multipart photo upload. */
+export async function readOrderChatUpload(request: Request): Promise<OrderChatUpload & { organizationId: string }> {
+  const declared = Number(request.headers.get("content-length") || 0);
+  if (declared > MAX_ATTACHMENT_BYTES + 64 * 1024) throw new Error("IMAGE_TOO_LARGE");
+  const form = await request.formData().catch(() => null);
+  const file = form?.get("file");
+  if (!form || !(file instanceof Blob)) throw new Error("ATTACHMENT_REQUIRED");
+  if (file.size > MAX_ATTACHMENT_BYTES) throw new Error("IMAGE_TOO_LARGE");
+  return { bytes: new Uint8Array(await file.arrayBuffer()), width: form.get("width"), height: form.get("height"), organizationId: String(form.get("organizationId") || "") };
 }

@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, AppState, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, AppState, FlatList, Image, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getOrderChat, getOrderChatUnread, getOrderChats, markOrderChatRead, sendOrderChat } from "./api";
+import { authHeaders, getOrderChat, getOrderChatUnread, getOrderChats, markOrderChatRead, orderChatPhotoUrl, sendOrderChat, uploadOrderChatPhoto } from "./api";
+import { MAX_CHAT_PHOTOS, compressPhoto, loadPhotoModules, pickPhotos, takePhoto, type LocalPhoto } from "./chat-photos";
 import type { Language } from "./i18n";
 import { C, s } from "./styles";
 import type { OrderChatMessage, OrderChatSummary, OrderChatThread } from "./types";
@@ -12,9 +13,9 @@ import type { OrderChatMessage, OrderChatSummary, OrderChatThread } from "./type
 // plus a refresh whenever a chat push arrives.
 
 const COPY = {
-  vi: { title: "Tin nhắn", empty: "Chưa có tin nhắn", emptyDesc: "Khách nhắn theo đơn sẽ hiện ở đây.", placeholder: "Nhắn khách…", you: "Bạn", seen: "Đã xem", start: "Nhắn cho khách về đơn này", noStore: "Đơn không còn thuộc gian hàng này", error: "Không gửi được, thử lại." },
-  en: { title: "Messages", empty: "No messages yet", emptyDesc: "Customer messages about orders appear here.", placeholder: "Message the customer…", you: "You", seen: "Seen", start: "Message the customer about this order", noStore: "This order no longer belongs to this store", error: "Could not send, try again." },
-  zh: { title: "消息", empty: "暂无消息", emptyDesc: "客户关于订单的消息会显示在这里。", placeholder: "回复客户…", you: "我", seen: "已读", start: "就此订单联系客户", noStore: "该订单已不属于本店", error: "发送失败，请重试。" },
+  vi: { title: "Tin nhắn", empty: "Chưa có tin nhắn", emptyDesc: "Khách nhắn theo đơn sẽ hiện ở đây.", placeholder: "Nhắn khách…", you: "Bạn", seen: "Đã xem", start: "Nhắn cho khách về đơn này", noStore: "Đơn không còn thuộc gian hàng này", error: "Không gửi được, thử lại.", photo: "Ảnh", camera: "Chụp ảnh", photoLimit: "Tối đa 5 ảnh mỗi lần gửi", cameraDenied: "Hãy cho phép dùng camera trong Cài đặt", failed: "Chưa gửi được", retry: "Gửi lại", discard: "Xoá" },
+  en: { title: "Messages", empty: "No messages yet", emptyDesc: "Customer messages about orders appear here.", placeholder: "Message the customer…", you: "You", seen: "Seen", start: "Message the customer about this order", noStore: "This order no longer belongs to this store", error: "Could not send, try again.", photo: "Photo", camera: "Take photo", photoLimit: "Up to 5 photos per message", cameraDenied: "Allow camera access in Settings", failed: "Not sent", retry: "Retry", discard: "Delete" },
+  zh: { title: "消息", empty: "暂无消息", emptyDesc: "客户关于订单的消息会显示在这里。", placeholder: "回复客户…", you: "我", seen: "已读", start: "就此订单联系客户", noStore: "该订单已不属于本店", error: "发送失败，请重试。", photo: "图片", camera: "拍照", photoLimit: "每次最多 5 张图片", cameraDenied: "请在设置中允许使用相机", failed: "发送失败", retry: "重发", discard: "删除" },
 } as const;
 
 export const orderChatCopy = (lang: Language) => COPY[lang] || COPY.vi;
@@ -105,13 +106,49 @@ export function OrderChatList({ orgId, lang, refreshKey, onOpen }: { orgId: stri
   );
 }
 
+type Outgoing = { clientMessageId: string; body: string; photos: LocalPhoto[]; createdAt: string; failed: boolean };
+type Row = OrderChatMessage & { photos: GridPhoto[]; outgoing?: Outgoing };
+type GridPhoto = { key: string; uri: string; width: number | null; height: number | null; remote: boolean };
+
+/** Chat photos are private: the backend only serves them with the store's token. */
+const photoSource = (photo: GridPhoto) => (photo.remote ? { uri: photo.uri, headers: authHeaders() } : { uri: photo.uri });
+
+function PhotoGrid({ photos, dim, onOpen }: { photos: GridPhoto[]; dim: boolean; onOpen: (index: number) => void }) {
+  const [first] = photos;
+  if (photos.length === 1 && first) {
+    const ratio = first.width && first.height ? first.height / first.width : 0.75;
+    return (
+      <Pressable onPress={() => onOpen(0)} style={[styles.photoSingle, { height: Math.min(300, Math.max(140, 220 * ratio)) }, dim && { opacity: 0.6 }]}>
+        <Image source={photoSource(first)} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      </Pressable>
+    );
+  }
+  return (
+    <View style={[styles.photoGrid, dim && { opacity: 0.6 }]}>
+      {photos.map((photo, index) => (
+        <Pressable key={photo.key} onPress={() => onOpen(index)} style={[styles.photoCell, photos.length % 2 === 1 && index === photos.length - 1 && { width: 220 }]}>
+          <Image source={photoSource(photo)} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 export function OrderChatModal({ orgId, requestId, lang, refreshKey, onClose, onChanged }: { orgId: string; requestId: string | null; lang: Language; refreshKey: number; onClose: () => void; onChanged: () => void }) {
   const t = orderChatCopy(lang);
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const [data, setData] = useState<OrderChatThread | null>(null);
-  const [pending, setPending] = useState<OrderChatMessage[]>([]);
+  const [outbox, setOutbox] = useState<Outgoing[]>([]);
+  const [drafts, setDrafts] = useState<LocalPhoto[]>([]);
+  const [viewer, setViewer] = useState<{ photos: GridPhoto[]; index: number } | null>(null);
+  const [photosReady, setPhotosReady] = useState(false);
   const [text, setText] = useState("");
   const [error, setError] = useState("");
-  const listRef = useRef<FlatList<OrderChatMessage>>(null);
+  const listRef = useRef<FlatList<Row>>(null);
+  // Uploaded photo ids per outgoing message, so a retry only sends what is missing.
+  const uploaded = useRef(new Map<string, Record<string, string>>());
+
+  useEffect(() => { void loadPhotoModules().then((m) => setPhotosReady(Boolean(m))); }, []);
 
   const load = useCallback(async () => {
     if (!requestId) return null;
@@ -128,9 +165,12 @@ export function OrderChatModal({ orgId, requestId, lang, refreshKey, onClose, on
 
   useEffect(() => {
     setData(null);
-    setPending([]);
+    setOutbox([]);
+    setDrafts([]);
+    setViewer(null);
     setError("");
     setText("");
+    uploaded.current.clear();
   }, [requestId]);
   useEffect(() => {
     if (!requestId) return;
@@ -151,37 +191,71 @@ export function OrderChatModal({ orgId, requestId, lang, refreshKey, onClose, on
     void markOrderChatRead(orgId, requestId).then(onChanged).catch(() => undefined);
   }, [incoming, requestId, orgId, loaded, onChanged]);
 
-  const messages = useMemo(() => {
+  const rows = useMemo<Row[]>(() => {
     const saved = data?.messages || [];
     const savedIds = new Set(saved.map((m) => m.clientMessageId).filter(Boolean));
-    return [...saved, ...pending.filter((m) => !savedIds.has(m.clientMessageId))];
-  }, [data?.messages, pending]);
+    return [
+      ...saved.map((m) => ({ ...m, photos: (m.attachments || []).map((a) => ({ key: a.id, uri: orderChatPhotoUrl(a, orgId), width: a.width, height: a.height, remote: true })) })),
+      ...outbox.filter((m) => !savedIds.has(m.clientMessageId)).map((m) => ({
+        id: `local-${m.clientMessageId}`, clientMessageId: m.clientMessageId, body: m.body, senderRole: "partner" as const, createdAt: m.createdAt, pending: true, outgoing: m,
+        photos: m.photos.map((p) => ({ key: p.key, uri: p.uri, width: p.width, height: p.height, remote: false })),
+      })),
+    ];
+  }, [data?.messages, outbox, orgId]);
 
   const readAt = data?.thread.counterpartReadAt ? new Date(data.thread.counterpartReadAt).getTime() : 0;
-  const seenId = readAt ? messages.filter((m) => m.senderRole === "partner" && !m.pending && new Date(m.createdAt).getTime() <= readAt).at(-1)?.id : undefined;
+  const seenId = readAt ? rows.filter((m) => m.senderRole === "partner" && !m.pending && new Date(m.createdAt).getTime() <= readAt).at(-1)?.id : undefined;
 
-  async function submit() {
-    const body = text.trim();
-    if (!body || !requestId) return;
-    const clientMessageId = newClientId();
-    const local: OrderChatMessage = { id: `local-${clientMessageId}`, clientMessageId, body, senderRole: "partner", createdAt: new Date().toISOString(), pending: true };
-    setText("");
-    setError("");
-    setPending((current) => [...current, local]);
+  async function deliver(message: Outgoing) {
+    if (!requestId) return;
+    setOutbox((current) => current.map((m) => (m.clientMessageId === message.clientMessageId ? { ...m, failed: false } : m)));
+    const done = uploaded.current.get(message.clientMessageId) || {};
+    uploaded.current.set(message.clientMessageId, done);
     try {
-      await sendOrderChat(orgId, requestId, body, clientMessageId);
+      for (const photo of message.photos) {
+        if (done[photo.key]) continue;
+        done[photo.key] = (await uploadOrderChatPhoto(orgId, requestId, await compressPhoto(photo))).id;
+      }
+      await sendOrderChat(orgId, requestId, message.body, message.clientMessageId, message.photos.map((p) => done[p.key]).filter((id): id is string => Boolean(id)));
       await load();
+      uploaded.current.delete(message.clientMessageId);
+      setOutbox((current) => current.filter((m) => m.clientMessageId !== message.clientMessageId));
       onChanged();
-    } catch (e) {
-      setText(body);
-      setError(e instanceof Error ? e.message : t.error);
-    } finally {
-      setPending((current) => current.filter((m) => m.id !== local.id));
+    } catch {
+      setOutbox((current) => current.map((m) => (m.clientMessageId === message.clientMessageId ? { ...m, failed: true } : m)));
     }
   }
 
+  function submit() {
+    const body = text.trim();
+    if ((!body && !drafts.length) || !requestId) return;
+    const message: Outgoing = { clientMessageId: newClientId(), body, photos: drafts, createdAt: new Date().toISOString(), failed: false };
+    setText("");
+    setDrafts([]);
+    setError("");
+    setOutbox((current) => [...current, message]);
+    void deliver(message);
+  }
+
+  function discard(message: Outgoing) {
+    uploaded.current.delete(message.clientMessageId);
+    setOutbox((current) => current.filter((m) => m.clientMessageId !== message.clientMessageId));
+  }
+
+  async function addPhotos(camera: boolean) {
+    const room = MAX_CHAT_PHOTOS - drafts.length;
+    if (room <= 0) return setError(t.photoLimit);
+    try {
+      const picked = camera ? [await takePhoto()].filter((x): x is LocalPhoto => Boolean(x)) : await pickPhotos(room);
+      if (picked.length) setDrafts((current) => [...current, ...picked].slice(0, MAX_CHAT_PHOTOS));
+    } catch (e) {
+      setError(e instanceof Error && e.message === "CAMERA_DENIED" ? t.cameraDenied : t.error);
+    }
+  }
+
+  const canSend = data?.thread.canSend !== false;
   return (
-    <Modal visible={Boolean(requestId)} animationType="slide" presentationStyle="fullScreen" onRequestClose={onClose}>
+    <Modal visible={Boolean(requestId)} animationType="slide" presentationStyle="fullScreen" onRequestClose={() => (viewer ? setViewer(null) : onClose())}>
       <SafeAreaView style={[s.safe, { backgroundColor: C.white }]} edges={["top", "bottom"]}>
         <View style={styles.header}>
           <Pressable onPress={onClose} hitSlop={12} style={styles.back}><Ionicons name="chevron-back" size={26} color={C.ink} /></Pressable>
@@ -195,35 +269,83 @@ export function OrderChatModal({ orgId, requestId, lang, refreshKey, onClose, on
             <FlatList
               ref={listRef}
               style={{ flex: 1, backgroundColor: C.bg }}
-              data={messages}
+              data={rows}
               keyExtractor={(item) => item.clientMessageId || item.id}
-              contentContainerStyle={{ padding: 16, gap: 8, flexGrow: 1, justifyContent: messages.length ? "flex-end" : "center" }}
+              contentContainerStyle={{ padding: 16, gap: 8, flexGrow: 1, justifyContent: rows.length ? "flex-end" : "center" }}
               onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
               keyboardDismissMode="interactive"
               ListEmptyComponent={<View style={{ alignItems: "center", gap: 8 }}><Ionicons name="chatbubble-ellipses-outline" size={36} color={C.green} /><Text style={s.emptyText}>{t.start}</Text></View>}
               renderItem={({ item }) => {
                 const own = item.senderRole === "partner";
+                const failed = item.outgoing?.failed;
                 return (
                   <View style={{ alignItems: own ? "flex-end" : "flex-start" }}>
-                    <View style={[styles.bubble, own ? styles.own : styles.other, item.pending && { opacity: 0.6 }]}>
-                      <Text style={[styles.bubbleText, own && { color: C.white }]}>{item.body}</Text>
-                    </View>
-                    <Text style={styles.time}>{item.pending ? "…" : clock(item.createdAt)}{item.id === seenId ? ` · ${t.seen}` : ""}</Text>
+                    {item.photos.length ? <PhotoGrid photos={item.photos} dim={Boolean(item.pending && !failed)} onOpen={(index) => setViewer({ photos: item.photos, index })} /> : null}
+                    {item.body ? (
+                      <View style={[styles.bubble, own ? styles.own : styles.other, item.photos.length > 0 && { marginTop: 4 }, item.pending && !failed && { opacity: 0.6 }]}>
+                        <Text style={[styles.bubbleText, own && { color: C.white }]}>{item.body}</Text>
+                      </View>
+                    ) : null}
+                    {failed && item.outgoing ? (
+                      <View style={styles.failedRow}>
+                        <Ionicons name="alert-circle" size={14} color={C.red} />
+                        <Text style={[styles.time, { color: C.red, marginTop: 0 }]}>{t.failed}</Text>
+                        <Pressable hitSlop={8} onPress={() => void deliver(item.outgoing!)}><Text style={styles.failedAction}>{t.retry}</Text></Pressable>
+                        <Pressable hitSlop={8} onPress={() => discard(item.outgoing!)}><Text style={[styles.failedAction, { color: C.muted }]}>{t.discard}</Text></Pressable>
+                      </View>
+                    ) : (
+                      <Text style={styles.time}>{item.pending ? "…" : clock(item.createdAt)}{item.id === seenId ? ` · ${t.seen}` : ""}</Text>
+                    )}
                   </View>
                 );
               }}
             />
           )}
           {!!error && <Text style={[s.error, { marginHorizontal: 16, marginTop: 8, marginBottom: 0 }]}>{error}</Text>}
-          {data?.thread.canSend !== false ? (
-            <View style={styles.composer}>
-              <TextInput value={text} onChangeText={setText} placeholder={t.placeholder} placeholderTextColor={C.muted} style={styles.input} multiline maxLength={2000} />
-              <Pressable disabled={!text.trim()} onPress={() => void submit()} style={[styles.send, !text.trim() && { opacity: 0.5 }]}>
-                <Ionicons name="send" size={18} color={C.white} />
-              </Pressable>
+          {canSend ? (
+            <View style={styles.composerWrap}>
+              {drafts.length ? (
+                <View style={styles.drafts}>
+                  {drafts.map((photo) => (
+                    <View key={photo.key} style={styles.draft}>
+                      <Image source={{ uri: photo.uri }} style={styles.draftImage} />
+                      <Pressable hitSlop={8} onPress={() => setDrafts((current) => current.filter((p) => p.key !== photo.key))} style={styles.draftRemove}>
+                        <Ionicons name="close" size={12} color={C.white} />
+                      </Pressable>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+              <View style={styles.composer}>
+                {photosReady && drafts.length < MAX_CHAT_PHOTOS ? (
+                  <>
+                    <Pressable accessibilityLabel={t.camera} hitSlop={6} onPress={() => void addPhotos(true)} style={styles.tool}><Ionicons name="camera-outline" size={23} color={C.green} /></Pressable>
+                    <Pressable accessibilityLabel={t.photo} hitSlop={6} onPress={() => void addPhotos(false)} style={styles.tool}><Ionicons name="image-outline" size={23} color={C.green} /></Pressable>
+                  </>
+                ) : null}
+                <TextInput value={text} onChangeText={setText} placeholder={t.placeholder} placeholderTextColor={C.muted} style={styles.input} multiline maxLength={2000} />
+                <Pressable disabled={!text.trim() && !drafts.length} onPress={submit} style={[styles.send, !text.trim() && !drafts.length && { opacity: 0.5 }]}>
+                  <Ionicons name="send" size={18} color={C.white} />
+                </Pressable>
+              </View>
             </View>
           ) : null}
         </KeyboardAvoidingView>
+        {viewer ? (
+          <View style={styles.viewer}>
+            <FlatList
+              data={viewer.photos}
+              keyExtractor={(photo) => photo.key}
+              horizontal
+              pagingEnabled
+              initialScrollIndex={viewer.index}
+              getItemLayout={(_, i) => ({ length: screenWidth, offset: screenWidth * i, index: i })}
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item }) => <Image source={photoSource(item)} style={{ width: screenWidth, height: screenHeight }} resizeMode="contain" />}
+            />
+            <Pressable onPress={() => setViewer(null)} hitSlop={12} style={styles.viewerClose}><Ionicons name="close" size={24} color={C.white} /></Pressable>
+          </View>
+        ) : null}
       </SafeAreaView>
     </Modal>
   );
@@ -248,7 +370,20 @@ const styles = StyleSheet.create({
   own: { backgroundColor: C.green, borderBottomRightRadius: 6 },
   other: { backgroundColor: C.white, borderBottomLeftRadius: 6, shadowColor: "#173c2c", shadowOpacity: 0.07, shadowRadius: 10, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
   bubbleText: { color: C.ink, fontSize: 15, lineHeight: 21 },
-  composer: { flexDirection: "row", alignItems: "flex-end", gap: 10, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: C.white },
+  composerWrap: { backgroundColor: C.white },
+  composer: { flexDirection: "row", alignItems: "flex-end", gap: 8, paddingHorizontal: 14, paddingVertical: 10 },
+  tool: { width: 34, height: 44, alignItems: "center", justifyContent: "center" },
+  drafts: { flexDirection: "row", gap: 8, paddingHorizontal: 14, paddingTop: 10 },
+  draft: { width: 56, height: 56 },
+  draftImage: { width: 56, height: 56, borderRadius: 12 },
+  draftRemove: { position: "absolute", top: -6, right: -6, width: 20, height: 20, borderRadius: 10, backgroundColor: "rgba(15,23,42,0.85)", alignItems: "center", justifyContent: "center" },
+  photoSingle: { width: 220, borderRadius: 16, overflow: "hidden", backgroundColor: "#eef2f0" },
+  photoGrid: { width: 220, flexDirection: "row", flexWrap: "wrap", gap: 4 },
+  photoCell: { width: 108, height: 108, borderRadius: 12, overflow: "hidden", backgroundColor: "#eef2f0" },
+  failedRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 },
+  failedAction: { fontSize: 12, fontWeight: "900", color: C.green },
+  viewer: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.96)" },
+  viewerClose: { position: "absolute", top: 54, right: 18, width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.18)" },
   input: { flex: 1, minHeight: 44, maxHeight: 120, borderRadius: 20, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, backgroundColor: "#f1f6f3", fontSize: 15, color: C.ink },
   send: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.green, alignItems: "center", justifyContent: "center" },
 });

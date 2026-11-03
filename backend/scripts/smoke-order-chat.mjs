@@ -81,5 +81,76 @@ r = await call("tok-pa", "GET", `/api/partner-order-chats`);
 check("restaurant store does not see housing thread", r.body.data.threads.every((x) => x.requestId !== R2), r);
 r = await call("tok-pa", "GET", `/api/partner-order-chats/not-a-uuid`);
 check("bad id is 404", r.status === 404, r);
+
+// ---- Photos -------------------------------------------------------------
+const jpeg = (size = 2048) => { const b = new Uint8Array(size); b.set([0xff, 0xd8, 0xff, 0xe0]); b[size - 2] = 0xff; b[size - 1] = 0xd9; return b; };
+const heic = () => { const b = new Uint8Array(64); b.set([0, 0, 0, 24]); b.set([...Buffer.from("ftypheic")], 4); return b; };
+async function upload(token, path, bytes, extra = {}) {
+  const form = new FormData();
+  form.set("file", new Blob([bytes], { type: "image/jpeg" }), "photo.jpg");
+  for (const [k, v] of Object.entries(extra)) form.set(k, String(v));
+  const r = await fetch(BASE + path, { method: "POST", headers: { authorization: `Bearer ${token}` }, body: form });
+  return { status: r.status, body: await r.json().catch(() => null) };
+}
+const cmUp = (id) => `${cm(id)}/attachments`;
+const pUp = (id) => `/api/partner-order-chats/${id}/attachments`;
+async function fetchPhoto(token, url) {
+  const r = await fetch(BASE + url, { headers: { authorization: `Bearer ${token}` } });
+  return { status: r.status, type: r.headers.get("content-type"), cache: r.headers.get("cache-control"), bytes: new Uint8Array(await r.arrayBuffer()) };
+}
+r = await upload("tok-ca", cmUp(R1), jpeg(), { width: 1200, height: 900 });
+check("customer uploads a photo", r.status === 201 && r.body.data.url === `/api/order-chat-attachments/${r.body.data.id}` && r.body.data.width === 1200 && r.body.data.mimeType === "image/jpeg", r);
+const p1 = r.body?.data;
+r = await upload("tok-ca", cmUp(R1), heic());
+check("HEIC is rejected with a clear code", r.status === 415 && r.body.error.code === "IMAGE_HEIC_UNSUPPORTED", r);
+r = await upload("tok-ca", cmUp(R1), new TextEncoder().encode("not an image at all"));
+check("non-image is rejected", r.status === 415 && r.body.error.code === "IMAGE_TYPE_UNSUPPORTED", r);
+r = await upload("tok-ca", cmUp(R1), jpeg(2 * 1024 * 1024 + 10));
+check("photo over 2MB is rejected", r.status === 413, r);
+r = await upload("tok-cb", cmUp(R1), jpeg());
+check("other customer cannot upload into the chat", r.status === 404, r);
+r = await upload("tok-ca", `/api/customer-messages/${encodeURIComponent("support:x")}/attachments`, jpeg());
+check("photos only in order chats", r.status === 404, r);
+let f = await fetchPhoto("tok-ca", p1.url);
+check("uploader can preview an unsent photo", f.status === 200 && f.type === "image/jpeg" && f.bytes.length === 2048 && f.cache.startsWith("private"), f.status);
+f = await fetchPhoto("tok-pa", p1.url);
+check("store cannot see a photo before it is sent", f.status === 404, f.status);
+const more = [];
+for (let i = 0; i < 5; i++) more.push((await upload("tok-ca", cmUp(R1), jpeg(1024 + i))).body.data.id);
+r = await call("tok-ca", "POST", cm(R1), { message: "", attachmentIds: [p1.id, ...more] });
+check("more than 5 photos is a 400", r.status === 400 && r.body.error.code === "ATTACHMENT_LIMIT", r);
+r = await call("tok-ca", "POST", cm(R1), { message: "", attachmentIds: [] });
+check("no text and no photo is rejected", r.status === 422, r);
+r = await call("tok-ca", "POST", cm(R1), { message: "", attachmentIds: [p1.id, more[0]], clientMessageId: "cli-photo-0001" });
+check("photo-only message with 2 photos", r.status === 201 && r.body.data.body === "" && r.body.data.attachments.length === 2, r);
+const photoMsg = r.body?.data;
+r = await call("tok-ca", "POST", cm(R1), { message: "", attachmentIds: [p1.id, more[0]], clientMessageId: "cli-photo-0001" });
+check("retried photo send returns the same message", r.status === 201 && r.body.data.id === photoMsg.id && r.body.data.attachments.length === 2, r);
+r = await call("tok-ca", "POST", cm(R1), { message: "again", attachmentIds: [p1.id] });
+check("an already sent photo cannot be reused", r.status === 422 && r.body.error.code === "ATTACHMENT_INVALID", r);
+r = await call("tok-cb", "POST", cm(R3), { message: "steal", attachmentIds: [more[1]] });
+check("someone else's upload cannot be attached", r.status === 422 && r.body.error.code === "ATTACHMENT_INVALID", r);
+r = await call("tok-ca", "GET", `/api/customer-messages?locale=vi-VN`);
+check("inbox preview says [Ảnh]", r.body.data.threads.find((x) => x.id === "order:" + R1).lastMessage === "[Ảnh]", r);
+r = await call("tok-pa", "GET", `/api/partner-order-chats/${R1}`);
+const seen = r.body?.data?.messages?.find((m) => m.id === photoMsg.id);
+check("store thread lists the photos", r.status === 200 && seen?.attachments.length === 2, r);
+f = await fetchPhoto("tok-pa", photoMsg.attachments[0].url);
+check("store can open a sent photo", f.status === 200 && f.bytes.length === 2048, f.status);
+f = await fetchPhoto("tok-pb", photoMsg.attachments[0].url);
+check("other store cannot open the photo", f.status === 404, f.status);
+f = await fetchPhoto("tok-cb", photoMsg.attachments[0].url);
+check("other customer cannot open the photo", f.status === 404, f.status);
+f = await fetchPhoto("tok-ca", "/api/order-chat-attachments/00000000-0000-0000-0000-00000000dead");
+check("unknown photo is 404", f.status === 404, f.status);
+r = await upload("tok-pa", pUp(R1), jpeg(4096), { organizationId: ORG_A });
+check("store uploads a photo", r.status === 201, r);
+r = await call("tok-pa", "POST", `/api/partner-order-chats/${R1}`, { message: "Ảnh món đã đóng gói", attachmentIds: [r.body.data.id] });
+check("store sends text + photo", r.status === 201 && r.body.data.attachments.length === 1 && r.body.data.body === "Ảnh món đã đóng gói", r);
+f = await fetchPhoto("tok-ca", r.body.data.attachments[0].url);
+check("customer opens the store's photo", f.status === 200 && f.bytes.length === 4096, f.status);
+r = await upload("tok-pb", pUp(R1), jpeg(), { organizationId: ORG_B });
+check("other store cannot upload into the chat", r.status === 404, r);
+
 console.log(failures ? `\n${failures} FAILED` : "\nALL PASSED");
 process.exit(failures ? 1 : 0);

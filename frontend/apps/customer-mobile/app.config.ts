@@ -46,6 +46,7 @@ const config: ExpoConfig = {
     ["expo-splash-screen", { image: "./assets/splash-icon.png", imageWidth: 160, backgroundColor: "#F7FAF9" }],
     ["expo-notifications", { color: "#0FAF7A", defaultChannel: "orders" }],
     ["expo-location", { locationWhenInUsePermission: "ZhaoXi dùng vị trí để tìm nhà hàng, dịch vụ gần bạn và tính phí giao hàng." }],
+    ["expo-image-picker", { photosPermission: "ZhaoXi cần truy cập ảnh để bạn gửi ảnh trong tin nhắn đơn hàng.", cameraPermission: "ZhaoXi cần dùng camera để bạn chụp và gửi ảnh trong tin nhắn đơn hàng.", microphonePermission: false }],
     "./plugins/with-ios-scene-lifecycle",
   ],
   experiments: { typedRoutes: false },

@@ -5,7 +5,7 @@ import { orderChatErrorStatus, orderChatService } from "@/lib/services/order-cha
 export const dynamic = "force-dynamic";
 
 type Context = { params: Promise<{ requestId: string }> };
-type Body = { organizationId?: unknown; message?: unknown; clientMessageId?: unknown };
+type Body = { organizationId?: unknown; message?: unknown; clientMessageId?: unknown; attachmentIds?: unknown };
 
 async function partner(request: Request) {
   const session = await authenticatedSession(request);
@@ -36,7 +36,7 @@ export async function POST(request: Request, { params }: Context) {
     const { requestId } = await params;
     const body = (await request.json().catch(() => ({}))) as Body;
     const organizationId = String(body.organizationId || session.organizationId || "");
-    return success(await orderChatService.partnerSend(session.userId, organizationId, requestId, body.message, body.clientMessageId), { status: 201 });
+    return success(await orderChatService.partnerSend(session.userId, organizationId, requestId, body.message, body.clientMessageId, body.attachmentIds), { status: 201 });
   } catch (e) {
     return fail("Unable to send order message.", e);
   }
