@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   check,
+  customType,
   index,
   integer,
   jsonb,
@@ -1593,4 +1594,26 @@ export const orderMessages = pgTable("order_messages", {
   index("order_messages_conversation_idx").on(table.conversationId, table.createdAt),
   uniqueIndex("order_messages_client_id_unique").on(table.conversationId, table.clientMessageId).where(sql`${table.clientMessageId} IS NOT NULL`),
   check("order_messages_sender_role_check", sql`${table.senderRole} IN ('customer', 'partner')`),
+]);
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
+
+// Photos in an order chat. Bytes live in Postgres so only the two sides of the
+// conversation can fetch them (through an authorized route); there is no public
+// URL. Uploaded first (message_id null), then attached when the message is sent.
+export const orderMessageAttachments = pgTable("order_message_attachments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  conversationId: uuid("conversation_id").notNull().references(() => orderConversations.id, { onDelete: "cascade" }),
+  messageId: uuid("message_id").references(() => orderMessages.id, { onDelete: "cascade" }),
+  uploaderRole: varchar("uploader_role", { length: 16 }).notNull(),
+  uploaderUserId: uuid("uploader_user_id").references(() => users.id, { onDelete: "set null" }),
+  mimeType: varchar("mime_type", { length: 32 }).notNull(),
+  sizeBytes: integer("size_bytes").notNull(),
+  width: integer("width"),
+  height: integer("height"),
+  data: bytea("data").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index("order_message_attachments_message_idx").on(table.messageId),
+  index("order_message_attachments_pending_idx").on(table.conversationId, table.uploaderUserId, table.createdAt),
 ]);
