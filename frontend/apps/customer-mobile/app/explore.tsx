@@ -12,7 +12,8 @@ import { useI18n } from "../src/i18n";
 import { resolveModules } from "../src/modules";
 import { keys } from "../src/query";
 import { colors, shadow } from "../src/theme";
-import { ArtLabel, Art3D, AppImage, BackButton, Chip, EmptyState, PressableScale, Screen, ServiceIcon, SkeletonList, ZxIcon } from "../src/ui";
+import { ArtLabel, Art3D, AppImage, Chip, EmptyState, Header, PressableScale, Screen, ServiceIcon, SkeletonList, ZxIcon } from "../src/ui";
+import { HeaderPill } from "../src/components/center";
 
 const copy = {
   "vi-VN": { title: "Khám phá dịch vụ ZhaoXi", placeholder: "Tìm nhà hàng, nhà ở, du lịch, Partner…", saved: "Tìm kiếm đã lưu", savedEmpty: "Chưa có tìm kiếm đã lưu", storefront: "Xem storefront ›", services: "Dịch vụ" },
@@ -37,12 +38,11 @@ export default function ExploreScreen() {
 
   return (
     <Screen>
-      <View style={styles.header}>
-        <BackButton style={{ backgroundColor: colors.white }} />
-        <ArtLabel kind="search" size={22} style={styles.title} numberOfLines={1}>{c.title}</ArtLabel>
-        <PressableScale onPress={() => router.push("/favorites")} style={styles.heart}><ZxIcon name="heart" size={18} color={colors.brandStrong} strokeWidth={2} /></PressableScale>
-      </View>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: TAB_BAR_SPACE }} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled">
+        {/* Same petrol page header as every other pushed screen */}
+        <View style={{ marginHorizontal: -14 }}>
+          <Header title={c.title} right={<HeaderPill icon="heart" onPress={() => router.push("/favorites")} />} />
+        </View>
         <View style={[styles.search, shadow("soft")]}>
           <TextInput value={query} onChangeText={setQuery} placeholder={c.placeholder} placeholderTextColor="#94A3B8" style={styles.input} returnKeyType="search" clearButtonMode="while-editing" autoCorrect={false} />
         </View>
@@ -100,9 +100,6 @@ export default function ExploreScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.borderSoft },
-  title: { flex: 1, textAlign: "center", fontSize: 16, fontWeight: "700", color: colors.ink },
-  heart: { width: 36, height: 36, borderRadius: 12, backgroundColor: "#DCFCE7", borderWidth: 1, borderColor: "#BBF7D0", alignItems: "center", justifyContent: "center" },
   search: { marginTop: 14, height: 50, borderRadius: 14, backgroundColor: colors.white, justifyContent: "center", paddingHorizontal: 14 },
   input: { fontSize: 15, color: colors.text },
   saved: { padding: 12, borderRadius: 14, backgroundColor: colors.white, gap: 8, ...shadow("card") },
