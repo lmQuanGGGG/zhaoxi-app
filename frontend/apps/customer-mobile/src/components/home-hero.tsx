@@ -2,7 +2,7 @@ import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { Easing, Extrapolation, interpolate, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withSpring, withTiming, type SharedValue } from "react-native-reanimated";
@@ -275,13 +275,25 @@ export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ 
   const onScroll = useAnimatedScrollHandler((event) => { x.value = event.contentOffset.x; });
   const pad = (width - ITEM) / 2;
   const list = useAnimatedRef<Animated.ScrollView>();
-  // Open on the second service so both sides of the arc are filled.
-  const centre = () => list.current?.scrollTo({ x: ITEM, animated: false });
+  // Index resting in the sphere: the haptic only ticks when it actually changes.
+  const rested = useRef(1);
+  // True while our own corrective scroll runs, so its end event is not treated as a new swipe.
+  const correcting = useRef(false);
   // Snap guard: never rest between two items (the centred icon must sit inside the glass sphere).
+  // iOS already snaps via snapToInterval; this only nudges the rare sub-item remainder, once.
   const settle = (offset: number) => {
-    const target = Math.round(offset / ITEM) * ITEM;
-    if (Math.abs(target - offset) > 0.5) list.current?.scrollTo({ x: target, animated: true });
+    const index = Math.round(offset / ITEM);
+    if (!correcting.current && Math.abs(index * ITEM - offset) > 1) {
+      correcting.current = true;
+      list.current?.scrollTo({ x: index * ITEM, animated: true });
+    } else correcting.current = false;
+    if (index !== rested.current) { rested.current = index; haptic.select(); }
   };
+  // Stable callbacks so Home re-renders (status-bar flips, data refreshes) skip the SVG-heavy items.
+  const handlers = useRef({ onOpen, onPressIn });
+  handlers.current = { onOpen, onPressIn };
+  const open = useCallback((code: string) => handlers.current.onOpen(code), []);
+  const pressIn = useCallback((code: string) => handlers.current.onPressIn?.(code), []);
   return (
     <View style={styles.arcSection}>
       {/* Liquid Glass lens floating where the teal header fades into the page */}
@@ -295,8 +307,11 @@ export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ 
       </View>
       <Animated.ScrollView
         ref={list}
-        onLayout={centre}
         horizontal
+        // Open on the second service so both sides of the arc are filled. A static initial
+        // offset (not scrollTo in onLayout, which re-fires on every layout pass and yanked the
+        // arc back mid-swipe).
+        contentOffset={{ x: ITEM, y: 0 }}
         showsHorizontalScrollIndicator={false}
         snapToInterval={ITEM}
         decelerationRate="fast"
@@ -304,10 +319,9 @@ export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ 
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingHorizontal: pad, paddingTop: ARC_HEADROOM }}
         style={{ height: 176 + ARC_HEADROOM, marginTop: -ARC_HEADROOM }}
-        onScrollEndDrag={(event) => { if (Math.abs(event.nativeEvent.velocity?.x ?? 0) < 0.05) settle(event.nativeEvent.contentOffset.x); }}
-        onMomentumScrollEnd={(event) => { settle(event.nativeEvent.contentOffset.x); haptic.select(); }}
+        onMomentumScrollEnd={(event) => settle(event.nativeEvent.contentOffset.x)}
       >
-        {tiles.map((tile, index) => <ArcItem key={tile.code} index={index} x={x} tile={tile} onOpen={onOpen} onPressIn={onPressIn} />)}
+        {tiles.map((tile, index) => <ArcItem key={tile.code} index={index} x={x} code={tile.code} name={tile.name} onOpen={open} onPressIn={pressIn} />)}
       </Animated.ScrollView>
       <Pressable onPress={() => router.push("/services")} style={styles.moreLink} hitSlop={8}>
         <Text style={styles.moreText}>{more}</Text>
@@ -317,8 +331,8 @@ export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ 
   );
 }
 
-function ArcItem({ index, x, tile, onOpen, onPressIn }: { index: number; x: SharedValue<number>; tile: { code: string; name: string }; onOpen: (code: string) => void; onPressIn?: (code: string) => void }) {
-  const accent = servicePalettes[tile.code]?.accent || colors.brand;
+const ArcItem = memo(function ArcItem({ index, x, code, name, onOpen, onPressIn }: { index: number; x: SharedValue<number>; code: string; name: string; onOpen: (code: string) => void; onPressIn: (code: string) => void }) {
+  const accent = servicePalettes[code]?.accent || colors.brand;
   const motion = useAnimatedStyle(() => {
     const d = Math.abs(x.value - index * ITEM) / ITEM;
     return {
@@ -331,31 +345,31 @@ function ArcItem({ index, x, tile, onOpen, onPressIn }: { index: number; x: Shar
   // Halo + coloured contact shadow only light up on the centred item.
   const lit = useAnimatedStyle(() => ({ opacity: interpolate(Math.abs(x.value - index * ITEM) / ITEM, [0, 0.7], [1, 0], Extrapolation.CLAMP) }));
   return (
-    <Pressable onPressIn={() => onPressIn?.(tile.code)} onPress={() => onOpen(tile.code)} style={{ width: ITEM, alignItems: "center" }}>
+    <Pressable onPressIn={() => onPressIn(code)} onPress={() => onOpen(code)} style={{ width: ITEM, alignItems: "center" }}>
       <Animated.View style={[{ alignItems: "center", width: ITEM + 30 }, motion]}>
         <Animated.View pointerEvents="none" style={[styles.halo, lit]}>
           <Svg width={150} height={150} viewBox="0 0 150 150">
             <Defs>
-              <RadialGradient id={`halo-${tile.code}`} cx="0.5" cy="0.5" r="0.5">
+              <RadialGradient id={`halo-${code}`} cx="0.5" cy="0.5" r="0.5">
                 <Stop offset="0" stopColor={accent} stopOpacity={0.32} />
                 <Stop offset="0.55" stopColor={accent} stopOpacity={0.1} />
                 <Stop offset="1" stopColor={accent} stopOpacity={0} />
               </RadialGradient>
-              <RadialGradient id={`drop-${tile.code}`} cx="0.5" cy="0.5" r="0.5">
+              <RadialGradient id={`drop-${code}`} cx="0.5" cy="0.5" r="0.5">
                 <Stop offset="0" stopColor={accent} stopOpacity={0.55} />
                 <Stop offset="1" stopColor={accent} stopOpacity={0} />
               </RadialGradient>
             </Defs>
-            <Circle cx={75} cy={66} r={70} fill={`url(#halo-${tile.code})`} />
-            <Ellipse cx={75} cy={118} rx={44} ry={9} fill={`url(#drop-${tile.code})`} />
+            <Circle cx={75} cy={66} r={70} fill={`url(#halo-${code})`} />
+            <Ellipse cx={75} cy={118} rx={44} ry={9} fill={`url(#drop-${code})`} />
           </Svg>
         </Animated.View>
-        <ServiceArt code={tile.code} size={86} />
-        <Text style={styles.arcLabel} numberOfLines={2}>{tile.name}</Text>
+        <ServiceArt code={code} size={86} />
+        <Text style={styles.arcLabel} numberOfLines={2}>{name}</Text>
       </Animated.View>
     </Pressable>
   );
-}
+});
 
 /** Line-icon shortcut strip on a soft card (reference "Di chuyển / SIM du lịch…" row). */
 export function QuickActions({ items }: { items: Array<{ key: string; icon: ZxIconName; label: string; onPress: () => void; accent?: string }> }) {
