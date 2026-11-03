@@ -64,8 +64,8 @@ export const paymentMethodLabels: Record<ZhaoXiLocale, Record<string, string>> =
 };
 
 export const paymentStatusLabels: Record<ZhaoXiLocale, Record<string, string>> = {
-  "vi-VN": { pending: "Chờ thanh toán", awaiting_payment: "Chờ xác nhận chuyển khoản", paid: "Đã thanh toán", failed: "Thất bại", refunded: "Đã hoàn tiền", cancelled: "Đã hủy" },
-  "en-US": { pending: "Pending", awaiting_payment: "Awaiting confirmation", paid: "Paid", failed: "Failed", refunded: "Refunded", cancelled: "Cancelled" },
-  "zh-CN": { pending: "待支付", awaiting_payment: "等待确认转账", paid: "已支付", failed: "支付失败", refunded: "已退款", cancelled: "已取消" },
-  "zh-TW": { pending: "待付款", awaiting_payment: "等待確認轉帳", paid: "已付款", failed: "付款失敗", refunded: "已退款", cancelled: "已取消" },
+  "vi-VN": { pending: "Chờ thanh toán", awaiting_payment: "Chờ xác nhận chuyển khoản", cash_due: "Trả khi nhận hàng", cash_collected: "Đã thu tiền mặt", paid: "Đã thanh toán", failed: "Thất bại", refunded: "Đã hoàn tiền", cancelled: "Đã hủy" },
+  "en-US": { pending: "Pending", awaiting_payment: "Awaiting confirmation", cash_due: "Pay on delivery", cash_collected: "Cash collected", paid: "Paid", failed: "Failed", refunded: "Refunded", cancelled: "Cancelled" },
+  "zh-CN": { pending: "待支付", awaiting_payment: "等待确认转账", cash_due: "货到付款", cash_collected: "已收现金", paid: "已支付", failed: "支付失败", refunded: "已退款", cancelled: "已取消" },
+  "zh-TW": { pending: "待付款", awaiting_payment: "等待確認轉帳", cash_due: "貨到付款", cash_collected: "已收現金", paid: "已付款", failed: "付款失敗", refunded: "已退款", cancelled: "已取消" },
 };

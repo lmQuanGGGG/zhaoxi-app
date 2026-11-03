@@ -857,6 +857,185 @@ function Play() {
   );
 }
 
+/* ---- Order status: one clay object per stage of a service request ---- */
+
+function Hourglass() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("wood", "#D9A36E", "#94592C")}
+        {lin("glassBulb", "#F4FBFF", "#C4E4F4")}
+        {lin("sand", "#FFDB85", "#F0A21C")}
+      </Defs>
+      <Shadow rx={20} />
+      <Path d="M15.5 12v35M48.5 12v35" stroke="url(#wood)" strokeWidth={3.2} strokeLinecap="round" />
+      <Path d="M18.5 13.5h27c0 8-7.6 11.8-11 16.5 3.4 4.7 11 8.5 11 16.5h-27c0-8 7.6-11.8 11-16.5-3.4-4.7-11-8.5-11-16.5Z" fill="url(#glassBulb)" />
+      <Path d="M22.6 19.5h18.8c-1.6 3.6-5.6 6.4-8 9.6h-2.8c-2.4-3.2-6.4-6-8-9.6Z" fill="url(#sand)" />
+      <Path d="M32 29.5v8.5" stroke="#F0A21C" strokeWidth={1.6} strokeLinecap="round" />
+      <Path d="M20.8 46c1.4-5 5.8-8 11.2-8s9.8 3 11.2 8Z" fill="url(#sand)" />
+      <Path d="M22 16.5c.8 3 2.6 5.4 5 7.4" stroke="#FFFFFF" strokeOpacity={0.85} strokeWidth={2.2} strokeLinecap="round" fill="none" />
+      <Rect x={11} y={7} width={42} height={6.5} rx={3.25} fill="url(#wood)" />
+      <Rect x={11} y={46} width={42} height={6.5} rx={3.25} fill="url(#wood)" />
+      <Path d="M15 9.2h15M15 48.2h10" stroke="#FFFFFF" strokeOpacity={0.45} strokeWidth={1.6} strokeLinecap="round" />
+    </>
+  );
+}
+
+function GiftBox() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("giftFront", "#FF8F7E", "#E04E3C")}
+        {lin("giftSide", "#E9614F", "#B5382A")}
+        {lin("giftTop", "#FFB4A6", "#F47A66")}
+        {lin("ribbon", "#FFE08A", "#F2A516")}
+      </Defs>
+      <Shadow rx={22} />
+      <Path d="M10 25 32 34v20l-22-9Z" fill="url(#giftFront)" />
+      <Path d="M54 25 32 34v20l22-9Z" fill="url(#giftSide)" />
+      <Path d="M10 25 32 16l22 9-22 9Z" fill="url(#giftTop)" />
+      <Path d="M19 28.7 23 30.3v20l-4-1.6Z" fill="url(#ribbon)" />
+      <Path d="M41 30.3 45 28.7v20l-4 1.6Z" fill="#E8960F" />
+      <Path d="M21 20.5 43 29.5M43 20.5 21 29.5" stroke="url(#ribbon)" strokeWidth={4} />
+      <Path d="M32 24.6c-5.4-8.6-12.6-6.4-9-2 1.8 2.2 5.6 2.6 9 2Z" fill="url(#ribbon)" />
+      <Path d="M32 24.6c5.4-8.6 12.6-6.4 9-2-1.8 2.2-5.6 2.6-9 2Z" fill="url(#ribbon)" />
+      <Ellipse cx={32} cy={24.8} rx={3} ry={2.2} fill="#E8960F" />
+      <Path d="M13.4 30.5c.6 4.4.8 8.4.5 12.2" stroke="#FFFFFF" strokeOpacity={0.45} strokeWidth={2} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function CookingPot() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("pot", "#FF9A6B", "#E5573C")}
+        {lin("potRim", "#FFB896", "#F07457")}
+        {lin("potLid", "#F7FAFC", "#C9D5E0")}
+      </Defs>
+      <Shadow rx={21} />
+      <Path d="M23 10.5c-1.8-2.4 1.6-3.8 0-6.4M41 10.5c-1.8-2.4 1.6-3.8 0-6.4" stroke="#CBD5E1" strokeWidth={2.2} strokeLinecap="round" fill="none" />
+      <Rect x={3.5} y={34} width={10} height={5.4} rx={2.7} fill="#B8432B" />
+      <Rect x={50.5} y={34} width={10} height={5.4} rx={2.7} fill="#B8432B" />
+      <Path d="M12 31h40v11.5C52 49 46.6 54 40 54H24c-6.6 0-12-5-12-11.5Z" fill="url(#pot)" />
+      <Rect x={9} y={28} width={46} height={6} rx={3} fill="url(#potRim)" />
+      <Path d="M14 28.5c0-7.4 8-12.2 18-12.2s18 4.8 18 12.2Z" fill="url(#potLid)" />
+      <Rect x={28} y={12} width={8} height={5} rx={2.5} fill="#475569" />
+      <Path d="M19.5 24.5c1.6-3 4.6-5 8.4-5.8" stroke="#FFFFFF" strokeWidth={2.4} strokeLinecap="round" fill="none" />
+      <Path d="M16.6 37.5c0 3 .8 6 2.6 8.4" stroke="#FFFFFF" strokeOpacity={0.45} strokeWidth={2.4} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function DeliveryBike() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("bike", "#3FD39C", "#0E8F63")}
+        {lin("crate", "#FFC95A", "#EE9A12")}
+      </Defs>
+      <Shadow rx={25} cy={56} />
+      <Path d="M14 31v6" stroke="#475569" strokeWidth={3} strokeLinecap="round" />
+      <Rect x={5} y={13} width={18} height={16} rx={3.5} fill="url(#crate)" />
+      <Rect x={4} y={28.5} width={20} height={3.2} rx={1.6} fill="#475569" />
+      <Path d="M8.5 17.5h11" stroke="#FFFFFF" strokeOpacity={0.6} strokeWidth={2.2} strokeLinecap="round" />
+      <Path d="M39 43 45.5 21" stroke="#475569" strokeWidth={3.4} strokeLinecap="round" />
+      <Path d="M42 19.5h9" stroke="#1F2937" strokeWidth={3.6} strokeLinecap="round" />
+      <Path d="M43.5 25c4.2 2 6.8 7 6.8 12.6V42h-7.6Z" fill="url(#bike)" />
+      <Ellipse cx={50.4} cy={27.4} rx={2.3} ry={1.9} fill="#FFE08A" />
+      <Path d="M9.5 43c0-6 4.6-10.4 10.4-10.4H34c1.8 0 3.4 1.1 4 2.8L41 43Z" fill="url(#bike)" />
+      <Rect x={18} y={27.5} width={17} height={5.4} rx={2.7} fill="#1F2937" />
+      <Circle cx={16} cy={46} r={8} fill="#1F2937" /><Circle cx={16} cy={46} r={3.4} fill="#CBD5E1" />
+      <Circle cx={49} cy={46} r={8} fill="#1F2937" /><Circle cx={49} cy={46} r={3.4} fill="#CBD5E1" />
+      <Path d="M14.4 38.4c1.2-2 3.2-3.4 5.6-3.8" stroke="#FFFFFF" strokeOpacity={0.6} strokeWidth={2.2} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function Clipboard() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("board", "#7CC4FF", "#2F72D2")}
+        {lin("clip", "#EEF2F6", "#94A3B8")}
+      </Defs>
+      <Shadow rx={18} />
+      <Rect x={13} y={10} width={38} height={45} rx={6} fill="url(#board)" />
+      <Rect x={17} y={15} width={30} height={36} rx={3.5} fill="#FFFFFF" />
+      <Rect x={24} y={6.5} width={16} height={8} rx={3} fill="url(#clip)" />
+      <Path d="m21.5 25.5 2.6 2.6 4.4-4.8M21.5 34.5l2.6 2.6 4.4-4.8" stroke="#0FAF7A" strokeWidth={2.8} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <Path d="M32 26h10M32 35h8M32 44h7" stroke="#CBD5E1" strokeWidth={3} strokeLinecap="round" />
+      <Rect x={21.6} y={41} width={6} height={6} rx={1.8} fill="none" stroke="#CBD5E1" strokeWidth={2} />
+      <Path d="M15.6 18v14" stroke="#FFFFFF" strokeOpacity={0.5} strokeWidth={2} strokeLinecap="round" />
+    </>
+  );
+}
+
+function Medal() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("medalRim", "#FFE08A", "#E99A12")}
+        {lin("medalRibbon", "#4FC9B8", "#0F7468")}
+        <RadialGradient id="medalFace" cx="0.4" cy="0.35" r="0.7">
+          <Stop offset="0" stopColor="#5BE3A4" />
+          <Stop offset="1" stopColor="#0E9F63" />
+        </RadialGradient>
+      </Defs>
+      <Shadow rx={15} />
+      <Path d="M22.5 38 17 54.5l5.8-2.2 3.8 4.6L31 42Z" fill="url(#medalRibbon)" />
+      <Path d="M41.5 38 47 54.5l-5.8-2.2-3.8 4.6L33 42Z" fill="url(#medalRibbon)" />
+      <Circle cx={32} cy={26} r={19} fill="url(#medalRim)" />
+      <Circle cx={32} cy={26} r={14.5} fill="url(#medalFace)" />
+      <Path d="m24.8 26.4 5 5 9.6-10.4" stroke="#FFFFFF" strokeWidth={4.2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <Path d="M17.6 19.5c2.4-4.6 6.8-7.6 12-8.2" stroke="#FFFFFF" strokeOpacity={0.65} strokeWidth={2.4} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
+function SoftCross() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("cross", "#FFA79D", "#E2493F")}
+      </Defs>
+      <Shadow rx={17} />
+      <Path d="M19 18.5 45 44.5M45 18.5 19 44.5" stroke="#B9302A" strokeOpacity={0.45} strokeWidth={12.5} strokeLinecap="round" />
+      <Path d="M19 16 45 42M45 16 19 42" stroke="url(#cross)" strokeWidth={12.5} strokeLinecap="round" />
+      <Path d="M20.6 14.2l5 5M43 14l-3.6 3.6" stroke="#FFFFFF" strokeOpacity={0.7} strokeWidth={2.8} strokeLinecap="round" />
+    </>
+  );
+}
+
+function Wallet() {
+  return (
+    <>
+      <Defs>
+        <GroundDef />
+        {lin("walletBody", "#4FC9B8", "#0F6E66")}
+        {lin("walletCard", "#A595F8", "#5640C4", false)}
+        {lin("walletFlap", "#FFD36B", "#EE9A12")}
+      </Defs>
+      <Shadow rx={23} />
+      <G transform="rotate(-9 30 20)">
+        <Rect x={14} y={9} width={32} height={20} rx={4} fill="url(#walletCard)" />
+        <Path d="M18 14h10" stroke="#FFFFFF" strokeOpacity={0.6} strokeWidth={2.2} strokeLinecap="round" />
+      </G>
+      <Rect x={7} y={19} width={47} height={34} rx={8} fill="url(#walletBody)" />
+      <Path d="M38 29h17.5c1.7 0 3 1.3 3 3v8c0 1.7-1.3 3-3 3H38c-3.9 0-7-3.1-7-7s3.1-7 7-7Z" fill="url(#walletFlap)" />
+      <Rect x={36} y={33.6} width={7} height={4.8} rx={2.4} fill="#FFF3D6" />
+      <Path d="M11.5 27c0 6 .3 12 1 17" stroke="#FFFFFF" strokeOpacity={0.45} strokeWidth={2.2} strokeLinecap="round" fill="none" />
+    </>
+  );
+}
+
 const menuArt = {
   orders: Parcel, favorites: StarBadge, history: Clock, coupons: Ticket, notifications: Bell, language: Globe,
   security: Shield, emergency: Siren, push: PhonePush, promotions: Megaphone, help: Lifebuoy, feedback: ChatHeart,
@@ -867,7 +1046,13 @@ const extraArt = {
   pin: Pin, people: People, store: Store, sparkle: SparkleArt, heart: Heart, bookmark: Bookmark, scooter: Scooter, truck: Truck,
   compass: Compass, card: CardArt, calendar: Calendar, check: Check, search: Magnifier, pencil: Pencil, play: Play,
 } as const;
-const allArt = { ...menuArt, ...extraArt, bed: Bed, bath: Bath, area: FloorArea } as const;
+const statusArt = {
+  hourglass: Hourglass, gift: GiftBox, cooking: CookingPot, delivery: DeliveryBike, clipboard: Clipboard, medal: Medal,
+  cancel: SoftCross, wallet: Wallet, attention: Bell,
+} as const;
+export type StatusArtKind = keyof typeof statusArt;
+
+const allArt = { ...menuArt, ...extraArt, ...statusArt, bed: Bed, bath: Bath, area: FloorArea } as const;
 export type ArtKind = keyof typeof allArt;
 
 /** Any clay pictogram (menu, facts, extras) bare, at `size` points. Use instead of emoji. */
@@ -913,6 +1098,12 @@ export function MenuArt({ kind, size = 40 }: { kind: MenuArtKind; size?: number 
     </View>
   );
 }
+
+// Halo colour behind each order-status illustration.
+export const statusGlow: Record<StatusArtKind, string> = {
+  hourglass: "#F5B524", gift: "#F26B4A", cooking: "#F58A3C", delivery: "#22B98A", clipboard: "#4B92E8", medal: "#22B98A",
+  cancel: "#EF5350", wallet: "#F0A21C", attention: "#F5B524",
+};
 
 const art: Record<string, () => React.JSX.Element> = {
   food: Food,
