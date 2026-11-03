@@ -42,6 +42,10 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     if (!access.exists || !canManageRequestStatus(gate.session, current, access)) {
       return errorResponse("Service request not found.", 404);
     }
+    // Travel bookings carry their own stage machine (capacity lock, platform fee snapshot).
+    if (gate.session.role === "partner" && (current.details as Record<string, unknown> | null)?.inquiryType === "travel_experience_inquiry") {
+      return errorResponse("Use the travel booking actions for this order.", 409, { code: "TRAVEL_BOOKING_ACTION_REQUIRED" });
+    }
     if (current.status === status) return json({ ok: true, data: current });
     if (status === "accepted" && (!current.customerPhone?.trim() || !current.addressText?.trim())) {
       return errorResponse("Customer phone and address are required before accepting this order.", 422);
