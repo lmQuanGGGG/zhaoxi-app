@@ -24,3 +24,5 @@ INSERT INTO auth_sessions(user_id,role,organization_id,access_token_hash,refresh
  ('00000000-0000-0000-0000-0000000000b1','customer',NULL,encode(sha256('tok-cb'::bytea),'hex'),encode(sha256('r-cb'::bytea),'hex'),now()+interval '1 day',now()+interval '30 day'),
  ('00000000-0000-0000-0000-0000000000a2','partner','00000000-0000-0000-0000-00000000aaaa',encode(sha256('tok-pa'::bytea),'hex'),encode(sha256('r-pa'::bytea),'hex'),now()+interval '1 day',now()+interval '30 day'),
  ('00000000-0000-0000-0000-0000000000b2','partner','00000000-0000-0000-0000-00000000bbbb',encode(sha256('tok-pb'::bytea),'hex'),encode(sha256('r-pb'::bytea),'hex'),now()+interval '1 day',now()+interval '30 day');
+-- Local-only login for trying the apps against this fixture: username khach-a-test, PIN 673548.
+UPDATE users SET username='khach-a-test', pin_hash='scrypt$BTI7_o93ViqtVBR2jIEFnA$FCLHSQVVrKYPWr7dNWnPS6VFlzBqjwNh8QCYN2iXQ3O056taetNAjFdR8cZSQTO7HbrVdQw1_qmXloEt_xnmjw' WHERE id='00000000-0000-0000-0000-0000000000a1';
