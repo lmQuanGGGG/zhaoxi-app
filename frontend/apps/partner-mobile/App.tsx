@@ -8,6 +8,7 @@ import { ActivityIndicator, Animated, AppState, Easing, Image, Keyboard, Keyboar
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { getOrderHistory, getPartnerOrganizations, getQueue, getRestaurantAnalytics, fulfill, loadAuth, login, loginWithPhone, logout, registerPush, switchPartnerOrganization, updateKitchen } from "./src/api";
 import { configureNotifications, getPushToken, notifyNewOrder } from "./src/notifications";
+import { ServiceOrderCard, ServiceOrderModal } from "./src/service-orders";
 import { C, s } from "./src/styles";
 import type { AnalyticsData, AuthState, Order, OrderStage, PartnerOrganization, QueueData } from "./src/types";
 import { Language, LANGUAGES, LANGUAGE_STORAGE_KEY, I18N } from "./src/i18n";
@@ -145,6 +146,7 @@ function OrderCard({
   onPriority,
   onEta,
   interactive = true,
+  onChanged,
   t,
 }: {
   order: Order;
@@ -155,8 +157,10 @@ function OrderCard({
   onPriority: (priority: Order["priority"]) => void;
   onEta: (minutes: number) => void;
   interactive?: boolean;
+  onChanged?: () => void;
   t: typeof I18N["vi"];
 }) {
+  if (order.kind !== "food_delivery") return <ServiceOrderCard order={order} t={t} interactive={interactive} onOpen={onOpen} onChanged={onChanged}/>;
   const provider = order.deliveryProvider === "grab" ? "Grab" : order.deliveryProvider === "green_sm" ? "Xanh SM" : "";
   const completed = order.status === "completed";
   const cancelled = ["cancelled", "rejected"].includes(order.status);
@@ -308,6 +312,7 @@ function OrderModal({
     }
   }
   if (!order) return null;
+  if (order.kind !== "food_delivery") return <ServiceOrderModal order={order} t={t} onClose={onClose} onRefresh={onRefresh}/>;
   const next = t.nextAction[order.stage];
   const remainingBehind = Math.max(0, waitingCount - waitingIndex);
   return (
@@ -615,7 +620,9 @@ function Main({
     } catch {
       const cached = await AsyncStorage.getItem(`queue:${orgId}`);
       if (cached && !initialized.current) {
-        const parsed = JSON.parse(cached) as QueueData;
+        const stored = JSON.parse(cached) as QueueData;
+        // Queues cached by older builds only held food orders and lack kind/facts/actions.
+        const parsed: QueueData = { ...stored, items: stored.items.map(item => ({ ...item, kind: item.kind || "food_delivery", facts: item.facts || [], actions: item.actions || [] })) };
         setData(parsed);
         return parsed;
       }
@@ -1026,6 +1033,7 @@ function Main({
                         busy={actionBusy === order.requestId}
                         onPriority={priority => void setPriority(order, priority)}
                         onEta={() => setEta(order)}
+                        onChanged={() => void load()}
                         t={t}
                       />
                     ))}
@@ -1057,6 +1065,7 @@ function Main({
                         busy={actionBusy === order.requestId}
                         onPriority={priority => void setPriority(order, priority)}
                         onEta={() => setEta(order)}
+                        onChanged={() => void load()}
                         t={t}
                       />
                     ))}
@@ -1092,6 +1101,7 @@ function Main({
                         busy={actionBusy === order.requestId}
                         onPriority={priority => void setPriority(order, priority)}
                         onEta={() => setEta(order)}
+                        onChanged={() => void load()}
                         t={t}
                       />
                     ))}
