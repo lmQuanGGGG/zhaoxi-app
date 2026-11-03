@@ -43,6 +43,7 @@ export const keys = {
   history: (locale: string, userId?: string) => ["history", locale, userId] as const,
   profile: (userId?: string) => ["profile", userId] as const,
   accountAccess: (userId?: string) => ["account-access", userId] as const,
+  miniAppCatalog: (platform: string, userId?: string) => ["miniapp-catalog", platform, userId] as const,
   orders: (locale: string, userId?: string) => ["orders", locale, userId] as const,
   order: (id: string, locale: string) => ["order", id, locale] as const,
   tracking: (id: string) => ["tracking", id] as const,

@@ -158,6 +158,18 @@ export type CustomerProfile = {
   addresses?: SavedAddress[];
 };
 /** `GET /api/account/me`: vai trò và gian hàng (organization) người dùng là thành viên đang hoạt động. */
+/** `GET /api/miniapps?platform=`: mini apps this user may open, each with the release the server picked (rollout per user). */
+export type MiniAppCatalogItem = {
+  id: string;
+  title: Partial<Record<"vi-VN" | "en-US" | "zh-CN" | "zh-TW", string>>;
+  subtitle: Partial<Record<"vi-VN" | "en-US" | "zh-CN" | "zh-TW", string>>;
+  icon: string;
+  tint: string;
+  chrome: "light" | "dark";
+  audience: "members" | "partner" | "internal" | null;
+  release: { platform: "ios" | "android"; version: string; sha256: string };
+};
+
 export type AccountAccess = {
   roles: string[];
   organizations: Array<{ id: string; code?: string | null; name: string; type?: string | null; status?: string | null; memberRole?: string | null }>;

@@ -11,6 +11,9 @@
 export type TrustedKey = { keyId: string; publicKey: string; env: "dev" | "prod"; note: string };
 
 export const trustedKeys: TrustedKey[] = [
+  // Khoá phát hành. Khoá riêng tạo 04/11/2026 bằng `zhaoxi-miniapp keygen`, KHÔNG nằm trong repo
+  // (quy trình giữ khoá: docs/miniapp/README.md §10). Backend tin cùng danh sách (backend/lib/miniapps/trusted-keys.ts).
+  { keyId: "5d81cc2da9ad8163", publicKey: "3FVJYQfo6kYDwWgqj1/c+qtkVUbApIkkWGUiyvnRpUA=", env: "prod", note: "zhaoxi-miniapp-prod-2026-11" },
   // Khoá dev của mini app mẫu (miniapp_zhaoxi_example/miniapp-signing.pem, không commit). Mất file thì tạo khoá mới và thay dòng này.
   { keyId: "588b24b78faa74ad", publicKey: "yQ4YgirQuyo4gxJwmjJqI3ZgYLuPl48U+JmfP9ju/rw=", env: "dev", note: "zhaoxi-dev-2026-11" },
   // Khoá dev của mini app Partner (miniapp_zhaoxi_partner/miniapp-signing.pem, không commit).

@@ -1626,3 +1626,60 @@ export const orderMessageAttachments = pgTable("order_message_attachments", {
   index("order_message_attachments_message_idx").on(table.messageId),
   index("order_message_attachments_pending_idx").on(table.conversationId, table.uploaderUserId, table.createdAt),
 ]);
+
+// Mini app registry (migration 0012). `miniapps` is the catalogue the host shows;
+// `miniapp_releases` holds each signed build (one per platform + version). Bytes
+// live in `bundle_data` while `storage = 'postgres'`; an object store would set
+// `storage_key` instead. Release states: draft → published ⇄ rolled_back.
+export type MiniAppLocalizedText = Partial<Record<"vi-VN" | "en-US" | "zh-CN" | "zh-TW", string>>;
+
+export const miniapps = pgTable("miniapps", {
+  id: varchar("id", { length: 120 }).primaryKey(),
+  title: jsonb("title").$type<MiniAppLocalizedText>().notNull().default({}),
+  subtitle: jsonb("subtitle").$type<MiniAppLocalizedText>().notNull().default({}),
+  icon: varchar("icon", { length: 80 }).notNull().default("cube-outline"),
+  tint: varchar("tint", { length: 16 }).notNull().default("#0FAF7A"),
+  chrome: varchar("chrome", { length: 8 }).notNull().default("light"),
+  audience: varchar("audience", { length: 24 }),
+  enabled: boolean("enabled").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, () => [
+  check("miniapps_chrome_check", sql`"chrome" IN ('light', 'dark')`),
+  check("miniapps_audience_check", sql`"audience" IS NULL OR "audience" IN ('members', 'partner', 'internal')`),
+]);
+
+export const miniappReleases = pgTable("miniapp_releases", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  miniappId: varchar("miniapp_id", { length: 120 }).notNull().references(() => miniapps.id, { onDelete: "cascade" }),
+  platform: varchar("platform", { length: 8 }).notNull(),
+  version: varchar("version", { length: 40 }).notNull(),
+  runtime: integer("runtime").notNull(),
+  manifest: jsonb("manifest").$type<Record<string, unknown>>().notNull(),
+  sha256: varchar("sha256", { length: 64 }).notNull(),
+  sizeBytes: integer("size_bytes").notNull(),
+  keyId: varchar("key_id", { length: 16 }).notNull(),
+  bundleFile: varchar("bundle_file", { length: 200 }).notNull(),
+  storage: varchar("storage", { length: 16 }).notNull().default("postgres"),
+  storageKey: text("storage_key"),
+  bundleData: bytea("bundle_data"),
+  status: varchar("status", { length: 16 }).notNull().default("draft"),
+  rolloutPercent: integer("rollout_percent").notNull().default(100),
+  notes: text("notes"),
+  createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  publishedBy: uuid("published_by").references(() => users.id, { onDelete: "set null" }),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+  rolledBackBy: uuid("rolled_back_by").references(() => users.id, { onDelete: "set null" }),
+  rolledBackAt: timestamp("rolled_back_at", { withTimezone: true }),
+  rollbackReason: text("rollback_reason"),
+}, (table) => [
+  uniqueIndex("miniapp_releases_version_uidx").on(table.miniappId, table.platform, table.version),
+  index("miniapp_releases_live_idx").on(table.miniappId, table.platform, table.status, table.publishedAt),
+  index("miniapp_releases_bundle_idx").on(table.miniappId, table.platform, table.bundleFile),
+  check("miniapp_releases_platform_check", sql`"platform" IN ('ios', 'android')`),
+  check("miniapp_releases_status_check", sql`"status" IN ('draft', 'published', 'rolled_back')`),
+  check("miniapp_releases_rollout_check", sql`"rollout_percent" BETWEEN 0 AND 100`),
+]);
