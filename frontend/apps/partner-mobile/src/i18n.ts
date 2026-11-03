@@ -178,6 +178,24 @@ export const I18N = {
     apply: "Áp dụng phân tích",
     invalidDateRange: "Vui lòng nhập định dạng YYYY-MM-DD hợp lệ.",
     customRangeBadge: (from: string, to: string) => `${from} → ${to}`,
+    // Non-food orders (housing, travel, visa, car rental, ...)
+    serviceOrder: {
+      kind: { food_delivery: "Đơn món ăn", housing_inquiry: "Yêu cầu thuê nhà", travel_booking: "Đặt tour", service_booking: "Đơn dịch vụ" },
+      newTitle: { food_delivery: "🔔 ĐƠN HÀNG MỚI CẦN NHẬN", housing_inquiry: "🏠 YÊU CẦU THUÊ NHÀ MỚI", travel_booking: "🧭 YÊU CẦU ĐẶT TOUR MỚI", service_booking: "🔔 ĐƠN DỊCH VỤ MỚI" },
+      facts: { scheduledDate: "Ngày hẹn", scheduledTime: "Giờ hẹn", quantity: "Số lượng", totalAmount: "Giá trị đơn", paymentMethod: "Thanh toán", moveInDate: "Ngày nhận phòng", leaseMonths: "Thời gian thuê", occupants: "Số người ở", budget: "Ngân sách", monthlyRent: "Giá thuê/tháng", propertyType: "Loại nhà", visitDate: "Ngày đi tour", visitTime: "Giờ khởi hành", guests: "Số khách", adults: "Người lớn", children: "Trẻ em", packageName: "Gói tour", departurePoint: "Điểm đón", quotedAmount: "Báo giá", preferredContact: "Ưu tiên liên hệ", wechat: "WeChat", whatsapp: "WhatsApp", customerNote: "Ghi chú của khách" } as Record<string, string>,
+      months: "tháng",
+      actions: {
+        food_delivery: { accept: "Nhận đơn", start: "Bắt đầu", complete: "Hoàn tất", reject: "Từ chối", cancel: "Hủy" },
+        housing_inquiry: { accept: "Nhận yêu cầu", start: "Bắt đầu liên hệ khách", complete: "Hoàn tất tư vấn", reject: "Không thể tiếp nhận", cancel: "Hủy" },
+        travel_booking: { accept: "Xác nhận tour", start: "Bắt đầu", complete: "Hoàn tất tour", reject: "Từ chối", cancel: "Hủy tour" },
+        service_booking: { accept: "Nhận đơn", start: "Bắt đầu xử lý", complete: "Hoàn tất dịch vụ", reject: "Từ chối", cancel: "Hủy đơn" },
+      },
+      confirmTitle: "Xác nhận thao tác",
+      confirmDesc: (action: string, code: string) => `${action} cho đơn ${code}?`,
+      confirmYes: "Đồng ý",
+      confirmNo: "Quay lại",
+      actionFailed: "Không thể cập nhật đơn. Vui lòng thử lại.",
+    },
   },
   en: {
     // Navigation
@@ -348,6 +366,24 @@ export const I18N = {
     apply: "Apply Analysis",
     invalidDateRange: "Please enter valid dates in YYYY-MM-DD format.",
     customRangeBadge: (from: string, to: string) => `${from} → ${to}`,
+    // Non-food orders (housing, travel, visa, car rental, ...)
+    serviceOrder: {
+      kind: { food_delivery: "Food order", housing_inquiry: "Rental inquiry", travel_booking: "Tour booking", service_booking: "Service order" },
+      newTitle: { food_delivery: "🔔 NEW ORDER TO ACCEPT", housing_inquiry: "🏠 NEW RENTAL INQUIRY", travel_booking: "🧭 NEW TOUR BOOKING", service_booking: "🔔 NEW SERVICE ORDER" },
+      facts: { scheduledDate: "Date", scheduledTime: "Time", quantity: "Quantity", totalAmount: "Order value", paymentMethod: "Payment", moveInDate: "Move-in", leaseMonths: "Lease", occupants: "Occupants", budget: "Budget", monthlyRent: "Monthly rent", propertyType: "Property type", visitDate: "Tour date", visitTime: "Departure", guests: "Guests", adults: "Adults", children: "Children", packageName: "Package", departurePoint: "Pick-up point", quotedAmount: "Quote", preferredContact: "Preferred contact", wechat: "WeChat", whatsapp: "WhatsApp", customerNote: "Customer note" } as Record<string, string>,
+      months: "months",
+      actions: {
+        food_delivery: { accept: "Accept", start: "Start", complete: "Complete", reject: "Reject", cancel: "Cancel" },
+        housing_inquiry: { accept: "Accept inquiry", start: "Start contacting customer", complete: "Complete follow-up", reject: "Cannot accept", cancel: "Cancel" },
+        travel_booking: { accept: "Confirm booking", start: "Start", complete: "Tour completed", reject: "Reject", cancel: "Cancel booking" },
+        service_booking: { accept: "Accept", start: "Start service", complete: "Service completed", reject: "Reject", cancel: "Cancel order" },
+      },
+      confirmTitle: "Confirm action",
+      confirmDesc: (action: string, code: string) => `${action} for order ${code}?`,
+      confirmYes: "Confirm",
+      confirmNo: "Back",
+      actionFailed: "Unable to update the order. Please try again.",
+    },
   },
   zh: {
     // Navigation
@@ -518,5 +554,23 @@ export const I18N = {
     apply: "应用分析",
     invalidDateRange: "请输入有效的 YYYY-MM-DD 格式日期。",
     customRangeBadge: (from: string, to: string) => `${from} → ${to}`,
+    // Non-food orders (housing, travel, visa, car rental, ...)
+    serviceOrder: {
+      kind: { food_delivery: "餐饮订单", housing_inquiry: "租房意向", travel_booking: "旅游预订", service_booking: "服务订单" },
+      newTitle: { food_delivery: "🔔 新订单待接单", housing_inquiry: "🏠 新的租房意向", travel_booking: "🧭 新的旅游预订", service_booking: "🔔 新的服务订单" },
+      facts: { scheduledDate: "预约日期", scheduledTime: "预约时间", quantity: "数量", totalAmount: "订单金额", paymentMethod: "支付方式", moveInDate: "入住日期", leaseMonths: "租期", occupants: "入住人数", budget: "预算", monthlyRent: "月租", propertyType: "房型", visitDate: "出行日期", visitTime: "出发时间", guests: "人数", adults: "成人", children: "儿童", packageName: "套餐", departurePoint: "出发地点", quotedAmount: "报价", preferredContact: "优先联系", wechat: "WeChat", whatsapp: "WhatsApp", customerNote: "客户备注" } as Record<string, string>,
+      months: "个月",
+      actions: {
+        food_delivery: { accept: "接单", start: "开始处理", complete: "完成", reject: "拒绝", cancel: "取消" },
+        housing_inquiry: { accept: "接收意向", start: "开始联系客户", complete: "完成跟进", reject: "无法承接", cancel: "取消" },
+        travel_booking: { accept: "确认预订", start: "开始", complete: "行程完成", reject: "拒绝预订", cancel: "取消预订" },
+        service_booking: { accept: "接单", start: "开始服务", complete: "服务完成", reject: "拒绝", cancel: "取消订单" },
+      },
+      confirmTitle: "确认操作",
+      confirmDesc: (action: string, code: string) => `确定对订单 ${code} 执行「${action}」？`,
+      confirmYes: "确定",
+      confirmNo: "返回",
+      actionFailed: "无法更新订单，请重试。",
+    },
   },
 };

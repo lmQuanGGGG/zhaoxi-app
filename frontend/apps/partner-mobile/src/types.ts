@@ -14,8 +14,18 @@ export type PartnerOrganization = { id: string; code?: string; name: string; typ
 
 export type OrderStage = "assigned" | "preparing" | "ready_for_pickup" | "courier_booked" | "handed_off";
 
+/** Backend-derived order view (backend lib/services/partner-order-presentation.ts). */
+export type PartnerOrderKind = "food_delivery" | "housing_inquiry" | "travel_booking" | "service_booking";
+export type OrderFact = { key: string; value: string | number; format: "text" | "date" | "time" | "money" | "count" | "months" | "payment" };
+export type PartnerOrderAction = "accept" | "start" | "complete" | "reject" | "cancel";
+
 export type Order = {
   requestId: string;
+  organizationId: string;
+  kind: PartnerOrderKind;
+  moduleName?: string;
+  facts: OrderFact[];
+  actions: PartnerOrderAction[];
   requestCode: string;
   status: string;
   stage: OrderStage;

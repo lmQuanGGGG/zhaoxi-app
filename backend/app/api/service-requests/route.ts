@@ -22,6 +22,7 @@ import { restaurantAvailabilityService } from "@/lib/services/restaurant-availab
 import {foodCommercialService} from "@/lib/services/food-commercial-service";
 import {restaurantCouponService,type CouponEvaluation} from "@/lib/services/restaurant-coupon-service";
 import { partnerWebPushService } from "@/lib/services/partner-web-push-service";
+import { describePartnerOrder, sanitizeOrderDetailsForModule } from "@/lib/services/partner-order-presentation";
 
 export const dynamic = "force-dynamic";
 
@@ -120,7 +121,7 @@ export async function GET(request: Request) {
       .orderBy(desc(serviceRequests.createdAt))
       .limit(100);
 
-    return json({ ok: true, data: rows });
+    return json({ ok: true, data: rows.map((row) => ({ ...row, ...describePartnerOrder(row) })) });
   } catch (error) {
     console.error(error);
     return errorResponse("Unable to load service requests.", 500);
@@ -175,7 +176,7 @@ export async function POST(request: Request) {
         return errorResponse("This food item is currently sold out.",409,{code:"FOOD_ITEM_SOLD_OUT"});
       }
       if (!input.addressText?.trim()) return errorResponse("A delivery or service address is required.", 422);
-      let requestDetails=input.details ?? {};
+      let requestDetails=sanitizeOrderDetailsForModule(input.moduleCode,input.details ?? {});
       if (requestDetails.paymentMethod === "bank_transfer") {
         if (requestDetails.paymentCustomerConfirmed !== true) {
           return errorResponse("Confirm the bank transfer before placing this order.", 422, { code: "BANK_TRANSFER_CONFIRMATION_REQUIRED" });
@@ -301,16 +302,12 @@ export async function POST(request: Request) {
       });
       try { await paymentService.ensureForRequest(created.id, typeof input.details?.paymentMethod === "string" ? input.details.paymentMethod : "cash_on_delivery"); }
       catch (paymentError) { console.error("payment initialization failed", paymentError); }
-      const pushOrganizationId = serviceRow.organizationId;
       const bankTransferReported = requestDetails.paymentMethod === "bank_transfer" && requestDetails.paymentCustomerConfirmed === true;
-      after(async () => {
-        try {
-          await partnerWebPushService.sendNewOrder(pushOrganizationId, {
-            id: created.id,
-            requestCode: created.requestCode,
-            customerName: bankTransferReported ? `${created.customerName} (Đã báo CK)` : created.customerName,
-          });
-        } catch (pushError) { console.error("partner web push failed", pushError); }
+      partnerWebPushService.notifyNewOrderAfterResponse(serviceRow.organizationId, {
+        id: created.id,
+        requestCode: created.requestCode,
+        customerName: bankTransferReported ? `${created.customerName} (Đã báo CK)` : created.customerName,
+        moduleCode: input.moduleCode,
       });
       return json({
         ok: true,
