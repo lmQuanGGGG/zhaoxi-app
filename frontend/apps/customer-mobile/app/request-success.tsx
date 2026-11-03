@@ -34,13 +34,13 @@ export default function RequestSuccess() {
     <Screen edges={["top", "bottom"]}>
       <View style={styles.body}>
         <Animated.View style={[styles.ring, ringStyle]}>
-          <Animated.View entering={ZoomIn.delay(150).springify().damping(10)} style={styles.check}>
+          <Animated.View entering={ZoomIn.delay(52).duration(200)} style={styles.check}>
             <Ionicons name="checkmark" size={54} color={colors.white} />
           </Animated.View>
         </Animated.View>
-        <Animated.Text entering={FadeInDown.delay(250)} style={[font.h1, { textAlign: "center", marginTop: space.xl }]}>{t.success.title}</Animated.Text>
-        <Animated.Text entering={FadeInDown.delay(320)} style={[font.small, { textAlign: "center", marginTop: 8, lineHeight: 20 }]}>{t.success.body}</Animated.Text>
-        <Animated.View entering={FadeInDown.delay(400)} style={{ alignSelf: "stretch", marginTop: space.xl }}>
+        <Animated.Text entering={FadeInDown.delay(88).duration(200)} style={[font.h1, { textAlign: "center", marginTop: space.xl }]}>{t.success.title}</Animated.Text>
+        <Animated.Text entering={FadeInDown.delay(112).duration(200)} style={[font.small, { textAlign: "center", marginTop: 8, lineHeight: 20 }]}>{t.success.body}</Animated.Text>
+        <Animated.View entering={FadeInDown.delay(140).duration(200)} style={{ alignSelf: "stretch", marginTop: space.xl }}>
           <GlassCard style={{ gap: 12 }}>
             <View style={styles.line}><Text style={font.small}>{t.success.code}</Text><Text style={styles.code}>{code}</Text></View>
             {partner ? <View style={styles.line}><Text style={font.small}>{t.success.partner}</Text><Text style={font.h3} numberOfLines={1}>{partner}</Text></View> : null}

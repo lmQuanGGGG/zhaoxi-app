@@ -7,7 +7,7 @@ import { RefreshControl, ScrollView, StyleSheet, Switch, Text, View } from "reac
 import Animated, { FadeInDown, FadeOut, LinearTransition } from "react-native-reanimated";
 import { getNotifications, markAllNotificationsRead, markNotification, updateNotificationPreferences } from "../src/api/endpoints";
 import type { NotificationInbox, NotificationItem, NotificationPreferences } from "../src/api/types";
-import { CenterChip, CenterEmpty, SoftButton, TextLink } from "../src/components/center";
+import { CenterChip, CenterEmpty, HeaderPill, SoftButton } from "../src/components/center";
 import { TAB_BAR_SPACE } from "../src/constants";
 import { shortDate } from "../src/format";
 import { usePullRefresh, useSession } from "../src/hooks";
@@ -15,12 +15,19 @@ import { useI18n } from "../src/i18n";
 import { routeForWebHref } from "../src/links";
 import { keys } from "../src/query";
 import { colors, shadow } from "../src/theme";
-import { Header, PressableScale, Screen, SkeletonList } from "../src/ui";
+import { GlassFill, Header, MenuArt, PressableScale, Screen, ServiceTile, SkeletonList, ZxIcon } from "../src/ui";
+import { Art3D } from "../src/ui/service-icons";
+import type { NotificationCategory } from "../src/api/types";
 
 const filters = ["all", "order", "housing", "travel", "payment", "saved_search"] as const;
 const centerTitle = { "vi-VN": "Trung tâm thông báo", "en-US": "Notification Center", "zh-CN": "通知中心", "zh-TW": "通知中心" } as const;
 const viewLabel = { "vi-VN": "Xem", "en-US": "View", "zh-CN": "查看", "zh-TW": "查看" } as const;
-const discover = { "vi-VN": "Khám phá dịch vụ", "en-US": "Discover services", "zh-CN": "发现服务", "zh-TW": "探索服務" } as const;
+/** 3D art per category, on the same soft halo as the rest of the app (no flat dots). */
+function NoticeArt({ category }: { category: NotificationCategory }) {
+  if (category === "housing" || category === "travel" || category === "payment") return <ServiceTile code={category} size={44} />;
+  if (category === "saved_search") return <View style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center" }}><Art3D kind="bookmark" size={34} /></View>;
+  return <MenuArt kind="orders" size={44} />;
+}
 
 export default function NotificationsScreen() {
   const { t, locale } = useI18n();
@@ -75,21 +82,22 @@ export default function NotificationsScreen() {
         contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }}
         ListHeaderComponent={
           <View>
-            <Header title={centerTitle[locale]} subtitle={`${data?.summary.unread || 0} ${t.notifications.unread}`} right={<SoftButton label={t.notifications.preferences} onPress={() => setShowPrefs((v) => !v)} />} />
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingHorizontal: 14, paddingTop: 6, paddingBottom: 8 }}>
+            <Header title={centerTitle[locale]} subtitle={`${data?.summary.unread || 0} ${t.notifications.unread}`} right={<HeaderPill icon="sliders" onPress={() => setShowPrefs((v) => !v)} />} />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 14, paddingTop: 2, paddingBottom: 10 }}>
               {filters.map((key) => <CenterChip key={key} label={label(key)} count={key === "all" ? undefined : data?.summary.byCategory?.[key]} active={filter === key} onPress={() => setFilter(key)} />)}
             </ScrollView>
-            <View style={styles.toolbar}>
-              <SoftButton label={t.notifications.readAll} onPress={() => readAll.mutate()} />
-              <TextLink label={discover[locale]} onPress={() => router.push("/services")} />
-            </View>
+            {data?.summary.unread ? (
+              <View style={styles.toolbar}>
+                <SoftButton icon="check" label={t.notifications.readAll} onPress={() => readAll.mutate()} />
+              </View>
+            ) : null}
             {showPrefs && data?.preferences ? (
-              <Animated.View entering={FadeInDown} style={[styles.prefs, shadow("card")]}>
+              <Animated.View entering={FadeInDown.duration(200)} style={styles.prefs}>
                 <Text style={styles.prefsTitle}>{t.notifications.preferences}</Text>
                 {(["orderEnabled", "housingEnabled", "travelEnabled", "paymentEnabled", "savedSearchEnabled"] as const).map((key) => (
                   <View key={key} style={styles.prefRow}>
-                    <Text style={{ flex: 1, fontSize: 13, color: colors.ink }}>{label(key.replace("Enabled", "").replace("savedSearch", "saved_search"))}</Text>
-                    <Switch value={data.preferences[key] !== false} onValueChange={(value) => prefs.mutate({ [key]: value })} trackColor={{ true: colors.wechat }} />
+                    <Text style={styles.prefLabel}>{label(key.replace("Enabled", "").replace("savedSearch", "saved_search"))}</Text>
+                    <Switch value={data.preferences[key] !== false} onValueChange={(value) => prefs.mutate({ [key]: value })} trackColor={{ true: colors.header }} />
                   </View>
                 ))}
               </Animated.View>
@@ -97,39 +105,43 @@ export default function NotificationsScreen() {
           </View>
         }
         ListEmptyComponent={<View style={{ paddingHorizontal: 14 }}>{inbox.isPending ? <SkeletonList count={4} image={false} /> : <CenterEmpty title={t.notifications.empty} />}</View>}
-        renderItem={({ item, index }) => (
-          <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 30)} exiting={FadeOut} layout={LinearTransition} style={{ paddingHorizontal: 14, paddingBottom: 7 }}>
-            <View style={[styles.notice, shadow("card"), item.readAt ? { opacity: 0.78 } : null]}>
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-                  <Text style={styles.meta}>{label(item.category)} · {shortDate(item.createdAt, locale)}</Text>
-                  <Text style={styles.noticeTitle} numberOfLines={1}>{item.title}</Text>
-                  <Text style={styles.meta} numberOfLines={2}>{describe(item)}</Text>
-                  {item.subtitle ? <Text style={styles.meta}>{item.subtitle}</Text> : null}
+        renderItem={({ item, index }) => {
+          const unread = !item.readAt;
+          const open = () => { receipt.mutate({ item, patch: { read: true } }); router.push(routeForWebHref(item.href)); };
+          return (
+            <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 20).duration(200)} exiting={FadeOut} layout={LinearTransition.duration(180)} style={{ paddingHorizontal: 14, paddingBottom: 10 }}>
+              <PressableScale scaleTo={0.985} onPress={open} style={[styles.notice, !unread && styles.noticeRead]}>
+                <NoticeArt category={item.category} />
+                <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
+                  <Text style={[styles.meta, unread && styles.metaUnread]}>{label(item.category)} · {shortDate(item.createdAt, locale)}</Text>
+                  <Text style={[styles.noticeTitle, !unread && { fontWeight: "600" }]} numberOfLines={1}>{item.title}</Text>
+                  <Text style={styles.body} numberOfLines={2}>{describe(item)}{item.subtitle ? ` · ${item.subtitle}` : ""}</Text>
                 </View>
-                {!item.readAt ? <View style={styles.dot} /> : null}
-              </View>
-              <View style={styles.actions}>
-                <PressableScale onPress={() => { receipt.mutate({ item, patch: { read: true } }); router.push(routeForWebHref(item.href)); }}><Text style={styles.view}>{viewLabel[locale]} ›</Text></PressableScale>
-                <SoftButton label={t.notifications.hide} onPress={() => receipt.mutate({ item, patch: { read: true, dismissed: true } })} />
-              </View>
-            </View>
-          </Animated.View>
-        )}
+                {/* Hide: small glass close, separate from opening the card */}
+                <PressableScale accessibilityLabel={t.notifications.hide} hitSlop={8} onPress={() => receipt.mutate({ item, patch: { read: true, dismissed: true } })} style={styles.hide}>
+                  <GlassFill radius={14} />
+                  <ZxIcon name="close" size={12} color={colors.slate} strokeWidth={2.4} />
+                </PressableScale>
+              </PressableScale>
+            </Animated.View>
+          );
+        }}
       />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  toolbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 12 },
-  prefs: { marginHorizontal: 14, marginBottom: 10, padding: 12, borderRadius: 16, backgroundColor: colors.white, ...shadow("card") },
-  prefsTitle: { fontSize: 13, fontWeight: "700", color: colors.ink, marginBottom: 4 },
-  prefRow: { flexDirection: "row", alignItems: "center", paddingVertical: 5 },
-  notice: { padding: 10, borderRadius: 12, backgroundColor: colors.white, ...shadow("card") },
-  meta: { fontSize: 11, color: colors.textSecondary },
-  noticeTitle: { fontSize: 13.5, fontWeight: "700", color: colors.text },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.brand, marginTop: 4 },
-  actions: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 9 },
-  view: { fontSize: 12, fontWeight: "700", color: colors.brand },
+  toolbar: { flexDirection: "row", paddingHorizontal: 14, paddingBottom: 12 },
+  prefs: { marginHorizontal: 14, marginBottom: 12, paddingVertical: 10, paddingHorizontal: 16, borderRadius: 22, backgroundColor: colors.white, ...shadow("card") },
+  prefsTitle: { fontSize: 14, fontWeight: "800", color: colors.ink, marginBottom: 4 },
+  prefRow: { flexDirection: "row", alignItems: "center", paddingVertical: 6 },
+  prefLabel: { flex: 1, fontSize: 14, color: colors.ink },
+  notice: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 14, paddingLeft: 12, paddingRight: 14, borderRadius: 22, backgroundColor: colors.white, ...shadow("card") },
+  noticeRead: { backgroundColor: "rgba(255,255,255,0.72)" },
+  meta: { fontSize: 11.5, color: colors.textMuted, fontWeight: "600" },
+  metaUnread: { color: colors.header },
+  noticeTitle: { fontSize: 15, fontWeight: "800", color: colors.text },
+  body: { fontSize: 12.5, color: colors.textSecondary, lineHeight: 17 },
+  hide: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center", alignSelf: "flex-start" },
 });

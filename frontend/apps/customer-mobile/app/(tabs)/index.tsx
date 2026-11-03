@@ -142,7 +142,7 @@ export default function HomeScreen() {
 
         <View style={{ paddingHorizontal: 16 }}>
         {activeOrder ? (
-          <Animated.View entering={FadeInDown.duration(320)}>
+          <Animated.View entering={FadeInDown.duration(200)}>
             <PressableScale onPress={() => router.push(`/order/${activeOrder.id}`)} style={[styles.activeOrder, shadow("soft")]} scaleTo={0.985}>
               <View style={styles.activeIcon}><ZxIcon name="orders" size={20} color={colors.white} /></View>
               <View style={{ flex: 1, minWidth: 0 }}>

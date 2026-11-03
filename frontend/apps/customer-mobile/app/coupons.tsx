@@ -34,7 +34,7 @@ export default function CouponsScreen() {
       <Header title={t.profile.coupons} subtitle={t.personal.couponsHint} />
       <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 4, gap: 12, paddingBottom: 48 }} refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} tintColor={colors.brand} />}>
         {loading && !coupons.length ? <SkeletonList count={4} image={false} /> : !coupons.length ? <EmptyState zx="ticket" title={t.personal.couponsEmpty} action={t.cart.continue} onAction={() => router.push("/services/food")} /> : coupons.map((coupon, index) => (
-          <Animated.View key={`${coupon.organizationId}-${coupon.id}`} entering={FadeInDown.delay(Math.min(index, 8) * 40)}>
+          <Animated.View key={`${coupon.organizationId}-${coupon.id}`} entering={FadeInDown.delay(Math.min(index, 8) * 20).duration(200)}>
             <View style={[styles.ticket, shadow(1)]}>
               <View style={styles.stub}>
                 <Text style={styles.discount}>{coupon.discountType === "percent" ? `-${coupon.discountValue}%` : `-${money(coupon.discountValue)}`}</Text>

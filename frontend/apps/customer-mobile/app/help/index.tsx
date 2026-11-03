@@ -36,7 +36,7 @@ export default function HelpCenter() {
             <TextInput value={query} onChangeText={setQuery} placeholder={c.search} placeholderTextColor="#94A3B8" style={styles.searchInput} clearButtonMode="while-editing" returnKeyType="search" />
           </View>
           {articles.isPending ? <SkeletonList count={4} image={false} /> : rows.length ? rows.map((article, index) => (
-            <Animated.View key={article.id} entering={FadeInDown.delay(Math.min(index, 8) * 30)}>
+            <Animated.View key={article.id} entering={FadeInDown.delay(Math.min(index, 8) * 20).duration(200)}>
               <PressableScale onPress={() => router.push(`/help/${encodeURIComponent(article.slug || article.id)}`)} style={[styles.article, shadow("card")]} scaleTo={0.985}>
                 {article.category ? <Text style={styles.category}>{article.category}</Text> : null}
                 <Text style={styles.title}>{article.title}</Text>

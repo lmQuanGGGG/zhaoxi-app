@@ -20,7 +20,7 @@ import { useI18n } from "../../src/i18n";
 import { locate, pointKey, useLocationState } from "../../src/location";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
-import { AppImage, BackButton, EmptyState, ErrorState, HeaderFade, PressableScale, Screen, ServiceArt, ServiceBadge, SkeletonList, ZxIcon, servicePalettes } from "../../src/ui";
+import { AppImage, BackButton, EmptyState, ErrorState, GlassFill, HeaderFade, PressableScale, Screen, ServiceArt, ServiceBadge, SkeletonList, ZxIcon, servicePalettes } from "../../src/ui";
 
 const resultUnit = { "vi-VN": "kết quả", "en-US": "results", "zh-CN": "个结果", "zh-TW": "個結果" } as const;
 
@@ -108,7 +108,7 @@ export default function ModuleBrowser() {
           </View>
         </View>
         {isFood && cart.count > 0 ? (
-          <PressableScale onPress={() => router.push("/cart")} style={styles.cartPill}><Text style={styles.cartPillText}>{t.cart.title} ({cart.count})</Text></PressableScale>
+          <PressableScale onPress={() => router.push("/cart")} style={styles.cartPill}><GlassFill radius={999} tint="rgba(7,193,96,0.92)" /><Text style={styles.cartPillText}>{t.cart.title} ({cart.count})</Text></PressableScale>
         ) : null}
       </View>
       {isFood ? (
@@ -183,7 +183,7 @@ function StackCard({ item, module, index, scrollY, headerH, viewportH, onPressIn
   });
 
   return (
-    <Animated.View entering={FadeInDown.delay(Math.min(index, 6) * 50).duration(320)} style={styles.stackSlot}>
+    <Animated.View entering={FadeInDown.delay(Math.min(index, 6) * 20).duration(200)} style={styles.stackSlot}>
       <Animated.View style={[styles.stackCard, card]}>
         <PressableScale onPressIn={onPressIn} onPress={() => router.push(`/service/${item.id}`)} scaleTo={0.97} style={styles.stackPress}>
           {image ? (
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   moduleTitle: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10 },
   moduleName: { fontSize: 17, fontWeight: "800", color: colors.white },
   moduleCount: { fontSize: 11, color: "rgba(255,255,255,0.72)", marginTop: 1 },
-  cartPill: { paddingHorizontal: 12, height: 32, borderRadius: 999, backgroundColor: colors.wechat, alignItems: "center", justifyContent: "center" },
+  cartPill: { paddingHorizontal: 13, height: 34, borderRadius: 999, alignItems: "center", justifyContent: "center" },
   cartPillText: { color: colors.white, fontSize: 11, fontWeight: "800" },
   search: { height: 44, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   searchInput: { flex: 1, fontSize: 14, color: colors.text },

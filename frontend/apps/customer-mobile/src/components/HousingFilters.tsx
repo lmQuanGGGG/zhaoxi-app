@@ -73,7 +73,7 @@ export function useHousingFilters(items: Service[]) {
   const clear = () => { setType(""); setBeds(0); setMinPrice(""); setMaxPrice(""); setAvailableOnly(true); setSort("distance"); };
 
   const ui = (
-    <Animated.View layout={LinearTransition} style={{ gap: 10 }}>
+    <Animated.View layout={LinearTransition.duration(180)} style={{ gap: 10 }}>
       {types.length ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingRight: 14 }} style={{ marginRight: -14 }}>
           <Chip label={c.all} active={!type} onPress={() => setType("")} />
@@ -86,7 +86,7 @@ export function useHousingFilters(items: Service[]) {
         {active ? <Chip tone="soft" label={`✕ ${c.clear}`} onPress={clear} /> : null}
       </ScrollView>
       {expanded ? (
-        <Animated.View entering={FadeInDown.duration(220)} style={[styles.panel, shadow("card")]}>
+        <Animated.View entering={FadeInDown.duration(200)} style={[styles.panel, shadow("card")]}>
           <Text style={styles.label}>{c.price} (VND)</Text>
           <View style={{ flexDirection: "row", gap: 8 }}>
             <TextInput value={minPrice} onChangeText={(v) => setMinPrice(v.replace(/\D/g, ""))} placeholder={c.min} placeholderTextColor="#94A3B8" keyboardType="number-pad" style={styles.input} />

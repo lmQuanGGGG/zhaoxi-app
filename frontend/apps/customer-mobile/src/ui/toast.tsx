@@ -28,7 +28,7 @@ export function ToastHost() {
   const icon = value.tone === "success" ? "checkmark-circle" : value.tone === "error" ? "alert-circle" : "information-circle";
   const tint = value.tone === "error" ? colors.danger : colors.brand;
   return (
-    <Animated.View key={value.id} entering={FadeInUp.springify().damping(18)} exiting={FadeOutUp.duration(180)} pointerEvents="none" style={[styles.toast, { top: insets.top + 8 }, shadow(3)]}>
+    <Animated.View key={value.id} entering={FadeInUp.duration(200)} exiting={FadeOutUp.duration(180)} pointerEvents="none" style={[styles.toast, { top: insets.top + 8 }, shadow(3)]}>
       <Ionicons name={icon} size={20} color={tint} />
       <Text style={styles.text} numberOfLines={2}>{value.message}</Text>
     </Animated.View>

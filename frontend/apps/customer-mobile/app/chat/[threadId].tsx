@@ -156,7 +156,7 @@ export default function ChatScreen() {
               const own = mine(item);
               const failed = item.outgoing?.failed;
               return (
-                <Animated.View entering={FadeInUp.springify().damping(18)} style={[styles.bubbleWrap, own ? { alignItems: "flex-end" } : { alignItems: "flex-start" }]}>
+                <Animated.View entering={FadeInUp.duration(200)} style={[styles.bubbleWrap, own ? { alignItems: "flex-end" } : { alignItems: "flex-start" }]}>
                   {item.photos.length ? (
                     <PhotoGrid photos={item.photos} dim={item.pending && !failed} onOpen={(index) => setViewer({ photos: item.photos, index })} />
                   ) : null}

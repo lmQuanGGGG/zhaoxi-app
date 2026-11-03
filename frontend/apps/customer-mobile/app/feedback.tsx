@@ -39,7 +39,7 @@ export default function FeedbackScreen() {
           <Header title={c.title} subtitle={c.sub} />
           <View style={{ paddingHorizontal: 14 }}>
             {send.isSuccess ? (
-              <Animated.View entering={ZoomIn.springify().damping(16)} style={styles.sent}>
+              <Animated.View entering={ZoomIn.duration(200)} style={styles.sent}>
                 <Art3D kind="check" size={56} />
                 <Text style={styles.sentText}>{c.sent}</Text>
                 <Button title={c.back} variant="secondary" onPress={() => (router.canGoBack() ? router.back() : router.replace("/profile"))} style={{ alignSelf: "stretch" }} />

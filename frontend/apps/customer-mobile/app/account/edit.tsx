@@ -65,7 +65,7 @@ export default function EditProfile() {
                   <IconButton icon={adding ? "close" : "add"} onPress={() => setAdding((v) => !v)} />
                 </View>
                 {adding ? (
-                  <Animated.View entering={FadeInDown} style={{ gap: 10 }}>
+                  <Animated.View entering={FadeInDown.duration(200)} style={{ gap: 10 }}>
                     <Field label={t.profile.label} value={draft.label} onChangeText={(label) => setDraft((d) => ({ ...d, label }))} />
                     <Field label={t.checkout.address} value={draft.addressText} onChangeText={(addressText) => setDraft((d) => ({ ...d, addressText }))} multiline style={{ minHeight: 60 }} />
                     <Button small variant="secondary" icon="navigate" title={draft.point ? t.checkout.pointSet : t.checkout.useLocation} onPress={async () => {
@@ -76,7 +76,7 @@ export default function EditProfile() {
                   </Animated.View>
                 ) : null}
                 {(profile.data?.addresses || []).map((address) => (
-                  <Animated.View key={address.id} exiting={FadeOut} layout={LinearTransition} style={styles.address}>
+                  <Animated.View key={address.id} exiting={FadeOut} layout={LinearTransition.duration(180)} style={styles.address}>
                     <Ionicons name={address.isDefault ? "home" : "location-outline"} size={20} color={address.isDefault ? colors.brand : colors.textSecondary} />
                     <View style={{ flex: 1, gap: 2 }}>
                       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>

@@ -52,9 +52,12 @@ export default function ServiceDetailScreen() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }} keyboardShouldPersistTaps="handled">
           <View>
-            <View style={styles.hero}>
-              {service.isPending ? <Skeleton height={200} radius={0} /> : <AppImage uri={imageUri(data?.metadata?.imageUrl)} fallbackCode={data?.moduleCode} style={StyleSheet.absoluteFill} />}
-              <BackButton style={styles.back} />
+            {/* Photo as an inset card: shadow on the unclipped wrapper, rounded clip inside */}
+            <View style={[styles.heroWrap, shadow("soft")]}>
+              <View style={styles.hero}>
+                {service.isPending ? <Skeleton height={HERO_H} radius={0} /> : <AppImage uri={imageUri(data?.metadata?.imageUrl)} fallbackCode={data?.moduleCode} style={StyleSheet.absoluteFill} />}
+                <BackButton style={styles.back} />
+              </View>
             </View>
             <View style={[styles.moduleBadge, shadow("soft")]}><ServiceIcon code={data?.moduleCode} size={42} /></View>
           </View>
@@ -63,14 +66,14 @@ export default function ServiceDetailScreen() {
             {service.isPending ? (
               <View style={{ gap: 10 }}><Skeleton width="45%" height={20} /><Skeleton width="80%" height={26} /><Skeleton width="40%" height={26} /></View>
             ) : data ? (
-              <Animated.View entering={FadeInDown.duration(260)} style={{ gap: 8 }}>
+              <Animated.View entering={FadeInDown.duration(200)} style={{ gap: 8 }}>
                 {/* Housing listings carry the badge only once an admin has verified them (PWA parity) */}
                 {data.moduleCode !== "housing" || data.metadata?.adminVerified === true ? <View style={styles.verified}><Text style={styles.verifiedText}>{c.verified}</Text></View> : null}
                 <Text style={styles.title}>{name}</Text>
                 {data.summary ? <Text style={styles.summary}>{data.summary}</Text> : null}
                 <View style={styles.priceRow}>
                   <Text style={styles.price}>{priceText}{data.moduleCode === "housing" && unitPrice > 0 ? <Text style={styles.perMonth}> / {monthUnit[locale]}</Text> : null}</Text>
-                  <Animated.View key={String(favorite.favorite)} entering={ZoomIn.springify().damping(14)}>
+                  <Animated.View key={String(favorite.favorite)} entering={ZoomIn.duration(200)}>
                     <PressableScale onPress={favorite.toggle} style={styles.favorite}>
                       <GlassFill radius={18} />
                       <Text style={[styles.favoriteText, favorite.favorite && { color: colors.danger }]}>{favorite.favorite ? "★" : "☆"} {favorite.favorite ? t.detail.unfavorite : t.detail.favorite}</Text>
@@ -115,10 +118,13 @@ export default function ServiceDetailScreen() {
   );
 }
 
+const HERO_H = 214;
+
 const styles = StyleSheet.create({
-  hero: { height: 200, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, overflow: "hidden", backgroundColor: "#E9F4EE", borderWidth: 1, borderTopWidth: 0, borderColor: "rgba(255,255,255,0.3)" },
-  back: { position: "absolute", top: 16, left: 14 },
-  moduleBadge: { position: "absolute", left: 11, top: 139, width: 50, height: 50, borderRadius: 15, backgroundColor: colors.white, alignItems: "center", justifyContent: "center", ...shadow("card") },
+  heroWrap: { marginHorizontal: 16, marginTop: 10, borderRadius: 26, backgroundColor: "#E9F4EE" },
+  hero: { height: HERO_H, borderRadius: 26, overflow: "hidden", backgroundColor: "#E9F4EE" },
+  back: { position: "absolute", top: 12, left: 12 },
+  moduleBadge: { position: "absolute", left: 28, top: 10 + HERO_H - 62, width: 50, height: 50, borderRadius: 15, backgroundColor: colors.white, alignItems: "center", justifyContent: "center", ...shadow("card") },
   body: { paddingHorizontal: 16, paddingTop: 20, gap: 14 },
   verified: { alignSelf: "flex-start", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: colors.brandSoft },
   verifiedText: { fontSize: 10, fontWeight: "800", color: "#065F46" },

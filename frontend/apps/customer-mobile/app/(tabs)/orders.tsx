@@ -102,7 +102,7 @@ function OrderCard({ order, index, onPressIn }: { order: Order; index: number; o
   const tone = order.status === "completed" ? styles.badgeDone : CANCELLED_STATUSES.has(order.status) ? styles.badgeCancelled : styles.badgeActive;
   const toneText = order.status === "completed" ? { color: colors.brand } : CANCELLED_STATUSES.has(order.status) ? { color: "#D86E60" } : { color: "#C58B22" };
   return (
-    <Animated.View entering={FadeInDown.delay(Math.min(index, 6) * 40).duration(260)} style={{ paddingHorizontal: 14, paddingTop: 10 }}>
+    <Animated.View entering={FadeInDown.delay(Math.min(index, 6) * 20).duration(200)} style={{ paddingHorizontal: 14, paddingTop: 10 }}>
       <PressableScale onPressIn={onPressIn} onPress={() => router.push(order.moduleCode === "housing" || order.moduleCode === "travel" ? `/inquiries/${order.moduleCode}` : `/order/${order.id}`)} scaleTo={0.985} style={[styles.card, shadow("soft")]}>
         <View style={styles.row}>
           <Text style={styles.code} numberOfLines={1}>{order.requestCode}</Text>

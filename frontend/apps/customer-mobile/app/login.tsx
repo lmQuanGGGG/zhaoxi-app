@@ -103,14 +103,14 @@ export default function LoginScreen() {
           <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
             <IconButton icon="close" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} />
           </View>
-          <Animated.View entering={FadeInDown.duration(400)} style={{ alignItems: "center", gap: 10 }}>
+          <Animated.View entering={FadeInDown.duration(200)} style={{ alignItems: "center", gap: 10 }}>
             <Image source={require("../assets/brand-logo.png")} style={styles.logo} contentFit="cover" />
             <Text style={[font.h1, { textAlign: "center" }]}>{stage === "setupPin" ? t.login.setupPin : t.login.title}</Text>
             <Text style={[font.small, { textAlign: "center" }]}>{stage === "setupPin" ? t.login.setupPinHint : t.login.subtitle}</Text>
           </Animated.View>
 
           {stage === "setupPin" ? (
-            <Animated.View entering={FadeInDown}>
+            <Animated.View entering={FadeInDown.duration(200)}>
               <View style={{ gap: 12 }}>
                 <Field label={t.security.newPin} value={pin} onChangeText={(v) => setPinValue(v.replace(/\D/g, "").slice(0, 6))} keyboardType="number-pad" secureTextEntry maxLength={6} />
                 <Field label={t.security.confirmPin} value={pinConfirm} onChangeText={(v) => setPinConfirm(v.replace(/\D/g, "").slice(0, 6))} keyboardType="number-pad" secureTextEntry maxLength={6} />
@@ -120,7 +120,7 @@ export default function LoginScreen() {
               </View>
             </Animated.View>
           ) : (
-            <Animated.View entering={FadeInDown.delay(100)} layout={LinearTransition}>
+            <Animated.View entering={FadeInDown.delay(35).duration(200)} layout={LinearTransition.duration(180)}>
               <View style={{ gap: 14 }}>
                 <View style={styles.segment}>
                   {(["otp", "pin", "password"] as const).map((key) => (
@@ -141,7 +141,7 @@ export default function LoginScreen() {
                 {mode === "otp" ? (
                   <>
                     {challenge ? (
-                      <Animated.View entering={FadeIn} style={{ gap: 10 }}>
+                      <Animated.View entering={FadeIn.duration(200)} style={{ gap: 10 }}>
                         <Field label={t.login.code} value={code} onChangeText={(v) => setCode(v.replace(/\D/g, "").slice(0, 6))} keyboardType="number-pad" autoComplete="one-time-code" textContentType="oneTimeCode" maxLength={6} style={styles.code} />
                         <Button title={t.login.verify} icon="shield-checkmark" loading={busy} disabled={code.length < 4} onPress={verify} />
                         <Button title={resendSeconds ? `${t.login.resendIn} ${resendSeconds}s` : t.login.resend} variant="ghost" disabled={resendSeconds > 0 || busy} onPress={sendOtp} />
@@ -167,7 +167,7 @@ export default function LoginScreen() {
                   </>
                 ) : null}
 
-                {error ? <Animated.View entering={FadeIn} style={styles.errorBox}><Ionicons name="alert-circle" size={16} color={colors.danger} /><Text style={styles.error}>{error}</Text></Animated.View> : null}
+                {error ? <Animated.View entering={FadeIn.duration(200)} style={styles.errorBox}><Ionicons name="alert-circle" size={16} color={colors.danger} /><Text style={styles.error}>{error}</Text></Animated.View> : null}
               </View>
             </Animated.View>
           )}

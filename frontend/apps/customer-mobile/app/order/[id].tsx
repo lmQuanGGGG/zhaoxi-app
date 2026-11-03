@@ -82,7 +82,7 @@ export default function OrderDetailScreen() {
     <Screen>
       <Header title={t.order.title} subtitle={data.requestCode} right={<StatusPill tone={statusTone(data.status)} label={statusLabels[locale][data.status] || data.status} />} />
       <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 4, gap: space.lg, paddingBottom: 60 }} refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} tintColor={colors.brand} />}>
-        <Animated.View entering={FadeInDown.duration(320)}>
+        <Animated.View entering={FadeInDown.duration(200)}>
           <GlassCard style={{ gap: 14 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
               <LivePulse active={active} />
@@ -112,7 +112,7 @@ export default function OrderDetailScreen() {
         </Animated.View>
 
         {data.organizationName ? (
-          <Animated.View entering={FadeInDown.delay(60).duration(320)}>
+          <Animated.View entering={FadeInDown.delay(21).duration(200)}>
             <GlassCard style={styles.store}>
               <ServiceIcon code={data.moduleCode} size={40} />
               <Text style={[font.h3, { flex: 1 }]} numberOfLines={1}>{data.organizationName}</Text>

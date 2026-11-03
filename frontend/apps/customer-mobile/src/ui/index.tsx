@@ -57,8 +57,8 @@ export function PressableScale({ children, style, onPress, scaleTo = 0.97, hapti
     <AnimatedPressable
       {...rest}
       disabled={disabled}
-      onPressIn={(event) => { pressed.value = withSpring(1, { damping: 20, stiffness: 420 }); rest.onPressIn?.(event); }}
-      onPressOut={(event) => { pressed.value = withSpring(0, { damping: 15, stiffness: 300 }); rest.onPressOut?.(event); }}
+      onPressIn={(event) => { pressed.value = withSpring(1, { damping: 26, stiffness: 600 }); rest.onPressIn?.(event); }}
+      onPressOut={(event) => { pressed.value = withSpring(0, { damping: 26, stiffness: 520 }); rest.onPressOut?.(event); }}
       onPress={(event) => { if (hapticOnPress) haptic.tap(); onPress?.(event); }}
       style={[style, animated, disabled && { opacity: 0.55 }]}
     >
@@ -145,17 +145,20 @@ export function Chip({ label, active, onPress, count, icon, tone = "green", imag
   );
 }
 
-/** PWA `menuQuantity`: round − / value / green +. Flat fills (not glass): it repeats on every menu row. */
-export function QuantityStepper({ value, onChange, min = 0, max = 99, disabled }: { value: number; onChange: (next: number) => void; min?: number; max?: number; disabled?: boolean; compact?: boolean }) {
+/**
+ * PWA `menuQuantity`: round − / value / green +. Flat fills by default because it repeats on every
+ * menu row (dozens of live glass layers stutter); `glass` for short lists such as the cart.
+ */
+export function QuantityStepper({ value, onChange, min = 0, max = 99, disabled, glass = false }: { value: number; onChange: (next: number) => void; min?: number; max?: number; disabled?: boolean; compact?: boolean; glass?: boolean }) {
   return (
     <View style={styles.stepper}>
       <PressableScale disabled={disabled || value <= min} onPress={() => { haptic.select(); onChange(Math.max(min, value - 1)); }} hapticOnPress={false} style={styles.stepMinus}>
-        <SolidFill radius={13} />
+        {glass ? <GlassFill radius={13} /> : <SolidFill radius={13} />}
         <ZxIcon name="minus" size={14} color="#334155" strokeWidth={2.4} />
       </PressableScale>
       <Text style={styles.stepperValue}>{value}</Text>
       <PressableScale disabled={disabled || value >= max} onPress={() => { haptic.select(); onChange(Math.min(max, value + 1)); }} hapticOnPress={false} style={styles.stepPlus}>
-        <SolidFill radius={13} tint="#07C160" />
+        {glass ? <GlassFill radius={13} tint="rgba(7,193,96,0.92)" /> : <SolidFill radius={13} tint="#07C160" />}
         <ZxIcon name="plus" size={14} color={colors.white} strokeWidth={2.6} />
       </PressableScale>
     </View>
@@ -233,7 +236,7 @@ export function SkeletonList({ count = 4, image = true }: { count?: number; imag
 /** PWA empty state (`orders.module.css .empty`). */
 export function EmptyState({ icon, zx = "orders", title, body, action, onAction }: { icon?: IconName; zx?: ZxIconName; title: string; body?: string; action?: string; onAction?: () => void }) {
   return (
-    <Animated.View entering={FadeInDown.duration(280)}>
+    <Animated.View entering={FadeInDown.duration(200)}>
       <View style={[styles.empty, shadow("card")]}>
         <View style={styles.emptyIcon}>{icon ? <Ionicons name={icon} size={20} color={colors.brandDeep} /> : <ZxIcon name={zx} size={20} color={colors.brandDeep} />}</View>
         <Text style={styles.emptyTitle}>{title}</Text>

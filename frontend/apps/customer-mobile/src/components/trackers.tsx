@@ -12,7 +12,7 @@ import { money, shortDate } from "../format";
 import { useI18n } from "../i18n";
 import { keys } from "../query";
 import { colors, shadow } from "../theme";
-import { Art3D, Button, PressableScale, ZxIcon, haptic } from "../ui";
+import { Art3D, Button, GlassFill, PressableScale, ZxIcon, haptic } from "../ui";
 import { toast } from "../ui/toast";
 import { DateStrip, OptionPills, nextDays } from "./pickers";
 
@@ -112,7 +112,7 @@ export function InquiryThread({ kind, requestId, messages }: { kind: "housing" |
           {messages.slice(-30).map((m) => {
             const mine = m.senderRole === "customer";
             return (
-              <Animated.View key={m.id} entering={FadeIn} style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}>
+              <Animated.View key={m.id} entering={FadeIn.duration(200)} style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}>
                 <Text style={styles.bubbleText}>{m.body}</Text>
                 <Text style={styles.bubbleMeta}>{mine ? t.me : t.partner} · {shortDate(m.createdAt, locale)}</Text>
               </Animated.View>
@@ -123,6 +123,7 @@ export function InquiryThread({ kind, requestId, messages }: { kind: "housing" |
       <View style={styles.composer}>
         <TextInput value={text} onChangeText={setText} placeholder={t.placeholder} placeholderTextColor="#94A3B8" maxLength={2000} style={styles.input} multiline />
         <PressableScale disabled={!text.trim() || send.isPending} onPress={() => send.mutate()} style={[styles.sendButton, (!text.trim() || send.isPending) && { opacity: 0.45 }]}>
+          <GlassFill radius={999} tint="rgba(7,193,96,0.92)" />
           <Text style={styles.sendText}>{t.sendMsg}</Text>
         </PressableScale>
       </View>
@@ -155,7 +156,7 @@ export function AppointmentSection({ requestId, appointment }: { requestId: stri
     <View style={styles.section}>
       <View style={styles.sectionHead}>
         <View style={styles.sectionTitleRow}><Art3D kind="calendar" size={20} /><Text style={styles.sectionTitle}>{t.appointment}</Text></View>
-        <Text style={[styles.sectionStatus, { color: status === "confirmed" ? colors.brandStrong : status === "cancelled" || !appointment ? colors.slate : "#1D4ED8" }]}>{label}</Text>
+        <Text numberOfLines={2} style={[styles.sectionStatus, { color: status === "confirmed" ? colors.brandStrong : status === "cancelled" || !appointment ? colors.slate : "#1D4ED8" }]}>{label}</Text>
       </View>
       {appointment ? (
         <View style={{ gap: 6 }}>
@@ -169,7 +170,7 @@ export function AppointmentSection({ requestId, appointment }: { requestId: stri
         </View>
       ) : null}
       {!appointment || status === "cancelled" ? (
-        <Animated.View entering={FadeInDown} style={{ gap: 10 }}>
+        <Animated.View entering={FadeInDown.duration(200)} style={{ gap: 10 }}>
           <Text style={styles.label}>{t.propose}</Text>
           <DateStrip days={days} value={day} onChange={setDay} locale={locale} />
           <OptionPills value={time} onChange={setTime} options={times.map((value) => ({ value, label: value }))} />
@@ -188,13 +189,13 @@ export function HistoryList({ title, entries }: { title: string; entries: Follow
   const [open, setOpen] = useState(false);
   if (!entries.length) return null;
   return (
-    <Animated.View layout={LinearTransition} style={{ gap: 6 }}>
+    <Animated.View layout={LinearTransition.duration(180)} style={{ gap: 6 }}>
       <PressableScale onPress={() => setOpen((v) => !v)} style={styles.historyToggle}>
         <Text style={styles.historyTitle}>{title} · {entries.length}</Text>
         <Text style={styles.historyChevron}>{open ? "⌃" : "⌄"}</Text>
       </PressableScale>
       {open ? [...entries].reverse().slice(0, 12).map((entry, index) => (
-        <Animated.View key={entry.id || index} entering={FadeInDown.delay(index * 25)} style={styles.historyRow}>
+        <Animated.View key={entry.id || index} entering={FadeInDown.delay(Math.min(index, 6) * 20).duration(200)} style={styles.historyRow}>
           <Text style={styles.historyLine}>
             <Text style={styles.strong}>{entry.actorRole === "customer" ? t.me : entry.actorRole === "partner" ? t.partner : t.system}</Text>
             {entry.action ? ` · ${entry.action}` : ""}{entry.at ? ` · ${shortDate(entry.at, locale)}` : ""}{entry.scheduledAt ? ` · ${shortDate(entry.scheduledAt, locale)}` : ""}
@@ -260,13 +261,13 @@ export function PaymentSupport({ requestId, ticket }: { requestId: string; ticke
   });
   const closed = ticket && ["resolved", "closed"].includes(ticket.stage);
   return (
-    <Animated.View layout={LinearTransition} style={styles.section}>
+    <Animated.View layout={LinearTransition.duration(180)} style={styles.section}>
       <PressableScale onPress={() => setOpen((v) => !v)} hapticOnPress={false} style={styles.sectionHead}>
         <View style={styles.sectionTitleRow}><Art3D kind="help" size={20} /><Text style={styles.sectionTitle}>{t.supportTitle}</Text></View>
         {unread > 0 ? <View style={styles.unread}><Text style={styles.unreadText}>{t.unread} {unread}</Text></View> : <Text style={styles.historyChevron}>{open ? "⌃" : "⌄"}</Text>}
       </PressableScale>
       {open ? (
-        <Animated.View entering={FadeInDown} style={{ gap: 8 }}>
+        <Animated.View entering={FadeInDown.duration(200)} style={{ gap: 8 }}>
           <Text style={[styles.line, { color: colors.brandStrong }]}>✓ {t.supportDirect}</Text>
           {ticket ? (
             <>
@@ -285,6 +286,7 @@ export function PaymentSupport({ requestId, ticket }: { requestId: string; ticke
             <View style={styles.composer}>
               <TextInput value={message} onChangeText={setMessage} placeholder={ticket ? t.reply : t.supportMessage} placeholderTextColor="#94A3B8" style={styles.input} multiline maxLength={2000} />
               <PressableScale disabled={!message.trim() || submit.isPending} onPress={() => submit.mutate()} style={[styles.sendButton, (!message.trim() || submit.isPending) && { opacity: 0.45 }]}>
+                <GlassFill radius={999} tint="rgba(7,193,96,0.92)" />
                 <Text style={styles.sendText}>{ticket ? t.sendMsg : t.supportOpen}</Text>
               </PressableScale>
             </View>
@@ -309,9 +311,9 @@ export const trackerStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   section: { padding: 12, borderRadius: 16, backgroundColor: colors.surfaceMuted, gap: 8, ...shadow("card") },
   sectionHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
-  sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6, flexShrink: 1 },
+  sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6, flexShrink: 0 },
   sectionTitle: { fontSize: 13.5, fontWeight: "700", color: colors.ink },
-  sectionStatus: { fontSize: 11, fontWeight: "800" },
+  sectionStatus: { flexShrink: 1, textAlign: "right", fontSize: 11, fontWeight: "800" },
   line: { fontSize: 12, color: colors.slate, lineHeight: 17 },
   strong: { fontWeight: "800", color: colors.ink },
   notice: { fontSize: 12, color: "#9A3412", backgroundColor: "#FFF7ED", padding: 8, borderRadius: 10, overflow: "hidden" },
@@ -327,7 +329,7 @@ const styles = StyleSheet.create({
   bubbleMeta: { fontSize: 9.5, color: colors.slate, marginTop: 3 },
   composer: { flexDirection: "row", alignItems: "flex-end", gap: 8 },
   input: { flex: 1, minHeight: 40, maxHeight: 110, borderRadius: 12, borderWidth: 1, borderColor: "#DBE5DF", backgroundColor: colors.white, paddingHorizontal: 12, paddingTop: 10, paddingBottom: 10, fontSize: 13.5, color: colors.text },
-  sendButton: { height: 40, paddingHorizontal: 14, borderRadius: 12, backgroundColor: colors.wechat, alignItems: "center", justifyContent: "center" },
+  sendButton: { height: 40, paddingHorizontal: 16, borderRadius: 999, alignItems: "center", justifyContent: "center" },
   sendText: { color: colors.white, fontWeight: "800", fontSize: 13 },
   historyToggle: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 },
   historyTitle: { fontSize: 12.5, fontWeight: "800", color: colors.ink },

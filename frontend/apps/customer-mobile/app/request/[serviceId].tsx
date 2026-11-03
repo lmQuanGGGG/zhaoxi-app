@@ -187,7 +187,7 @@ export default function CheckoutScreen() {
       </View>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={{ paddingBottom: 170 }} keyboardShouldPersistTaps="handled">
-          <Animated.View entering={FadeInDown.duration(260)} style={[styles.formCard, shadow("float")]}>
+          <Animated.View entering={FadeInDown.duration(200)} style={[styles.formCard, shadow("float")]}>
             <View style={styles.serviceHead}>
               <AppImage uri={imageUri(data?.metadata?.imageUrl)} fallbackCode={data?.moduleCode} style={styles.thumb} contentFit="contain" />
               <View style={{ flex: 1, minWidth: 0 }}>
@@ -236,7 +236,7 @@ export default function CheckoutScreen() {
                   <PressableScale onPress={() => setAddressQuery((q) => q.trim())} style={styles.mapSearchButton}><Text style={styles.mapSearchButtonText}>{searchLabel}</Text></PressableScale>
                 </View>
                 {addressResults.data?.length && addressQuery ? (
-                  <Animated.View entering={FadeIn} style={styles.suggestions}>
+                  <Animated.View entering={FadeIn.duration(200)} style={styles.suggestions}>
                     {addressResults.data.map((result) => (
                       <PressableScale key={`${result.latitude}-${result.longitude}`} onPress={() => { setPoint(result); setForm((f) => ({ ...f, address: result.label })); setAddressQuery(""); }} style={styles.suggestion}>
                         <Ionicons name="location-outline" size={16} color={colors.brand} />
@@ -326,7 +326,7 @@ export default function CheckoutScreen() {
 
       <View style={[styles.bottom, { paddingBottom: Math.max(insets.bottom, 12) }, shadow(3)]}>
         {error || restaurantError || quoteError ? (
-          <Animated.View entering={FadeInDown} style={styles.error}><Ionicons name="alert-circle" size={16} color={colors.danger} /><Text style={styles.errorText}>{error || restaurantError || quoteError}</Text></Animated.View>
+          <Animated.View entering={FadeInDown.duration(200)} style={styles.error}><Ionicons name="alert-circle" size={16} color={colors.danger} /><Text style={styles.errorText}>{error || restaurantError || quoteError}</Text></Animated.View>
         ) : null}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           <View style={{ flex: 1 }}>

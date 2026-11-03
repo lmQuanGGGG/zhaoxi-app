@@ -5,7 +5,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { TAB_BAR_SPACE } from "../src/constants";
 import { useI18n } from "../src/i18n";
 import { colors, shadow } from "../src/theme";
-import { Header, PressableScale, Screen, ZxIcon, haptic, type ZxIconName } from "../src/ui";
+import { GlassFill, Header, PressableScale, Screen, ZxIcon, haptic, type ZxIconName } from "../src/ui";
 
 // Same content as the PWA emergency page (khan-cap/page.tsx).
 const data = {
@@ -26,7 +26,7 @@ export default function EmergencyScreen() {
         <Header title={c.title} subtitle={c.hint} />
         <View style={{ paddingHorizontal: 14, gap: 12, paddingTop: 6 }}>
           {c.items.map(([icon, title, desc], index) => (
-            <Animated.View key={icon} entering={FadeInDown.delay(index * 40).duration(260)}>
+            <Animated.View key={icon} entering={FadeInDown.delay(Math.min(index, 6) * 20).duration(200)}>
               <PressableScale onPress={() => router.push({ pathname: "/support", params: { subject: title } })} scaleTo={0.985} style={[styles.choice, shadow("soft")]}>
                 <View style={styles.icon}>
                   <LinearGradient colors={["rgba(220,105,81,0.16)", "rgba(139,116,202,0.15)"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 10 }]} />
@@ -45,6 +45,7 @@ export default function EmergencyScreen() {
             <View style={{ flexDirection: "row", gap: 8 }}>
               {hotlines.map(([number, icon]) => (
                 <PressableScale key={number} onPress={() => { haptic.warn(); void Linking.openURL(`tel:${number}`); }} style={styles.hotline}>
+                  <GlassFill radius={999} tint="rgba(239,68,68,0.12)" />
                   <ZxIcon name={icon} size={16} color="#B42318" />
                   <Text style={styles.hotlineNumber}>{number}</Text>
                 </PressableScale>
@@ -64,6 +65,6 @@ const styles = StyleSheet.create({
   desc: { fontSize: 13, color: colors.textMuted, marginTop: 3, lineHeight: 19 },
   hotlines: { marginTop: 4, gap: 8 },
   hotlineTitle: { fontSize: 12, fontWeight: "700", color: colors.textSecondary },
-  hotline: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, height: 40, borderRadius: 12, backgroundColor: "#FFF1F2", borderWidth: 1, borderColor: "#FECDD3" },
+  hotline: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, height: 42, borderRadius: 999 },
   hotlineNumber: { fontSize: 15, fontWeight: "800", color: "#B42318" },
 });

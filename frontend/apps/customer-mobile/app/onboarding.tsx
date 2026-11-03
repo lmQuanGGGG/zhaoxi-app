@@ -33,7 +33,7 @@ export default function Onboarding() {
   return (
     <View style={styles.page}>
       <StatusBar style="dark" />
-      <Animated.View entering={FadeInDown.duration(380)} style={[styles.card, shadow("float")]}>
+      <Animated.View entering={FadeInDown.duration(200)} style={[styles.card, shadow("float")]}>
         <View style={styles.brand}>
           <View style={[styles.logoWrap, shadow("card")]}><Image source={require("../assets/brand-logo.png")} style={styles.logo} contentFit="cover" /></View>
           <View>
@@ -47,7 +47,7 @@ export default function Onboarding() {
           {order.filter((code) => supportedLocales.includes(code)).map((code) => {
             const active = locale === code;
             return (
-              <Animated.View key={code} layout={LinearTransition.springify().damping(18)}>
+              <Animated.View key={code} layout={LinearTransition.duration(180)}>
                 <Pressable onPress={() => { haptic.select(); setLocale(code); }} style={({ pressed }) => [styles.option, active ? styles.optionActive : shadow("card"), pressed && { transform: [{ scale: 0.98 }] }]}>
                   <Text style={styles.optionText}>{localeLabels[code].native}</Text>
                   {active ? <View style={styles.check}><Text style={styles.checkText}>✓</Text></View> : <View style={styles.code}><Text style={styles.codeText}>{codes[code]}</Text></View>}

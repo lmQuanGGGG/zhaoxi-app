@@ -74,7 +74,7 @@ function AppNavigator({ onboarded, locale }: { onboarded: boolean; locale: ZhaoX
   return (
     <>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: "slide_from_right", gestureEnabled: true }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: "slide_from_right", animationDuration: 240, gestureEnabled: true }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="onboarding" options={{ animation: "fade", gestureEnabled: false }} />
         <Stack.Screen name="login" options={{ presentation: "transparentModal", animation: "fade" }} />

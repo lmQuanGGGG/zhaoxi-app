@@ -67,7 +67,7 @@ export function PaymentMethods({ value, onChange, qr, capabilities, confirmed, o
         );
       })}
       {value === "bank_transfer" && qr ? (
-        <Animated.View entering={FadeInDown} layout={LinearTransition} style={styles.panel}>
+        <Animated.View entering={FadeInDown.duration(200)} layout={LinearTransition.duration(180)} style={styles.panel}>
           <ArtLabel kind="card" size={20} style={styles.panelTitle}>{c.title}</ArtLabel>
           <AppImage uri={qr} contentFit="contain" style={styles.qr} />
           <Button small variant="secondary" title={c.save} onPress={() => void shareQr(qr).catch(() => toast(c.saveFailed, "error"))} style={{ alignSelf: "stretch" }} />

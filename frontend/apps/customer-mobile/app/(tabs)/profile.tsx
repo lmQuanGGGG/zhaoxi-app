@@ -53,7 +53,7 @@ export default function ProfileScreen() {
         {/* The fade lives on an unshadowed wrapper: iOS would cast the hero's shadow from the whole gradient */}
         <View>
         <HeaderFade />
-        <Animated.View entering={FadeInDown.duration(300)} style={[styles.hero, { shadowColor: "#00323A", shadowOpacity: 0.28, shadowRadius: 18, shadowOffset: { width: 0, height: 14 } }]}>
+        <Animated.View entering={FadeInDown.duration(200)} style={[styles.hero, { shadowColor: "#00323A", shadowOpacity: 0.28, shadowRadius: 18, shadowOffset: { width: 0, height: 14 } }]}>
           <LinearGradient colors={["#0E5A63", "#0A4A52", "#167A80"]} locations={[0, 0.55, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 24 }]} />
           <View style={[StyleSheet.absoluteFill, { borderRadius: 24, borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" }]} />
           <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>

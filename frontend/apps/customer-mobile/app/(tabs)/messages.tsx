@@ -6,7 +6,7 @@ import { RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "r
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { getThreads } from "../../src/api/endpoints";
 import type { ThreadKind } from "../../src/api/types";
-import { CenterChip, CenterEmpty, SoftButton, TextLink } from "../../src/components/center";
+import { CenterChip, CenterEmpty, HeaderPill, SoftButton, TextLink } from "../../src/components/center";
 import { TAB_BAR_SPACE } from "../../src/constants";
 import { relativeTime } from "../../src/format";
 import { usePullRefresh, useSession } from "../../src/hooks";
@@ -47,7 +47,7 @@ export default function MessagesScreen() {
         contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }}
         ListHeaderComponent={
           <View>
-            <Header back={false} title={c.title} subtitle={`${threads.data?.summary.unread || 0} ${t.notifications.unread}`} right={<TextLink label={c.notify} onPress={() => router.push("/notifications")} />} />
+            <Header back={false} title={c.title} subtitle={`${threads.data?.summary.unread || 0} ${t.notifications.unread}`} right={<HeaderPill icon="bell" label={undefined} onPress={() => router.push("/notifications")} />} />
             <View style={{ paddingHorizontal: 14, gap: 10, paddingTop: 4 }}>
               <View style={styles.search}>
                 <Art3D kind="search" size={16} />
@@ -59,13 +59,13 @@ export default function MessagesScreen() {
             </ScrollView>
             <View style={styles.toolbar}>
               <TextLink label={c.help} onPress={() => router.push("/help")} />
-              <SoftButton dark label={c.create} onPress={() => router.push("/support")} />
+              <SoftButton dark icon="plus" label={c.create} onPress={() => router.push("/support")} />
             </View>
           </View>
         }
         ListEmptyComponent={<View style={{ paddingHorizontal: 14 }}>{threads.isPending ? <SkeletonList count={4} image={false} /> : <CenterEmpty title={c.empty} />}</View>}
         renderItem={({ item, index }) => (
-          <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 30)} style={{ paddingHorizontal: 14, paddingBottom: 7 }}>
+          <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 20).duration(200)} style={{ paddingHorizontal: 14, paddingBottom: 7 }}>
             <PressableScale scaleTo={0.985} onPress={() => router.push(`/chat/${encodeURIComponent(item.id)}`)} style={[styles.thread, shadow("card")]}>
               {item.kind === "support" ? <View style={styles.supportAvatar}><Text style={styles.supportGlyph}>喜</Text></View> : <ServiceIcon code={item.kind === "order" ? item.moduleCode : item.kind} size={40} />}
               <View style={{ flex: 1, minWidth: 0, gap: 2 }}>

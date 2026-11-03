@@ -34,7 +34,7 @@ export default function PaymentsScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }} refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} tintColor={colors.brand} />}>
         <Header title={c.title} subtitle={c.subtitle} />
         <View style={{ paddingHorizontal: 14, gap: 10 }}>
-          <Animated.View entering={FadeInDown.duration(280)} style={[styles.overviewShadow, shadow("soft")]}>
+          <Animated.View entering={FadeInDown.duration(200)} style={[styles.overviewShadow, shadow("soft")]}>
           <View style={styles.overview}>
             {/* PWA 18.3.4 "aurora glass" overview card */}
             <LinearGradient colors={["rgba(196,178,255,0.52)", "rgba(158,220,255,0.47)", "rgba(160,242,210,0.36)"]} locations={[0, 0.52, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
@@ -59,7 +59,7 @@ export default function PaymentsScreen() {
 
           <Text style={styles.section}>{c.requests}</Text>
           {payments.isPending && userId ? <SkeletonList count={2} image={false} /> : rows.length ? rows.map((item, index) => (
-            <Animated.View key={item.id} entering={FadeInDown.delay(Math.min(index, 6) * 35)}>
+            <Animated.View key={item.id} entering={FadeInDown.delay(Math.min(index, 6) * 20).duration(200)}>
               <PressableScale disabled={!item.requestId} onPress={() => item.requestId && router.push(`/order/${item.requestId}`)} style={[styles.record, shadow("card")]} scaleTo={0.985}>
                 <View style={styles.recordHead}>
                   <View style={{ flex: 1, minWidth: 0 }}>

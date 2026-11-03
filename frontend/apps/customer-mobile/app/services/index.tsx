@@ -57,7 +57,7 @@ export default function ServicesHub() {
           </ScrollView>
           <View style={{ gap: 10 }}>
             {items.map((item, index) => (
-              <Animated.View key={item.code} entering={FadeInDown.delay(index * 35).duration(260)} layout={LinearTransition.springify().damping(18)}>
+              <Animated.View key={item.code} entering={FadeInDown.delay(Math.min(index, 6) * 20).duration(200)} layout={LinearTransition.duration(180)}>
                 <PressableScale onPress={() => openModule(item.code)} scaleTo={0.98} style={[styles.card, shadow("card")]}>
                   <ServiceBadge code={item.code} size={52} />
                   <View style={{ flex: 1, minWidth: 0 }}>

@@ -70,7 +70,7 @@ export function MenuGrid({ items, pricing, restaurantOpen, withDetailLink }: { i
   return (
     <View style={styles.menuGrid}>
       {items.map((item, index) => (
-        <Animated.View key={item.id} entering={FadeIn.delay(Math.min(index, 6) * 30)} style={styles.menuCell}>
+        <Animated.View key={item.id} entering={FadeIn.delay(Math.min(index, 6) * 20).duration(200)} style={styles.menuCell}>
           <MenuCard item={item} price={pricing?.[item.id]} restaurantOpen={restaurantOpen} />
           {withDetailLink ? <Pressable onPress={() => router.push(`/service/${item.id}`)} hitSlop={6}><Text style={styles.detailLink}>{t.detail.title} ›</Text></Pressable> : null}
         </Animated.View>
@@ -104,7 +104,7 @@ export function RestaurantCard({ id, menu, status, pricing, index = 0, onOpen }:
   const hours = status?.code === "closed_hours" && status.businessHoursToday?.enabled ? `${t.browse.hours}: ${status.businessHoursToday.open}–${status.businessHoursToday.close}` : !open ? status?.pauseReason || "" : "";
 
   return (
-    <Animated.View entering={FadeInDown.delay(Math.min(index, 5) * 50).duration(300)} style={[styles.restaurantShadow, shadow("float")]}>
+    <Animated.View entering={FadeInDown.delay(Math.min(index, 5) * 20).duration(200)} style={[styles.restaurantShadow, shadow("float")]}>
      <View style={[styles.restaurant, !open && { opacity: 0.72 }]}>
       <Pressable onPress={onOpen} style={styles.banner}>
         <LinearGradient colors={["#07C160", "#0AA6CF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
@@ -144,7 +144,7 @@ export function RestaurantCartBar({ organizationId }: { organizationId?: string 
     else router.push("/cart");
   };
   return (
-    <Animated.View entering={SlideInDown.springify().damping(18)} exiting={SlideOutDown.duration(180)} style={[styles.cartBarWrap, { bottom: Math.max(insets.bottom - 12, 10) + 74 }]}>
+    <Animated.View entering={SlideInDown.duration(200)} exiting={SlideOutDown.duration(180)} style={[styles.cartBarWrap, { bottom: Math.max(insets.bottom - 12, 10) + 74 }]}>
       <PressableScale onPress={onPress} style={[styles.cartBar, shadow("dock")]} scaleTo={0.98}>
         <View style={styles.cartIcon}>
           <CartIcon size={18} color={colors.wechat} />

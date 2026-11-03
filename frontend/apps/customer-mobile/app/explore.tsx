@@ -78,7 +78,7 @@ export default function ExploreScreen() {
             {services.length ? (
               <View style={styles.grid}>
                 {services.map((item, index) => (
-                  <Animated.View key={item.id} entering={FadeInDown.delay(Math.min(index, 6) * 30)} style={styles.gridItem}>
+                  <Animated.View key={item.id} entering={FadeInDown.delay(Math.min(index, 6) * 20).duration(200)} style={styles.gridItem}>
                     <PressableScale onPress={() => router.push(`/service/${item.id}`)} style={[styles.card, shadow("card")]}>
                       <AppImage uri={imageUri(item.imageUrl)} fallbackCode={item.moduleCode} style={styles.cardImage} />
                       <View style={{ padding: 10, gap: 3 }}>

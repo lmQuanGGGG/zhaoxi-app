@@ -74,14 +74,22 @@ function LightStatusBar() {
  * Pushed (non-tab) screens drop the global top bar and dock: only a petrol strip
  * behind the status bar stays fixed, the page's own back button + title follow.
  */
+/** Petrol behind the status bar that melts into whatever the pushed screen starts with (photo or page). */
 export function StatusStrip() {
   const insets = useSafeAreaInsets();
   return (
-    <View pointerEvents="none" style={[styles.statusStrip, { height: insets.top }]}>
+    <View pointerEvents="none" style={[styles.statusStrip, { height: insets.top + STRIP_FADE }]}>
       <LightStatusBar />
+      <LinearGradient
+        colors={[colors.header, colors.header, "rgba(0,50,58,0.55)", "rgba(0,50,58,0)"]}
+        locations={[0, insets.top / (insets.top + STRIP_FADE), (insets.top + STRIP_FADE * 0.4) / (insets.top + STRIP_FADE), 1]}
+        style={StyleSheet.absoluteFill}
+      />
     </View>
   );
 }
+
+const STRIP_FADE = 34;
 
 const HEADER_GLASS = "rgba(255,255,255,0.22)";
 const OVERSCROLL = 600;
@@ -295,7 +303,7 @@ const styles = StyleSheet.create({
   gemPress: { flex: 1, alignItems: "center", justifyContent: "center", borderRadius: 32 },
   gem: { position: "absolute", overflow: "hidden", shadowColor: "#18211E", shadowOpacity: 0.18, shadowRadius: 2.5, shadowOffset: { width: 0, height: 2 } },
   gemShine: { position: "absolute", left: 2, right: 2, top: 1, height: 1, backgroundColor: "rgba(255,255,255,0.65)", borderRadius: 1 },
-  statusStrip: { position: "absolute", left: 0, right: 0, top: 0, zIndex: 40, backgroundColor: colors.header },
+  statusStrip: { position: "absolute", left: 0, right: 0, top: 0, zIndex: 40 },
   fadeHost: { position: "absolute", left: 0, right: 0, top: 0, bottom: 0 },
   pageHeader: { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 14, paddingTop: 10, paddingBottom: 14 },
   backButton: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },

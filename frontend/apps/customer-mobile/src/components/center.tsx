@@ -1,23 +1,32 @@
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { colors, shadow } from "../theme";
-import { PressableScale } from "../ui";
+import { Chip, GlassFill, PressableScale, SolidFill, ZxIcon, type ZxIconName } from "../ui";
 
-// Shared pieces of the PWA notification / message centers (customer-center.module.css).
+// Shared pieces of the notification / message centers, in the app's glass style.
 
 export function CenterChip({ label, active, onPress, count }: { label: string; active: boolean; onPress: () => void; count?: number }) {
+  return <Chip label={label} active={active} onPress={onPress} count={count || undefined} />;
+}
+
+/** Glass pill; `dark` is a solid petrol fill (Liquid Glass drops dark tints). */
+export function SoftButton({ label, onPress, dark, icon }: { label: string; onPress: () => void; dark?: boolean; icon?: ZxIconName }) {
   return (
-    <PressableScale onPress={onPress} style={[styles.chip, active && styles.chipActive]}>
-      <Text style={[styles.chipText, active && { color: colors.white }]}>{label}{count ? ` ${count}` : ""}</Text>
+    <PressableScale onPress={onPress} style={styles.soft}>
+      {dark ? <SolidFill radius={999} tint={colors.header} /> : <GlassFill radius={999} />}
+      {icon ? <ZxIcon name={icon} size={14} color={dark ? colors.white : colors.ink} strokeWidth={2.2} /> : null}
+      <Text style={[styles.softText, dark && { color: colors.white }]}>{label}</Text>
     </PressableScale>
   );
 }
 
-/** Light pill with the PWA's "pressed paper" bottom shadow. */
-export function SoftButton({ label, onPress, dark }: { label: string; onPress: () => void; dark?: boolean }) {
+/** Glass pill for the petrol page header (white text on a frosted chip). */
+export function HeaderPill({ label, onPress, icon }: { label?: string; onPress: () => void; icon?: ZxIconName }) {
   return (
-    <PressableScale onPress={onPress} style={[styles.soft, dark && styles.softDark]}>
-      <Text style={[styles.softText, dark && { color: colors.white }]}>{label}</Text>
+    <PressableScale accessibilityLabel={label} onPress={onPress} style={[styles.headerPill, !label && styles.headerRound]}>
+      <GlassFill radius={999} tint="rgba(255,255,255,0.22)" />
+      {icon ? <ZxIcon name={icon} size={17} color={colors.white} strokeWidth={2} /> : null}
+      {label ? <Text style={styles.headerPillText}>{label}</Text> : null}
     </PressableScale>
   );
 }
@@ -36,13 +45,12 @@ export function CenterEmpty({ title, children }: { title: string; children?: Rea
 }
 
 const styles = StyleSheet.create({
-  chip: { height: 34, paddingHorizontal: 12, borderRadius: 999, backgroundColor: "#F1F4F2", alignItems: "center", justifyContent: "center" },
-  chipActive: { backgroundColor: "#22C55E", ...shadow("card") },
-  chipText: { fontSize: 12, fontWeight: "600", color: colors.textSecondary },
-  soft: { minHeight: 34, paddingHorizontal: 12, borderRadius: 12, backgroundColor: "#F3F4F3", alignItems: "center", justifyContent: "center", shadowColor: "#71371B", shadowOpacity: 0.16, shadowRadius: 0, shadowOffset: { width: 0, height: 4 } },
-  softDark: { backgroundColor: colors.brandDeep },
-  softText: { fontSize: 11.5, fontWeight: "500", color: colors.textSecondary },
-  link: { fontSize: 11.5, color: colors.ink },
+  soft: { flexDirection: "row", alignItems: "center", gap: 6, height: 34, paddingHorizontal: 14, borderRadius: 999 },
+  softText: { fontSize: 12.5, fontWeight: "600", color: colors.ink },
+  headerPill: { flexDirection: "row", alignItems: "center", gap: 6, height: 36, paddingHorizontal: 13, borderRadius: 999 },
+  headerRound: { width: 36, paddingHorizontal: 0, justifyContent: "center" },
+  headerPillText: { fontSize: 12.5, fontWeight: "700", color: colors.white },
+  link: { fontSize: 12.5, fontWeight: "600", color: colors.ink },
   empty: { minHeight: 112, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.86)", alignItems: "center", justifyContent: "center", padding: 16, gap: 8 },
   emptyTitle: { fontSize: 16, fontWeight: "700", color: colors.text, textAlign: "center" },
 });

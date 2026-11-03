@@ -31,7 +31,7 @@ export function ServiceList({ items, loading, refreshing, onRefresh, emptyTitle,
       contentContainerStyle={{ paddingBottom: 120 }}
       ListEmptyComponent={<View style={{ paddingHorizontal: 14 }}>{loading ? <SkeletonList count={5} /> : <EmptyState zx={emptyIcon} title={emptyTitle} action={t.orders.explore} onAction={() => router.push("/services")} />}</View>}
       renderItem={({ item, index }) => (
-        <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 35)} exiting={FadeOut} layout={LinearTransition} style={{ paddingHorizontal: 14, paddingBottom: 10 }}>
+        <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 20).duration(200)} exiting={FadeOut} layout={LinearTransition.duration(180)} style={{ paddingHorizontal: 14, paddingBottom: 10 }}>
           <PressableScale onPress={() => router.push(`/service/${item.id}`)} scaleTo={0.985} style={[styles.row, shadow("card")]}>
             <AppImage uri={imageUri(item.metadata?.imageUrl)} fallbackCode={moduleOf(item)} style={styles.image} />
             <View style={{ flex: 1, minWidth: 0, gap: 3 }}>

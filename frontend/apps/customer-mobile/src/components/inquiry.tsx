@@ -101,7 +101,7 @@ export function HousingFacts({ data }: { data: ServiceDetail }) {
     [t.lease, num(m.minLeaseMonths) > 0 ? `${m.minLeaseMonths} ${t.month}` : ""],
   ].filter(([, value]) => value);
   return (
-    <Animated.View entering={FadeInDown.duration(260)} style={{ gap: 12 }}>
+    <Animated.View entering={FadeInDown.duration(200)} style={{ gap: 12 }}>
       <View style={[styles.statusBadge, status !== "available" && { backgroundColor: "#F1F5F9" }]}>
         <Text style={[styles.statusText, status !== "available" && { color: colors.slate }]}>{statusLabel}</Text>
       </View>
@@ -134,7 +134,7 @@ export function TravelFacts({ data }: { data: ServiceDetail }) {
   const includes = list(m.includes);
   const excludes = list(m.excludes);
   return (
-    <Animated.View entering={FadeInDown.duration(260)} style={{ gap: 12 }}>
+    <Animated.View entering={FadeInDown.duration(200)} style={{ gap: 12 }}>
       <View style={styles.facts}>
         <Fact kind="pin" label={t.destination} value={str(m.destination) || "—"} />
         <Fact kind="history" label={t.duration} value={str(m.duration) || "—"} />
@@ -176,7 +176,7 @@ function ContactFields({ form }: { form: ReturnType<typeof useContactForm> }) {
       <Field label={s.phone} value={form.phone || "—"} editable={false} style={{ color: colors.slate }} />
       <Text style={styles.label}>{s.contactBy}</Text>
       <OptionPills<Contact> value={form.contact} onChange={form.setContact} options={[{ value: "phone", label: s.phoneOpt }, { value: "wechat", label: "WeChat" }, { value: "whatsapp", label: "WhatsApp" }]} />
-      {form.contact !== "phone" ? <Animated.View entering={FadeIn}><Field placeholder={form.contact === "wechat" ? "WeChat ID" : "WhatsApp"} value={form.handle} onChangeText={form.setHandle} autoCapitalize="none" /></Animated.View> : null}
+      {form.contact !== "phone" ? <Animated.View entering={FadeIn.duration(200)}><Field placeholder={form.contact === "wechat" ? "WeChat ID" : "WhatsApp"} value={form.handle} onChangeText={form.setHandle} autoCapitalize="none" /></Animated.View> : null}
     </>
   );
 }
@@ -193,7 +193,7 @@ function SentCard({ title, hint, code, kind }: { title: string; hint: string; co
   const { locale } = useI18n();
   const s = shared[locale as Locale];
   return (
-    <Animated.View entering={ZoomIn.springify().damping(16)} style={styles.sent}>
+    <Animated.View entering={ZoomIn.duration(200)} style={styles.sent}>
       <Art3D kind="check" size={56} />
       <Text style={styles.sentTitle}>{title}</Text>
       <Text style={styles.sentHint}>{hint}</Text>

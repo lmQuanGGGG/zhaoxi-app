@@ -45,7 +45,7 @@ export default function InquiriesScreen() {
           </View>
         }
         renderItem={({ item, index }) => (
-          <Animated.View entering={FadeInDown.delay(Math.min(index, 5) * 40).duration(260)} style={{ paddingHorizontal: 14, paddingBottom: 12 }}>
+          <Animated.View entering={FadeInDown.delay(Math.min(index, 5) * 20).duration(200)} style={{ paddingHorizontal: 14, paddingBottom: 12 }}>
             {kind === "housing" ? <HousingCard row={item as HousingInquiry} /> : <TravelCard row={item as TravelBooking} />}
           </Animated.View>
         )}
@@ -66,10 +66,11 @@ function HousingCard({ row }: { row: HousingInquiry }) {
       <View style={s.top}>
         <AppImage uri={image} fallbackCode="housing" style={s.thumb} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 8 }}>
-            <Text style={s.code} numberOfLines={1}>{t.code}: {row.requestCode}</Text>
+          {/* Status first on its own line: the long request code used to push it off screen */}
+          <View style={{ alignSelf: "flex-start", marginBottom: 4 }}>
             <StatusPill label={label} tone={stage === "won" ? "brand" : stage === "lost" ? "muted" : "warning"} />
           </View>
+          <Text style={s.code} numberOfLines={1} ellipsizeMode="middle">{row.requestCode}</Text>
           <Text style={s.meta}>{t.moveIn}: {str(d.requestedMoveInDate || d.moveInDate) || "—"}</Text>
           <Text style={s.meta}>{t.budget}: {num(d.budget) > 0 ? money(num(d.budget)) : "—"}</Text>
           {row.listing?.id ? <Text style={s.link} onPress={() => router.push(`/service/${row.listing?.id}`)}>{t.open} ›</Text> : null}

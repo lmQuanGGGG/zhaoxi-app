@@ -62,7 +62,7 @@ export function LiveDelivery({ tracking }: { tracking: DeliveryTracking }) {
   const telemetry = tracking.telemetry;
   const status = tracking.job.status;
   return (
-    <Animated.View entering={FadeIn.duration(300)} style={[styles.card, shadow("card")]}>
+    <Animated.View entering={FadeIn.duration(200)} style={[styles.card, shadow("card")]}>
       <View style={styles.head}>
         <ArtLabel kind="truck" size={18} style={styles.stage}>{deliveryStageLabel(status, locale)}</ArtLabel>
         <Text style={[styles.live, { color: telemetry?.isLive ? "#059669" : "#D97706" }]}>{telemetry?.isLive ? "● LIVE" : telemetry?.isStale ? `● ${c.stale}` : "● GPS"}</Text>
