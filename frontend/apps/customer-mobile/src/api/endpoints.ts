@@ -133,8 +133,9 @@ export function uploadChatPhoto(threadId: string, photo: { uri: string; width: n
   return request<ChatAttachment>(`/api/customer-messages/${encodeURIComponent(threadId)}/attachments`, { method: "POST", body: form });
 }
 export const markThreadRead = (threadId: string) => request(`/api/customer-messages/${encodeURIComponent(threadId)}`, { method: "PATCH", body: "{}" });
-export const createSupportThread = (subject: string, message: string) =>
-  request<{ id: string }>("/api/customer-messages", { method: "POST", body: json({ subject, message }) });
+/** Opens a ZhaoXi support conversation; `id` is the full thread id (`support:<uuid>`) the chat screen takes. */
+export const createSupportThread = (message: string, subject?: string) =>
+  request<{ id: string }>("/api/customer-messages", { method: "POST", body: json({ message, subject: subject || undefined }) });
 
 // Help ----------------------------------------------------------------------------------
 export const getHelpArticles = (locale: string, query: string) => request<HelpArticle[]>(`/api/public-support-knowledge?${q({ locale, q: query })}`);

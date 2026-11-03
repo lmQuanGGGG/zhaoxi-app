@@ -97,10 +97,10 @@ export default function HomeScreen() {
     if (next !== overHeaderSV.value) { overHeaderSV.value = next; scheduleOnRN(setOverHeader, next); }
   });
   const quickCopy = {
-    "vi-VN": { locate: "Vị trí", ai: "Trợ lý AI", coupons: "Ưu đãi", favorites: "Yêu thích", payments: "Thanh toán", emergency: "Khẩn cấp", support: "Hỗ trợ", landmarks: "Khám phá Đà Nẵng" },
-    "en-US": { locate: "Location", ai: "AI assistant", coupons: "Offers", favorites: "Favorites", payments: "Payments", emergency: "Emergency", support: "Support", landmarks: "Explore Da Nang" },
-    "zh-CN": { locate: "位置", ai: "AI 助手", coupons: "优惠", favorites: "收藏", payments: "支付", emergency: "紧急", support: "客服", landmarks: "探索岘港" },
-    "zh-TW": { locate: "位置", ai: "AI 助手", coupons: "優惠", favorites: "收藏", payments: "支付", emergency: "緊急", support: "客服", landmarks: "探索峴港" },
+    "vi-VN": { locate: "Vị trí", coupons: "Ưu đãi", favorites: "Yêu thích", payments: "Thanh toán", emergency: "Khẩn cấp", support: "Hỗ trợ", landmarks: "Khám phá Đà Nẵng" },
+    "en-US": { locate: "Location", coupons: "Offers", favorites: "Favorites", payments: "Payments", emergency: "Emergency", support: "Support", landmarks: "Explore Da Nang" },
+    "zh-CN": { locate: "位置", coupons: "优惠", favorites: "收藏", payments: "支付", emergency: "紧急", support: "客服", landmarks: "探索岘港" },
+    "zh-TW": { locate: "位置", coupons: "優惠", favorites: "收藏", payments: "支付", emergency: "緊急", support: "客服", landmarks: "探索峴港" },
   }[locale];
   const arcTiles = resolveModules(modules.data, locale);
 
@@ -132,7 +132,7 @@ export default function HomeScreen() {
         <QuickActions
           items={[
             { key: "locate", icon: "location", label: quickCopy.locate, onPress: () => router.push("/location") },
-            { key: "ai", icon: "assistant", label: quickCopy.ai, onPress: () => router.push("/support"), accent: "#F5A524" },
+            { key: "support", icon: "support", label: quickCopy.support, onPress: () => router.push("/support"), accent: "#F5A524" },
             { key: "coupons", icon: "ticket", label: quickCopy.coupons, onPress: () => router.push("/coupons"), accent: "#EC5B2C" },
             { key: "favorites", icon: "heart", label: quickCopy.favorites, onPress: () => router.push("/favorites"), accent: "#E2564A" },
             { key: "payments", icon: "payment", label: quickCopy.payments, onPress: () => router.push("/payments"), accent: "#2F72D2" },
