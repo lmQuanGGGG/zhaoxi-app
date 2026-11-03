@@ -14,7 +14,7 @@ import { foodMilestones, fulfillmentCopy, milestoneLabels, paymentMethodLabels, 
 import { keys } from "../../src/query";
 import { ACTIVE_STATUSES, statusTone } from "../../src/status";
 import { colors, font, radius, shadow, space } from "../../src/theme";
-import { AppImage, Button, GlassCard, Header, Ionicons, Row, Screen, SkeletonList, StatusPill, haptic } from "../../src/ui";
+import { AppImage, Button, GlassCard, Header, Ionicons, Row, Screen, ServiceIcon, SkeletonList, StatusPill, haptic } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
 
 type Item = { serviceId?: string; name?: string; imageUrl?: string; quantity?: number; unitPrice?: number; subtotal?: number };
@@ -110,6 +110,16 @@ export default function OrderDetailScreen() {
             ) : null}
           </GlassCard>
         </Animated.View>
+
+        {data.organizationName ? (
+          <Animated.View entering={FadeInDown.delay(60).duration(320)}>
+            <GlassCard style={styles.store}>
+              <ServiceIcon code={data.moduleCode} size={40} />
+              <Text style={[font.h3, { flex: 1 }]} numberOfLines={1}>{data.organizationName}</Text>
+              <Button small icon="chatbubbles" title={t.messages.storeChat} onPress={() => router.push(`/chat/${encodeURIComponent(`order:${data.id}`)}`)} />
+            </GlassCard>
+          </Animated.View>
+        ) : null}
 
         {tracking.data?.job && !external ? <LiveDelivery tracking={tracking.data} /> : null}
 
@@ -217,6 +227,7 @@ function LivePulse({ active }: { active: boolean }) {
 
 const styles = StyleSheet.create({
   eta: { flexDirection: "row", alignItems: "center", gap: 8, padding: 10, borderRadius: radius.md, backgroundColor: colors.brandSoft },
+  store: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 12 },
   courier: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: radius.md, backgroundColor: colors.white, ...shadow("card") },
   item: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   itemImage: { width: 40, height: 40, borderRadius: 10 },
