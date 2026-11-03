@@ -156,8 +156,8 @@ export default function EmbedScreen() {
       <View pointerEvents="none" style={[styles.band, { bottom: 0, height: insets.bottom, backgroundColor: edges.bottom }]} />
       <LinearGradient pointerEvents="none" colors={[withAlpha(edges.bottom, 0), withAlpha(edges.bottom, 0.85)]} style={[styles.fade, { bottom: insets.bottom }]} />
       {loading && !failed ? <ActivityIndicator style={StyleSheet.absoluteFill} color={colors.header} /> : null}
-      {/* Just under the status bar, top right, where it is always in reach. */}
-      <View style={[styles.pill, { top: insets.top + 6 }]}>
+      {/* Tucked up into the notch band, right under the status icons, where it is always in reach. */}
+      <View style={[styles.pill, { top: Math.max(insets.top - 12, 8) }]}>
         <BlurView intensity={40} tint="dark" style={[StyleSheet.absoluteFill, styles.pillBlur]} />
         {/* Back walks the site's own history first, then leaves the screen. */}
         <Pressable accessibilityLabel="Back" hitSlop={6} onPress={() => (canGoBack ? web.current?.goBack() : close())} style={({ pressed }) => [styles.pillButton, pressed && styles.pressed]}>
