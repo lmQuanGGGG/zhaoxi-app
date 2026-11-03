@@ -1,6 +1,9 @@
 // Picking, shooting and shrinking photos for order chats. The native modules are
-// loaded lazily: a binary built before they were added (or an OTA update on an
-// old build) simply hides the photo buttons instead of crashing.
+// checked before their JS is loaded: a binary built before they were added (or
+// an OTA update on an old build) simply hides the photo buttons. Importing the
+// JS without the native side would throw while Metro loads the module, which is
+// reported as a fatal error even inside a caught import().
+import { requireOptionalNativeModule } from "expo";
 
 export const MAX_CHAT_PHOTOS = 5;
 const MAX_SIDE = 1600;
@@ -14,7 +17,8 @@ let modules: Promise<{ picker: Picker; manipulator: Manipulator } | null> | null
 
 export function loadPhotoModules() {
   if (!modules) {
-    modules = Promise.all([import("expo-image-picker"), import("expo-image-manipulator")])
+    const native = Boolean(requireOptionalNativeModule("ExponentImagePicker") && requireOptionalNativeModule("ExpoImageManipulator"));
+    modules = !native ? Promise.resolve(null) : Promise.all([import("expo-image-picker"), import("expo-image-manipulator")])
       .then(([picker, manipulator]) => ({ picker, manipulator }))
       .catch(() => null);
   }
