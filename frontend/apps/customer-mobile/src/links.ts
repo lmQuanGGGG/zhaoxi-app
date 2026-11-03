@@ -85,6 +85,11 @@ export function routeForWebHref(href?: string | null): Href {
       return `/chat/${encodeURIComponent(decoded)}`;
     case "help":
       return `/help/${decoded}`;
+    case "miniapp": {
+      // `/miniapp/zhaoxi.partner?screen=orders&order=<id>`: query thành `context.launch` của mini app.
+      const query = params.toString();
+      return `/miniapp/${encodeURIComponent(decoded)}${query ? `?${query}` : ""}`;
+    }
     default:
       return "/";
   }

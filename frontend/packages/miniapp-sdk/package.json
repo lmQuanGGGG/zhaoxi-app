@@ -1,0 +1,20 @@
+{
+  "name": "@zhaoxi/miniapp-sdk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hợp đồng giữa host ZhaoXi và mini app: kiểu dữ liệu, bridge, công cụ build/ký bundle.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./shared-modules.json": "./shared-modules.json",
+    "./metro": "./tools/metro.cjs",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "zhaoxi-miniapp": "./tools/cli.mjs"
+  },
+  "peerDependencies": {
+    "react": ">=19"
+  }
+}

@@ -3,7 +3,14 @@ import type { AnalyticsData, AuthState, Order, OrderChatAttachment, OrderChatMes
 
 const AUTH_KEY = "zhaoxi.partner.auth.v1";
 const configuredUrl = process.env.EXPO_PUBLIC_API_URL || "https://zhaoxi-app-puce.vercel.app";
-export const API_URL = configuredUrl.replace(/\/$/, "");
+let API_URL = configuredUrl.replace(/\/$/, "");
+let deviceName = "ZhaoXi Partner Mobile";
+
+/** Mini app: dùng backend của host (`context.host.apiUrl`), để một bundle chạy đúng mọi môi trường. */
+export function configureApi(options: { apiUrl?: string; deviceName?: string }) {
+  if (options.apiUrl) API_URL = options.apiUrl.replace(/\/+$/, "");
+  if (options.deviceName) deviceName = options.deviceName;
+}
 
 let auth: AuthState | null = null;
 let refreshPromise: Promise<AuthState | null> | null = null;
@@ -41,7 +48,7 @@ async function refreshAuth() {
     }).then(async response => {
       const body = await response.json().catch(() => null);
       if (!response.ok || !body?.ok) { await saveAuth(null); return null; }
-      await saveAuth(body.data as AuthState);
+      await saveAuth({ ...(body.data as AuthState), hostUserId: auth?.hostUserId });
       return auth;
     }).finally(() => { refreshPromise = null; });
   }
@@ -73,7 +80,7 @@ export async function login(username: string, password: string, deviceId: string
   try {
     response = await fetch(`${API_URL}/api/auth/identity/account/login`, {
       method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ role: "partner", mode: "login", username: username.trim().toLowerCase(), password, locale: "vi-VN", deviceId, deviceName: "ZhaoXi Partner Mobile" }),
+      body: JSON.stringify({ role: "partner", mode: "login", username: username.trim().toLowerCase(), password, locale: "vi-VN", deviceId, deviceName }),
     });
   } catch {
     throw new Error(`Không kết nối được máy chủ ${API_URL}. Hãy kiểm tra backend đang chạy.`);
@@ -88,7 +95,7 @@ export async function loginWithPhone(phone: string, pin: string, deviceId: strin
   try {
     response = await fetch(`${API_URL}/api/auth/identity/pin/login`, {
       method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ role: "partner", phone, pin, deviceId, deviceName: "ZhaoXi Partner Mobile" }),
+      body: JSON.stringify({ role: "partner", phone, pin, deviceId, deviceName }),
     });
   } catch {
     throw new Error(`Không kết nối được máy chủ ${API_URL}. Hãy kiểm tra backend đang chạy.`);
@@ -98,10 +105,26 @@ export async function loginWithPhone(phone: string, pin: string, deviceId: strin
   return finishPartnerLogin(body.data);
 }
 
-async function finishPartnerLogin(value: unknown) {
+/** Đổi mã role-switch (host xin bằng phiên khách, `bridge.createRoleHandoff`) lấy phiên partner của cùng tài khoản. */
+export async function loginWithHandoff(code: string, deviceId: string, hostUserId: string) {
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}/api/auth/role-switch/exchange`, {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ code, deviceId, deviceName }),
+    });
+  } catch {
+    throw new Error(`Không kết nối được máy chủ ${API_URL}. Hãy kiểm tra backend đang chạy.`);
+  }
+  const body = await response.json().catch(() => null);
+  if (!response.ok || !body?.ok) throw new Error(body?.error?.message || "Không vào được gian hàng bằng tài khoản ZhaoXi.");
+  return finishPartnerLogin(body.data, hostUserId);
+}
+
+async function finishPartnerLogin(value: unknown, hostUserId?: string) {
   const data = value as AuthState | undefined;
   if (data?.session?.role !== "partner" || !data.session.organizationId) throw new Error("Tài khoản chưa được gán vào cửa hàng partner.");
-  await saveAuth(data);
+  await saveAuth(hostUserId ? { ...data, hostUserId } : data);
   return auth!;
 }
 

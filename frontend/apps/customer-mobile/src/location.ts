@@ -75,18 +75,25 @@ export async function locate(prompt = true): Promise<Point | null> {
 
 type PhotonFeature = { geometry: { coordinates: [number, number] }; properties: Record<string, string | undefined> };
 
-/** One Photon (OpenStreetMap) request biased to Đà Nẵng: named places + streets, ~1 s (same source as the PWA). */
+// Search covers all of Vietnam; results near the customer's saved point (Đà Nẵng until one is set) rank first.
+const VIETNAM_BBOX = "102.1,8.2,109.7,23.5";
+const DA_NANG: Point = { latitude: 16.0544, longitude: 108.2022 };
+const inVietnam = ({ latitude, longitude }: Point) => latitude >= 8.2 && latitude <= 23.5 && longitude >= 102.1 && longitude <= 109.7;
+
+/** One Photon (OpenStreetMap) request over Vietnam: named places + streets, ~1 s (same source as the PWA). */
 async function photonSearch(query: string, signal?: AbortSignal) {
-  const url = `https://photon.komoot.io/api/?limit=6&bbox=108.0,15.85,108.4,16.2&lat=16.0544&lon=108.2022&location_bias_scale=0.1&q=${encodeURIComponent(query)}`;
+  const near = state.point || DA_NANG;
+  const url = `https://photon.komoot.io/api/?limit=10&bbox=${VIETNAM_BBOX}&lat=${near.latitude}&lon=${near.longitude}&location_bias_scale=0.2&q=${encodeURIComponent(query)}`;
   const response = await fetch(url, { signal, headers: { Accept: "application/json" } });
   if (!response.ok) throw new Error(`photon ${response.status}`);
   const data = (await response.json()) as { features?: PhotonFeature[] };
   const seen = new Set<string>();
-  return (data.features || []).map((feature) => {
+  // The box also clips Laos, Cambodia and southern China: keep Vietnamese places only.
+  return (data.features || []).filter((feature) => !feature.properties.countrycode || feature.properties.countrycode === "VN").map((feature) => {
     const p = feature.properties;
     const [longitude, latitude] = feature.geometry.coordinates;
     const street = p.street ? [p.housenumber, p.street].filter(Boolean).join(" ") : "";
-    const label = [p.name, street && street !== p.name ? street : null, p.district || p.locality, p.city].filter(Boolean).join(", ");
+    const label = [p.name, street && street !== p.name ? street : null, p.district || p.locality, p.city || p.county, p.state].filter(Boolean).join(", ");
     return { latitude, longitude, label };
   }).filter((item) => item.label && !seen.has(item.label) && seen.add(item.label)).slice(0, 5);
 }
@@ -101,7 +108,7 @@ export async function searchAddress(query: string, signal?: AbortSignal): Promis
     if (signal?.aborted) throw error;
   }
   try {
-    const results = await Location.geocodeAsync(`${query}, Đà Nẵng`);
+    const results = (await Location.geocodeAsync(`${query}, Việt Nam`)).filter(inVietnam);
     return Promise.all(results.slice(0, 3).map(async (result) => {
       const point = { latitude: result.latitude, longitude: result.longitude };
       return { ...point, label: (await formatAddress(point)) || query };

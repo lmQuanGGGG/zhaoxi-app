@@ -9,7 +9,8 @@ export type Session = {
   refreshExpiresAt: string;
 };
 
-export type AuthState = { accessToken: string; refreshToken: string; session: Session };
+/** `hostUserId`: phiên lấy qua host ZhaoXi (mini app) cho tài khoản này; đổi tài khoản host thì bỏ phiên. */
+export type AuthState = { accessToken: string; refreshToken: string; session: Session; hostUserId?: string };
 export type PartnerOrganization = { id: string; code?: string; name: string; type?: string; memberRole?: string };
 
 export type OrderStage = "assigned" | "preparing" | "ready_for_pickup" | "courier_booked" | "handed_off";

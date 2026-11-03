@@ -139,6 +139,10 @@ export const I18N = {
     passwordLabel: "Mật khẩu",
     phoneNumberLabel: "Số điện thoại",
     loginButton: "Đăng nhập",
+    // Mini app trong ZhaoXi
+    loginWithZhaoXi: "Vào bằng tài khoản ZhaoXi",
+    orLoginPartner: "hoặc đăng nhập tài khoản đối tác",
+    openingStore: "Đang mở gian hàng…",
     loginNotice: "Đăng nhập bằng tài khoản hoặc số điện thoại đã đăng ký quản lý gian hàng trên hệ thống ZhaoXi.",
 
     // Revenue & Analytics
@@ -327,6 +331,10 @@ export const I18N = {
     passwordLabel: "Password",
     phoneNumberLabel: "Phone number",
     loginButton: "Log in",
+    // Mini app inside ZhaoXi
+    loginWithZhaoXi: "Continue with ZhaoXi account",
+    orLoginPartner: "or sign in with a partner account",
+    openingStore: "Opening your store…",
     loginNotice: "Sign in with registered credentials to access your ZhaoXi partner store portal.",
 
     // Revenue & Analytics
@@ -515,6 +523,10 @@ export const I18N = {
     passwordLabel: "密码",
     phoneNumberLabel: "手机号码",
     loginButton: "登录",
+    // 赵喜内的小程序
+    loginWithZhaoXi: "使用赵喜账号进入",
+    orLoginPartner: "或登录商家账号",
+    openingStore: "正在打开店铺…",
     loginNotice: "使用已开通商家权限的账号或手机号登录赵喜配送平台。",
 
     // Revenue & Analytics

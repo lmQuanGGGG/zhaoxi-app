@@ -1,0 +1,35 @@
+{
+  "name": "miniapp_zhaoxi_partner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Đóng gói app ZhaoXi Partner (mã nguồn ở partner-mobile) thành mini app chạy trong host ZhaoXi.",
+  "scripts": {
+    "start": "zhaoxi-miniapp start",
+    "build": "zhaoxi-miniapp build",
+    "build:ios": "zhaoxi-miniapp build --platform ios",
+    "build:android": "zhaoxi-miniapp build --platform android",
+    "serve": "zhaoxi-miniapp serve",
+    "keygen": "zhaoxi-miniapp keygen",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@zhaoxi/miniapp-sdk": "1.0.0",
+    "expo-blur": "~57.0.3",
+    "expo-glass-effect": "~57.0.4",
+    "react": "19.2.6",
+    "react-native": "0.86.3",
+    "zhaoxi-partner-mobile": "1.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "expo": "~57.0.24",
+    "typescript": "~6.0.3"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "react"
+      ]
+    }
+  }
+}

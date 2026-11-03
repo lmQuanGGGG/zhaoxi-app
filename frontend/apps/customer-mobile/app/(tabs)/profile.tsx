@@ -10,20 +10,27 @@ import { TAB_BAR_SPACE } from "../../src/constants";
 import { str } from "../../src/format";
 import { useSession } from "../../src/hooks";
 import { localeLabels, useI18n } from "../../src/i18n";
+import { useMiniAppAccess } from "../../src/miniapps/access";
+import { findMiniApp, PARTNER_MINIAPP_ID } from "../../src/miniapps/registry";
 import { getPromotionsPreference, pushPermissionGranted, registerForPush, setPromotionsPreference } from "../../src/notifications";
 import { profileCopy } from "../../src/profile-copy";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
-import { ArtLabel, HeaderFade, ListRow, PressableScale, Screen, type MenuArtKind } from "../../src/ui";
+import { Art3D, ArtLabel, HeaderFade, ListRow, PressableScale, Screen, ServicesGem, styles as ui, type MenuArtKind } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
 
 const feedbackLabel = { "vi-VN": "Gửi phản hồi Beta", "en-US": "Beta feedback", "zh-CN": "Beta 反馈", "zh-TW": "Beta 回饋" } as const;
+const miniAppsLabel = { "vi-VN": "Mini app", "en-US": "Mini apps", "zh-CN": "小程序", "zh-TW": "小程式" } as const;
+const partnerHint = { "vi-VN": "Đơn hàng, tin nhắn, doanh thu", "en-US": "Orders, messages, revenue", "zh-CN": "订单、消息、营业额", "zh-TW": "訂單、訊息、營業額" } as const;
+const partnerApp = findMiniApp(PARTNER_MINIAPP_ID);
 
 export default function ProfileScreen() {
   const { t, locale } = useI18n();
   const c = profileCopy[locale];
   const { session, userId } = useSession();
   const profile = useQuery({ queryKey: keys.profile(userId), queryFn: getProfile, enabled: Boolean(userId) });
+  const { canOpen } = useMiniAppAccess();
+  const showPartner = Boolean(partnerApp && canOpen(partnerApp));
   const [push, setPush] = useState(false);
   const [promotions, setPromotions] = useState(true);
 
@@ -103,6 +110,18 @@ export default function ProfileScreen() {
           )) : <Text style={[styles.infoLabel, { width: "auto" }]}>{c.noAddress}</Text>}
         </View>
 
+        {showPartner && partnerApp ? (
+          // Chỉ tài khoản đối tác thấy (useMiniAppAccess): mở mini app ZhaoXi Partner bằng phiên hiện tại.
+          <PressableScale onPress={() => router.push(`/miniapp/${encodeURIComponent(partnerApp.id)}`)} scaleTo={0.985} style={[ui.listRow, { paddingVertical: 10, gap: 12 }]}>
+            <View style={{ width: 40, height: 40, alignItems: "center", justifyContent: "center" }}><Art3D kind="store" size={34} /></View>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={{ fontSize: 14, fontWeight: "700", color: colors.ink }} numberOfLines={1}>{partnerApp.title[locale]}</Text>
+              <Text style={{ fontSize: 11.5, color: colors.textSecondary, marginTop: 2 }} numberOfLines={1}>{partnerHint[locale]}</Text>
+            </View>
+            <Text style={{ fontSize: 20, color: "#94A3B8" }}>›</Text>
+          </PressableScale>
+        ) : null}
+
         <Text style={styles.groupTitle}>{c.personal}</Text>
         <View style={{ gap: 8 }}>
           {menu.map(([art, label, href]) => <ListRow key={href} art={art} title={label} subtitle={href === "/language" ? `${localeLabels[locale].flag} ${localeLabels[locale].native}` : undefined} onPress={() => router.push(href as never)} />)}
@@ -118,6 +137,12 @@ export default function ProfileScreen() {
           <ListRow art="promotions" title={c.promotions} right={<Switch value={promotions} trackColor={{ true: colors.wechat }} onValueChange={(value) => { setPromotions(value); void setPromotionsPreference(value, locale); }} />} />
           <ListRow art="help" title={t.profile.help} onPress={() => router.push("/help")} />
           <ListRow art="feedback" title={feedbackLabel[locale]} onPress={() => router.push("/feedback")} />
+          {/* Cùng khung ListRow, biểu tượng là khối kính màu của nút dịch vụ ở dock. */}
+          <PressableScale onPress={() => router.push("/miniapps")} scaleTo={0.985} style={[ui.listRow, { paddingVertical: 10, gap: 12 }]}>
+            <View style={{ width: 40, height: 40, alignItems: "center", justifyContent: "center" }}><ServicesGem size={32} /></View>
+            <Text style={{ flex: 1, fontSize: 14, fontWeight: "600", color: colors.ink }} numberOfLines={1}>{miniAppsLabel[locale]}</Text>
+            <Text style={{ fontSize: 20, color: "#94A3B8" }}>›</Text>
+          </PressableScale>
         </View>
         <Text style={styles.version}>ZhaoXi · {t.profile.version} {APP_VERSION}</Text>
       </ScrollView>

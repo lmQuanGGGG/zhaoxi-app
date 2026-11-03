@@ -1,0 +1,8 @@
+{
+  "id": "zhaoxi.example",
+  "name": "ZhaoXi Example",
+  "version": "1.0.0",
+  "entry": "./src/App.tsx",
+  "permissions": ["user.profile", "api.zhaoxi", "navigation.host"],
+  "devPort": 8092
+}

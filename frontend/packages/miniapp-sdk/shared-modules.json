@@ -1,0 +1,42 @@
+{
+  "runtime": 1,
+  "modules": [
+    "react",
+    "react/jsx-runtime",
+    "react/jsx-dev-runtime",
+    "react-native",
+    "@zhaoxi/miniapp-sdk",
+    "react-native-safe-area-context",
+    "react-native-gesture-handler",
+    "react-native-reanimated",
+    "react-native-worklets",
+    "react-native-svg",
+    "react-native-screens",
+    "react-native-webview",
+    "@react-native-async-storage/async-storage",
+    "@expo/vector-icons",
+    "@expo/vector-icons/Ionicons",
+    "expo-modules-core",
+    "expo-application",
+    "expo-blur",
+    "expo-clipboard",
+    "expo-constants",
+    "expo-device",
+    "expo-glass-effect",
+    "expo-haptics",
+    "expo-image",
+    "expo-image-manipulator",
+    "expo-image-picker",
+    "expo-linear-gradient",
+    "expo-linking",
+    "expo-localization",
+    "expo-location",
+    "expo-notifications",
+    "expo-secure-store",
+    "expo-status-bar"
+  ],
+  "forbidden": {
+    "expo": "Mini app không import thẳng gói `expo` (nó cài lại runtime của host). Dùng gói expo-* cụ thể trong danh sách shared.",
+    "expo-router": "expo-router chỉ có một cây route của host. Mini app dùng state nội bộ hoặc @react-navigation trong NavigationIndependentTree."
+  }
+}

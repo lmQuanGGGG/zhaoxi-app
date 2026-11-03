@@ -1,0 +1,5 @@
+# Bundle build ra và stub shared sinh tự động
+dist/
+.zhaoxi/
+# Khoá ký: KHÔNG commit
+*.pem

@@ -2,8 +2,9 @@
 // checked before their JS is loaded: a binary built before they were added (or
 // an OTA update on an old build) simply hides the photo buttons. Importing the
 // JS without the native side would throw while Metro loads the module, which is
-// reported as a fatal error even inside a caught import().
-import { requireOptionalNativeModule } from "expo";
+// reported as a fatal error even inside a caught import(). `expo-modules-core` (what `expo` re-exports
+// it from) rather than `expo`: the mini app build may not import `expo` itself.
+import { requireOptionalNativeModule } from "expo-modules-core";
 
 export const MAX_CHAT_PHOTOS = 5;
 const MAX_SIDE = 1600;

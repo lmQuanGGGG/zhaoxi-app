@@ -1,6 +1,6 @@
 import { json, request, requestRaw } from "./client";
 import type {
-  ApiModule, AvailableCoupon, ChatAttachment, ChatMessage, CouponEvaluation, CustomerProfile, DeliveryQuote, DeliveryTracking, DeviceSession, DiscoveryResult,
+  AccountAccess, ApiModule, AvailableCoupon, ChatAttachment, ChatMessage, CouponEvaluation, CustomerProfile, DeliveryQuote, DeliveryTracking, DeviceSession, DiscoveryResult,
   FavoriteItem, FoodPrice, HelpArticle, HomeFeed, HousingInquiry, MessageThread, MessageThreadSummary, NotificationInbox, NotificationPreferences,
   Order, OrderDetail, PartnerPaymentState, Payment, PaymentCapabilities, Point, Recommendation, RestaurantStatus, SavedAddress, Service, ServiceDetail,
   SupportConfig, TravelBooking, TravelSlot, UiConfig, UnreadSummary,
@@ -46,6 +46,7 @@ export const setFavorite = (serviceId: string, favorite: boolean) =>
 export const getFavorites = (locale: string) => request<FavoriteItem[]>(`/api/customer-favorites?${q({ locale })}`);
 export const getHistory = (locale: string) => request<FavoriteItem[]>(`/api/customer-history?${q({ locale })}`);
 export const getProfile = () => request<CustomerProfile>("/api/customer-profile");
+export const getAccountAccess = () => request<AccountAccess>("/api/account/me");
 export const updateProfile = (patch: { displayName?: string; phone?: string; addressText?: string; latitude?: number; longitude?: number }) =>
   request<CustomerProfile>("/api/customer-profile", { method: "PATCH", body: json(patch) });
 export const addAddress = (input: Omit<SavedAddress, "id" | "isDefault"> & { isDefault?: boolean }) =>

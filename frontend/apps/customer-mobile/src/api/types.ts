@@ -157,6 +157,11 @@ export type CustomerProfile = {
   profile?: { addressText?: string | null; latitude?: number | null; longitude?: number | null; nationality?: string | null; cityName?: string | null; whatsapp?: string | null; wechatContactId?: string | null } | null;
   addresses?: SavedAddress[];
 };
+/** `GET /api/account/me`: vai trò và gian hàng (organization) người dùng là thành viên đang hoạt động. */
+export type AccountAccess = {
+  roles: string[];
+  organizations: Array<{ id: string; code?: string | null; name: string; type?: string | null; status?: string | null; memberRole?: string | null }>;
+};
 
 export type Order = {
   id: string;

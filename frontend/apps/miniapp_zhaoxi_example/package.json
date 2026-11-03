@@ -1,0 +1,33 @@
+{
+  "name": "miniapp_zhaoxi_example",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mini app mẫu tối giản cho host ZhaoXi: copy thư mục này để tạo mini app mới.",
+  "scripts": {
+    "start": "zhaoxi-miniapp start",
+    "build": "zhaoxi-miniapp build",
+    "build:ios": "zhaoxi-miniapp build --platform ios",
+    "build:android": "zhaoxi-miniapp build --platform android",
+    "serve": "zhaoxi-miniapp serve",
+    "keygen": "zhaoxi-miniapp keygen",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@zhaoxi/miniapp-sdk": "1.0.0",
+    "expo-linear-gradient": "~57.0.2",
+    "react": "19.2.6",
+    "react-native": "0.86.3"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "expo": "~57.0.24",
+    "typescript": "~6.0.3"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "react"
+      ]
+    }
+  }
+}

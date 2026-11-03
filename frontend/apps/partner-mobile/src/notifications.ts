@@ -4,9 +4,18 @@ import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import type { PartnerOrderKind } from "./types";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: true, shouldSetBadge: true }),
-});
+/** Chỉ app độc lập gọi: trong host ZhaoXi, handler toàn cục là của host (mini app đặt lại sẽ ghi đè). */
+export function installNotificationHandler() {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: true, shouldSetBadge: true }),
+  });
+}
+
+/** Push Partner (đơn mới `screen: "orders"`, tin nhắn `screen: "messages"`); push của host có `url`. */
+export function isPartnerPush(data: unknown) {
+  const record = data && typeof data === "object" ? data as Record<string, unknown> : null;
+  return Boolean(record && !record.url && (record.screen === "orders" || record.screen === "messages"));
+}
 
 export async function configureNotifications() {
   await Notifications.setNotificationCategoryAsync("ORDER_ACTIONS", [
@@ -54,12 +63,13 @@ const NEW_ORDER_TITLE: Record<PartnerOrderKind, string> = {
   service_booking: "🔔 Có đơn dịch vụ mới",
 };
 
-export async function notifyNewOrder(order: { requestId: string; requestCode: string; customerName: string; kind?: PartnerOrderKind }) {
+/** `customSound: false` trong host ZhaoXi: bản build của host không có order_alert.wav, dùng âm mặc định. */
+export async function notifyNewOrder(order: { requestId: string; requestCode: string; customerName: string; kind?: PartnerOrderKind }, options: { customSound?: boolean } = {}) {
   await Notifications.scheduleNotificationAsync({
     content: {
       title: NEW_ORDER_TITLE[order.kind || "food_delivery"],
       body: `${order.requestCode} · ${order.customerName}`,
-      sound: "order_alert.wav",
+      sound: options.customSound === false ? "default" : "order_alert.wav",
       categoryIdentifier: "ORDER_ACTIONS",
       data: { orderId: order.requestId, screen: "orders" },
     },
