@@ -1,3 +1,4 @@
+import { Image } from "expo-image";
 import { View } from "react-native";
 import Svg, { Circle, Defs, Ellipse, G, LinearGradient, Path, RadialGradient, Rect, Stop } from "react-native-svg";
 
@@ -17,6 +18,7 @@ export const servicePalettes: Record<string, { tint: string; accent: string }> =
   community: { tint: "#FFF1EE", accent: "#E2564A" },
   market: { tint: "#F2F8EA", accent: "#5C9A29" },
   emergency: { tint: "#FFEFEF", accent: "#D83A3A" },
+  entertainment: { tint: "#FDEFF5", accent: "#E0447F" },
 };
 
 const lin = (id: string, from: string, to: string, vertical = true) => (
@@ -925,8 +927,16 @@ const art: Record<string, () => React.JSX.Element> = {
   emergency: Emergency,
 };
 
+// Partner services that ship their own brand logo instead of a drawn illustration.
+const logos: Record<string, number> = {
+  entertainment: require("../../assets/services/cocodrama.png"),
+};
+
 /** The bare illustration, no frame. */
 export function ServiceArt({ code, size = 48 }: { code?: string | null; size?: number }) {
+  const logo = code ? logos[code] : undefined;
+  // Logo sits a touch smaller so it reads at the same visual weight as the illustrations.
+  if (logo) return <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}><Image source={logo} style={{ width: size * 0.84, height: size * 0.84, borderRadius: size * 0.2 }} contentFit="cover" /></View>;
   const Art = (code && art[code]) || Fallback;
   return (
     <Svg width={size} height={size} viewBox="0 0 64 64">

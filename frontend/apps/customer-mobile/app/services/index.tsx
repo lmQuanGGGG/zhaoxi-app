@@ -6,7 +6,7 @@ import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated"
 import { getModules } from "../../src/api/endpoints";
 import { TAB_BAR_SPACE } from "../../src/constants";
 import { useI18n } from "../../src/i18n";
-import { moduleRoute, resolveModules, type ServiceGroup } from "../../src/modules";
+import { openModule, resolveModules, type ServiceGroup } from "../../src/modules";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
 import { Chip, Header, PressableScale, Screen, ServiceBadge, ZxIcon, type ZxIconName } from "../../src/ui";
@@ -58,7 +58,7 @@ export default function ServicesHub() {
           <View style={{ gap: 10 }}>
             {items.map((item, index) => (
               <Animated.View key={item.code} entering={FadeInDown.delay(index * 35).duration(260)} layout={LinearTransition.springify().damping(18)}>
-                <PressableScale onPress={() => router.push(moduleRoute(item.code))} scaleTo={0.98} style={[styles.card, shadow("card")]}>
+                <PressableScale onPress={() => openModule(item.code)} scaleTo={0.98} style={[styles.card, shadow("card")]}>
                   <ServiceBadge code={item.code} size={52} />
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>

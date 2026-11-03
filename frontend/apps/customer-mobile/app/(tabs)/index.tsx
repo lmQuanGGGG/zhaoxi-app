@@ -16,7 +16,7 @@ import { useSession } from "../../src/hooks";
 import { useI18n } from "../../src/i18n";
 import { routeForWebHref } from "../../src/links";
 import { locate, pointKey, useLocationState } from "../../src/location";
-import { moduleRoute, resolveModules } from "../../src/modules";
+import { openModule, resolveModules } from "../../src/modules";
 import { keys } from "../../src/query";
 import { ACTIVE_STATUSES } from "../../src/status";
 import { colors, shadow } from "../../src/theme";
@@ -75,7 +75,7 @@ export default function HomeScreen() {
   }, [modules, recommendations, feed, orders]);
 
   const prefetchModule = (code: string) => {
-    if (code === "emergency" || code === "payment") return;
+    if (code === "emergency" || code === "payment" || code === "entertainment") return;
     void client.prefetchQuery({ queryKey: keys.nearby(code, locale, pointKey(location.point)), queryFn: () => getNearbyServices(code, locale, location.point), staleTime: 60_000 });
   };
   const lc = locationCopy[locale];
@@ -127,7 +127,7 @@ export default function HomeScreen() {
           <View style={{ height: 96 }} />
         </View>
 
-        <ServiceArc tiles={arcTiles} onOpen={(code) => router.push(moduleRoute(code))} onPressIn={prefetchModule} more={`${t.common.more}`} />
+        <ServiceArc tiles={arcTiles} onOpen={openModule} onPressIn={prefetchModule} more={`${t.common.more}`} />
 
         <QuickActions
           items={[
