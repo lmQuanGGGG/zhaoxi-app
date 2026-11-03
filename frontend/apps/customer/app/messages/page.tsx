@@ -14,6 +14,7 @@ const C = {
   "zh-CN": {
     title: "消息中心",
     all: "全部",
+    order: "订单",
     housing: "租房",
     travel: "旅游",
     payment: "支付支持",
@@ -34,6 +35,7 @@ const C = {
   "zh-TW": {
     title: "訊息中心",
     all: "全部",
+    order: "訂單",
     housing: "租房",
     travel: "旅遊",
     payment: "支付支援",
@@ -54,6 +56,7 @@ const C = {
   "vi-VN": {
     title: "Trung tâm tin nhắn",
     all: "Tất cả",
+    order: "Đơn hàng",
     housing: "Nhà ở",
     travel: "Du lịch",
     payment: "Hỗ trợ thanh toán",
@@ -74,6 +77,7 @@ const C = {
   "en-US": {
     title: "Message Center",
     all: "All",
+    order: "Orders",
     housing: "Housing",
     travel: "Travel",
     payment: "Payment support",
@@ -92,7 +96,7 @@ const C = {
     help: "Help Center",
   },
 } as const;
-const kinds = ["all", "housing", "travel", "payment", "support"] as const;
+const kinds = ["all", "order", "housing", "travel", "payment", "support"] as const;
 export default function Messages() {
   const { locale } = useZhaoXiLocale(),
     t = C[locale],
@@ -188,7 +192,9 @@ export default function Messages() {
           ? t.payment
           : k === "support"
             ? t.support
-            : t.all;
+            : k === "order"
+              ? t.order
+              : t.all;
   if (active && thread)
     return (
       <CustomerShell>
