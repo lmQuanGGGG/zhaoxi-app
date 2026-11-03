@@ -1,6 +1,5 @@
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
@@ -17,10 +16,10 @@ import { colors, shadow } from "../../src/theme";
 import { Art3D, Badge, Header, PressableScale, Screen, ServiceIcon, SkeletonList } from "../../src/ui";
 
 const copy = {
-  "vi-VN": { title: "Trung tâm tin nhắn", search: "Trung tâm tin nhắn…", assistant: "Trợ lý ZhaoXi", assistantHint: "Tư vấn dịch vụ và hỗ trợ tức thời", empty: "Chưa có hội thoại", help: "Trung tâm trợ giúp", create: "Tạo hội thoại hỗ trợ", notify: "Trung tâm thông báo", payment: "Hỗ trợ thanh toán", support: "Hỗ trợ ZhaoXi" },
-  "en-US": { title: "Message Center", search: "Message Center…", assistant: "ZhaoXi Assistant", assistantHint: "Service advice and instant support", empty: "No conversations yet", help: "Help center", create: "Start a support chat", notify: "Notification Center", payment: "Payment support", support: "ZhaoXi Support" },
-  "zh-CN": { title: "消息中心", search: "消息中心…", assistant: "赵喜助手", assistantHint: "服务咨询与即时支持", empty: "暂无会话", help: "帮助中心", create: "创建客服会话", notify: "通知中心", payment: "支付支持", support: "赵喜客服" },
-  "zh-TW": { title: "消息中心", search: "消息中心…", assistant: "趙喜助手", assistantHint: "服務諮詢與即時支援", empty: "暫無對話", help: "幫助中心", create: "建立客服對話", notify: "通知中心", payment: "支付支援", support: "趙喜客服" },
+  "vi-VN": { title: "Trung tâm tin nhắn", search: "Trung tâm tin nhắn…", empty: "Chưa có hội thoại", help: "Trung tâm trợ giúp", create: "Tạo hội thoại hỗ trợ", notify: "Trung tâm thông báo", payment: "Hỗ trợ thanh toán", support: "Hỗ trợ ZhaoXi" },
+  "en-US": { title: "Message Center", search: "Message Center…", empty: "No conversations yet", help: "Help center", create: "Start a support chat", notify: "Notification Center", payment: "Payment support", support: "ZhaoXi Support" },
+  "zh-CN": { title: "消息中心", search: "消息中心…", empty: "暂无会话", help: "帮助中心", create: "创建客服会话", notify: "通知中心", payment: "支付支持", support: "赵喜客服" },
+  "zh-TW": { title: "消息中心", search: "消息中心…", empty: "暫無對話", help: "幫助中心", create: "建立客服對話", notify: "通知中心", payment: "支付支援", support: "趙喜客服" },
 } as const;
 
 const tabs: Array<"all" | ThreadKind> = ["all", "order", "housing", "travel", "payment", "support"];
@@ -50,15 +49,6 @@ export default function MessagesScreen() {
           <View>
             <Header back={false} title={c.title} subtitle={`${threads.data?.summary.unread || 0} ${t.notifications.unread}`} right={<TextLink label={c.notify} onPress={() => router.push("/notifications")} />} />
             <View style={{ paddingHorizontal: 14, gap: 10, paddingTop: 4 }}>
-              <PressableScale onPress={() => router.push("/support")} style={[styles.assistant, shadow("card")]}>
-                <LinearGradient colors={["#FFFFFF", colors.brandSoft]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 14 }]} />
-                <View style={styles.assistantIcon}><Text style={styles.assistantGlyph}>喜</Text></View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.assistantTitle}>{c.assistant}</Text>
-                  <Text style={styles.assistantHint}>{c.assistantHint}</Text>
-                </View>
-                <Text style={styles.chevron}>›</Text>
-              </PressableScale>
               <View style={styles.search}>
                 <Art3D kind="search" size={16} />
                 <TextInput value={query} onChangeText={setQuery} placeholder={c.search} placeholderTextColor="#94A3B8" style={styles.searchInput} />
@@ -93,12 +83,6 @@ export default function MessagesScreen() {
 }
 
 const styles = StyleSheet.create({
-  assistant: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 14 },
-  assistantIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: "#DDEFE6", alignItems: "center", justifyContent: "center" },
-  assistantGlyph: { fontSize: 17, fontWeight: "800", color: colors.brandDeep },
-  assistantTitle: { fontSize: 14, color: colors.text },
-  assistantHint: { fontSize: 10.5, color: colors.textSecondary, marginTop: 1 },
-  chevron: { fontSize: 20, color: colors.text },
   search: { flexDirection: "row", alignItems: "center", gap: 8, height: 46, paddingHorizontal: 12, borderRadius: 14, backgroundColor: "#F1F4F2" },
   searchInput: { flex: 1, fontSize: 15, color: colors.text, backgroundColor: "#F8FAF9", borderRadius: 6, paddingHorizontal: 6, height: 32 },
   toolbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 12 },
