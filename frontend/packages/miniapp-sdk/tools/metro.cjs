@@ -5,7 +5,10 @@
  *  1. Mọi import tới shared module (`shared-modules.json`) được thay bằng stub
  *     `module.exports = __zxShared("<tên>")`: lúc chạy, host đưa instance của nó
  *     vào (react, react-native, expo-*… là singleton, không bundle lại).
- *  2. Serializer riêng: bỏ polyfill/InitializeCore, bọc toàn bộ module vào
+ *  2. File `x.miniapp.ts(x)` được ưu tiên hơn `x.ts(x)` khi build mini app: một mã nguồn
+ *     dùng chung với app độc lập (như cờ `STANDALONE` bên VSP) chỉ thay đúng phần khác nhau
+ *     (ảnh nhúng, thư viện nặng tải từ CDN…).
+ *  3. Serializer riêng: bỏ polyfill/InitializeCore, bọc toàn bộ module vào
  *     `(function (__zx) { ... return __zx.run(entryId); })` để module ID của mini app
  *     không đụng registry `__d/__r` của host.
  */
@@ -15,7 +18,7 @@ const shared = require("../shared-modules.json");
 
 const ID_PATTERN = /^[a-z][a-z0-9_.-]{2,63}$/;
 const VERSION_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
-const PERMISSIONS = ["user.profile", "api.zhaoxi", "auth.token", "navigation.host"];
+const PERMISSIONS = ["user.profile", "api.zhaoxi", "auth.token", "navigation.host", "auth.handoff"];
 const DEFAULT_DEV_PORT = 8092;
 
 function readMiniAppJson(projectRoot) {
@@ -114,6 +117,9 @@ function createMiniAppMetroConfig(projectRoot) {
   const stubs = writeSharedStubs(path.join(projectRoot, ".zhaoxi", "shared"));
   const sharedRoots = new Set(shared.modules.map(packageRoot));
   const upstream = config.resolver.resolveRequest;
+  // Metro thử lần lượt từng đuôi: `a.miniapp.tsx` đứng trước `a.tsx` nên thắng khi cả hai cùng có.
+  const overridable = ["tsx", "ts", "jsx", "js"].filter((ext) => config.resolver.sourceExts.includes(ext));
+  config.resolver.sourceExts = [...overridable.map((ext) => `miniapp.${ext}`), ...config.resolver.sourceExts];
 
   config.resolver.resolveRequest = (context, moduleName, platform) => {
     const stub = stubs.get(moduleName);

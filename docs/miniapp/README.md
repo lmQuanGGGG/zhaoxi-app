@@ -206,24 +206,71 @@ Host render `default export` của mini app với `MiniAppProps = { context, bri
 8. **Android**: code đã tính sẵn (`Platform.OS`, build `--platform android`) nhưng đợt này chỉ chạy thử iOS simulator.
 9. **Chuyển sang Module Federation** khi `@callstack/repack-expo` phát hành: giữ hợp đồng `default export (props: MiniAppProps)`, thay `tools/metro.cjs` + `loader.ts` bằng Re.Pack ScriptManager.
 
-## 7. Kế hoạch chuyển ZhaoXi Partner thành mini app (session sau)
+## 7. ZhaoXi Partner chạy như mini app `zhaoxi.partner` (đã làm 04/11/2026)
 
-Hiện trạng `frontend/apps/partner-mobile`: Expo 57 / RN 0.86, **không dùng expo-router** (`main: expo/AppEntry.js`), gần như toàn bộ ở `App.tsx` (1 757 dòng) + `src/` (api, i18n, notifications, OrderChat, service-orders, styles). Mọi gói native của nó (`expo-application`, `expo-image-manipulator`, `expo-image-picker`, `expo-notifications`, `expo-secure-store`, `expo-status-bar`, `react-native-webview`, async-storage, safe-area, vector-icons) **đã có trong host và trong danh sách shared**. `three` chỉ dùng qua chuỗi HTML trong WebView (`THREE_SPHERE_HTML`), không bundle three.js vào JS. → Chuyển được mà không đổi host native.
+Kế hoạch cũ (giữ app độc lập, dùng chung mã) đã làm xong. Ảnh chụp trên simulator ở [`screenshots/`](screenshots).
 
-Các bước:
+| Ảnh | Nội dung |
+| --- | --- |
+| [partner-01-profile-entry.png](screenshots/partner-01-profile-entry.png) | Tab Cá nhân của host: mục "Quản lý gian hàng" chỉ hiện với tài khoản đối tác |
+| [partner-02-order-list.png](screenshots/partner-02-order-list.png) | Danh sách đơn trong host: header petrol, nút kính "••• ×", thanh tab kính nổi |
+| [partner-03-order-detail.png](screenshots/partner-03-order-detail.png) | Chi tiết đơn |
+| [partner-04-messages.png](screenshots/partner-04-messages.png) | Tab Tin nhắn |
 
-1. **Tạo mini app** `frontend/apps/miniapp_zhaoxi_partner` từ template (id `zhaoxi.partner`, quyền tối thiểu: `navigation.host` nếu cần mở màn khách; **không** cần `api.zhaoxi` vì Partner có phiên riêng). Giữ `partner-mobile` chạy độc lập trong giai đoạn chuyển: tách phần thân `App.tsx` thành `src/PartnerApp.tsx` dùng chung; `App.tsx` (standalone) và `src/miniapp.tsx` (default export nhận `MiniAppProps`) cùng render nó, giống cờ `STANDALONE` của VSP. Có thể để mini app trỏ `entry` sang file của partner-mobile hoặc chuyển hẳn mã sang thư mục mới.
-2. **API URL**: thay `process.env.EXPO_PUBLIC_API_URL` trong `src/api.ts` bằng `context.host.apiUrl` (truyền vào lúc khởi tạo) để một bundle chạy đúng mọi môi trường.
-3. **Đăng nhập** (`src/api.ts`: `/api/auth/identity/account/login`, `/pin/login`, refresh, `/api/auth/session/organization`): giai đoạn 1 giữ màn đăng nhập Partner bên trong mini app; khoá SecureStore `zhaoxi.partner.auth.v1` đã khác khoá host `zhaoxi.customer.auth.v1` nên không đụng phiên khách. Giai đoạn 2 (cần backend): endpoint đổi phiên khách → phiên partner (cùng identity có quyền đối tác) để vào thẳng, mini app khai quyền `auth.token`.
-4. **Thông báo đẩy**: bỏ `Notifications.setNotificationHandler` ở `src/notifications.ts` (host đã đặt handler toàn cục; mini app gọi lại sẽ ghi đè). `getExpoPushTokenAsync` trả token **của host** (`vn.zhaoxi.app`): vẫn gửi `/api/partner-push/mobile` để backend biết thiết bị nhận đơn. Push Partner đặt `data.url = "/miniapp/zhaoxi.partner?screen=order&id=<requestId>"`; cần thêm vào `src/links.ts` của host ánh xạ `/miniapp/:id` → route `/miniapp/[id]` kèm query; mini app đọc `context.launch`. Listener `addNotificationResponseReceivedListener` trong mini app phải `remove()` khi unmount (mini app đóng/mở nhiều lần) và chỉ xử lý payload của Partner.
-5. **Vòng đời**: các `setInterval` (4 s / 10 s / 15 s) và `AppState.addEventListener` trong `App.tsx`, `OrderChat.tsx` đã có cleanup trong `useEffect`; rà lại để chắc không chạy tiếp sau khi đóng mini app. Mini app không còn là root: bỏ `SafeAreaProvider` thừa (giữ cũng được), dùng `context.capsule` để header Partner chừa chỗ nút "••• ×".
-6. **Ngôn ngữ**: Partner có i18n riêng (`LANGUAGE_STORAGE_KEY = zhaoxi_partner_language_v1`, vi/zh/en). Khi chạy trong host, lấy `context.locale` (map `vi-VN → vi`, `zh-CN/zh-TW → zh`, `en-US → en`) và ẩn bộ chọn ngôn ngữ riêng.
-7. **Thông tin app**: `expo-application` sẽ trả version của host; hiển thị `context.app.version` cho version Partner.
-8. **Đăng ký vào host**: thêm mục `zhaoxi.partner` vào `registry.ts` (icon `storefront-outline`, `chrome` theo header Partner). Khi có backend registry thì chỉ hiện cho tài khoản có vai trò đối tác (`audience: "partner"`).
-9. **Kiểm tra**: `npx tsc --noEmit`; `npm run build` không báo import lạ (đường dẫn con của gói shared, asset cục bộ: ảnh trong `assets/` phải chuyển sang URL hoặc base64); chạy dev server + `EXPO_PUBLIC_MINIAPP_DEV=zhaoxi.partner`; thử luồng đăng nhập, nhận đơn, đổi trạng thái, chat có ảnh, push mở đúng đơn, đóng/mở lại mini app nhiều lần (không rò interval), mất mạng mở bản cache.
-10. **Phát hành**: ký bằng khoá prod trong CI, upload `dist/`, cập nhật danh mục. Giữ app Partner standalone cho tới khi bản mini app chạy ổn định.
+### 7.1 Dùng chung mã với app độc lập
+
+- `partner-mobile/App.tsx` chỉ còn `SafeAreaProvider` + `installNotificationHandler()` + `<PartnerApp/>`. Toàn bộ giao diện nằm ở [`src/PartnerApp.tsx`](../../frontend/apps/partner-mobile/src/PartnerApp.tsx) (git mv từ `App.tsx`).
+- Entry mini app: [`partner-mobile/src/miniapp.tsx`](../../frontend/apps/partner-mobile/src/miniapp.tsx), default export nhận `MiniAppProps`, dựng `PartnerHost` (ngôn ngữ, backend, người dùng, `launch`, `close`, `createHandoff`) rồi render `<PartnerApp host={…}/>`. Không có `host` thì Partner chạy như app độc lập.
+- Thư mục build/ký: [`frontend/apps/miniapp_zhaoxi_partner`](../../frontend/apps/miniapp_zhaoxi_partner): `miniapp.json` có `entry: "../partner-mobile/src/miniapp.tsx"`, quyền `user.profile` + `auth.handoff`, cổng dev 8094.
+- **File `x.miniapp.ts(x)`** (mới trong SDK, `tools/metro.cjs`): Metro của mini app ưu tiên `x.miniapp.ts` hơn `x.ts`; `tsconfig` của mini app dùng `moduleSuffixes: [".miniapp", ""]` để kiểm đúng bản đó. Partner dùng cho 3 chỗ khác nhau giữa hai môi trường:
+  - `images.miniapp.ts`: ảnh nhúng base64 thu nhỏ (runtime v1 chưa có asset cục bộ). Bản độc lập vẫn `require("../assets/…")`.
+  - `threeLib.miniapp.ts`: three.js r128 tải từ cdnjs có SRI (giống hệt `assets/three.min.js`) thay vì nhúng 600 KB. Bundle Partner còn **~187 KB**.
+  - `glass.miniapp.tsx`: Liquid Glass thật (`expo-glass-effect`, `expo-blur` là shared module). App độc lập chưa có hai gói native này nên dùng lớp trắng mờ.
+- `chat-photos.ts` import `requireOptionalNativeModule` từ `expo-modules-core` thay vì `expo` (mini app không được import `expo`).
+
+### 7.2 Bridge: phiên, ngôn ngữ, điều hướng, đóng
+
+- **Phiên**: quyền mới `auth.handoff` + `bridge.createRoleHandoff("partner")`. Host gọi `POST /api/auth/role-switch/create { targetRole: "partner" }` bằng phiên khách (API có sẵn, backend không đổi), trả **mã dùng một lần sống 60 s**. Mini app đổi mã ở `POST /api/auth/role-switch/exchange` lấy phiên partner riêng, lưu ở khoá SecureStore `zhaoxi.partner.auth.v1` kèm `hostUserId`. Mini app không bao giờ thấy token của host.
+  - Đổi tài khoản ở host thì phiên partner của tài khoản cũ bị bỏ (logout) và xin mã mới. Phiên đăng nhập tay (tài khoản đối tác riêng, không có `hostUserId`) vẫn được giữ.
+  - Đổi mã thất bại (ví dụ `PARTNER_NOT_LINKED`): hiện màn đăng nhập Partner có thêm nút "Vào bằng tài khoản ZhaoXi".
+  - `bridge.request` nay chặn mọi đường dẫn `/api/auth/…`, để quyền `api.zhaoxi` không tự xin được mã đổi vai trò.
+- **API URL**: `configureApi({ apiUrl: context.host.apiUrl })`; một bundle chạy đúng mọi môi trường.
+- **Ngôn ngữ**: theo `context.locale` (vi-VN → vi, zh-* → zh, en-US → en), ẩn bộ chọn ngôn ngữ riêng.
+- **Điều hướng**: `context.launch` `?screen=orders|messages&order=<id>` mở thẳng đơn hoặc cuộc chat. Host map `/miniapp/:id?…` trong `links.ts`.
+- **Đóng**: nút "×" của host; nút "Đăng xuất" ở tab Cài đặt của Partner đăng xuất gian hàng rồi `bridge.close()`.
+- **Giao diện trong host**: header chừa `context.capsule`, petrol `#00323A` như header host; nút kính chuyển `chrome: "light"`.
+
+### 7.3 Phân quyền
+
+- Registry thêm `audience: "partner"`. [`src/miniapps/access.ts`](../../frontend/apps/customer-mobile/src/miniapps/access.ts) hỏi `GET /api/account/me` (react-query, 5 phút): thuộc nhóm khi `roles` có `partner` **hoặc** là thành viên một organization `status = active`. Guest không thuộc nhóm nào.
+- Áp ở 3 nơi: mục "Quản lý gian hàng" ở tab Cá nhân, danh sách `/miniapps`, và màn chứa `/miniapp/[id]` (deep link / push: không có quyền thì báo lỗi, **không tải bundle**).
+- Backend vẫn là lớp chặn cuối: `role-switch/create` chỉ cấp mã cho thành viên gian hàng đang hoạt động.
+
+### 7.4 Thông báo đẩy
+
+- `setNotificationHandler` chỉ còn ở app độc lập (`installNotificationHandler()`); trong host, handler là của host.
+- Partner vẫn đăng ký Expo push token **của host** với `/api/partner-push/mobile` khi mở mini app. Push đơn mới / tin nhắn đến app ZhaoXi cả khi đã tắt.
+- Chạm vào push: payload Partner (`screen: "orders" | "messages"`, `orderId`, không có `url`) được host mở thành `/miniapp/zhaoxi.partner?screen=…&order=…`. Nếu mini app đang mở, host bỏ qua và listener của mini app xử lý (chỉ nhận payload Partner, `remove()` khi đóng).
+- Trong host, thông báo cục bộ dùng âm mặc định (bản build host không có `order_alert.wav`).
+- Còn thiếu: chuông riêng `order_alert.wav` cho push đơn mới (thêm vào `sounds` của plugin expo-notifications ở host, cần build native); đăng xuất ở host chưa gỡ token khỏi `/api/partner-push/mobile` (máy vẫn nhận push Partner của tài khoản cũ cho tới khi mở lại mini app hoặc gỡ app).
 
 ## 8. Kết quả kiểm thử (04/11/2026)
+
+### 8.1 Mini app Partner
+
+Simulator riêng "Partner MiniApp iPhone 17 Pro" (iOS 26.4, đã xoá sau khi thử), Metro host cổng 8121, CDN giả 8093, backend `next dev` cổng 3099 + Postgres cục bộ (`drizzle-kit push`, `scripts/seed.mjs`, [`scripts/seed-partner-miniapp-dev.mjs`](../../backend/scripts/seed-partner-miniapp-dev.mjs)). Không ghi gì lên production.
+
+| Kiểm tra | Kết quả |
+| --- | --- |
+| `tsc --noEmit` customer-mobile, partner-mobile, miniapp_zhaoxi_example, miniapp_zhaoxi_partner | sạch |
+| App Partner độc lập: `expo export --platform ios` | được (ảnh `assets/`, three.js nhúng) |
+| `zhaoxi-miniapp build` Partner iOS + Android, `verify` | ~187 KB mỗi bản, chữ ký hợp lệ |
+| Luồng API: đăng nhập khách → `account/me` → `role-switch/create` → `exchange` → hàng đợi đơn | phiên partner đúng gian hàng; mã dùng lại bị từ chối (`HANDOFF_INVALID_OR_EXPIRED`); khách thường bị từ chối (`PARTNER_NOT_LINKED`) |
+| Host: tab Cá nhân có "Quản lý gian hàng" → mở mini app | tải manifest → kiểm chữ ký → chạy; tự vào bằng tài khoản ZhaoXi, danh sách 4 đơn, chi tiết đơn, tab Tin nhắn, thông báo cục bộ "Có đơn hàng mới" hiện qua host |
+
+Chưa thử: push thật (cần máy thật), Android, host bản Release, tài khoản `khach.thuong` trên giao diện (chỉ thử qua API), chế độ dev server của mini app (`EXPO_PUBLIC_MINIAPP_DEV=zhaoxi.partner`).
+
+### 8.2 Mini app mẫu
 
 Simulator riêng "ZhaoXi MiniApp iPhone 17 Pro" (iOS 26.4), Metro host cổng 8096, CDN giả 8093. Host chạy bản Debug native có sẵn (runtime không thêm native nên không cần build lại), bundle JS lấy từ worktree này.
 
@@ -248,7 +295,19 @@ npm run build                      # dist/ios + dist/android (ký nếu có mini
 npm run serve                      # CDN giả :8093
 npx zhaoxi-miniapp verify dist/ios/manifest.json --public-key <base64>
 
+# mini app Partner (mã nguồn ở partner-mobile)
+cd frontend/apps/miniapp_zhaoxi_partner
+npm run keygen && npm run build && npm run serve   # thêm dòng keyId in ra vào customer-mobile/src/miniapps/keys.ts (env "dev")
+
+# backend + dữ liệu thử cục bộ cho Partner (Postgres cục bộ, KHÔNG dùng URL production)
+cd backend
+DATABASE_URL=postgres://<user>@localhost:<port>/<db> npx drizzle-kit push --force
+DATABASE_URL=… node scripts/seed.mjs
+DATABASE_URL=… npx next dev -p 3099
+DATABASE_URL=… API_URL=http://127.0.0.1:3099 node scripts/seed-partner-miniapp-dev.mjs   # tài khoản đối tác + tài khoản đối chứng, xem đầu file
+
 # host (dev build, Metro cổng khác 8081 nếu máy đang chạy app khác)
+# thêm EXPO_PUBLIC_API_URL=http://127.0.0.1:3099 khi thử với backend cục bộ
 cd frontend/apps/customer-mobile
 EXPO_PUBLIC_MINIAPP_DEV=zhaoxi.example npx expo start --dev-client --port 8095
 xcrun simctl openurl booted "zhaoxi://miniapp/zhaoxi.example"

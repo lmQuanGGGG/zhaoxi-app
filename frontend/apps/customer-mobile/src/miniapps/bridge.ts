@@ -1,5 +1,7 @@
 import {
   MINIAPP_RUNTIME_VERSION,
+  type MiniAppHandoffRole,
+  type MiniAppRoleHandoff,
   MiniAppPermissionError,
   type MiniAppBridge,
   type MiniAppCapsule,
@@ -39,6 +41,7 @@ export const miniAppTheme: MiniAppTheme = {
 };
 
 const OPEN_URL_SCHEMES = /^(https?|tel|mailto|sms):/i;
+const HANDOFF_ROLES = new Set<MiniAppHandoffRole>(["partner"]);
 
 export function buildMiniAppContext(input: { manifest: MiniAppManifest; source: MiniAppSource; locale: ZhaoXiLocale; auth: AuthState | null; capsule: MiniAppCapsule; launch: Record<string, string> }): MiniAppContext {
   const { manifest, auth } = input;
@@ -86,6 +89,8 @@ export function createMiniAppBridge(manifest: MiniAppManifest, close: () => void
       need("api.zhaoxi");
       // Chỉ cho gọi API của ZhaoXi bằng đường dẫn tương đối: phiên của host không rời khỏi backend.
       if (!path.startsWith("/api/") || path.includes("://") || path.includes("..")) throw new Error(`Đường dẫn API không hợp lệ: ${path}`);
+      // Phiên (đăng nhập, refresh, đổi vai trò) chỉ đi qua các hàm có quyền riêng, không qua request chung.
+      if (path.toLowerCase().startsWith("/api/auth/")) throw new Error(`Mini app không được gọi ${path}`);
       return request<T>(path, {
         method: init.method || "GET",
         headers: { ...init.headers, "x-zhaoxi-miniapp": `${manifest.id}@${manifest.version}` },
@@ -95,6 +100,19 @@ export function createMiniAppBridge(manifest: MiniAppManifest, close: () => void
     getAccessToken: async () => {
       need("auth.token");
       return getAuth()?.accessToken ?? null;
+    },
+    createRoleHandoff: async (role) => {
+      need("auth.handoff");
+      if (!HANDOFF_ROLES.has(role)) throw new Error(`Vai trò không hỗ trợ: ${role}`);
+      const auth = getAuth();
+      if (!auth || isGuest(auth)) throw new Error("Cần đăng nhập ZhaoXi trước");
+      // Backend kiểm quyền vai trò (partner: thành viên gian hàng đang hoạt động) và trả mã dùng một lần, sống 60 s.
+      const handoff = await request<{ code: string; targetRole: string; expiresAt: string }>("/api/auth/role-switch/create", {
+        method: "POST",
+        headers: { "x-zhaoxi-miniapp": `${manifest.id}@${manifest.version}` },
+        body: JSON.stringify({ targetRole: role }),
+      });
+      return { code: handoff.code, role, expiresAt: handoff.expiresAt } satisfies MiniAppRoleHandoff;
     },
   };
 }

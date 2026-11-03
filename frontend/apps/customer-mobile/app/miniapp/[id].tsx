@@ -9,7 +9,8 @@ import { useI18n } from "../../src/i18n";
 import { buildMiniAppContext, createMiniAppBridge } from "../../src/miniapps/bridge";
 import { CAPSULE, containerCopy, MiniAppCapsuleButton, MiniAppErrorBoundary, MiniAppFailure, MiniAppLoading } from "../../src/miniapps/container";
 import { loadMiniApp, MiniAppIntegrityError, MiniAppLoadError, type LoadedMiniApp, type LoadStep } from "../../src/miniapps/loader";
-import { findMiniApp } from "../../src/miniapps/registry";
+import { useMiniAppAccess } from "../../src/miniapps/access";
+import { findMiniApp, markMiniAppOpen } from "../../src/miniapps/registry";
 import { colors } from "../../src/theme";
 
 type State = { phase: "loading"; step: LoadStep } | { phase: "ready"; loaded: LoadedMiniApp } | { phase: "error"; error: unknown };
@@ -24,6 +25,9 @@ export default function MiniAppScreen() {
     return Object.fromEntries(Object.entries(parsed).map(([key, value]) => [key, Array.isArray(value) ? value.join(",") : String(value ?? "")]));
   }, [launchKey]);
   const entry = findMiniApp(id);
+  const access = useMiniAppAccess();
+  // Deep link / push cũng đi qua đây: mini app có `audience` chỉ tải khi tài khoản thuộc nhóm đó.
+  const allowed = entry ? access.canOpen(entry) : false;
   const { locale } = useI18n();
   const auth = useAuth();
   const insets = useSafeAreaInsets();
@@ -37,8 +41,10 @@ export default function MiniAppScreen() {
     else router.replace("/");
   }, []);
 
+  useEffect(() => (entry ? markMiniAppOpen(entry.id) : undefined), [entry]);
+
   useEffect(() => {
-    if (!entry) return;
+    if (!entry || !allowed) return;
     let active = true;
     setState({ phase: "loading", step: "manifest" });
     loadMiniApp(entry, (step) => active && setState({ phase: "loading", step }))
@@ -50,7 +56,7 @@ export default function MiniAppScreen() {
     return () => {
       active = false;
     };
-  }, [entry, attempt]);
+  }, [entry, allowed, attempt]);
 
   const reload = useCallback(() => setAttempt((value) => value + 1), []);
 
@@ -75,6 +81,10 @@ export default function MiniAppScreen() {
   let body: ReactNode;
   if (!entry) {
     body = <MiniAppFailure locale={locale} title={c.failTitle} message={c.unknown} onClose={close} />;
+  } else if (!access.ready) {
+    body = <MiniAppLoading entry={entry} locale={locale} step="manifest" />;
+  } else if (!allowed) {
+    body = <MiniAppFailure entry={entry} locale={locale} title={c.failTitle} message={c.forbidden} onClose={close} />;
   } else if (state.phase === "loading") {
     body = <MiniAppLoading entry={entry} locale={locale} step={state.step} />;
   } else if (state.phase === "error") {

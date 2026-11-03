@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    // Giống Metro của mini app: `x.miniapp.ts` thắng `x.ts` (ảnh nhúng, three.js qua CDN).
+    "moduleSuffixes": [".miniapp", ""]
+  },
+  "files": ["../partner-mobile/src/miniapp.tsx"]
+}

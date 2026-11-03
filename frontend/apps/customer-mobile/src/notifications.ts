@@ -8,6 +8,7 @@ import { Platform } from "react-native";
 import { getDeviceId } from "./api/client";
 import { registerPushToken, unregisterPushToken } from "./api/endpoints";
 import { routeForWebHref } from "./links";
+import { isMiniAppOpen, PARTNER_MINIAPP_ID } from "./miniapps/registry";
 import { queryClient } from "./query";
 
 const TOKEN_KEY = "zhaoxi.push.token.v1";
@@ -81,9 +82,26 @@ export async function unregisterPush() {
   await AsyncStorage.removeItem(TOKEN_KEY);
 }
 
+/**
+ * Push của ZhaoXi Partner (đơn mới `screen: "orders"`, tin nhắn `screen: "messages"`, không có `url`)
+ * đến máy này khi người dùng đã mở mini app Partner trong host. Chạm vào thì mở mini app ở đúng đơn;
+ * khi mini app đang mở, chính nó nhận sự kiện nên host bỏ qua.
+ */
+function partnerPushHref(data: Record<string, unknown>) {
+  const screen = data.screen === "messages" ? "messages" : data.screen === "orders" ? "orders" : null;
+  const order = typeof data.orderId === "string" ? data.orderId : "";
+  if (!screen || !order) return null;
+  return `/miniapp/${PARTNER_MINIAPP_ID}?${new URLSearchParams({ screen, order }).toString()}`;
+}
+
 function openFromNotification(response: Notifications.NotificationResponse | null) {
   const data = response?.notification.request.content.data as { url?: string } | undefined;
-  if (!data?.url) return;
+  if (!data) return;
+  if (!data.url) {
+    const partnerHref = partnerPushHref(data);
+    if (partnerHref && !isMiniAppOpen(PARTNER_MINIAPP_ID)) router.push(routeForWebHref(partnerHref));
+    return;
+  }
   router.push(routeForWebHref(data.url));
 }
 

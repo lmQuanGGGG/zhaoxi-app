@@ -13,4 +13,6 @@ export type TrustedKey = { keyId: string; publicKey: string; env: "dev" | "prod"
 export const trustedKeys: TrustedKey[] = [
   // Khoá dev của mini app mẫu (miniapp_zhaoxi_example/miniapp-signing.pem, không commit). Mất file thì tạo khoá mới và thay dòng này.
   { keyId: "588b24b78faa74ad", publicKey: "yQ4YgirQuyo4gxJwmjJqI3ZgYLuPl48U+JmfP9ju/rw=", env: "dev", note: "zhaoxi-dev-2026-11" },
+  // Khoá dev của mini app Partner (miniapp_zhaoxi_partner/miniapp-signing.pem, không commit).
+  { keyId: "098cfe54f8425da6", publicKey: "FHY4gY7s53u2rB4rvCtRWMaOdwDvpXMH4LOh/falg8s=", env: "dev", note: "zhaoxi-partner-dev-2026-11" },
 ];

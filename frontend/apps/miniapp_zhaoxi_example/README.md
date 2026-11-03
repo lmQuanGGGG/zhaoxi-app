@@ -32,7 +32,7 @@ miniapp_zhaoxi_example/
    | `name` | Tên hiển thị trong context. |
    | `version` | Semver. **Tăng mỗi lần phát hành** (tên file bundle có version). |
    | `entry` | File có default export component. |
-   | `permissions` | Chỉ khai thứ cần: `user.profile` (tên/avatar người dùng), `api.zhaoxi` (gọi backend bằng phiên host), `auth.token` (token thô, chỉ mini app nội bộ), `navigation.host` (mở màn của host). |
+   | `permissions` | Chỉ khai thứ cần: `user.profile` (tên/avatar người dùng), `api.zhaoxi` (gọi backend bằng phiên host), `auth.token` (token thô, chỉ mini app nội bộ), `navigation.host` (mở màn của host), `auth.handoff` (xin mã đổi vai trò, ví dụ phiên partner, qua `bridge.createRoleHandoff`). |
    | `minHostVersion` | (tuỳ chọn) bản ZhaoXi tối thiểu. |
    | `devPort` | Cổng dev server, mỗi mini app một cổng (8092, 8094, …). |
 
@@ -53,6 +53,7 @@ Quy tắc:
 
 - **Chừa chỗ nút kính "••• ×"** của host ở góc phải trên: `paddingTop: context.capsule.top + context.capsule.height + …` hoặc đặt header ngang hàng và chừa `context.capsule.width + context.capsule.right` bên phải.
 - **Thư viện**: chỉ import gói trong [`shared-modules.json`](../../packages/miniapp-sdk/shared-modules.json) (react, react-native, expo-*, reanimated, svg, safe-area, vector-icons…) hoặc thư viện **JS thuần**. Gói native khác phải được cài vào host trước (host phát hành bản mới) rồi thêm vào danh sách shared ở cả `shared-modules.json` và `customer-mobile/src/miniapps/shared.ts`.
+- **Dùng chung mã với app độc lập**: file `x.miniapp.ts(x)` thắng `x.ts(x)` khi build mini app (ví dụ ảnh nhúng, thư viện nặng qua CDN); thêm `"moduleSuffixes": [".miniapp", ""]` vào tsconfig để typecheck đúng bản đó. Xem `miniapp_zhaoxi_partner`.
 - **Không** import `expo` hay `expo-router` (build sẽ báo lỗi). Nhiều màn: dùng state, hoặc `@react-navigation/native-stack` bọc trong `NavigationIndependentTree`.
 - **Không** import đường dẫn con của gói shared (`react-native/Libraries/...`): build báo lỗi.
 - **Ảnh**: runtime v1 chưa hỗ trợ `require("./a.png")`; dùng URL CDN (`expo-image`) hoặc base64.

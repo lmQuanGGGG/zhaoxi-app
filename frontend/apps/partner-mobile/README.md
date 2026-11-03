@@ -15,3 +15,7 @@ npx eas-cli build --profile preview --platform android
 ```
 
 Backend cần chạy migration `backend/migrations/0006_partner_mobile_push.sql`. Firebase FCM (Android) và APNs (iOS) phải được cấu hình trong EAS project.
+
+## Chạy như mini app trong ZhaoXi
+
+Cùng mã nguồn này chạy như mini app `zhaoxi.partner` trong app khách ZhaoXi: `App.tsx` (app độc lập) và `src/miniapp.tsx` (mini app) cùng render `src/PartnerApp.tsx`. File `*.miniapp.ts(x)` chỉ dùng khi build mini app. Build/ký ở `frontend/apps/miniapp_zhaoxi_partner`, thiết kế ở `docs/miniapp/README.md` §7.

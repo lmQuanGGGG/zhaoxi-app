@@ -27,6 +27,7 @@ export const containerCopy = {
     source: { dev: "dev server", network: "vừa tải", cache: "bản lưu trên máy" },
     unsigned: "chưa ký (chỉ bản dev)",
     unknown: "Mini app này không có trong ZhaoXi.",
+    forbidden: "Mini app này chỉ dành cho tài khoản đối tác (thành viên gian hàng trên ZhaoXi).",
   },
   "en-US": {
     steps: { manifest: "Checking for updates…", download: "Downloading mini app…", verify: "Verifying signature…", start: "Starting…" },
@@ -43,6 +44,7 @@ export const containerCopy = {
     source: { dev: "dev server", network: "just downloaded", cache: "saved copy" },
     unsigned: "unsigned (dev only)",
     unknown: "This mini app is not available in ZhaoXi.",
+    forbidden: "This mini app is only for partner accounts (members of a ZhaoXi store).",
   },
   "zh-CN": {
     steps: { manifest: "正在检查版本…", download: "正在下载小程序…", verify: "正在校验签名…", start: "正在启动…" },
@@ -59,6 +61,7 @@ export const containerCopy = {
     source: { dev: "开发服务器", network: "刚下载", cache: "本机缓存" },
     unsigned: "未签名（仅开发版）",
     unknown: "赵喜中没有这个小程序。",
+    forbidden: "此小程序仅限商家账号（赵喜店铺成员）使用。",
   },
   "zh-TW": {
     steps: { manifest: "正在檢查版本…", download: "正在下載小程式…", verify: "正在驗證簽章…", start: "正在啟動…" },
@@ -75,6 +78,7 @@ export const containerCopy = {
     source: { dev: "開發伺服器", network: "剛下載", cache: "本機快取" },
     unsigned: "未簽章（僅開發版）",
     unknown: "趙喜中沒有這個小程式。",
+    forbidden: "此小程式僅限商家帳號（趙喜店鋪成員）使用。",
   },
 } as const;
 

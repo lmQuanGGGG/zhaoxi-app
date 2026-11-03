@@ -17,9 +17,11 @@ export type MiniAppLocale = "vi-VN" | "zh-CN" | "zh-TW" | "en-US";
  * - `api.zhaoxi`: gọi backend ZhaoXi qua `bridge.request` bằng phiên của host (không thấy token).
  * - `auth.token`: lấy access token thô qua `bridge.getAccessToken` (chỉ cấp cho mini app nội bộ).
  * - `navigation.host`: mở màn hình của host bằng `bridge.openHostRoute`.
+ * - `auth.handoff`: xin mã đổi vai trò một lần (`bridge.createRoleHandoff`) để mini app tự lấy phiên
+ *   riêng (ví dụ phiên partner) của cùng tài khoản, không cần đăng nhập lại và không thấy token của host.
  */
-export type MiniAppPermission = "user.profile" | "api.zhaoxi" | "auth.token" | "navigation.host";
-export const MINIAPP_PERMISSIONS: readonly MiniAppPermission[] = ["user.profile", "api.zhaoxi", "auth.token", "navigation.host"];
+export type MiniAppPermission = "user.profile" | "api.zhaoxi" | "auth.token" | "navigation.host" | "auth.handoff";
+export const MINIAPP_PERMISSIONS: readonly MiniAppPermission[] = ["user.profile", "api.zhaoxi", "auth.token", "navigation.host", "auth.handoff"];
 
 export type MiniAppSource = "dev" | "network" | "cache";
 
@@ -76,6 +78,19 @@ export interface MiniAppRequestInit {
   headers?: Record<string, string>;
 }
 
+/** Vai trò mini app được xin phiên qua `bridge.createRoleHandoff`. */
+export type MiniAppHandoffRole = "partner";
+
+/**
+ * Mã đổi vai trò một lần (backend `POST /api/auth/role-switch/create`, sống 60 s).
+ * Mini app đổi mã lấy phiên bằng `POST ${context.host.apiUrl}/api/auth/role-switch/exchange { code, deviceId }`.
+ */
+export interface MiniAppRoleHandoff {
+  code: string;
+  role: MiniAppHandoffRole;
+  expiresAt: string;
+}
+
 export type MiniAppToastTone = "success" | "error" | "info";
 export type MiniAppHaptic = "light" | "medium" | "success" | "warning" | "error";
 
@@ -94,6 +109,12 @@ export interface MiniAppBridge {
   request<T>(path: string, init?: MiniAppRequestInit): Promise<T>;
   /** Cần `auth.token`. */
   getAccessToken(): Promise<string | null>;
+  /**
+   * Cần `auth.handoff`. Host dùng phiên của nó xin mã đổi sang `role` cho chính người dùng đang đăng nhập;
+   * backend chỉ cấp khi tài khoản có quyền vai trò đó (partner: là thành viên một gian hàng đang hoạt động).
+   * Lỗi khi khách là guest hoặc không có quyền.
+   */
+  createRoleHandoff(role: MiniAppHandoffRole): Promise<MiniAppRoleHandoff>;
 }
 
 /** Props host truyền cho component default export của mini app. */

@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useI18n } from "../src/i18n";
+import { useMiniAppAccess } from "../src/miniapps/access";
 import { miniAppRegistry } from "../src/miniapps/registry";
 import { colors, shadow } from "../src/theme";
 import { Header, PressableScale, Screen } from "../src/ui";
@@ -16,11 +17,12 @@ const copy = {
 export default function MiniAppsScreen() {
   const { locale } = useI18n();
   const c = copy[locale];
+  const { canOpen } = useMiniAppAccess();
   return (
     <Screen soft>
       <Header title={c.title} subtitle={c.subtitle} />
       <ScrollView contentContainerStyle={styles.list}>
-        {miniAppRegistry.map((entry) => (
+        {miniAppRegistry.filter(canOpen).map((entry) => (
           <PressableScale key={entry.id} onPress={() => router.push(`/miniapp/${encodeURIComponent(entry.id)}`)} style={[styles.card, shadow("card")]}>
             <View style={[styles.tile, { backgroundColor: `${entry.tint}1A` }]}>
               <Ionicons name={entry.icon} size={26} color={entry.tint} />

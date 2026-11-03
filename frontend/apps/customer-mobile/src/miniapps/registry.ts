@@ -21,7 +21,17 @@ export type MiniAppEntry = {
   chrome: "light" | "dark";
   /** Metro dev server của mini app (`npm run start` trong thư mục mini app); chỉ dùng ở `__DEV__`. */
   devManifestUrl?: string;
+  /**
+   * Chỉ một nhóm người dùng thấy và mở được (xem `access.ts`). `partner`: tài khoản có vai trò
+   * partner hoặc là thành viên một gian hàng đang hoạt động. Bỏ trống: mọi người.
+   */
+  audience?: MiniAppAudience;
 };
+
+export type MiniAppAudience = "partner";
+
+/** Id mini app ZhaoXi Partner (quản lý gian hàng), dùng cho lối vào ở tab Cá nhân và push đơn hàng. */
+export const PARTNER_MINIAPP_ID = "zhaoxi.partner";
 
 /** Gốc CDN chứa bundle. Dev mặc định là `zhaoxi-miniapp serve` trên máy (cổng 8093). */
 export const MINIAPP_CDN_URL = (process.env.EXPO_PUBLIC_MINIAPP_CDN_URL || (__DEV__ ? "http://localhost:8093" : `${API_URL}/miniapps`)).replace(/\/+$/, "");
@@ -47,6 +57,21 @@ export const miniAppRegistry: MiniAppEntry[] = [
     chrome: "light",
     devManifestUrl: `http://localhost:8092/miniapp-manifest.json?platform=${Platform.OS}`,
   },
+  {
+    id: PARTNER_MINIAPP_ID,
+    title: { "vi-VN": "Quản lý gian hàng", "en-US": "Store manager", "zh-CN": "店铺管理", "zh-TW": "店鋪管理" },
+    subtitle: {
+      "vi-VN": "ZhaoXi Partner: nhận đơn, nhắn khách, xem doanh thu",
+      "en-US": "ZhaoXi Partner: take orders, chat with customers, see revenue",
+      "zh-CN": "赵喜商家版：接单、与顾客沟通、查看营业额",
+      "zh-TW": "趙喜商家版：接單、與顧客溝通、查看營業額",
+    },
+    icon: "storefront-outline",
+    tint: "#0B8F55",
+    chrome: "light",
+    audience: "partner",
+    devManifestUrl: `http://localhost:8094/miniapp-manifest.json?platform=${Platform.OS}`,
+  },
 ];
 
 export function findMiniApp(id: string | undefined) {
@@ -55,6 +80,23 @@ export function findMiniApp(id: string | undefined) {
 
 export function manifestUrlFor(entry: MiniAppEntry) {
   return `${MINIAPP_CDN_URL}/${encodeURIComponent(entry.id)}/${Platform.OS}/manifest.json`;
+}
+
+// Mini app đang mở (màn `/miniapp/[id]` còn trong stack). Push của mini app đang mở do chính nó xử lý,
+// host không mở thêm một bản nữa.
+const openCounts = new Map<string, number>();
+
+export function markMiniAppOpen(id: string) {
+  openCounts.set(id, (openCounts.get(id) ?? 0) + 1);
+  return () => {
+    const next = (openCounts.get(id) ?? 1) - 1;
+    if (next > 0) openCounts.set(id, next);
+    else openCounts.delete(id);
+  };
+}
+
+export function isMiniAppOpen(id: string) {
+  return openCounts.has(id);
 }
 
 export function usesDevServer(entry: MiniAppEntry) {
