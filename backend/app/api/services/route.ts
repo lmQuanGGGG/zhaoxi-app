@@ -1,10 +1,12 @@
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
 import { modules, organizations, services, serviceTranslations } from "@/db/schema";
 import { errorResponse, json } from "@/lib/api";
+import { publicCacheHeaders } from "@/lib/core/api-response";
 import { localeFromRequest } from "@/lib/locale";
 import { requireSession, mayManageOrganization } from "@/lib/security/route-authorization";
 import { autoTranslateServiceTranslations } from "@/lib/services/auto-translate";
+import { loadPublicOrganizationMetadata } from "@/lib/services/organization-metadata-projection";
 
 export const dynamic = "force-dynamic";
 const LOCALES = ["zh-CN", "zh-TW", "vi-VN", "en-US"] as const;
@@ -39,24 +41,26 @@ export async function GET(request: Request) {
     if (moduleCode) filters.push(eq(modules.code, moduleCode));
     if (organizationId) filters.push(eq(services.organizationId, organizationId));
 
-    const rows = await getDb().select({
+    const db = getDb();
+    // Organization metadata (inline QR projected out) is loaded once per
+    // organization in parallel, then attached to each service row.
+    const [serviceRows, organizationMetadata] = await Promise.all([db.select({
       id: services.id, code: services.code, moduleCode: modules.code, priceFrom: services.priceFrom, isEnabled: services.isEnabled,
       currency: services.currency, metadata: services.metadata, organizationId: organizations.id,
       organizationCode: organizations.code, organizationName: organizations.name,
       organizationAddress: organizations.addressText,
-      // Project inline QR bytes out in SQL, before transferring repeated rows from DB.
-      organizationMetadata: sql<Record<string, unknown>>`case
-        when ${organizations.metadata}->>'paymentQrUrl' ~ '^data:image/(png|jpeg|webp);base64,'
-        then jsonb_set(${organizations.metadata}, '{paymentQrUrl}', to_jsonb(
-          ${new URL('/api/organization-payment-qr', request.url).href}::text || '?id=' || ${organizations.id}::text
-          || '&v=' || md5(${organizations.metadata}->>'paymentQrUrl')
-        )) else ${organizations.metadata} end`,
       name: serviceTranslations.name, summary: serviceTranslations.summary, description: serviceTranslations.description,
     }).from(services)
       .innerJoin(modules, eq(services.moduleId, modules.id))
       .leftJoin(organizations, eq(services.organizationId, organizations.id))
       .leftJoin(serviceTranslations, and(eq(serviceTranslations.serviceId, services.id), eq(serviceTranslations.locale, locale)))
-      .where(and(...filters)).orderBy(asc(services.createdAt));
+      .where(and(...filters)).orderBy(asc(services.createdAt)),
+    loadPublicOrganizationMetadata(request.url, inArray(organizations.id, db.select({ id: services.organizationId }).from(services)
+      .innerJoin(modules, eq(services.moduleId, modules.id)).where(and(...filters))))]);
+    const rows = serviceRows.map((row) => ({
+      ...row,
+      organizationMetadata: row.organizationId ? organizationMetadata.get(row.organizationId) ?? null : null,
+    }));
 
     const missingIds = rows.filter((row) => !row.name).map((row) => row.id);
     if (missingIds.length) {
@@ -87,7 +91,8 @@ export async function GET(request: Request) {
         row.organizationName = localizedOrg;
       }
     }
-    return json({ ok: true, locale, module: moduleCode, data: rows });
+    // Published menus are public; drafts are per-partner and never cached.
+    return json({ ok: true, locale, module: moduleCode, data: rows }, includeDrafts ? undefined : { headers: publicCacheHeaders(30) });
   } catch (error) { console.error(error); return errorResponse("Unable to load services.", 500); }
 }
 

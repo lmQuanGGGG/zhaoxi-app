@@ -1,10 +1,10 @@
 import { authenticatedSession } from "@/lib/auth-request";
-import { failure, success } from "@/lib/core/api-response";
+import { failure, publicCacheHeaders, success } from "@/lib/core/api-response";
 import { customerUiService } from "@/lib/services/customer-ui-service";
 export const dynamic="force-dynamic";
 
 export async function GET(){
-  try{return success(await customerUiService.get())}
+  try{return success(await customerUiService.get(),{headers:publicCacheHeaders(60)})}
   catch(error){console.error(error);return failure("Unable to load customer UI configuration.",500,undefined,"CUSTOMER_UI_LOAD_FAILED")}
 }
 export async function PATCH(request:Request){

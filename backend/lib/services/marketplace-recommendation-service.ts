@@ -1,6 +1,8 @@
 import { and, count, eq, isNotNull } from "drizzle-orm";
 import { getDb } from "@/db";
 import { moduleTranslations, modules, organizations, serviceRequests, services, serviceTranslations } from "@/db/schema";
+import { TtlCache } from "@/lib/ttl-cache";
+import { organizationCardMetadata } from "@/lib/services/organization-metadata-projection";
 
 const FALLBACK: Record<string, { emoji: string; imageKey: string }> = {
   food: { emoji: "🍜", imageKey: "food" },
@@ -53,26 +55,46 @@ export type MarketplaceRecommendation = {
   score: number;
 };
 
+// The ranked catalogue is the same for every visitor of a locale, and it is
+// the most expensive read on the home screen. Reuse it briefly per instance.
+const rankedCache = new TtlCache<MarketplaceRecommendation[]>(30_000);
+
 export class MarketplaceRecommendationService {
   async list(locale: string, limit = 12, offset = 0): Promise<MarketplaceRecommendation[]> {
-    const db = getDb();
-    const usageRows = await db.select({ serviceId: serviceRequests.serviceId, total: count(serviceRequests.id) })
-      .from(serviceRequests).where(isNotNull(serviceRequests.serviceId)).groupBy(serviceRequests.serviceId);
-    const usage = new Map(usageRows.map((row) => [row.serviceId || "", Number(row.total || 0)]));
+    const diverse = await rankedCache.get(locale, () => this.ranked(locale));
+    const safeLimit = Math.max(1, Math.min(30, limit));
+    const start = diverse.length ? Math.max(0, offset) % diverse.length : 0;
+    const rotated = [...diverse.slice(start), ...diverse.slice(0, start)];
+    return rotated.slice(0, safeLimit);
+  }
 
-    const rows = await db.select({
-      id: services.id, moduleCode: modules.code, moduleName: moduleTranslations.name,
-      serviceName: serviceTranslations.name, summary: serviceTranslations.summary,
-      priceFrom: services.priceFrom, currency: services.currency, serviceMetadata: services.metadata,
-      serviceCreatedAt: services.createdAt, organizationId: organizations.id,
-      organizationName: organizations.name, organizationMetadata: organizations.metadata,
-      organizationCreatedAt: organizations.createdAt,
-    }).from(services)
-      .innerJoin(modules, eq(services.moduleId, modules.id))
-      .innerJoin(organizations, and(eq(services.organizationId, organizations.id), eq(organizations.status, "active")))
-      .leftJoin(serviceTranslations, and(eq(serviceTranslations.serviceId, services.id), eq(serviceTranslations.locale, locale)))
-      .leftJoin(moduleTranslations, and(eq(moduleTranslations.moduleId, modules.id), eq(moduleTranslations.locale, locale)))
-      .where(and(eq(services.isEnabled, true), eq(modules.isEnabled, true)));
+  private async ranked(locale: string): Promise<MarketplaceRecommendation[]> {
+    const db = getDb();
+    // Usage counts, catalogue rows and enabled modules are independent reads.
+    const [usageRows, rows, moduleRows] = await Promise.all([
+      db.select({ serviceId: serviceRequests.serviceId, total: count(serviceRequests.id) })
+        .from(serviceRequests).where(isNotNull(serviceRequests.serviceId)).groupBy(serviceRequests.serviceId),
+
+      db.select({
+        id: services.id, moduleCode: modules.code, moduleName: moduleTranslations.name,
+        serviceName: serviceTranslations.name, summary: serviceTranslations.summary,
+        priceFrom: services.priceFrom, currency: services.currency, serviceMetadata: services.metadata,
+        serviceCreatedAt: services.createdAt, organizationId: organizations.id,
+        organizationName: organizations.name, organizationMetadata: organizationCardMetadata(),
+        organizationCreatedAt: organizations.createdAt,
+      }).from(services)
+        .innerJoin(modules, eq(services.moduleId, modules.id))
+        .innerJoin(organizations, and(eq(services.organizationId, organizations.id), eq(organizations.status, "active")))
+        .leftJoin(serviceTranslations, and(eq(serviceTranslations.serviceId, services.id), eq(serviceTranslations.locale, locale)))
+        .leftJoin(moduleTranslations, and(eq(moduleTranslations.moduleId, modules.id), eq(moduleTranslations.locale, locale)))
+        .where(and(eq(services.isEnabled, true), eq(modules.isEnabled, true))),
+
+      db.select({ code: modules.code, name: moduleTranslations.name })
+        .from(modules)
+        .leftJoin(moduleTranslations, and(eq(moduleTranslations.moduleId, modules.id), eq(moduleTranslations.locale, locale)))
+        .where(eq(modules.isEnabled, true)),
+    ]);
+    const usage = new Map(usageRows.map((row) => [row.serviceId || "", Number(row.total || 0)]));
 
     const candidates: MarketplaceRecommendation[] = rows.map((row) => {
       const used = usage.get(row.id) || 0;
@@ -103,10 +125,6 @@ export class MarketplaceRecommendationService {
     for (const item of candidates) if (!usedIds.has(item.id)) { diverse.push(item); usedIds.add(item.id); }
 
     // Modules without a registered partner stay discoverable with a category-specific visual fallback.
-    const moduleRows = await db.select({ code: modules.code, name: moduleTranslations.name })
-      .from(modules)
-      .leftJoin(moduleTranslations, and(eq(moduleTranslations.moduleId, modules.id), eq(moduleTranslations.locale, locale)))
-      .where(eq(modules.isEnabled, true));
     const partneredModules = new Set(candidates.map((item) => item.moduleCode));
     for (const module of moduleRows) {
       if (partneredModules.has(module.code)) continue;
@@ -119,10 +137,7 @@ export class MarketplaceRecommendationService {
       });
     }
 
-    const safeLimit = Math.max(1, Math.min(30, limit));
-    const start = diverse.length ? Math.max(0, offset) % diverse.length : 0;
-    const rotated = [...diverse.slice(start), ...diverse.slice(0, start)];
-    return rotated.slice(0, safeLimit);
+    return diverse;
   }
 }
 

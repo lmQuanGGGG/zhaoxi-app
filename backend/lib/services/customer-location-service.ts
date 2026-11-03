@@ -1,9 +1,10 @@
-import {and,eq} from "drizzle-orm";
+import {and,eq,inArray} from "drizzle-orm";
 import {getDb} from "@/db";
 import {
   customerProfiles,customerSavedAddresses,moduleTranslations,modules,organizations,
   services,serviceTranslations
 } from "@/db/schema";
+import {loadPublicOrganizationMetadata} from "@/lib/services/organization-metadata-projection";
 
 export type CustomerPoint={latitude:number;longitude:number};
 export type CustomerLocationSource="current"|"default_address"|"profile"|"none";
@@ -51,16 +52,24 @@ async function reverseAddress(point:CustomerPoint){
   const pending=reverseAddressRequests.get(key);if(pending)return pending;
   const request=(async()=>{try{
     const params=new URLSearchParams({lat:String(point.latitude),lon:String(point.longitude)});
-    const response=await fetch(`https://photon.komoot.io/reverse?${params.toString()}`,{headers:{accept:"application/json"},next:{revalidate:600}});
+    // The label is cosmetic; never let a slow geocoder hold the response.
+    const response=await fetch(`https://photon.komoot.io/reverse?${params.toString()}`,{headers:{accept:"application/json"},next:{revalidate:600},signal:AbortSignal.timeout(1200)});
     if(!response.ok)return "";const text=locationLabel(await response.json());
     if(text)reverseAddressCache.set(key,{text,expiresAt:Date.now()+10*60_000});return text;
   }catch{return ""}finally{reverseAddressRequests.delete(key)}})();
   reverseAddressRequests.set(key,request);return request;
 }
 
+// Nearby lists never show the label, so they take it from the cache when there
+// and otherwise warm the cache in the background instead of waiting on Photon.
+function cachedOrWarmAddress(point:CustomerPoint){
+  const cached=reverseAddressCache.get(addressKey(point));if(cached&&cached.expiresAt>Date.now())return cached.text;
+  void reverseAddress(point);return "";
+}
+
 export class CustomerLocationService{
-  async context(userId?:string,current?:CustomerPoint|null){
-    if(current)return{source:"current" as CustomerLocationSource,point:current,addressText:await reverseAddress(current),label:""};
+  async context(userId?:string,current?:CustomerPoint|null,options:{waitForAddress?:boolean}={}){
+    if(current)return{source:"current" as CustomerLocationSource,point:current,addressText:options.waitForAddress===false?cachedOrWarmAddress(current):await reverseAddress(current),label:""};
     if(!userId)return{source:"none" as CustomerLocationSource,point:null,addressText:"",label:""};
     const db=getDb();
     const saved=(await db.select().from(customerSavedAddresses).where(and(eq(customerSavedAddresses.userId,userId),eq(customerSavedAddresses.isDefault,true))).limit(1))[0];
@@ -72,33 +81,37 @@ export class CustomerLocationService{
     return{source:"none" as CustomerLocationSource,point:null,addressText:saved?.addressText||profile?.addressText||"",label:saved?.label||""};
   }
 
-  async nearby(input:{userId?:string;locale:string;moduleCode?:string;current?:CustomerPoint|null;limit?:number;radiusKm?:number}){
+  async nearby(input:{userId?:string;locale:string;moduleCode?:string;current?:CustomerPoint|null;limit?:number;radiusKm?:number;requestUrl:string}){
     const db=getDb();
-    const context=await this.context(input.userId,input.current);
+    // The catalogue query does not depend on the customer's location, so it runs
+    // alongside the saved-address lookup.
     const filters=[eq(services.isEnabled,true),eq(modules.isEnabled,true),eq(organizations.status,"active")];
     if(input.moduleCode)filters.push(eq(modules.code,input.moduleCode));
-    const rows=await db.select({
+    // Organization metadata is loaded once per organization, not per service row.
+    const [context,rows,organizationMetadata]=await Promise.all([this.context(input.userId,input.current,{waitForAddress:false}),db.select({
       id:services.id,code:services.code,moduleCode:modules.code,moduleName:moduleTranslations.name,
       name:serviceTranslations.name,summary:serviceTranslations.summary,priceFrom:services.priceFrom,currency:services.currency,
       serviceMetadata:services.metadata,organizationId:organizations.id,organizationCode:organizations.code,
-      organizationName:organizations.name,organizationAddress:organizations.addressText,organizationMetadata:organizations.metadata,
+      organizationName:organizations.name,organizationAddress:organizations.addressText,
     }).from(services)
       .innerJoin(modules,eq(services.moduleId,modules.id))
       .innerJoin(organizations,eq(services.organizationId,organizations.id))
       .leftJoin(serviceTranslations,and(eq(serviceTranslations.serviceId,services.id),eq(serviceTranslations.locale,input.locale)))
       .leftJoin(moduleTranslations,and(eq(moduleTranslations.moduleId,modules.id),eq(moduleTranslations.locale,input.locale)))
-      .where(and(...filters)).limit(240);
+      .where(and(...filters)).limit(240),
+      loadPublicOrganizationMetadata(input.requestUrl,and(eq(organizations.status,"active"),inArray(organizations.id,db.select({id:services.organizationId}).from(services).where(eq(services.isEnabled,true)))))]);
 
     const radius=Math.max(1,Math.min(100,Number(input.radiusKm||30)));
     const scored=rows.map(row=>{
-      const point=orgPoint(row.organizationMetadata);
+      const orgMetadata=organizationMetadata.get(row.organizationId)??null;
+      const point=orgPoint(orgMetadata);
       const distance=context.point&&point?distanceKm(context.point,point):null;
       return{
         id:row.id,code:row.code,moduleCode:row.moduleCode,moduleName:row.moduleName,
         name:row.name||row.code,summary:row.summary,priceFrom:row.priceFrom,currency:row.currency,
         metadata:row.serviceMetadata,organizationId:row.organizationId,organizationCode:row.organizationCode,
         organizationName:row.organizationName,organizationAddress:row.organizationAddress,
-        organizationMetadata:row.organizationMetadata,imageUrl:imageUrl(row.serviceMetadata,row.organizationMetadata),
+        organizationMetadata:orgMetadata,imageUrl:imageUrl(row.serviceMetadata,orgMetadata),
         distanceKm:distance===null?null:Number(distance.toFixed(2)),
         nearby:distance!==null&&distance<=radius,
       };

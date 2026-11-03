@@ -11,8 +11,13 @@ function getDatabaseUrl(): string {
 }
 
 let client: ReturnType<typeof postgres> | undefined;
+let db: ReturnType<typeof drizzle<typeof schema>> | undefined;
 
+// One pool and one Drizzle instance per server instance. Warm serverless
+// invocations reuse both, so requests skip the TLS handshake to Postgres and
+// Drizzle does not rebuild its relational config for every getDb() call.
 export function getDb() {
+  if (db) return db;
   if (!client) {
     client = postgres(getDatabaseUrl(), {
       max: 5,
@@ -21,7 +26,8 @@ export function getDb() {
       connect_timeout: 15,
     });
   }
-  return drizzle(client, { schema });
+  db = drizzle(client, { schema });
+  return db;
 }
 
 export type Database = ReturnType<typeof getDb>;

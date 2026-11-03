@@ -2,8 +2,10 @@ import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { modules, organizations, services, serviceTranslations } from "@/db/schema";
 import { errorResponse, json } from "@/lib/api";
+import { publicCacheHeaders } from "@/lib/core/api-response";
 import { localeFromRequest } from "@/lib/locale";
 import { mayManageOrganization, requireSession } from "@/lib/security/route-authorization";
+import { publicOrganizationMetadata } from "@/lib/services/organization-metadata-projection";
 export const dynamic = "force-dynamic";
 type Context = { params: Promise<{ id: string }> };
 const LOCALES = ["zh-CN", "zh-TW", "vi-VN", "en-US"] as const;
@@ -11,9 +13,9 @@ export async function GET(request: Request, context: Context) {
   try {
     const { id } = await context.params; const locale = localeFromRequest(request);
     const rows = await getDb().select({ id:services.id, code:services.code, moduleCode:modules.code, priceFrom:services.priceFrom, currency:services.currency, metadata:services.metadata, name:serviceTranslations.name, summary:serviceTranslations.summary, description:serviceTranslations.description,
-      organization:{ id:organizations.id, code:organizations.code, name:organizations.name, description:organizations.description, phone:organizations.phone, address:organizations.addressText, metadata:organizations.metadata },
+      organization:{ id:organizations.id, code:organizations.code, name:organizations.name, description:organizations.description, phone:organizations.phone, address:organizations.addressText, metadata:publicOrganizationMetadata(request.url) },
     }).from(services).innerJoin(modules,eq(services.moduleId,modules.id)).leftJoin(organizations,eq(services.organizationId,organizations.id)).leftJoin(serviceTranslations,and(eq(serviceTranslations.serviceId,services.id),eq(serviceTranslations.locale,locale))).where(and(eq(services.id,id),eq(services.isEnabled,true))).limit(1);
-    if(!rows[0])return errorResponse("Service not found.",404); return json({ok:true,locale,data:rows[0]});
+    if(!rows[0])return errorResponse("Service not found.",404); return json({ok:true,locale,data:rows[0]},{headers:publicCacheHeaders(30)});
   } catch(error){console.error(error);return errorResponse("Unable to load service.",500)}
 }
 export async function PATCH(request: Request, context: Context) {

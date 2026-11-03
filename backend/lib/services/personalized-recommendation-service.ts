@@ -20,8 +20,8 @@ function weightMap(rows:Array<{serviceId:string|null;moduleId:string|null;weight
 
 export class PersonalizedRecommendationService{
   async list(userId:string|undefined,locale:string,limit=12,offset=0):Promise<PersonalizedRecommendation[]>{
-    const base=await marketplaceRecommendationService.list(locale,30,0);
     if(!userId){
+      const base=await marketplaceRecommendationService.list(locale,30,0);
       const general=base.map(item=>({...item,personalizedScore:item.score,reasonCode:(item.isNew?"new":item.usageCount>0?"popular":"explore") as ReasonCode}));
       const safeLimit=Math.max(1,Math.min(30,limit));
       const start=general.length?Math.max(0,offset)%general.length:0;
@@ -29,7 +29,9 @@ export class PersonalizedRecommendationService{
     }
 
     const db=getDb();
-    const [favorites,history,orders]=await Promise.all([
+    // The shared catalogue (usually cached) and this customer's signals are independent reads.
+    const [base,favorites,history,orders,moduleByCodeRows]=await Promise.all([
+      marketplaceRecommendationService.list(locale,30,0),
       db.select({serviceId:customerFavorites.serviceId,moduleId:services.moduleId})
         .from(customerFavorites).innerJoin(services,eq(customerFavorites.serviceId,services.id))
         .where(eq(customerFavorites.userId,userId)),
@@ -38,6 +40,7 @@ export class PersonalizedRecommendationService{
         .where(eq(customerBrowsingHistory.userId,userId)).orderBy(desc(customerBrowsingHistory.viewedAt)).limit(50),
       db.select({serviceId:serviceRequests.serviceId,moduleId:serviceRequests.moduleId})
         .from(serviceRequests).where(eq(serviceRequests.customerId,userId)).orderBy(desc(serviceRequests.createdAt)).limit(50),
+      db.select({id:modules.id,code:modules.code}).from(modules),
     ]);
 
     const interests=weightMap([
@@ -46,7 +49,6 @@ export class PersonalizedRecommendationService{
       ...orders.map((x,index)=>({...x,weight:Math.max(50,160-index*3)})),
     ]);
 
-    const moduleByCodeRows=await db.select({id:modules.id,code:modules.code}).from(modules);
     const moduleByCode=new Map(moduleByCodeRows.map(x=>[x.code,x.id]));
     const favoriteIds=new Set(favorites.map(x=>x.serviceId));
     const orderIds=new Set(orders.map(x=>x.serviceId).filter(Boolean) as string[]);

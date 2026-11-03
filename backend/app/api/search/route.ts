@@ -3,6 +3,7 @@ import { getDb } from "@/db";
 import { moduleTranslations, modules, organizations, services, serviceTranslations } from "@/db/schema";
 import { errorResponse, json } from "@/lib/api";
 import { localeFromRequest } from "@/lib/locale";
+import { organizationCardMetadata } from "@/lib/services/organization-metadata-projection";
 export const dynamic = "force-dynamic";
 
 function serviceHref(moduleCode: string, serviceId: string, organizationId?: string | null) {
@@ -38,11 +39,12 @@ export async function GET(request: Request) {
     const pattern = `%${query}%`;
     const db = getDb();
 
-    const serviceRows = await db.select({
+    // The three searches are independent; run them concurrently.
+    const [serviceRows, organizationRows, moduleRows] = await Promise.all([db.select({
       id: services.id, moduleCode: modules.code, moduleName: moduleTranslations.name,
       name: serviceTranslations.name, summary: serviceTranslations.summary,
       priceFrom: services.priceFrom, currency: services.currency, metadata: services.metadata,
-      organizationId: organizations.id, organizationName: organizations.name, organizationMetadata: organizations.metadata,
+      organizationId: organizations.id, organizationName: organizations.name, organizationMetadata: organizationCardMetadata(),
     }).from(services)
       .innerJoin(modules, eq(services.moduleId, modules.id))
       .leftJoin(organizations, eq(services.organizationId, organizations.id))
@@ -51,18 +53,18 @@ export async function GET(request: Request) {
       .where(and(eq(services.isEnabled, true), or(
         ilike(serviceTranslations.name, pattern), ilike(serviceTranslations.summary, pattern),
         ilike(organizations.name, pattern), ilike(moduleTranslations.name, pattern),
-      ))).limit(40);
+      ))).limit(40),
 
-    const organizationRows = await db.select({
+    db.select({
       id: organizations.id, name: organizations.name, description: organizations.description,
-      addressText: organizations.addressText, metadata: organizations.metadata,
+      addressText: organizations.addressText, metadata: organizationCardMetadata(),
     }).from(organizations).where(and(eq(organizations.status, "active"), or(
       ilike(organizations.name, pattern), ilike(organizations.description, pattern), ilike(organizations.addressText, pattern),
-    ))).limit(20);
+    ))).limit(20),
 
-    const moduleRows = await db.select({ code: modules.code, name: moduleTranslations.name, description: moduleTranslations.description })
+    db.select({ code: modules.code, name: moduleTranslations.name, description: moduleTranslations.description })
       .from(modules).leftJoin(moduleTranslations, and(eq(moduleTranslations.moduleId, modules.id), eq(moduleTranslations.locale, locale)))
-      .where(and(eq(modules.isEnabled, true), or(ilike(moduleTranslations.name, pattern), ilike(moduleTranslations.description, pattern), ilike(modules.code, pattern)))).limit(20);
+      .where(and(eq(modules.isEnabled, true), or(ilike(moduleTranslations.name, pattern), ilike(moduleTranslations.description, pattern), ilike(modules.code, pattern)))).limit(20)]);
 
     const orgModules = new Map<string, string>();
     for (const row of serviceRows) if (row.organizationId && !orgModules.has(row.organizationId)) orgModules.set(row.organizationId, row.moduleCode);

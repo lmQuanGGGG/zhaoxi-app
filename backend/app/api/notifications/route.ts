@@ -11,10 +11,7 @@ import {
 } from "@/db/schema";
 import { errorResponse, json } from "@/lib/api";
 import { localeFromRequest } from "@/lib/locale";
-import { completeExpiredOrders } from "@/lib/order-timers";
-import { housingAppointmentReminderService } from "@/lib/services/housing-appointment-reminder-service";
-import { travelReminderService } from "@/lib/services/travel-reminder-service";
-import { paymentNotificationAutomationService } from "@/lib/services/payment-notification-automation-service";
+import { scheduleNotificationSweeps } from "@/lib/background-sweeps";
 import { mayManageOrganization, requireSession } from "@/lib/security/route-authorization";
 
 export const dynamic = "force-dynamic";
@@ -25,10 +22,7 @@ export async function GET(request: Request) {
   try {
     const gate = await requireSession(request, ["customer", "partner", "admin"]);
     if (!gate.ok) return gate.response;
-    await completeExpiredOrders();
-    await housingAppointmentReminderService.evaluate();
-    await travelReminderService.evaluate();
-    await paymentNotificationAutomationService.evaluate();
+    scheduleNotificationSweeps();
     const url = new URL(request.url);
     const locale = localeFromRequest(request);
     const audience = (url.searchParams.get("audience") || "customer") as Audience;

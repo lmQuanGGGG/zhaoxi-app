@@ -4,6 +4,7 @@ import {
   customerBrowsingHistory,customerFavorites,customerProfiles,moduleTranslations,modules,
   organizations,serviceRequests,services,serviceTranslations
 } from "@/db/schema";
+import {organizationCardMetadata} from "@/lib/services/organization-metadata-projection";
 import {personalizedRecommendationService} from "@/lib/services/personalized-recommendation-service";
 import {customerLocationService,type CustomerPoint} from "@/lib/services/customer-location-service";
 
@@ -78,7 +79,7 @@ export class CustomerSmartSearchService{
       name:serviceTranslations.name,summary:serviceTranslations.summary,priceFrom:services.priceFrom,currency:services.currency,
       metadata:services.metadata,createdAt:services.createdAt,
       organizationId:organizations.id,organizationName:organizations.name,organizationDescription:organizations.description,
-      organizationAddress:organizations.addressText,organizationMetadata:organizations.metadata,
+      organizationAddress:organizations.addressText,organizationMetadata:organizationCardMetadata(),
     }).from(services)
       .innerJoin(modules,eq(services.moduleId,modules.id))
       .innerJoin(organizations,and(eq(services.organizationId,organizations.id),eq(organizations.status,"active")))

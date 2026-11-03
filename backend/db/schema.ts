@@ -227,7 +227,10 @@ export const organizationMembers = pgTable(
     isActive: boolean("is_active").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [primaryKey({ columns: [table.organizationId, table.userId] })],
+  (table) => [
+    primaryKey({ columns: [table.organizationId, table.userId] }),
+    index("organization_members_user_idx").on(table.userId),
+  ],
 );
 
 export const wechatLoginSessions = pgTable(
@@ -687,6 +690,9 @@ export const serviceRequests = pgTable(
     index("service_requests_module_idx").on(table.moduleId),
     index("service_requests_customer_idx").on(table.customerId),
     index("service_requests_created_at_idx").on(table.createdAt),
+    index("service_requests_customer_created_idx").on(table.customerId, table.createdAt),
+    index("service_requests_assigned_org_created_idx").on(table.assignedOrganizationId, table.createdAt),
+    index("service_requests_service_idx").on(table.serviceId),
   ],
 );
 
@@ -703,7 +709,10 @@ export const serviceRequestStatusHistory = pgTable(
     note: text("note"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index("request_status_history_request_idx").on(table.requestId)],
+  (table) => [
+    index("request_status_history_request_idx").on(table.requestId),
+    index("request_status_history_created_idx").on(table.createdAt),
+  ],
 );
 
 
