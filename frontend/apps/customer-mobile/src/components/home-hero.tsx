@@ -302,7 +302,20 @@ export function ServiceArc({ tiles, onOpen, onPressIn, more }: { tiles: Array<{ 
         <Glass style={styles.lens} clear interactive={false} tint="rgba(255,226,210,0.28)" />
         {/* Peach body so the lower half, over the near-white fade, still reads as a glass sphere */}
         <LinearGradient colors={["rgba(255,255,255,0)", "rgba(255,196,170,0.22)", "rgba(255,170,140,0.32)"]} locations={[0, 0.55, 1]} style={styles.lensBody} />
-        <LinearGradient colors={["rgba(255,255,255,0.8)", "rgba(255,255,255,0)"]} start={{ x: 0.2, y: 0 }} end={{ x: 0.5, y: 0.7 }} style={styles.lensSheen} />
+        {/* Sheen clipped to the sphere so its soft ellipse never pokes past the rim */}
+        <View style={styles.lensClip}>
+          {/* Radial highlight: fades to nothing on every side, so no edge shows */}
+          <Svg width={LENS} height={LENS}>
+            <Defs>
+              <RadialGradient id="lensSheen" cx="0.5" cy="0.5" r="0.5">
+                <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.75} />
+                <Stop offset="0.55" stopColor="#FFFFFF" stopOpacity={0.28} />
+                <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
+              </RadialGradient>
+            </Defs>
+            <Ellipse cx={LENS * 0.4} cy={LENS * 0.27} rx={LENS * 0.3} ry={LENS * 0.19} fill="url(#lensSheen)" />
+          </Svg>
+        </View>
         <View style={styles.lensRim} />
       </View>
       <Animated.ScrollView
@@ -420,7 +433,7 @@ const styles = StyleSheet.create({
   lensShadow: { position: "absolute", left: 6, right: 6, top: 6, bottom: 6, borderRadius: LENS / 2, backgroundColor: "#FFFFFF", shadowColor: "#C2410C", shadowOpacity: 0.22, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
   lensBody: { position: "absolute", left: 0, top: 0, width: LENS, height: LENS, borderRadius: LENS / 2 },
   lensRim: { position: "absolute", left: 0, top: 0, width: LENS, height: LENS, borderRadius: LENS / 2, borderWidth: 0.75, borderColor: "rgba(255,255,255,0.35)" },
-  lensSheen: { position: "absolute", left: 18, top: 10, width: LENS * 0.56, height: LENS * 0.4, borderRadius: LENS },
+  lensClip: { position: "absolute", left: 0, top: 0, width: LENS, height: LENS, borderRadius: LENS / 2, overflow: "hidden" },
   halo: { position: "absolute", top: -32, width: 150, height: 150 },
   arcLabel: { marginTop: 6, fontSize: 15, fontWeight: "700", color: "#17221F", textAlign: "center", lineHeight: 19 },
   moreLink: { alignSelf: "center", flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 6, marginTop: 2 },
