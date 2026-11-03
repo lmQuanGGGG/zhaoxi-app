@@ -15,6 +15,8 @@ const config: ExpoConfig = {
     infoPlist: {
       UIBackgroundModes: ["remote-notification"],
       ITSAppUsesNonExemptEncryption: false,
+      // White status bar over the petrol launch screen; JS takes over once the app is running.
+      UIStatusBarStyle: "UIStatusBarStyleLightContent",
       NSLocationWhenInUseUsageDescription: "ZhaoXi dùng vị trí để tìm nhà hàng, dịch vụ gần bạn và tính phí giao hàng.",
       UIApplicationSceneManifest: {
         UIApplicationSupportsMultipleScenes: false,
@@ -43,7 +45,10 @@ const config: ExpoConfig = {
   plugins: [
     "expo-router",
     "expo-secure-store",
-    ["expo-splash-screen", { image: "./assets/splash-icon.png", imageWidth: 160, backgroundColor: "#F7FAF9" }],
+    // Plain petrol launch screen: src/splash/launch-splash.tsx draws the logo onto that same colour
+    // (palette.background), so frame one matches it. The image is a transparent placeholder — without
+    // one the plugin leaves the storyboard background white.
+    ["expo-splash-screen", { image: "./assets/splash-blank.png", imageWidth: 64, backgroundColor: "#00323A" }],
     ["expo-notifications", { color: "#0FAF7A", defaultChannel: "orders" }],
     ["expo-location", { locationWhenInUsePermission: "ZhaoXi dùng vị trí để tìm nhà hàng, dịch vụ gần bạn và tính phí giao hàng." }],
     ["expo-image-picker", { photosPermission: "ZhaoXi cần truy cập ảnh để bạn gửi ảnh trong tin nhắn đơn hàng.", cameraPermission: "ZhaoXi cần dùng camera để bạn chụp và gửi ảnh trong tin nhắn đơn hàng.", microphonePermission: false }],

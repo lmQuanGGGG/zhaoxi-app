@@ -3,7 +3,7 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ensureSession, loadAuth, useAuth, isGuest } from "../src/api/client";
@@ -13,15 +13,23 @@ import { hydrateLocation } from "../src/location";
 import { configureNotificationChannels, registerForPush, useNotificationRouting } from "../src/notifications";
 import { CACHE_BUSTER, persister, queryClient } from "../src/query";
 import { ONBOARDING_KEY } from "../src/constants";
+import { LaunchSplash } from "../src/splash/launch-splash";
 import { colors } from "../src/theme";
 import { Dock } from "../src/ui/chrome";
 import { ToastHost } from "../src/ui/toast";
 
+// The native splash stays up until <LaunchSplash> has painted its first frame
+// (the same bare petrol as the native launch screen) and hides it itself.
 void SplashScreen.preventAutoHideAsync().catch(() => undefined);
-SplashScreen.setOptions({ duration: 250, fade: true });
+SplashScreen.setOptions({ duration: 200, fade: true });
 
 export default function RootLayout() {
   const [boot, setBoot] = useState<{ locale: ZhaoXiLocale; onboarded: boolean } | null>(null);
+  // The app boots underneath the launch animation; "ready" only tells it when it may lift.
+  const [appReady, setAppReady] = useState(false);
+  const [splashDone, setSplashDone] = useState(false);
+  const markReady = useCallback(() => setAppReady(true), []);
+  const finishSplash = useCallback(() => setSplashDone(true), []);
 
   useEffect(() => {
     // Everything local first: the UI renders from cache immediately, network follows.
@@ -35,25 +43,27 @@ export default function RootLayout() {
       .catch(() => setBoot({ locale: deviceLocale(), onboarded: true }));
   }, []);
 
-  if (!boot) return null;
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
-      <SafeAreaProvider>
-        <PersistQueryClientProvider
-          client={queryClient}
-          persistOptions={{ persister, buster: CACHE_BUSTER, maxAge: 1000 * 60 * 60 * 24 * 3 }}
-          onSuccess={() => void SplashScreen.hideAsync().catch(() => undefined)}
-        >
-          <I18nProvider initialLocale={boot.locale}>
-            <AppNavigator onboarded={boot.onboarded} locale={boot.locale} />
-          </I18nProvider>
-        </PersistQueryClientProvider>
-      </SafeAreaProvider>
+      {boot ? (
+        <SafeAreaProvider>
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{ persister, buster: CACHE_BUSTER, maxAge: 1000 * 60 * 60 * 24 * 3 }}
+            onSuccess={markReady}
+          >
+            <I18nProvider initialLocale={boot.locale}>
+              <AppNavigator onboarded={boot.onboarded} locale={boot.locale} onReady={markReady} splashActive={!splashDone} />
+            </I18nProvider>
+          </PersistQueryClientProvider>
+        </SafeAreaProvider>
+      ) : null}
+      {splashDone ? null : <LaunchSplash ready={appReady} onDone={finishSplash} />}
     </GestureHandlerRootView>
   );
 }
 
-function AppNavigator({ onboarded, locale }: { onboarded: boolean; locale: ZhaoXiLocale }) {
+function AppNavigator({ onboarded, locale, onReady, splashActive }: { onboarded: boolean; locale: ZhaoXiLocale; onReady: () => void; splashActive: boolean }) {
   const auth = useAuth();
   const [navigationReady, setNavigationReady] = useState(false);
   useNotificationRouting(navigationReady);
@@ -62,9 +72,9 @@ function AppNavigator({ onboarded, locale }: { onboarded: boolean; locale: ZhaoX
     setNavigationReady(true);
     // Re-check storage: the boot snapshot is stale if this navigator remounts after onboarding.
     if (!onboarded) void AsyncStorage.getItem(ONBOARDING_KEY).then((done) => { if (done !== "1") router.replace("/onboarding"); });
-    const timer = setTimeout(() => void SplashScreen.hideAsync().catch(() => undefined), 600);
+    const timer = setTimeout(onReady, 600);
     return () => clearTimeout(timer);
-  }, [onboarded]);
+  }, [onboarded, onReady]);
 
   // Re-bind the push token whenever the identity changes (guest → signed in).
   useEffect(() => {
@@ -73,7 +83,8 @@ function AppNavigator({ onboarded, locale }: { onboarded: boolean; locale: ZhaoX
 
   return (
     <>
-      <StatusBar style="dark" />
+      {/* Light over the petrol launch sheet, dark for the white screens after it. */}
+      <StatusBar style={splashActive ? "light" : "dark"} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: "slide_from_right", gestureEnabled: true }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="onboarding" options={{ animation: "fade", gestureEnabled: false }} />
