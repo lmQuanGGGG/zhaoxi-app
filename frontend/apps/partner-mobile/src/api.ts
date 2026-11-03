@@ -1,5 +1,5 @@
 import * as SecureStore from "expo-secure-store";
-import type { AnalyticsData, AuthState, Order, PartnerOrganization, QueueData, Session } from "./types";
+import type { AnalyticsData, AuthState, Order, OrderChatMessage, OrderChatSummary, OrderChatThread, PartnerOrganization, QueueData, Session } from "./types";
 
 const AUTH_KEY = "zhaoxi.partner.auth.v1";
 const configuredUrl = process.env.EXPO_PUBLIC_API_URL || "https://zhaoxi-app-puce.vercel.app";
@@ -161,3 +161,16 @@ export const getRestaurantAnalytics = (organizationId: string, days = 30, from?:
   }
   return request<AnalyticsData>(`/api/partner-restaurant-analytics?${query.toString()}`);
 };
+
+// Order chat with the customer, one conversation per order.
+const chatPath = (requestId: string) => `/api/partner-order-chats/${encodeURIComponent(requestId)}`;
+export const getOrderChats = (organizationId: string) =>
+  request<{ threads: OrderChatSummary[]; summary: { total: number; unread: number } }>(`/api/partner-order-chats?organizationId=${encodeURIComponent(organizationId)}`);
+export const getOrderChatUnread = (organizationId: string) =>
+  request<{ unread: number }>(`/api/partner-order-chats?summary=1&organizationId=${encodeURIComponent(organizationId)}`);
+export const getOrderChat = (organizationId: string, requestId: string) =>
+  request<OrderChatThread>(`${chatPath(requestId)}?organizationId=${encodeURIComponent(organizationId)}`);
+export const sendOrderChat = (organizationId: string, requestId: string, message: string, clientMessageId: string) =>
+  request<OrderChatMessage>(chatPath(requestId), { method: "POST", body: JSON.stringify({ organizationId, message, clientMessageId }) });
+export const markOrderChatRead = (organizationId: string, requestId: string) =>
+  request(chatPath(requestId), { method: "PATCH", body: JSON.stringify({ organizationId }) });

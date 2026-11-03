@@ -49,7 +49,7 @@ async function sendWeb(organizationId: string, message: OrderMessagePush) {
   if (!webEnabled) return 0;
   const db = getDb();
   const subscriptions = await db.select().from(partnerPushSubscriptions).where(eq(partnerPushSubscriptions.organizationId, organizationId));
-  const payload = JSON.stringify({ title: message.title, body: message.body, url: `/messages?order=${message.requestId}`, tag: `zhaoxi-chat-${message.requestId}`, renotify: true });
+  const payload = JSON.stringify({ title: message.title, body: message.body, url: `/messages?order=${message.requestId}`, tag: `zhaoxi-chat-${message.requestId}`, renotify: true, requireInteraction: false });
   let sent = 0;
   await Promise.all(subscriptions.map(async (subscription) => {
     try {
