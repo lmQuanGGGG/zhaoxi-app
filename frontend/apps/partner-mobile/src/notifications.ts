@@ -2,6 +2,7 @@ import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import type { PartnerOrderKind } from "./types";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: true, shouldSetBadge: true }),
@@ -24,6 +25,12 @@ export async function configureNotifications() {
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
       bypassDnd: false,
     });
+    await Notifications.setNotificationChannelAsync("messages", {
+      name: "Tin nhắn khách hàng",
+      description: "Tin nhắn mới của khách trong đơn hàng",
+      importance: Notifications.AndroidImportance.HIGH,
+      lightColor: "#16a36a",
+    });
   }
 }
 
@@ -40,10 +47,17 @@ export async function getPushToken() {
   return { token: result.data, reason: "" };
 }
 
-export async function notifyNewOrder(order: { requestId: string; requestCode: string; customerName: string }) {
+const NEW_ORDER_TITLE: Record<PartnerOrderKind, string> = {
+  food_delivery: "🔔 Có đơn hàng mới",
+  housing_inquiry: "🏠 Có yêu cầu thuê nhà mới",
+  travel_booking: "🧭 Có yêu cầu đặt tour mới",
+  service_booking: "🔔 Có đơn dịch vụ mới",
+};
+
+export async function notifyNewOrder(order: { requestId: string; requestCode: string; customerName: string; kind?: PartnerOrderKind }) {
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: "🔔 Có đơn hàng mới",
+      title: NEW_ORDER_TITLE[order.kind || "food_delivery"],
       body: `${order.requestCode} · ${order.customerName}`,
       sound: "order_alert.wav",
       categoryIdentifier: "ORDER_ACTIONS",

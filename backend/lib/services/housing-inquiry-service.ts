@@ -1,6 +1,7 @@
 import {and,eq} from "drizzle-orm";
 import {getDb} from "@/db";
 import {modules,organizations,serviceRequests,serviceRequestStatusHistory,services} from "@/db/schema";
+import {partnerWebPushService} from "@/lib/services/partner-web-push-service";
 
 export type HousingInquiryInput={
  serviceId:string;customerId?:string;customerName:string;customerPhone:string;locale:string;
@@ -74,6 +75,7 @@ export class HousingInquiryService{
    details,
   }).returning();
   await db.insert(serviceRequestStatusHistory).values({requestId:created.id,toStatus:"assigned",note:"HOUSING_INQUIRY_ASSIGNED_TO_PARTNER"});
+  partnerWebPushService.notifyNewOrderAfterResponse(row.organizationId,{id:created.id,requestCode:created.requestCode,customerName:created.customerName,moduleCode:row.moduleCode});
   return{...created,routing:{mode:"housing_partner_lead",organizationId:row.organizationId,organizationName:row.organizationName},paymentRequired:false};
  }
 }

@@ -1,0 +1,315 @@
+{
+  "module": "payment",
+  "org": {
+    "code": "ZX-PAY-DN",
+    "type": "payment-assistance",
+    "name": "ZhaoXi Hỗ trợ Thanh toán Đà Nẵng",
+    "description": "Dịch vụ hướng dẫn, đi cùng và phiên dịch giúp người nói tiếng Trung tại Đà Nẵng mở tài khoản ngân hàng, dùng VietQR, đóng hóa đơn điện – nước – internet và mua SIM. ZhaoXi không phải ngân hàng hay ví điện tử, không đổi ngoại tệ, không chuyển tiền và không giữ tiền của khách.",
+    "addressText": "Hải Châu, Đà Nẵng",
+    "latitude": 16.0544,
+    "longitude": 108.2022,
+    "bannerUrl": "https://images.unsplash.com/photo-1674296067534-0f9769040781?auto=format&fit=crop&w=1400&q=80"
+  },
+  "items": [
+    {
+      "code": "ZX-PAY-DN-01",
+      "price": 500000,
+      "imageUrl": "https://images.unsplash.com/photo-1613243555988-441166d4d6fd?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1640545232493-9a9b5c88ede4?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/black-business-credit-card-ahjzVINkuCs",
+        "https://unsplash.com/photos/a-close-up-of-a-credit-card-9uxRcupG36I"
+      ],
+      "meta": {
+        "unit": "lần",
+        "duration": "2–3 giờ",
+        "requiredDocs": "Hộ chiếu + thị thực/giấy tờ thay thị thực (vd. thẻ tạm trú) còn hạn, hoặc tài khoản định danh điện tử mức 2",
+        "legalBasis": "Thông tư 17/2024/TT-NHNN (sửa đổi bởi TT 25/2025/TT-NHNN)"
+      },
+      "t": {
+        "vi-VN": [
+          "Hỗ trợ mở tài khoản ngân hàng Việt Nam (đi cùng + phiên dịch)",
+          "Kiểm tra giấy tờ, đặt lịch và đi cùng bạn tới ngân hàng để mở tài khoản thanh toán VND, 500.000đ/lần.",
+          "Theo Thông tư 17/2024/TT-NHNN, người nước ngoài mở tài khoản thanh toán cần hộ chiếu kèm thị thực hoặc giấy tờ thay thị thực còn hiệu lực (ví dụ thẻ tạm trú), hoặc tài khoản định danh điện tử mức 2; mỗi ngân hàng có thể yêu cầu thêm giấy tờ như hợp đồng thuê nhà, hợp đồng lao động. ZhaoXi kiểm tra hồ sơ trước, chọn chi nhánh phù hợp, phiên dịch tại quầy và hướng dẫn kích hoạt app; bạn tự ký và tự nhập mật khẩu/OTP. Quyết định mở tài khoản thuộc về ngân hàng, ZhaoXi không cam kết kết quả; tài khoản có thể bị tạm dừng giao dịch khi thị thực/giấy tờ hết hạn."
+        ],
+        "en-US": [
+          "Help opening a Vietnamese bank account (escort + interpreting)",
+          "We check your documents, book and accompany you to a bank to open a VND payment account, 500,000 VND per visit.",
+          "Under Circular 17/2024/TT-NHNN, foreigners need a passport with a valid visa or visa-substitute document (e.g. a temporary residence card), or a level-2 electronic identification account; each bank may ask for more, such as a rental or employment contract. ZhaoXi pre-checks your file, chooses a suitable branch, interprets at the counter and helps you activate the app; you sign and enter your own passwords/OTP. Approval is solely the bank's decision and is not guaranteed; transactions may be suspended when your visa or documents expire."
+        ],
+        "zh-CN": [
+          "协助开立越南银行账户（陪同+翻译）",
+          "检查材料、预约并陪同您前往银行开立越南盾结算账户，500,000越南盾/次。",
+          "根据越南国家银行第17/2024/TT-NHNN号通知，外国人开立结算账户需持护照及有效签证或可替代签证的证件（如暂住卡），或二级电子身份账户；各银行可能另要求租房合同、劳动合同等材料。ZhaoXi提前核对材料、选择合适网点、在柜台翻译并协助激活手机银行；签字及密码/OTP均由您本人完成。是否开户由银行决定，ZhaoXi不保证结果；签证或证件过期时账户可能被暂停交易。"
+        ],
+        "zh-TW": [
+          "協助開立越南銀行帳戶（陪同＋口譯）",
+          "檢查文件、預約並陪同您前往銀行開立越南盾結算帳戶，500,000越南盾／次。",
+          "依越南國家銀行第17/2024/TT-NHNN號通知，外國人開立結算帳戶需持護照及有效簽證或可替代簽證的證件（如暫住卡），或二級電子身分帳戶；各銀行可能另要求租屋合約、勞動合約等文件。ZhaoXi事先核對文件、選擇合適分行、在櫃台口譯並協助啟用手機銀行；簽名及密碼／OTP皆由您本人完成。是否開戶由銀行決定，ZhaoXi不保證結果；簽證或證件到期時帳戶可能被暫停交易。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-PAY-DN-02",
+      "price": 200000,
+      "imageUrl": "https://images.unsplash.com/photo-1595079676339-1534801ad6cf?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1571867424488-4565932edb41?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/black-android-smartphone-displaying-qr-code-Q6uqw_Hjye8",
+        "https://unsplash.com/photos/two-persons-hands-holding-turned-on-phones-QiPe0UpC0_U"
+      ],
+      "meta": {
+        "unit": "buổi",
+        "duration": "Tối đa 1 giờ",
+        "format": "Tại nơi ở của khách trong nội thành hoặc gọi video"
+      },
+      "t": {
+        "vi-VN": [
+          "Cài đặt app ngân hàng & hướng dẫn thanh toán VietQR",
+          "Hướng dẫn 1-1 bằng tiếng Trung cách dùng app ngân hàng Việt Nam và quét mã VietQR, 200.000đ/buổi (tối đa 1 giờ).",
+          "Dành cho người đã có tài khoản ngân hàng Việt Nam: cài đặt app, bật bảo mật, chuyển sang giao diện tiếng Anh nếu có, quét VietQR để trả tiền quán ăn, taxi, tiền nhà. Bạn tự nhập mật khẩu và OTP — nhân viên ZhaoXi không bao giờ hỏi hay giữ thông tin đăng nhập. Kèm hướng dẫn nhận biết mã QR, đường link lừa đảo thường gặp."
+        ],
+        "en-US": [
+          "Bank app set-up & VietQR payment coaching",
+          "One-to-one coaching in Chinese on using a Vietnamese banking app and scanning VietQR codes, 200,000 VND per session (up to 1 hour).",
+          "For customers who already have a Vietnamese bank account: install the app, turn on security settings, switch to English where available, and scan VietQR to pay restaurants, taxis or rent. You enter your own passwords and OTPs — ZhaoXi staff never ask for or keep login details. Includes tips on spotting common scam QR codes and links."
+        ],
+        "zh-CN": [
+          "手机银行设置与VietQR付款教学",
+          "中文一对一讲解越南手机银行及VietQR扫码付款，200,000越南盾/次（最长1小时）。",
+          "适用于已有越南银行账户的客户：安装App、开启安全设置、切换英文界面（如有）、扫VietQR码支付餐厅、出租车、房租等。密码和OTP由您本人输入——ZhaoXi员工绝不索取或保存登录信息。同时讲解如何识别常见诈骗二维码和链接。"
+        ],
+        "zh-TW": [
+          "手機銀行設定與VietQR付款教學",
+          "中文一對一講解越南手機銀行及VietQR掃碼付款，200,000越南盾／次（最長1小時）。",
+          "適用於已有越南銀行帳戶的客戶：安裝App、開啟安全設定、切換英文介面（如有）、掃VietQR碼支付餐廳、計程車、房租等。密碼和OTP由您本人輸入——ZhaoXi員工絕不索取或保存登入資訊。同時說明如何辨識常見詐騙QR碼與連結。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-PAY-DN-03",
+      "price": 100000,
+      "imageUrl": "https://images.unsplash.com/photo-1595079835357-a94a13cab10c?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1706759755782-62bc9a0b32e1?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/black-android-smartphone-displaying-qr-code-kHMiTbqI5QU",
+        "https://unsplash.com/photos/two-people-sitting-at-a-table-using-their-cell-phones-XFcAJqeZ75Q"
+      ],
+      "meta": {
+        "unit": "buổi 30 phút",
+        "wallets": ["Alipay", "Weixin Pay / WeChat Pay"],
+        "network": "NAPAS VietQR Global",
+        "format": "Gặp trực tiếp hoặc gọi WeChat"
+      },
+      "t": {
+        "vi-VN": [
+          "Hướng dẫn dùng Alipay / WeChat Pay quét VietQR Global tại Việt Nam",
+          "Tư vấn 30 phút bằng tiếng Trung về cách trả tiền bằng Alipay, WeChat Pay tại điểm chấp nhận VietQR Global, 100.000đ/buổi.",
+          "Theo NAPAS, từ 04/2026 người dùng Alipay (đối tác Ant International, Vietcombank) và từ 08/2026 người dùng Weixin Pay (đối tác BIDV) có thể quét mã VietQR Global tại các điểm chấp nhận thuộc mạng NAPAS. ZhaoXi hướng dẫn kiểm tra ví đã bật đúng tính năng, nhận diện cửa hàng có mã VietQR Global và đọc lại hóa đơn; không phải nơi nào cũng chấp nhận. ZhaoXi không xử lý, không nhận hộ và không quy đổi tiền — mọi giao dịch diễn ra trực tiếp giữa ví của bạn và người bán."
+        ],
+        "en-US": [
+          "Guide to paying with Alipay / WeChat Pay via VietQR Global in Vietnam",
+          "A 30-minute session in Chinese on paying with Alipay or WeChat Pay at VietQR Global acceptance points, 100,000 VND per session.",
+          "According to NAPAS, since April 2026 Alipay users (with Ant International and Vietcombank) and since August 2026 Weixin Pay users (with BIDV) can scan VietQR Global codes at acceptance points in the NAPAS network. ZhaoXi shows you how to check your wallet settings, spot merchants displaying VietQR Global and read the receipt; not every shop accepts it. ZhaoXi does not process, collect or convert any money — every payment goes directly between your wallet and the merchant."
+        ],
+        "zh-CN": [
+          "在越南使用支付宝/微信支付扫VietQR Global教学",
+          "30分钟中文讲解如何在VietQR Global受理点使用支付宝、微信支付付款，100,000越南盾/次。",
+          "据越南NAPAS公布，自2026年4月起支付宝用户（合作方蚂蚁国际、越南外贸银行Vietcombank）、自2026年8月起微信支付用户（合作方BIDV）可在NAPAS网络受理点扫描VietQR Global码付款。ZhaoXi教您检查钱包设置、识别展示VietQR Global码的商户并核对账单；并非所有商户都受理。ZhaoXi不经手、不代收、不兑换任何款项——付款直接在您的钱包与商户之间完成。"
+        ],
+        "zh-TW": [
+          "在越南使用支付寶／微信支付掃VietQR Global教學",
+          "30分鐘中文說明如何在VietQR Global受理點使用支付寶、微信支付付款，100,000越南盾／次。",
+          "據越南NAPAS公布，自2026年4月起支付寶用戶（合作方螞蟻國際、越南外貿銀行Vietcombank）、自2026年8月起微信支付用戶（合作方BIDV）可在NAPAS網路受理點掃描VietQR Global碼付款。ZhaoXi教您檢查錢包設定、辨識展示VietQR Global碼的商家並核對帳單；並非所有商家都受理。ZhaoXi不經手、不代收、不兌換任何款項——付款直接在您的錢包與商家之間完成。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-PAY-DN-04",
+      "price": 30000,
+      "imageUrl": "https://images.unsplash.com/photo-1604177420682-0c840feb01de?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1555009784-ae7e7d1b97aa?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/black-and-white-electric-meter-0MKzwPmehRE",
+        "https://unsplash.com/photos/five-electric-meters-on-wall-veAjsOjXpvQ"
+      ],
+      "meta": {
+        "unit": "hóa đơn",
+        "billAmount": "Thu đúng số tiền trên hóa đơn, không cộng chênh lệch",
+        "providers": ["Điện lực (EVNCPC)", "Cấp nước Đà Nẵng (Dawaco)", "Nhà mạng internet"],
+        "receipt": "Gửi biên nhận/chứng từ của nhà cung cấp trong ngày"
+      },
+      "t": {
+        "vi-VN": [
+          "Đóng hộ hóa đơn điện / nước / internet (từng hóa đơn)",
+          "Tra cứu và đóng một hóa đơn điện, nước hoặc internet đứng tên bạn, phí 30.000đ/hóa đơn + tiền hóa đơn đúng số ghi trên hóa đơn.",
+          "ZhaoXi tra cứu hóa đơn qua kênh chính thức (app EVNCPC CSKH, kênh của Dawaco, nhà mạng), dịch nội dung cho bạn và ưu tiên để bạn tự thanh toán từ tài khoản của mình theo hướng dẫn. Nếu bạn đưa tiền mặt, nhân viên nộp ngay trong ngày tại quầy thu chính thức đúng mã khách hàng, gửi lại biên nhận và trả lại tiền thừa; ZhaoXi không nhận tiền trước, không giữ số dư. Cảnh giác người giả danh nhân viên điện, nước gửi link hoặc mã QR lạ."
+        ],
+        "en-US": [
+          "Electricity / water / internet bill payment help (per bill)",
+          "We look up and pay one electricity, water or internet bill in your name: 30,000 VND per bill plus the exact bill amount.",
+          "ZhaoXi checks the bill through official channels (EVNCPC CSKH app, Dawaco channels, your internet provider), translates it, and preferably guides you to pay from your own account. If you hand over cash, staff pay it the same day at the provider's official counter under your customer code, send you the receipt and return any change; ZhaoXi takes no advance deposits and keeps no balance. Beware of people posing as utility staff sending unknown links or QR codes."
+        ],
+        "zh-CN": [
+          "代缴电费/水费/网费（按单）",
+          "查询并缴纳您名下的一张电费、水费或网费账单，服务费30,000越南盾/单，另按账单金额如实收取。",
+          "ZhaoXi通过官方渠道（EVNCPC CSKH App、岘港供水公司Dawaco渠道、网络运营商）查询账单并为您翻译，优先指导您用自己的账户付款。如您交付现金，员工当天在官方收费点按您的客户编号缴纳，并发回收据、退还找零；ZhaoXi不预收款项、不保留余额。请警惕冒充电力、水务人员发送的陌生链接或二维码。"
+        ],
+        "zh-TW": [
+          "代繳電費／水費／網路費（按單）",
+          "查詢並繳納您名下的一張電費、水費或網路費帳單，服務費30,000越南盾／單，另按帳單金額如實收取。",
+          "ZhaoXi透過官方管道（EVNCPC CSKH App、峴港供水公司Dawaco管道、網路業者）查詢帳單並為您翻譯，優先指導您用自己的帳戶付款。如您交付現金，員工當天在官方收費處依您的客戶編號繳納，並傳回收據、退還找零；ZhaoXi不預收款項、不保留餘額。請提防冒充電力、水務人員傳送的陌生連結或QR碼。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-PAY-DN-05",
+      "price": 80000,
+      "imageUrl": "https://images.unsplash.com/photo-1606904825846-647eb07f5be2?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1762115106003-30a83b29f609?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/white-router-on-white-table-hXVVNB6Qctg",
+        "https://unsplash.com/photos/four-electric-meters-mounted-on-a-red-wall-y-OKpZsZc2I"
+      ],
+      "meta": {
+        "unit": "tháng",
+        "covers": ["Điện", "Nước", "Internet"],
+        "billAmount": "Tiền hóa đơn thanh toán riêng, đúng số trên hóa đơn"
+      },
+      "t": {
+        "vi-VN": [
+          "Gói nhắc & hỗ trợ hóa đơn hàng tháng (điện + nước + internet)",
+          "Mỗi tháng ZhaoXi tra cứu, dịch và nhắc hạn 3 hóa đơn điện, nước, internet cho căn hộ của bạn, 80.000đ/tháng.",
+          "Phù hợp người thuê nhà dài hạn: nhắc trước hạn qua WeChat kèm bản dịch hóa đơn, hướng dẫn cài thanh toán tự động hoặc thanh toán qua app ngân hàng của chính bạn, giải đáp khi hóa đơn tăng bất thường. Tiền hóa đơn do bạn tự thanh toán hoặc đóng theo từng hóa đơn như dịch vụ đóng hộ (thu đúng số, có biên nhận). Không giữ tiền ứng trước."
+        ],
+        "en-US": [
+          "Monthly bill reminder & support plan (electricity + water + internet)",
+          "Each month ZhaoXi looks up, translates and reminds you of your 3 bills — electricity, water and internet — for your home, 80,000 VND per month.",
+          "For long-term renters: due-date reminders on WeChat with a translated bill, help setting up auto-debit or paying from your own banking app, and answers when a bill looks unusually high. Bills are paid by you, or paid bill by bill as in the bill payment service (exact amount, with receipt). No advance deposits are held."
+        ],
+        "zh-CN": [
+          "每月账单提醒与协助（电费+水费+网费）",
+          "ZhaoXi每月为您的住所查询、翻译并提醒电费、水费、网费3张账单，80,000越南盾/月。",
+          "适合长租客户：到期前通过微信提醒并附账单翻译，协助设置自动扣款或用您本人的手机银行缴费，账单异常偏高时为您解答。账单费用由您本人支付，或按“代缴账单”服务逐单缴纳（如实收取、附收据）。不保留任何预付款。"
+        ],
+        "zh-TW": [
+          "每月帳單提醒與協助（電費＋水費＋網路費）",
+          "ZhaoXi每月為您的住所查詢、翻譯並提醒電費、水費、網路費3張帳單，80,000越南盾／月。",
+          "適合長租客戶：到期前透過微信提醒並附帳單翻譯，協助設定自動扣款或用您本人的手機銀行繳費，帳單異常偏高時為您說明。帳單費用由您本人支付，或依「代繳帳單」服務逐單繳納（如實收取、附收據）。不保留任何預付款。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-PAY-DN-06",
+      "price": 100000,
+      "imageUrl": "https://images.unsplash.com/photo-1562774555-079298a31cbe?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1753385158278-387d4dda60c4?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1766241632296-aebf4c0c3a27?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/sim-card-o0kPG3RirHs",
+        "https://unsplash.com/photos/sim-cards-and-their-adaptors-are-on-display-7qlXFeFNv14",
+        "https://unsplash.com/photos/smartphone-with-sim-card-tray-removed-zs29-jZrAQo"
+      ],
+      "meta": {
+        "unit": "lần",
+        "carrierPackagesExample": [
+          "Viettel 5G80T: 5GB/ngày, 15 ngày, ~80.000đ",
+          "Viettel 5G150T: 5GB/ngày, 30 ngày, ~150.000đ"
+        ],
+        "requiredDocs": "Hộ chiếu còn hạn (đối chiếu thị thực hoặc thời hạn miễn thị thực), xác thực khuôn mặt theo quy định",
+        "legalBasis": "Nghị định 163/2024/NĐ-CP; Thông tư 08/2026/TT-BKHCN"
+      },
+      "t": {
+        "vi-VN": [
+          "Mua SIM / eSIM Việt Nam & đăng ký thuê bao chính chủ",
+          "Đi cùng bạn ra cửa hàng nhà mạng chính thức để mua SIM/eSIM và đăng ký thông tin, phí hỗ trợ 100.000đ/lần; SIM và gói cước trả theo giá niêm yết của nhà mạng.",
+          "Người nước ngoài đăng ký thuê bao bằng hộ chiếu còn hạn, được đối chiếu với thị thực hoặc thời hạn miễn thị thực, kèm xác thực khuôn mặt theo quy định hiện hành. ZhaoXi phiên dịch, giúp chọn gói phù hợp (ví dụ Viettel 5G80T khoảng 80.000đ/15 ngày, 5G150T khoảng 150.000đ/30 ngày, 5GB/ngày — giá thực tế theo cửa hàng), cài eSIM và kiểm tra sóng, data. Tiền SIM và gói cước bạn trả trực tiếp cho nhà mạng; ZhaoXi không bán lại SIM đã kích hoạt sẵn."
+        ],
+        "en-US": [
+          "Vietnamese SIM / eSIM purchase & registration in your own name",
+          "We accompany you to an official carrier store to buy a SIM/eSIM and register it, 100,000 VND service fee per visit; SIM and plan paid at the carrier's listed price.",
+          "Foreigners register with a valid passport, checked against the visa or visa-free stay period, plus face verification as currently required. ZhaoXi interprets, helps you choose a plan (e.g. Viettel 5G80T about 80,000 VND for 15 days or 5G150T about 150,000 VND for 30 days, 5GB/day — actual in-store prices apply), installs the eSIM and checks signal and data. You pay the carrier directly for the SIM and plan; ZhaoXi does not resell pre-activated SIMs."
+        ],
+        "zh-CN": [
+          "购买越南SIM卡/eSIM并实名登记",
+          "陪同您前往运营商官方门店购买SIM卡/eSIM并完成实名登记，服务费100,000越南盾/次；SIM卡及套餐按运营商标价支付。",
+          "外国人凭有效护照登记，运营商会核对签证或免签停留期限，并按现行规定进行人脸验证。ZhaoXi负责翻译、帮您选择套餐（例如Viettel 5G80T约80,000越南盾/15天、5G150T约150,000越南盾/30天，每天5GB——以门店实际价格为准）、安装eSIM并检查信号与流量。SIM卡及套餐费用由您直接付给运营商；ZhaoXi不转售已预先激活的SIM卡。"
+        ],
+        "zh-TW": [
+          "購買越南SIM卡／eSIM並實名登記",
+          "陪同您前往電信業者官方門市購買SIM卡／eSIM並完成實名登記，服務費100,000越南盾／次；SIM卡及資費依業者標價支付。",
+          "外國人憑有效護照登記，業者會核對簽證或免簽停留期限，並依現行規定進行人臉驗證。ZhaoXi負責口譯、協助您選擇方案（例如Viettel 5G80T約80,000越南盾／15天、5G150T約150,000越南盾／30天，每天5GB——以門市實際價格為準）、安裝eSIM並檢查訊號與數據。SIM卡及資費由您直接支付給業者；ZhaoXi不轉售預先開通的SIM卡。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-PAY-DN-07",
+      "price": 20000,
+      "imageUrl": "https://images.unsplash.com/photo-1488509082528-cefbba5ad692?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1753036051291-cfc20d052c24?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/person-using-smartphone-BjhUu6BpUZA",
+        "https://unsplash.com/photos/a-blue-sim-card-sits-on-a-dark-surface-fcYNLhYAd5k"
+      ],
+      "meta": {
+        "unit": "lần",
+        "topUpAmount": "Mệnh giá/giá gói theo nhà mạng, thu đúng số",
+        "channel": "Kênh chính thức của nhà mạng, nạp thẳng vào số của khách"
+      },
+      "t": {
+        "vi-VN": [
+          "Nạp tiền điện thoại / gia hạn gói data",
+          "Nạp tiền hoặc đăng ký lại gói data cho số Việt Nam của bạn qua kênh chính thức của nhà mạng, phí 20.000đ/lần + mệnh giá nạp.",
+          "Hữu ích khi app nhà mạng không hỗ trợ thẻ nước ngoài hoặc bạn không đọc được tin nhắn tiếng Việt. ZhaoXi nạp thẳng vào số thuê bao của bạn hoặc hướng dẫn bạn tự đăng ký gói, gửi ảnh chụp xác nhận giao dịch và dịch tin nhắn của nhà mạng. Thu đúng mệnh giá hoặc giá gói niêm yết, không giữ số dư."
+        ],
+        "en-US": [
+          "Mobile top-up / data plan renewal",
+          "Top up or renew a data plan for your Vietnamese number through the carrier's official channels, 20,000 VND fee per top-up plus the top-up amount.",
+          "Handy when the carrier's app won't take a foreign card or you can't read Vietnamese text messages. ZhaoXi tops up your number directly or guides you to register the plan yourself, sends a screenshot confirming the transaction and translates the carrier's messages. We charge exactly the face value or listed plan price and hold no balance."
+        ],
+        "zh-CN": [
+          "手机话费充值/流量套餐续订",
+          "通过运营商官方渠道为您的越南号码充值或续订流量套餐，服务费20,000越南盾/次，另付充值金额。",
+          "适用于运营商App不支持境外银行卡或看不懂越南语短信的情况。ZhaoXi直接为您的号码充值，或指导您自行订购套餐，发送交易成功截图并翻译运营商短信。按面值或标价如实收取，不保留余额。"
+        ],
+        "zh-TW": [
+          "手機儲值／數據方案續約",
+          "透過電信業者官方管道為您的越南門號儲值或續約數據方案，服務費20,000越南盾／次，另付儲值金額。",
+          "適用於業者App不支援境外信用卡，或看不懂越南語簡訊的情況。ZhaoXi直接為您的門號儲值，或指導您自行訂購方案，傳送交易成功截圖並翻譯業者簡訊。依面額或標價如實收取，不保留餘額。"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    "https://english.luatvietnam.vn/tai-chinh/circular-17-2024-tt-nhnn-opening-and-use-of-payment-accounts-at-payment-service-providers-358811-d1.html",
+    "https://luatvietnam.vn/tin-van-ban-moi/sua-doi-ho-so-mo-tai-khoan-thanh-toan-tai-to-chuc-cung-ung-dich-vu-tu-31-8-2025-186-103939-article.html",
+    "https://en.napas.com.vn/napas-expands-cross-border-qr-payment-between-vietnam-and-china-18426041513535516.htm",
+    "https://en.napas.com.vn/napas-bidv-and-weixin-pay-partner-to-expand-qr-payment-services-between-vietnam-and-china-184260820090000496.htm",
+    "https://news.tuoitre.vn/chinese-visitors-can-now-use-weixin-pay-qr-codes-in-vietnam-103260807012305846.htm",
+    "https://www.vietnamtourism.com/en/esim/viettel",
+    "https://vinwonders.com/en/wonderpedia/news/vietnam-sim-card-for-tourists/",
+    "https://lsvn.vn/giay-to-su-dung-de-dang-ky-thong-tin-thue-bao-di-dong-a152010.html",
+    "https://luatvietnam.vn/dan-su/thong-tu-08-2026-tt-bkhcn-huong-dan-xac-thuc-thong-tin-thue-bao-di-dong-mat-dat-430575-d1.html",
+    "https://pbgdpl.cantho.gov.vn/dang-ky-thue-bao-di-dong-phai-xac-thuc-khuon-mat",
+    "https://apps.apple.com/lc/app/evncpc-cskh/id1107822201",
+    "https://www.momo.vn/thanh-toan-momo-evn-mien-trung",
+    "https://daidoanket.vn/da-nang-canh-bao-tinh-trang-gia-danh-nhan-vien-cap-nuoc-de-lua-dao.html",
+    "https://tapchicongthuong.vn/ap-quy-dinh-moi-ve-thanh-toan-khong-dung-tien-mat-tu-1-7-2024-121536.htm",
+    "https://baolamdong.vn/ngan-hang-co-duoc-su-dung-dich-vu-ho-tro-thu-chi-ho-401563.html"
+  ],
+  "notes": "PHẠM VI PHÁP LÝ (quan trọng): ZhaoXi chỉ cung cấp dịch vụ hướng dẫn, đi cùng, phiên dịch và làm hộ việc vặt có tên hóa đơn cụ thể — KHÔNG đổi ngoại tệ, KHÔNG chuyển/nhận tiền hộ (kể cả RMB↔VND), KHÔNG nhận tiền ký quỹ hay giữ số dư, KHÔNG cho mượn/thuê tài khoản ngân hàng, KHÔNG hỏi/giữ mật khẩu, OTP, thẻ của khách. Theo Nghị định 52/2024/NĐ-CP, dịch vụ trung gian thanh toán (trong đó có dịch vụ hỗ trợ thu hộ, chi hộ điện tử) phải được NHNN cấp phép — vì vậy item 04/05 được thiết kế để khách tự trả từ tài khoản của mình, hoặc giao tiền mặt cho đúng một hóa đơn và nhân viên nộp ngay trong ngày tại quầy chính thức kèm biên nhận; chủ nên nhờ luật sư xác nhận mô hình này và mã ngành đăng ký kinh doanh trước khi mở bán. Phí dịch vụ ZhaoXi (500k/200k/100k/30k/80k/100k/20k) là giá đề xuất, KHÔNG tìm được bảng giá thị trường công khai cho dịch vụ tương tự tại Đà Nẵng — được đặt tương ứng đơn giá phiên dịch giờ (~400k/giờ) và thời gian thực hiện. Mở tài khoản: căn cứ TT 17/2024/TT-NHNN Điều 12 khoản 2 điểm c (hộ chiếu + thị thực/giấy tờ thay thị thực, hoặc định danh điện tử mức 2) và Điều 19 khoản 3 (tạm dừng giao dịch khi giấy tờ hết hạn); TT 25/2025/TT-NHNN sửa đổi từ 31/8/2025 — chính sách từng ngân hàng khác nhau, nhiều nơi không mở cho khách du lịch ngắn hạn. Alipay/Weixin Pay: chỉ nêu đúng thông cáo NAPAS (Alipay 03/4/2026 cùng Ant International & Vietcombank; Weixin Pay 06/8/2026 cùng BIDV) — không quảng cáo là 'đối tác chính thức'. SIM: giá gói Viettel lấy từ vietnamtourism.com (đọc trên web Viettel ngày 13/10/2026) và vinwonders — kiểm tra lại tại cửa hàng; đăng ký thuê bao người nước ngoài theo NĐ 163/2024 (hộ chiếu còn hạn, đối chiếu thị thực) và TT 08/2026/TT-BKHCN (hiệu lực 15/4/2026, xác thực). Ảnh banner: https://unsplash.com/photos/an-aerial-view-of-a-beach-and-a-city-w_0Dk0_JN3A (bờ biển Đà Nẵng). Giá chưa nêu VAT."
+}

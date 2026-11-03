@@ -1,0 +1,517 @@
+{
+  "module": "travel",
+  "org": {
+    "code": "ZX-TRAVEL-DN",
+    "type": "tour-operator",
+    "name": "ZhaoXi Travel Đà Nẵng",
+    "description": "Tour ghép nhóm nhỏ và tour riêng có hướng dẫn viên nói tiếng Trung, đón tại khách sạn ở Đà Nẵng, đi Bà Nà Hills, Hội An, Mỹ Sơn, Cù Lao Chàm, Huế và các điểm trong thành phố. Giá niêm yết rõ phần vé tham quan và phần dịch vụ.",
+    "addressText": "Hải Châu, Đà Nẵng",
+    "latitude": 16.0600,
+    "longitude": 108.2200,
+    "bannerUrl": "https://images.unsplash.com/photo-1790134773057-af82e32e68fd?auto=format&fit=crop&w=1400&q=80"
+  },
+  "items": [
+    {
+      "code": "ZX-TRAVEL-DN-01",
+      "price": 1650000,
+      "imageUrl": "https://images.unsplash.com/photo-1741138327956-dfa75763b50d?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1790134773057-af82e32e68fd?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1787059975927-548779ffb12a?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/golden-bridge-held-by-giant-hands-in-vietnam-CsoQ-jm_0vQ",
+        "https://unsplash.com/photos/golden-bridge-in-da-nang-QsQMtWfqGOM",
+        "https://unsplash.com/photos/golden-bridge-with-stone-hands-da-nang--3_IqapmAuk"
+      ],
+      "meta": {
+        "experienceType": "tour",
+        "destination": "Sun World Bà Nà Hills (Cầu Vàng, Làng Pháp, Fantasy Park)",
+        "duration": "9 giờ (cả ngày)",
+        "departurePoint": "Đón tại khách sạn trung tâm Đà Nẵng / ven biển Mỹ Khê",
+        "maxGuests": 12,
+        "serviceLanguage": "Tiếng Trung, Tiếng Việt",
+        "availableDays": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+        "startTimes": ["07:45"],
+        "bookingNoticeHours": 24,
+        "travelAvailabilityStatus": "available",
+        "includes": [
+          "Vé cáp treo khứ hồi Sun World Bà Nà Hills giá niêm yết khách ngoại tỉnh/quốc tế (người lớn 1.000.000đ, trẻ 1m–1,4m 800.000đ)",
+          "Xe đưa đón khách sạn trung tâm Đà Nẵng – Bà Nà – khách sạn",
+          "Hướng dẫn viên tiếng Trung đi cùng suốt tuyến",
+          "Nước uống trên xe"
+        ],
+        "excludes": [
+          "Bữa trưa (có thể mua combo buffet tại Bà Nà theo giá niêm yết)",
+          "Trò chơi/vé phụ thu trong khu (bảo tàng, máng trượt, Wow Pass…)",
+          "Chi phí cá nhân, tiền tip",
+          "Phụ thu đón ngoài trung tâm (Hội An, Nam Hội An…)"
+        ],
+        "ticketInfo": {
+          "includedInTourPrice": true,
+          "officialCableCarPrice": {"adult": 1000000, "child_1m_to_1m4": 800000, "senior_over_70": 800000, "child_under_1m": 0},
+          "lunchBuffetComboAdult": 1300000,
+          "source": "https://sunworld.vn/vi/banahills/cam-nang-du-lich/chi-phi-di-ba-na-hillshtml"
+        },
+        "travelPackages": [
+          {"id": "std", "name": "Tiêu chuẩn (đã gồm vé cáp treo)", "pricingMode": "per_person", "adultPrice": 1650000, "childPrice": 1350000, "groupPrice": 0, "surchargePerBooking": 0, "minGuests": 1, "maxGuests": 12, "isEnabled": true}
+        ]
+      },
+      "t": {
+        "vi-VN": [
+          "Tour Bà Nà Hills – Cầu Vàng cả ngày, hướng dẫn viên tiếng Trung",
+          "Tour ghép nhóm nhỏ đi Bà Nà Hills, đã gồm vé cáp treo: 1.650.000đ/người lớn, 1.350.000đ/trẻ 1m–1,4m.",
+          "Giá tour ĐÃ BAO GỒM vé cáp treo khứ hồi Sun World Bà Nà Hills theo giá niêm yết chính thức cho khách ngoại tỉnh/quốc tế (1.000.000đ người lớn, 800.000đ trẻ 1m–1,4m; trẻ dưới 1m miễn vé, chỉ tính phí xe và hướng dẫn – vui lòng báo khi đặt). Phần còn lại là phí dịch vụ ZhaoXi: xe đón trả khách sạn và hướng dẫn viên tiếng Trung tham quan Cầu Vàng, Làng Pháp, vườn hoa Le Jardin D'Amour và Fantasy Park. Bữa trưa không bao gồm; bạn có thể mua combo buffet tại chỗ. Giá vé do Sun World công bố có thể thay đổi, ZhaoXi sẽ báo lại nếu có chênh lệch trước khi xác nhận."
+        ],
+        "en-US": [
+          "Bà Nà Hills & Golden Bridge full-day tour with Chinese-speaking guide",
+          "Small-group Bà Nà Hills tour including the cable car ticket: 1,650,000 VND per adult, 1,350,000 VND per child (1–1.4 m).",
+          "The tour price INCLUDES the round-trip Sun World Bà Nà Hills cable car ticket at the official non-local/international rate (1,000,000 VND adult, 800,000 VND child 1–1.4 m; children under 1 m enter free and pay only the transport and guide portion – please tell us when booking). The rest is ZhaoXi's service fee: hotel pick-up/drop-off and a Chinese-speaking guide for the Golden Bridge, French Village, Le Jardin D'Amour and Fantasy Park. Lunch is not included; a buffet combo can be bought on site. Ticket prices are set by Sun World and may change; we will tell you about any difference before confirming."
+        ],
+        "zh-CN": [
+          "巴拿山·佛手金桥一日游（中文导游）",
+          "小团巴拿山一日游，含缆车票：成人1,650,000越南盾，儿童（1–1.4米）1,350,000越南盾。",
+          "团费已包含 Sun World 巴拿山往返缆车票，按官方公布的外省/外国游客价格（成人1,000,000越南盾，1–1.4米儿童800,000越南盾；1米以下儿童免票，只收车费和导游费，请预订时告知）。其余为ZhaoXi服务费：酒店接送及中文导游，游览佛手金桥、法国村、爱情花园和梦幻乐园。不含午餐，可在山上现场购买自助餐套餐。票价以Sun World官方公布为准，如有变动我们会在确认前告知。"
+        ],
+        "zh-TW": [
+          "巴拿山・佛手金橋一日遊（中文導遊）",
+          "小團巴拿山一日遊，含纜車票：成人1,650,000越南盾，兒童（1–1.4公尺）1,350,000越南盾。",
+          "團費已包含 Sun World 巴拿山來回纜車票，依官方公布的外省／外國旅客價格（成人1,000,000越南盾，1–1.4公尺兒童800,000越南盾；1公尺以下兒童免票，只收車資和導遊費，請預訂時告知）。其餘為ZhaoXi服務費：飯店接送及中文導遊，遊覽佛手金橋、法國村、愛情花園與夢幻樂園。不含午餐，可在山上現場購買自助餐套票。票價以Sun World官方公布為準，如有變動我們會在確認前告知。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-TRAVEL-DN-02",
+      "price": 790000,
+      "imageUrl": "https://images.unsplash.com/photo-1691927644510-e8cc4a2a31ee?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1572147242672-542bc8e06e54?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1691927644490-e1a24b366a5e?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1571267012859-a81bae0c849b?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/a-group-of-people-in-small-boats-on-a-river-owU4CVUvEyM",
+        "https://unsplash.com/photos/buntings-hanging-between-buildings-during-nighttime-1pRulQjdaig",
+        "https://unsplash.com/photos/a-bunch-of-lanterns-that-are-hanging-from-a-tree-nj70WidlPjc",
+        "https://unsplash.com/photos/wooden-boats-on-body-of-water-in-front-of-buildings-under-blue-sky-JjxdZZKyWq0"
+      ],
+      "meta": {
+        "experienceType": "tour",
+        "destination": "Phố cổ Hội An",
+        "duration": "6 giờ (chiều tối)",
+        "departurePoint": "Đón tại khách sạn trung tâm Đà Nẵng / ven biển Mỹ Khê",
+        "maxGuests": 12,
+        "serviceLanguage": "Tiếng Trung, Tiếng Việt",
+        "availableDays": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+        "startTimes": ["15:00"],
+        "bookingNoticeHours": 12,
+        "travelAvailabilityStatus": "available",
+        "includes": [
+          "Xe đưa đón khách sạn Đà Nẵng – Hội An – khách sạn",
+          "Hướng dẫn viên tiếng Trung",
+          "Vé tham quan phố cổ Hội An (khách quốc tế 120.000đ, gồm vào 5 điểm di tích)",
+          "Đi thuyền trên sông Hoài và thả đèn hoa đăng (thuyền ghép theo nhóm)",
+          "Nước uống"
+        ],
+        "excludes": [
+          "Bữa tối (hướng dẫn viên gợi ý quán, khách tự chọn món)",
+          "Chi phí mua sắm, may đo, tiền tip"
+        ],
+        "ticketInfo": {
+          "includedInTourPrice": true,
+          "hoiAnOldTownTicket": {"international": 120000, "vietnamese": 80000, "child_1m_to_1m4": 50000, "child_under_1m": 0, "sitesIncluded": 5},
+          "source": "https://mia.vn/cam-nang-du-lich/gia-ve-tham-quan-pho-co-hoi-an-21234"
+        },
+        "travelPackages": [
+          {"id": "std", "name": "Tiêu chuẩn", "pricingMode": "per_person", "adultPrice": 790000, "childPrice": 550000, "groupPrice": 0, "surchargePerBooking": 0, "minGuests": 1, "maxGuests": 12, "isEnabled": true}
+        ]
+      },
+      "t": {
+        "vi-VN": [
+          "Tour Hội An phố cổ về đêm – thuyền sông Hoài, đèn hoa đăng",
+          "Tour chiều tối Hội An có hướng dẫn viên tiếng Trung: 790.000đ/người lớn, 550.000đ/trẻ em.",
+          "Khởi hành chiều từ Đà Nẵng, dạo phố cổ Hội An lúc lên đèn: Chùa Cầu, hội quán, nhà cổ, chợ đêm, đi thuyền trên sông Hoài và thả đèn hoa đăng. Giá đã gồm vé tham quan phố cổ (120.000đ/khách quốc tế, vào được 5 điểm di tích); khu trung tâm phố cổ có kiểm soát vé, đặc biệt với khách đi theo đoàn, nên vé được mua sẵn cho cả nhóm. Phần còn lại là phí xe, hướng dẫn viên và thuyền. Bữa tối tự túc, hướng dẫn viên sẽ gợi ý quán địa phương."
+        ],
+        "en-US": [
+          "Hội An Ancient Town by night – Hoài River boat & lantern release",
+          "Evening Hội An tour with a Chinese-speaking guide: 790,000 VND per adult, 550,000 VND per child.",
+          "Leave Đà Nẵng in the afternoon and explore Hội An as the lanterns come on: the Japanese Covered Bridge, assembly halls, old houses, the night market, a boat ride on the Hoài River and a floating lantern. The price includes the Old Town ticket (120,000 VND for international visitors, entry to 5 heritage sites); tickets are checked at entry points to the core old town, especially for tour groups, so we buy them for the whole group. The rest covers transport, guide and boat. Dinner is at your own expense; the guide will recommend local spots."
+        ],
+        "zh-CN": [
+          "会安古镇夜游·秋盆河游船放花灯",
+          "中文导游会安古镇傍晚游：成人790,000越南盾，儿童550,000越南盾。",
+          "下午从岘港出发，在华灯初上时游览会安古镇：日本廊桥（来远桥）、会馆、古宅、夜市，乘船游秋盆河（怀河）并放水灯。团费已包含会安古镇门票（外国游客120,000越南盾，可参观5处古迹）；古镇核心区入口设有查票点，团队游客尤其会被查验，因此我们统一为全团购票。其余为车费、导游费和游船费。晚餐自理，导游会推荐当地餐馆。"
+        ],
+        "zh-TW": [
+          "會安古鎮夜遊・秋盆河遊船放花燈",
+          "中文導遊會安古鎮傍晚遊：成人790,000越南盾，兒童550,000越南盾。",
+          "下午從峴港出發，在華燈初上時遊覽會安古鎮：日本廊橋（來遠橋）、會館、古宅、夜市，搭船遊秋盆河（懷河）並放水燈。團費已包含會安古鎮門票（外國旅客120,000越南盾，可參觀5處古蹟）；古鎮核心區入口設有查票點，團體旅客尤其會被查驗，因此我們統一為全團購票。其餘為車資、導遊費與遊船費。晚餐自理，導遊會推薦在地餐館。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-TRAVEL-DN-03",
+      "price": 850000,
+      "imageUrl": "https://images.unsplash.com/photo-1594902990513-99e980dee423?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1701707858660-0a40ccdb18d5?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/brown-concrete-building-near-green-palm-tree-under-blue-sky-during-daytime--Eo-eiqVpaE",
+        "https://unsplash.com/photos/a-very-old-building-with-a-bunch-of-windows-XJMfMs8SY54"
+      ],
+      "meta": {
+        "experienceType": "tour",
+        "destination": "Khu đền tháp Mỹ Sơn (Di sản Văn hóa Thế giới UNESCO)",
+        "duration": "5 giờ (nửa ngày sáng)",
+        "departurePoint": "Đón tại khách sạn trung tâm Đà Nẵng / ven biển Mỹ Khê",
+        "maxGuests": 12,
+        "serviceLanguage": "Tiếng Trung, Tiếng Việt",
+        "availableDays": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+        "startTimes": ["07:00"],
+        "bookingNoticeHours": 24,
+        "travelAvailabilityStatus": "available",
+        "includes": [
+          "Xe đưa đón khách sạn Đà Nẵng – Mỹ Sơn – khách sạn",
+          "Vé tham quan Mỹ Sơn (khách quốc tế 150.000đ, gồm xe điện trong khu)",
+          "Hướng dẫn viên tiếng Trung",
+          "Nước uống, khăn lạnh"
+        ],
+        "excludes": [
+          "Bữa trưa",
+          "Chi phí cá nhân, tiền tip"
+        ],
+        "ticketInfo": {
+          "includedInTourPrice": true,
+          "mySonTicket": {"international": 150000, "vietnamese": 100000},
+          "note": "Ban quản lý Mỹ Sơn đã nêu kế hoạch nghiên cứu nâng giá vé lên 250.000đ (2026); chưa thấy quyết định chính thức – cần kiểm tra trước khi bán.",
+          "source": "https://baovanhoa.vn/van-hoa/nghien-cuu-dieu-chinh-gia-ve-tham-quan-khu-den-thap-my-son-173169.html"
+        },
+        "travelPackages": [
+          {"id": "std", "name": "Tiêu chuẩn", "pricingMode": "per_person", "adultPrice": 850000, "childPrice": 600000, "groupPrice": 0, "surchargePerBooking": 0, "minGuests": 1, "maxGuests": 12, "isEnabled": true}
+        ]
+      },
+      "t": {
+        "vi-VN": [
+          "Tour Thánh địa Mỹ Sơn nửa ngày, hướng dẫn viên tiếng Trung",
+          "Tour nửa ngày tham quan đền tháp Chăm Mỹ Sơn: 850.000đ/người lớn, 600.000đ/trẻ em.",
+          "Khởi hành sớm để tránh nắng, khoảng 1 giờ 15 phút từ Đà Nẵng đến khu đền tháp Mỹ Sơn – di sản thế giới UNESCO của vương quốc Champa. Hướng dẫn viên tiếng Trung giải thích lịch sử, kiến trúc gạch nung và các nhóm tháp; xem biểu diễn múa Chăm khi có lịch. Giá đã gồm vé tham quan (hiện 150.000đ/khách quốc tế, gồm xe điện trong khu); phần còn lại là phí xe và hướng dẫn viên. Về lại Đà Nẵng khoảng trưa."
+        ],
+        "en-US": [
+          "Mỹ Sơn Sanctuary half-day tour with Chinese-speaking guide",
+          "Half-day tour of the Cham temple towers at Mỹ Sơn: 850,000 VND per adult, 600,000 VND per child.",
+          "An early start to beat the heat, about 1 h 15 min from Đà Nẵng to Mỹ Sơn, the UNESCO World Heritage site of the Champa kingdom. Your Chinese-speaking guide explains the history, the fired-brick architecture and the temple groups; you can watch the Cham dance show when it is scheduled. The price includes the entrance ticket (currently 150,000 VND for international visitors, including the in-site electric shuttle); the rest covers transport and guide. Back in Đà Nẵng around noon."
+        ],
+        "zh-CN": [
+          "美山圣地半日游（中文导游）",
+          "美山占婆塔群半日游：成人850,000越南盾，儿童600,000越南盾。",
+          "清晨出发避开日晒，从岘港约1小时15分钟车程抵达占婆王国遗址——联合国教科文组织世界文化遗产美山圣地。中文导游讲解历史、红砖建筑工艺和各组塔群，如有安排可观看占族舞蹈表演。团费已包含门票（目前外国游客150,000越南盾，含园区电瓶车），其余为车费和导游费。约中午返回岘港。"
+        ],
+        "zh-TW": [
+          "美山聖地半日遊（中文導遊）",
+          "美山占婆塔群半日遊：成人850,000越南盾，兒童600,000越南盾。",
+          "清晨出發避開日曬，從峴港約1小時15分鐘車程抵達占婆王國遺址——聯合國教科文組織世界文化遺產美山聖地。中文導遊講解歷史、紅磚建築工藝與各組塔群，如有安排可觀賞占族舞蹈表演。團費已包含門票（目前外國旅客150,000越南盾，含園區電瓶車），其餘為車資與導遊費。約中午返回峴港。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-TRAVEL-DN-04",
+      "price": 1150000,
+      "imageUrl": "https://images.unsplash.com/photo-1687708167574-9a9b4eac3a22?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1632456417636-8425fb148522?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1629656157544-57620b6d1b2d?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/a-person-swimming-in-the-water-near-a-coral-reef-TNWUR__bOCE",
+        "https://unsplash.com/photos/an-underwater-view-of-a-coral-reef-in-the-ocean-ynPnG_lDg2E",
+        "https://unsplash.com/photos/aerial-view-of-green-and-gray-island-Zt0br07_S34"
+      ],
+      "meta": {
+        "experienceType": "tour",
+        "destination": "Cù Lao Chàm (Khu dự trữ sinh quyển thế giới)",
+        "duration": "8 giờ (cả ngày)",
+        "departurePoint": "Đón tại khách sạn trung tâm Đà Nẵng / ven biển Mỹ Khê",
+        "maxGuests": 12,
+        "serviceLanguage": "Tiếng Trung, Tiếng Việt",
+        "availableDays": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+        "startTimes": ["07:15"],
+        "bookingNoticeHours": 24,
+        "travelAvailabilityStatus": "available",
+        "season": "Thường vận hành khoảng tháng 3–9; ngoài mùa phụ thuộc thời tiết và lệnh cấm biển",
+        "includes": [
+          "Xe đưa đón khách sạn Đà Nẵng – cảng Cửa Đại (Hội An) – khách sạn",
+          "Canô cao tốc khứ hồi ra đảo",
+          "Phí tham quan Cù Lao Chàm 70.000đ/người (Nghị quyết 16/2026/NQ-HĐND TP Đà Nẵng) và phí môi trường",
+          "Kính lặn, ống thở, áo phao",
+          "Bữa trưa hải sản trên đảo",
+          "Hướng dẫn viên tiếng Trung"
+        ],
+        "excludes": [
+          "Lặn bình khí, đi bộ dưới biển (Sea Trek) và trò chơi nước có phí",
+          "Đồ uống ngoài bữa trưa, chi phí cá nhân, tiền tip"
+        ],
+        "ticketInfo": {
+          "includedInTourPrice": true,
+          "islandVisitFee": 70000,
+          "source": "https://baovanhoa.vn/du-lich/tu-ngay-106-muc-thu-phi-tham-quan-cu-lao-cham-la-70000-dongnguoiluot-235643.html"
+        },
+        "travelPackages": [
+          {"id": "std", "name": "Tiêu chuẩn", "pricingMode": "per_person", "adultPrice": 1150000, "childPrice": 850000, "groupPrice": 0, "surchargePerBooking": 0, "minGuests": 1, "maxGuests": 12, "isEnabled": true}
+        ]
+      },
+      "t": {
+        "vi-VN": [
+          "Tour Cù Lao Chàm lặn ngắm san hô cả ngày, hướng dẫn viên tiếng Trung",
+          "Tour đảo Cù Lao Chàm bằng canô, lặn ống thở ngắm san hô: 1.150.000đ/người lớn, 850.000đ/trẻ em.",
+          "Xe đón tại khách sạn Đà Nẵng ra cảng Cửa Đại, đi canô khoảng 20–30 phút ra Cù Lao Chàm. Tham quan Bãi Làng, chùa Hải Tạng, giếng cổ Chăm, lặn ống thở ngắm san hô (có kính, ống thở, áo phao), ăn trưa hải sản và tắm biển. Giá đã gồm canô, phí tham quan đảo 70.000đ/người và phí môi trường. Canô chỉ chạy khi thời tiết cho phép; nếu cơ quan chức năng cấm biển, ZhaoXi đổi ngày hoặc hoàn tiền."
+        ],
+        "en-US": [
+          "Cù Lao Chàm island snorkeling day trip with Chinese-speaking guide",
+          "Speedboat trip to Cù Lao Chàm with coral snorkeling: 1,150,000 VND per adult, 850,000 VND per child.",
+          "Hotel pick-up in Đà Nẵng to Cửa Đại pier, then a 20–30 minute speedboat ride to Cù Lao Chàm. Visit Bãi Làng village, Hải Tạng pagoda and the old Cham well, snorkel over the coral (mask, snorkel and life jacket provided), enjoy a seafood lunch and swim. The price includes the speedboat, the 70,000 VND island visit fee and the environment fee. Boats only run when the weather allows; if the authorities close the sea, ZhaoXi will reschedule or refund."
+        ],
+        "zh-CN": [
+          "占婆岛浮潜一日游（中文导游）",
+          "快艇登占婆岛、浮潜看珊瑚：成人1,150,000越南盾，儿童850,000越南盾。",
+          "岘港酒店接车前往会安Cửa Đại码头，乘快艇约20–30分钟抵达占婆岛。游览渔村Bãi Làng、海藏寺、占族古井，浮潜观赏珊瑚（提供面镜、呼吸管和救生衣），享用海鲜午餐并下海游泳。团费已包含快艇、上岛参观费70,000越南盾/人及环境费。快艇视天气开航；如遇官方封海，ZhaoXi将改期或退款。"
+        ],
+        "zh-TW": [
+          "占婆島浮潛一日遊（中文導遊）",
+          "快艇登占婆島、浮潛賞珊瑚：成人1,150,000越南盾，兒童850,000越南盾。",
+          "峴港飯店接車前往會安Cửa Đại碼頭，搭快艇約20–30分鐘抵達占婆島。遊覽漁村Bãi Làng、海藏寺、占族古井，浮潛觀賞珊瑚（提供面鏡、呼吸管與救生衣），享用海鮮午餐並下海游泳。團費已包含快艇、上島參觀費70,000越南盾／人及環境費。快艇視天氣開航；如遇官方封海，ZhaoXi將改期或退款。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-TRAVEL-DN-05",
+      "price": 1650000,
+      "imageUrl": "https://images.unsplash.com/photo-1732682953527-b137648a0220?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1655824077764-56d37e359a2a?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1684188017288-e5d7a678ae86?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1761150284873-75ee48094e72?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/HYeF2tme2fU",
+        "https://unsplash.com/photos/bomvPWGfIrc",
+        "https://unsplash.com/photos/KdnnRHEc9VQ",
+        "https://unsplash.com/photos/motorcyclists-on-a-winding-mountain-road-through-lush-forest-HN4scbQyCc8"
+      ],
+      "meta": {
+        "experienceType": "tour",
+        "destination": "Cố đô Huế (Đại Nội, chùa Thiên Mụ) qua đèo Hải Vân",
+        "duration": "11 giờ (cả ngày)",
+        "departurePoint": "Đón tại khách sạn trung tâm Đà Nẵng / ven biển Mỹ Khê",
+        "maxGuests": 12,
+        "serviceLanguage": "Tiếng Trung, Tiếng Việt",
+        "availableDays": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+        "startTimes": ["07:00"],
+        "bookingNoticeHours": 48,
+        "travelAvailabilityStatus": "available",
+        "includes": [
+          "Xe đưa đón khứ hồi Đà Nẵng – Huế, chiều đi qua đèo Hải Vân (dừng chụp ảnh), chiều về qua hầm",
+          "Vé tham quan Đại Nội Huế (người lớn 200.000đ)",
+          "Bữa trưa món Huế",
+          "Hướng dẫn viên tiếng Trung"
+        ],
+        "excludes": [
+          "Vé lăng tẩm (Khải Định, Minh Mạng, Tự Đức) nếu khách muốn thêm",
+          "Thuê áo dài/trang phục cung đình chụp ảnh",
+          "Chi phí cá nhân, tiền tip"
+        ],
+        "ticketInfo": {
+          "includedInTourPrice": true,
+          "imperialCityTicket": {"adult": 200000, "child_7_to_12": 40000},
+          "fourSiteComboAdult": 530000,
+          "source": "https://goodmorning-hoian.com/en/hue-entrance-fees/"
+        },
+        "travelPackages": [
+          {"id": "std", "name": "Tiêu chuẩn", "pricingMode": "per_person", "adultPrice": 1650000, "childPrice": 1150000, "groupPrice": 0, "surchargePerBooking": 0, "minGuests": 1, "maxGuests": 12, "isEnabled": true}
+        ]
+      },
+      "t": {
+        "vi-VN": [
+          "Tour Huế 1 ngày qua đèo Hải Vân – Đại Nội, chùa Thiên Mụ",
+          "Tour cố đô Huế trong ngày từ Đà Nẵng, hướng dẫn viên tiếng Trung: 1.650.000đ/người lớn, 1.150.000đ/trẻ em.",
+          "Chiều đi theo đèo Hải Vân, dừng ngắm vịnh Đà Nẵng và Hải Vân Quan; đến Huế tham quan Đại Nội (Ngọ Môn, điện Thái Hòa, Tử Cấm Thành), ăn trưa món Huế, viếng chùa Thiên Mụ bên sông Hương và ghé chợ Đông Ba nếu còn thời gian. Giá đã gồm vé Đại Nội (200.000đ/người lớn), bữa trưa, xe và hướng dẫn viên; chiều về đi hầm Hải Vân cho nhanh. Vé lăng tẩm không bao gồm, có thể đặt thêm."
+        ],
+        "en-US": [
+          "Huế day trip via Hải Vân Pass – Imperial City & Thiên Mụ Pagoda",
+          "Full-day trip from Đà Nẵng to the old capital Huế with a Chinese-speaking guide: 1,650,000 VND per adult, 1,150,000 VND per child.",
+          "On the way out we take the Hải Vân Pass road and stop for views over Đà Nẵng Bay and the Hải Vân Gate; in Huế you visit the Imperial City (Ngọ Môn Gate, Thái Hòa Palace, Forbidden City), have a Huế-style lunch, see Thiên Mụ Pagoda on the Perfume River and Đông Ba market if time allows. The price includes the Imperial City ticket (200,000 VND per adult), lunch, transport and guide; we return through the Hải Vân tunnel. Royal tomb tickets are not included and can be added."
+        ],
+        "zh-CN": [
+          "顺化一日游·翻越海云关——皇城、天姥寺",
+          "岘港出发顺化古都一日游，中文导游：成人1,650,000越南盾，儿童1,150,000越南盾。",
+          "去程走海云岭公路，停车远眺岘港湾和海云关；抵达顺化后参观皇城（午门、太和殿、紫禁城），享用顺化风味午餐，游览香江畔的天姥寺，时间允许再逛东巴市场。团费已包含皇城门票（成人200,000越南盾）、午餐、车费和导游费；回程走海云隧道。不含帝陵门票，可另行加订。"
+        ],
+        "zh-TW": [
+          "順化一日遊・翻越海雲關——皇城、天姥寺",
+          "峴港出發順化古都一日遊，中文導遊：成人1,650,000越南盾，兒童1,150,000越南盾。",
+          "去程走海雲嶺公路，停車遠眺峴港灣與海雲關；抵達順化後參觀皇城（午門、太和殿、紫禁城），享用順化風味午餐，遊覽香江畔的天姥寺，時間允許再逛東巴市場。團費已包含皇城門票（成人200,000越南盾）、午餐、車資與導遊費；回程走海雲隧道。不含帝陵門票，可另行加訂。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-TRAVEL-DN-06",
+      "price": 590000,
+      "imageUrl": "https://images.unsplash.com/photo-1784686777881-a7065ea574de?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1707807562742-bf69e7feaf4e?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1721699030887-5af11470cc4d?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/white-statue-and-pagoda-on-forested-mountain-overlooking-the-sea-VOFuN8iVSn4",
+        "https://unsplash.com/photos/QLka5L-QTOI",
+        "https://unsplash.com/photos/RpKub8XvVkA"
+      ],
+      "meta": {
+        "experienceType": "tour",
+        "destination": "Bán đảo Sơn Trà, chùa Linh Ứng, Ngũ Hành Sơn",
+        "duration": "5 giờ (nửa ngày)",
+        "departurePoint": "Đón tại khách sạn trung tâm Đà Nẵng / ven biển Mỹ Khê",
+        "maxGuests": 12,
+        "serviceLanguage": "Tiếng Trung, Tiếng Việt",
+        "availableDays": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+        "startTimes": ["08:00", "13:30"],
+        "bookingNoticeHours": 12,
+        "travelAvailabilityStatus": "available",
+        "includes": [
+          "Xe đưa đón khách sạn trong Đà Nẵng",
+          "Vé tham quan Ngũ Hành Sơn – núi Thủy Sơn (40.000đ) và thang máy 1 chiều lên (15.000đ)",
+          "Hướng dẫn viên tiếng Trung",
+          "Nước uống"
+        ],
+        "excludes": [
+          "Vé động Âm Phủ (khoảng 20.000đ) nếu khách muốn vào",
+          "Mua sắm đồ đá mỹ nghệ, chi phí cá nhân, tiền tip"
+        ],
+        "ticketInfo": {
+          "includedInTourPrice": true,
+          "marbleMountainsTicket": 40000,
+          "elevatorOneWay": 15000,
+          "linhUngSonTra": "Không thu vé vào chùa",
+          "source": "https://www.vietnamtourism.com/vi/ngu-hanh-son-a-nang-hang-ong-chua-thang-may-va-chuyen-nhung-"
+        },
+        "travelPackages": [
+          {"id": "std", "name": "Tiêu chuẩn", "pricingMode": "per_person", "adultPrice": 590000, "childPrice": 420000, "groupPrice": 0, "surchargePerBooking": 0, "minGuests": 1, "maxGuests": 12, "isEnabled": true}
+        ]
+      },
+      "t": {
+        "vi-VN": [
+          "Tour Sơn Trà – chùa Linh Ứng – Ngũ Hành Sơn nửa ngày",
+          "Tour nửa ngày quanh Đà Nẵng có hướng dẫn viên tiếng Trung: 590.000đ/người lớn, 420.000đ/trẻ em.",
+          "Lên bán đảo Sơn Trà viếng chùa Linh Ứng Bãi Bụt với tượng Phật Bà Quan Âm hướng ra biển, ngắm toàn cảnh thành phố và vịnh Đà Nẵng; sau đó đến Ngũ Hành Sơn, đi thang máy lên núi Thủy Sơn, thăm các hang động, chùa Tam Thai và làng đá Non Nước. Giá đã gồm vé Ngũ Hành Sơn và thang máy một chiều; chùa Linh Ứng không thu vé. Có ca sáng và ca chiều; nên mặc trang phục kín vai, gối khi vào chùa."
+        ],
+        "en-US": [
+          "Sơn Trà Peninsula, Linh Ứng Pagoda & Marble Mountains half-day tour",
+          "Half-day Đà Nẵng highlights with a Chinese-speaking guide: 590,000 VND per adult, 420,000 VND per child.",
+          "Drive up the Sơn Trà Peninsula to Linh Ứng Pagoda and its Lady Buddha statue facing the sea, with views over the city and bay; then continue to the Marble Mountains, take the lift up Thủy Sơn, explore the caves, Tam Thai Pagoda and the Non Nước stone-carving village. The price includes the Marble Mountains ticket and the one-way lift; Linh Ứng Pagoda is free to enter. Morning and afternoon departures; please cover shoulders and knees at the pagodas."
+        ],
+        "zh-CN": [
+          "山茶半岛·灵应寺·五行山半日游",
+          "中文导游岘港市区精华半日游：成人590,000越南盾，儿童420,000越南盾。",
+          "登上山茶半岛参拜灵应寺，瞻仰面朝大海的观音像，俯瞰岘港市区与海湾；随后前往五行山，乘电梯上水山，探访岩洞、三台寺和五行山石雕村。团费已包含五行山门票和单程电梯票；灵应寺免费入内。分上午和下午两个班次；进入寺庙请穿着遮肩过膝的衣物。"
+        ],
+        "zh-TW": [
+          "山茶半島・靈應寺・五行山半日遊",
+          "中文導遊峴港市區精華半日遊：成人590,000越南盾，兒童420,000越南盾。",
+          "登上山茶半島參拜靈應寺，瞻仰面向大海的觀音像，俯瞰峴港市區與海灣；隨後前往五行山，搭電梯上水山，探訪岩洞、三台寺與五行山石雕村。團費已包含五行山門票和單程電梯票；靈應寺免費入內。分上午和下午兩個班次；進入寺廟請穿著遮肩過膝的衣物。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-TRAVEL-DN-07",
+      "price": 990000,
+      "imageUrl": "https://images.unsplash.com/photo-1767324672977-3b051d4cdb88?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [],
+      "photoSources": [
+        "https://unsplash.com/photos/outdoor-hot-spring-pool-at-night-with-ambient-lighting-urgtyE_e9bU"
+      ],
+      "meta": {
+        "experienceType": "tour",
+        "destination": "Công viên suối khoáng nóng Núi Thần Tài",
+        "duration": "7 giờ",
+        "departurePoint": "Đón tại khách sạn trung tâm Đà Nẵng / ven biển Mỹ Khê",
+        "maxGuests": 12,
+        "serviceLanguage": "Tiếng Trung, Tiếng Việt",
+        "availableDays": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+        "startTimes": ["09:00"],
+        "bookingNoticeHours": 24,
+        "travelAvailabilityStatus": "available",
+        "includes": [
+          "Xe đưa đón khách sạn Đà Nẵng – Núi Thần Tài – khách sạn",
+          "Vé cổng công viên (giá tham khảo khoảng 400.000đ người lớn, 200.000đ trẻ 1m–1,4m)",
+          "Người dẫn đoàn nói tiếng Trung hỗ trợ trong công viên"
+        ],
+        "excludes": [
+          "Bữa ăn trong công viên",
+          "Dịch vụ tắm bùn, onsen, spa có phí riêng",
+          "Đồ bơi, khăn (có thể thuê tại chỗ), chi phí cá nhân"
+        ],
+        "ticketInfo": {
+          "includedInTourPrice": true,
+          "parkGateTicketReference": {"adult": 400000, "child_1m_to_1m4": 200000, "child_under_1m": 0},
+          "note": "Các nguồn ghi giá 300.000–490.000đ; cần xác nhận bảng giá chính thức trước khi mở bán.",
+          "source": "https://www.vietnambooking.com/du-lich/blog-du-lich/cong-vien-suoi-khoang-nong-nui-than-tai.html"
+        },
+        "travelPackages": [
+          {"id": "std", "name": "Tiêu chuẩn", "pricingMode": "per_person", "adultPrice": 990000, "childPrice": 590000, "groupPrice": 0, "surchargePerBooking": 0, "minGuests": 1, "maxGuests": 12, "isEnabled": true}
+        ]
+      },
+      "t": {
+        "vi-VN": [
+          "Tour suối khoáng nóng Núi Thần Tài, có người dẫn tiếng Trung",
+          "Đi tắm khoáng nóng Núi Thần Tài, gồm xe và vé cổng: 990.000đ/người lớn, 590.000đ/trẻ em.",
+          "Công viên suối khoáng nóng Núi Thần Tài nằm trong khu bảo tồn Bà Nà – Núi Chúa, cách trung tâm Đà Nẵng khoảng 30 km. Bạn được xe đưa đón khách sạn, vé cổng và người dẫn tiếng Trung hỗ trợ trong công viên: ngâm khoáng nóng, hồ bơi, công viên nước, khu xông hơi. Tắm bùn, onsen riêng và ăn uống tính theo giá công viên. Giá vé cổng do công viên công bố có thể thay đổi; ZhaoXi báo lại trước khi xác nhận nếu có chênh lệch."
+        ],
+        "en-US": [
+          "Núi Thần Tài hot springs day trip with Chinese-speaking escort",
+          "Hot-spring day at Núi Thần Tài including transport and gate ticket: 990,000 VND per adult, 590,000 VND per child.",
+          "Núi Thần Tài Hot Springs Park lies in the Bà Nà – Núi Chúa nature reserve, about 30 km from central Đà Nẵng. You get hotel transfers, the gate ticket and a Chinese-speaking escort inside the park: hot mineral pools, swimming pools, water park and sauna areas. Mud baths, private onsen and food are charged at park prices. Gate prices are set by the park and may change; ZhaoXi will tell you about any difference before confirming."
+        ],
+        "zh-CN": [
+          "神财山温泉一日游（中文领队）",
+          "神财山温泉公园一日游，含车费和门票：成人990,000越南盾，儿童590,000越南盾。",
+          "神财山温泉公园位于巴拿–诸山自然保护区内，距岘港市区约30公里。行程含酒店接送、公园门票及中文领队园内协助：泡矿物温泉、游泳池、水上乐园和桑拿区。泥浴、私汤及餐饮按园区价格另付。门票以园区公布为准，如有变动ZhaoXi会在确认前告知。"
+        ],
+        "zh-TW": [
+          "神財山溫泉一日遊（中文領隊）",
+          "神財山溫泉公園一日遊，含車資和門票：成人990,000越南盾，兒童590,000越南盾。",
+          "神財山溫泉公園位於巴拿–諸山自然保護區內，距峴港市區約30公里。行程含飯店接送、公園門票及中文領隊園內協助：泡礦物溫泉、游泳池、水上樂園與三溫暖區。泥浴、私人湯屋及餐飲依園區價格另付。門票以園區公布為準，如有變動ZhaoXi會在確認前告知。"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    "https://sunworld.vn/vi/banahills/cam-nang-du-lich/chi-phi-di-ba-na-hillshtml",
+    "https://sunworld.vn/en/banahills/sunworld-news/thong-bao-cap-nhat-bang-gia-ve-tai-sun-world-ba-na-hills-4060",
+    "https://sunworld.vn/vi/banahills/uu-dai/first-18-25-ve-ba-na-hills-chi-tu-500000d-khoi-dau-thanh-xuan-bang-nhung-lan-dau-dang-nho-27183",
+    "https://danangfantasticity.com/en/from-2026-cable-car-tickets-at-sun-world-ba-na-hills-will-be-valid-for-up-to-three-consecutive-days",
+    "https://hoiandaytrip.com/?p=5806",
+    "https://adamandlinds.com/ba-na-hills/",
+    "https://www.vietnambooking.com/du-lich/tour-ba-na-hills-1-ngay.html",
+    "https://mia.vn/cam-nang-du-lich/gia-ve-tham-quan-pho-co-hoi-an-21234",
+    "https://tuoitre.vn/saigontimes/hoi-an-tam-dung-thu-phi-theo-muc-gia-moi",
+    "https://voh.com.vn/xa-hoi/cuc-di-san-yeu-cau-hoi-an-bao-cao-viec-soat-ve-tham-quan-pho-co-473459.html",
+    "https://baovanhoa.vn/van-hoa/nghien-cuu-dieu-chinh-gia-ve-tham-quan-khu-den-thap-my-son-173169.html",
+    "https://vinpearl.com/vi/thanh-dia-my-son-quan-the-kien-truc-den-dai-cham-pa-co",
+    "https://tuoitre.vn/khach-mac-ao-dai-vao-my-son-duoc-mien-phi-ve-tham-quan-20260423171710921.htm",
+    "https://baovanhoa.vn/du-lich/tu-ngay-106-muc-thu-phi-tham-quan-cu-lao-cham-la-70000-dongnguoiluot-235643.html",
+    "https://vnexpress.net/cam-nang-du-lich-cu-lao-cham-4751193.html",
+    "https://vn.trip.com/things-to-do/detail/109561731/",
+    "https://goodmorning-hoian.com/en/hue-entrance-fees/",
+    "https://baoquocte.vn/hue-mo-rong-doi-tuong-mien-giam-phi-tham-quan-di-tich-lich-su-van-hoa-tu-nam-2026-340581.html",
+    "https://tuoitre.vn/ve-tham-quan-di-san-hue-dat-hay-xung-dang-tung-dong-20250814155742411.htm",
+    "https://www.vietnambooking.com/du-lich/tour-du-lich-da-nang-hue-1-ngay.html",
+    "https://www.chotot.com/du-lich-quan-ngu-hanh-son-da-nang/133535739.htm",
+    "https://www.vietnamtourism.com/vi/ngu-hanh-son-a-nang-hang-ong-chua-thang-may-va-chuyen-nhung-",
+    "https://www.vietnambooking.com/du-lich/blog-du-lich/ngu-hanh-son-da-nang.html",
+    "https://www.vietnambooking.com/du-lich/blog-du-lich/cong-vien-suoi-khoang-nong-nui-than-tai.html",
+    "https://www.pelago.com/en-IN/activity/prlyx4920-nui-than-tai-hot-springs-park-admission-ticket-da-nang/",
+    "https://go365.vn/en/thue-xe-du-lich/da-nang-hue",
+    "https://www.excursionmania.com/zh-cn/danang/filter/9"
+  ],
+  "notes": "1) Bà Nà: giá vé cáp treo lấy từ trang chính thức sunworld.vn (bài cập nhật 31/05/2026): ngoại tỉnh/quốc tế người lớn 1.000.000đ, trẻ 1m–1,4m và người >70 tuổi 800.000đ, nội tỉnh Đà Nẵng 650.000đ/550.000đ; combo cáp treo + buffet trưa 1.300.000đ (người lớn); trẻ dưới 1m miễn phí (nguồn đại lý). Giá tour ĐÃ GỒM vé cáp treo, chưa gồm ăn trưa. Khách nước ngoài có tạm trú Đà Nẵng có được giá 'nội tỉnh' hay không chưa xác minh – nếu có, nên thêm gói giá cư dân. Giá Bà Nà thay đổi theo mùa/khuyến mãi (vd FIRST 18-25 đến 31/12/2026) – kiểm tra lại trước mỗi mùa. 2) Hội An: vé 120.000đ/khách quốc tế, 80.000đ khách Việt (quy chế từ 2012, gồm 5 điểm di tích); quy định 'bắt buộc mua vé khi vào phố cổ' từng được lùi/tạm dừng năm 2023 và nguồn 2026 mô tả khác nhau – thực tế khu trung tâm có chốt soát vé; tour cứ mua vé cho cả đoàn. 3) Mỹ Sơn: 150.000đ khách quốc tế là giá hiện hành theo các nguồn; Ban quản lý có kế hoạch nâng lên 250.000đ – kiểm tra mysonticketonline.vn trước khi bán. 4) Cù Lao Chàm: phí tham quan 70.000đ theo NQ 16/2026/NQ-HĐND (từ 10/6/2026); tour biển chạy theo mùa (khoảng tháng 3–9), ngoài mùa thường cấm biển – status 'available' nhưng cần chặn ngày khi có lệnh cấm biển. 5) Huế: vé Đại Nội 200.000đ người lớn theo nguồn du lịch; Huế áp dụng NQ 55/2025 từ 2026 (combo 4 điểm 530.000đ, trẻ 7–12 tuổi 100.000đ cho combo) – cần đối chiếu vé lẻ trẻ em. 6) Núi Thần Tài: chưa có bảng giá chính thức, nguồn ghi 300.000–490.000đ người lớn – xác nhận trước khi mở bán. 7) PHÁP LÝ: kinh doanh tour cho khách quốc tế cần Giấy phép kinh doanh dịch vụ lữ hành quốc tế (Luật Du lịch 2017); hướng dẫn viên phải có thẻ HDV quốc tế (thẻ chỉ cấp cho công dân Việt Nam) – không dùng người nước ngoài làm HDV; xe đưa đón phải là xe kinh doanh vận tải hợp lệ; nên có bảo hiểm du lịch cho khách. 8) Ảnh: ảnh Cầu Vàng, Hội An, Mỹ Sơn, Huế, Sơn Trà, Ngũ Hành Sơn là ảnh thật các địa danh (minh họa); ảnh lặn/san hô và ảnh hồ khoáng nóng là ảnh minh họa chung, không phải chụp tại Cù Lao Chàm/Núi Thần Tài."
+}

@@ -1,6 +1,10 @@
 export type ApiEnvelope<T> = { ok: boolean; data: T; error?: { message?: string } | string; routing?: { mode: string; organizationId: string; organizationName?: string } };
 export type RequestStatus = "new"|"reviewing"|"assigned"|"accepted"|"in_progress"|"waiting_customer"|"completed"|"cancelled"|"rejected";
-export type ServiceRequestRow = { id:string; requestCode:string; status:RequestStatus; title:string; customerName:string; customerPhone:string; addressText?:string; latitude?:string; longitude?:string; serviceName?:string; moduleCode?:string; moduleName?:string; organizationName?:string; organizationCode?:string; details?:Record<string,unknown>; createdAt:string; updatedAt:string };
+/** Backend-derived view of an order for partners (backend lib/services/partner-order-presentation.ts). */
+export type PartnerOrderKind = "food_delivery"|"housing_inquiry"|"travel_booking"|"service_booking";
+export type PartnerOrderFact = { key:string; value:string|number; format:"text"|"date"|"time"|"money"|"count"|"months"|"payment" };
+export type PartnerOrderAction = "accept"|"start"|"complete"|"reject"|"cancel";
+export type ServiceRequestRow = { id:string; requestCode:string; status:RequestStatus; title:string; customerName:string; customerPhone:string; addressText?:string; latitude?:string; longitude?:string; serviceName?:string; moduleCode?:string; moduleName?:string; organizationName?:string; organizationCode?:string; details?:Record<string,unknown>; description?:string|null; createdAt:string; updatedAt:string; orderKind?:PartnerOrderKind; orderFacts?:PartnerOrderFact[]; partnerActions?:PartnerOrderAction[] };
 export type Organization = { id:string; code:string; name:string; type:string; metadata?:Record<string,unknown> };
 
 async function decode<T>(responseOrPromise: Response | Promise<Response>): Promise<T> {

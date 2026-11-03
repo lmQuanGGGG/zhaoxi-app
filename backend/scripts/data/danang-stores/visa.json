@@ -1,0 +1,322 @@
+{
+  "module": "visa",
+  "org": {
+    "code": "ZX-VISA-DN",
+    "type": "visa-service",
+    "name": "ZhaoXi Visa Đà Nẵng",
+    "description": "Dịch vụ hỗ trợ thủ tục thị thực, cư trú và giấy tờ cho người nói tiếng Trung tại Đà Nẵng: tư vấn, chuẩn bị và kiểm tra hồ sơ, dịch thuật, đi cùng nộp hồ sơ. ZhaoXi không phải cơ quan nhà nước, không quyết định và không cam kết kết quả cấp phép.",
+    "addressText": "Hải Châu, Đà Nẵng",
+    "latitude": 16.0544,
+    "longitude": 108.216,
+    "bannerUrl": "https://images.unsplash.com/photo-1581553673739-c4906b5d0de8?auto=format&fit=crop&w=1400&q=80"
+  },
+  "items": [
+    {
+      "code": "ZX-VISA-DN-01",
+      "price": 300000,
+      "imageUrl": "https://images.unsplash.com/photo-1454496406107-dc34337da8d6?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1655722725332-9925c96dd627?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/passport-booklet-on-top-of-white-paper-gMJ3tFOLvnA",
+        "https://unsplash.com/photos/passport-with-many-travel-stamps-LPdaW746WAw"
+      ],
+      "meta": {
+        "unit": "hồ sơ",
+        "governmentFee": "25 USD (thị thực 1 lần, Thông tư 28/2026/TT-BTC)",
+        "officialPortal": "https://evisa.gov.vn",
+        "processing": "khoảng 3 ngày làm việc (theo cơ quan xuất nhập cảnh)",
+        "languages": ["zh-CN", "zh-TW", "vi-VN", "en-US"]
+      },
+      "t": {
+        "vi-VN": [
+          "Hỗ trợ khai hồ sơ e-visa Việt Nam – nhập cảnh 1 lần",
+          "Phí dịch vụ ZhaoXi 300.000đ/hồ sơ; lệ phí nhà nước 25 USD nộp riêng trên cổng chính thức.",
+          "ZhaoXi hướng dẫn bằng tiếng Trung, kiểm tra ảnh, trang hộ chiếu và thông tin trước khi bạn tự nộp trên cổng chính thức evisa.gov.vn, sau đó theo dõi kết quả giúp bạn. Lệ phí thị thực 1 lần 25 USD (Thông tư 28/2026/TT-BTC) do bạn thanh toán trực tiếp cho cổng nhà nước và không được hoàn lại nếu hồ sơ bị từ chối. Thời hạn e-visa tối đa 90 ngày; việc cấp hay không do Cục Quản lý xuất nhập cảnh quyết định, ZhaoXi không cam kết kết quả."
+        ],
+        "en-US": [
+          "Vietnam e-visa application help – single entry",
+          "ZhaoXi service fee 300,000 VND per application, plus the 25 USD government fee paid separately on the official portal.",
+          "We guide you in Chinese and check your photo, passport page and details before you submit on the official portal evisa.gov.vn yourself, then help you track the result. The 25 USD single-entry visa fee (Circular 28/2026/TT-BTC) is paid by you directly to the government portal and is non-refundable if the application is refused. E-visas are valid for up to 90 days; approval is decided solely by Vietnam's Immigration Department and is never guaranteed by ZhaoXi."
+        ],
+        "zh-CN": [
+          "越南电子签证（单次入境）申请协助",
+          "ZhaoXi服务费300,000越南盾/份；政府签证费25美元另行在官方网站缴纳。",
+          "我们用中文指导您填写申请，在您本人于官方网站 evisa.gov.vn 提交前核对照片、护照页和各项信息，并协助跟进审批结果。单次签证政府费用25美元（依据第28/2026/TT-BTC号通知）由您直接向官方网站支付，如被拒签不予退还。电子签证有效期最长90天；是否签发完全由越南出入境管理局决定，ZhaoXi不承诺结果。"
+        ],
+        "zh-TW": [
+          "越南電子簽證（單次入境）申請協助",
+          "ZhaoXi服務費300,000越南盾/份；政府簽證費25美元另行於官方網站繳納。",
+          "我們以中文指導您填寫申請，在您本人於官方網站 evisa.gov.vn 送出前核對照片、護照頁與各項資料，並協助追蹤審核結果。單次簽證政府費用25美元（依據第28/2026/TT-BTC號通知）由您直接向官方網站支付，如遭拒簽恕不退還。電子簽證效期最長90天；是否核發完全由越南出入境管理局決定，ZhaoXi不保證結果。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-VISA-DN-02",
+      "price": 350000,
+      "imageUrl": "https://images.unsplash.com/photo-1655722725332-9925c96dd627?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1487637419635-a2a471ff5c7b?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/passport-with-many-travel-stamps-LPdaW746WAw",
+        "https://unsplash.com/photos/passport-book-RiUZQOfQ8XE"
+      ],
+      "meta": {
+        "unit": "hồ sơ",
+        "governmentFee": "50 USD (thị thực nhiều lần ≤ 90 ngày, Thông tư 28/2026/TT-BTC)",
+        "officialPortal": "https://evisa.gov.vn",
+        "processing": "khoảng 3 ngày làm việc (theo cơ quan xuất nhập cảnh)",
+        "languages": ["zh-CN", "zh-TW", "vi-VN", "en-US"]
+      },
+      "t": {
+        "vi-VN": [
+          "Hỗ trợ khai hồ sơ e-visa Việt Nam – nhập cảnh nhiều lần",
+          "Phí dịch vụ ZhaoXi 350.000đ/hồ sơ; lệ phí nhà nước 50 USD nộp riêng trên cổng chính thức.",
+          "Phù hợp khi bạn cần ra vào Việt Nam nhiều lần trong tối đa 90 ngày (ví dụ đi lại Đà Nẵng – Trung Quốc). ZhaoXi hướng dẫn bằng tiếng Trung, kiểm tra hồ sơ trước khi bạn tự nộp trên evisa.gov.vn và theo dõi kết quả. Lệ phí thị thực nhiều lần đến 90 ngày là 50 USD (Thông tư 28/2026/TT-BTC), thanh toán trực tiếp cho cổng nhà nước, không hoàn lại khi bị từ chối. ZhaoXi không cam kết việc cấp thị thực."
+        ],
+        "en-US": [
+          "Vietnam e-visa application help – multiple entry",
+          "ZhaoXi service fee 350,000 VND per application, plus the 50 USD government fee paid separately on the official portal.",
+          "For travellers who need to enter and leave Vietnam several times within up to 90 days (for example Đà Nẵng – China trips). We guide you in Chinese and check your application before you submit it yourself on evisa.gov.vn, then track the result. The government fee for a multiple-entry visa of up to 90 days is 50 USD (Circular 28/2026/TT-BTC), paid directly to the portal and non-refundable if refused. ZhaoXi does not guarantee visa approval."
+        ],
+        "zh-CN": [
+          "越南电子签证（多次入境）申请协助",
+          "ZhaoXi服务费350,000越南盾/份；政府签证费50美元另行在官方网站缴纳。",
+          "适合需在最长90天内多次出入越南的客人（如往返岘港与中国）。我们用中文指导，在您本人于 evisa.gov.vn 提交前核对材料，并协助跟进结果。90天以内多次入境签证政府费用为50美元（依据第28/2026/TT-BTC号通知），直接向官方网站支付，被拒签不予退还。ZhaoXi不承诺签证一定获批。"
+        ],
+        "zh-TW": [
+          "越南電子簽證（多次入境）申請協助",
+          "ZhaoXi服務費350,000越南盾/份；政府簽證費50美元另行於官方網站繳納。",
+          "適合需在最長90天內多次進出越南的旅客（如往返峴港與中國）。我們以中文指導，在您本人於 evisa.gov.vn 送出前核對資料，並協助追蹤結果。90天以內多次入境簽證政府費用為50美元（依據第28/2026/TT-BTC號通知），直接向官方網站支付，遭拒簽恕不退還。ZhaoXi不保證簽證必定核發。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-VISA-DN-03",
+      "price": 800000,
+      "imageUrl": "https://images.unsplash.com/photo-1581553673739-c4906b5d0de8?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1564846824194-346b7871b855?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/passport-with-multiple-ink-stamps-htQznS-Rx7w",
+        "https://unsplash.com/photos/9i5eqBarv-k"
+      ],
+      "meta": {
+        "unit": "hồ sơ",
+        "governmentFee": "Gia hạn tạm trú 10 USD/lần; cấp thị thực mới 25–165 USD tùy loại (Thông tư 28/2026/TT-BTC)",
+        "authority": "Phòng Quản lý xuất nhập cảnh – Công an TP Đà Nẵng",
+        "eligibility": "Tùy loại thị thực và đơn vị/cá nhân bảo lãnh; e-visa du lịch thường không gia hạn được trong nước",
+        "languages": ["zh-CN", "zh-TW", "vi-VN"]
+      },
+      "t": {
+        "vi-VN": [
+          "Hỗ trợ hồ sơ gia hạn tạm trú / thị thực tại Đà Nẵng",
+          "Phí dịch vụ ZhaoXi 800.000đ/hồ sơ; lệ phí nhà nước từ 10 USD (gia hạn tạm trú) nộp riêng.",
+          "ZhaoXi trước hết đánh giá bạn có đủ điều kiện gia hạn hay không: việc gia hạn phụ thuộc loại thị thực, mục đích nhập cảnh và cơ quan, tổ chức hoặc cá nhân bảo lãnh; nhiều trường hợp e-visa du lịch không gia hạn được trong nước và phải xuất cảnh xin thị thực mới. Nếu đủ điều kiện, chúng tôi chuẩn bị tờ khai, kiểm tra giấy tờ và đi cùng bạn hoặc đơn vị bảo lãnh nộp hồ sơ tại Phòng Quản lý xuất nhập cảnh Công an TP Đà Nẵng. Lệ phí nhà nước (gia hạn tạm trú 10 USD/lần, hoặc 25–165 USD nếu cấp thị thực mới) nộp trực tiếp cho cơ quan nhà nước; kết quả do cơ quan có thẩm quyền quyết định, ZhaoXi không cam kết."
+        ],
+        "en-US": [
+          "Stay / visa extension dossier help in Đà Nẵng",
+          "ZhaoXi service fee 800,000 VND per dossier; government fee from 10 USD (stay extension) paid separately.",
+          "We first check whether you are eligible: extensions depend on your visa type, purpose of entry and the sponsoring agency, organisation or person, and tourist e-visas often cannot be extended in-country, meaning you must exit and apply for a new visa. If eligible, we prepare the forms, check documents and accompany you or your sponsor to file at the Immigration Office of Đà Nẵng City Police. Government fees (10 USD per stay extension, or 25–165 USD for a new visa) are paid directly to the authority; the decision rests with the authority and is not guaranteed by ZhaoXi."
+        ],
+        "zh-CN": [
+          "岘港暂住延期/签证延期材料协助",
+          "ZhaoXi服务费800,000越南盾/份；政府费用10美元起（暂住延期）另行缴纳。",
+          "我们首先评估您是否符合延期条件：能否延期取决于签证类型、入境目的及担保机构、单位或个人；许多旅游电子签证无法在越南境内延期，需要出境后重新申请签证。如符合条件，我们协助填写申请表、核对材料，并陪同您或担保方到岘港市公安局出入境管理处递交。政府费用（暂住延期每次10美元，或新签证25–165美元）直接向主管机关缴纳；结果由主管机关决定，ZhaoXi不承诺获批。"
+        ],
+        "zh-TW": [
+          "峴港暫住延期／簽證延期資料協助",
+          "ZhaoXi服務費800,000越南盾/份；政府規費10美元起（暫住延期）另行繳納。",
+          "我們先評估您是否符合延期條件：能否延期取決於簽證類型、入境目的及擔保機關、單位或個人；許多觀光電子簽證無法在越南境內延期，須出境後重新申請簽證。如符合條件，我們協助填寫申請表、核對文件，並陪同您或擔保方至峴港市公安局出入境管理處遞件。政府規費（暫住延期每次10美元，或新簽證25–165美元）直接向主管機關繳納；結果由主管機關決定，ZhaoXi不保證核准。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-VISA-DN-04",
+      "price": 2500000,
+      "imageUrl": "https://images.unsplash.com/photo-1564846824194-346b7871b855?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1655722725332-9925c96dd627?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/9i5eqBarv-k",
+        "https://unsplash.com/photos/passport-with-many-travel-stamps-LPdaW746WAw"
+      ],
+      "meta": {
+        "unit": "hồ sơ",
+        "governmentFee": "145 USD (≤2 năm) / 155 USD (2–5 năm) / 165 USD (5–10 năm) – Thông tư 28/2026/TT-BTC",
+        "authority": "Phòng Quản lý xuất nhập cảnh – Công an TP Đà Nẵng",
+        "languages": ["zh-CN", "zh-TW", "vi-VN"]
+      },
+      "t": {
+        "vi-VN": [
+          "Hỗ trợ hồ sơ thẻ tạm trú (TRC) cho người nước ngoài",
+          "Phí dịch vụ ZhaoXi 2.500.000đ/hồ sơ; lệ phí nhà nước 145–165 USD tùy thời hạn thẻ, nộp riêng.",
+          "Dành cho người lao động, nhà đầu tư hoặc thân nhân thuộc diện được cấp thẻ tạm trú theo luật. ZhaoXi rà soát điều kiện, lập danh mục giấy tờ, hướng dẫn đơn vị/cá nhân bảo lãnh hoàn thiện tờ khai, dịch các giấy tờ tiếng Trung và đi cùng nộp hồ sơ tại Phòng Quản lý xuất nhập cảnh Công an TP Đà Nẵng. Lệ phí nhà nước: 145 USD (thẻ đến 2 năm), 155 USD (2–5 năm), 165 USD (5–10 năm) theo Thông tư 28/2026/TT-BTC, nộp trực tiếp cho cơ quan nhà nước. Thời hạn thẻ và việc cấp thẻ do cơ quan có thẩm quyền quyết định; ZhaoXi không cam kết kết quả."
+        ],
+        "en-US": [
+          "Temporary residence card (TRC) dossier help for foreigners",
+          "ZhaoXi service fee 2,500,000 VND per dossier; government fee 145–165 USD depending on card validity, paid separately.",
+          "For workers, investors or family members who qualify for a TRC under Vietnamese law. We review eligibility, list the required documents, guide your sponsoring organisation or person through the forms, translate Chinese documents and accompany you to file at the Immigration Office of Đà Nẵng City Police. Government fees: 145 USD (up to 2 years), 155 USD (2–5 years), 165 USD (5–10 years) under Circular 28/2026/TT-BTC, paid directly to the authority. Card validity and approval are decided by the authority; ZhaoXi guarantees no outcome."
+        ],
+        "zh-CN": [
+          "外国人临时居留卡（TRC/暂住卡）材料协助",
+          "ZhaoXi服务费2,500,000越南盾/份；政府费用145–165美元（视居留卡期限）另行缴纳。",
+          "适用于依法可申请临时居留卡的劳动者、投资者或其家属。我们审核申请条件、列出所需材料清单、指导担保单位或个人填写申请表、翻译中文文件，并陪同到岘港市公安局出入境管理处递交。政府费用：2年以内145美元、2–5年155美元、5–10年165美元（依据第28/2026/TT-BTC号通知），直接向主管机关缴纳。居留卡期限及是否签发由主管机关决定，ZhaoXi不承诺结果。"
+        ],
+        "zh-TW": [
+          "外國人暫時居留卡（TRC／暫住卡）資料協助",
+          "ZhaoXi服務費2,500,000越南盾/份；政府規費145–165美元（依居留卡效期）另行繳納。",
+          "適用於依法可申請暫時居留卡的勞工、投資人或其眷屬。我們審核申請條件、列出所需文件清單、指導擔保單位或個人填寫申請表、翻譯中文文件，並陪同至峴港市公安局出入境管理處遞件。政府規費：2年以內145美元、2–5年155美元、5–10年165美元（依據第28/2026/TT-BTC號通知），直接向主管機關繳納。居留卡效期及是否核發由主管機關決定，ZhaoXi不保證結果。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-VISA-DN-05",
+      "price": 3500000,
+      "imageUrl": "https://images.unsplash.com/photo-1775163024488-e88e4a71179f?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/MhqUBTxQ3Hw",
+        "https://unsplash.com/photos/OQMZwNd3ThU"
+      ],
+      "meta": {
+        "unit": "hồ sơ",
+        "legalBasis": "Nghị định 219/2025/NĐ-CP; Quyết định 75/2025/QĐ-UBND (phân cấp cho Sở Nội vụ Đà Nẵng)",
+        "governmentFee": "Theo nghị quyết HĐND TP Đà Nẵng (xác nhận mức thu khi nộp)",
+        "authority": "Sở Nội vụ TP Đà Nẵng",
+        "languages": ["zh-CN", "zh-TW", "vi-VN"]
+      },
+      "t": {
+        "vi-VN": [
+          "Hỗ trợ hồ sơ giấy phép lao động cho người nước ngoài",
+          "Phí dịch vụ ZhaoXi 3.500.000đ/hồ sơ; lệ phí cấp phép theo quy định của HĐND TP Đà Nẵng, nộp riêng.",
+          "Hồ sơ do doanh nghiệp sử dụng lao động nộp tại Sở Nội vụ TP Đà Nẵng theo Nghị định 219/2025/NĐ-CP. ZhaoXi giúp doanh nghiệp và người lao động lập danh mục giấy tờ (lý lịch tư pháp, giấy khám sức khỏe, bằng cấp, xác nhận kinh nghiệm), hướng dẫn hợp pháp hóa lãnh sự các giấy tờ cấp tại Trung Quốc, dịch sang tiếng Việt và kiểm tra hồ sơ trước khi nộp. Lệ phí nhà nước do HĐND TP Đà Nẵng quy định và được nộp trực tiếp cho cơ quan cấp phép; chi phí khám sức khỏe, hợp pháp hóa lãnh sự, dịch công chứng tính riêng. Việc cấp phép do cơ quan nhà nước quyết định, ZhaoXi không cam kết kết quả."
+        ],
+        "en-US": [
+          "Work permit dossier help for foreign employees",
+          "ZhaoXi service fee 3,500,000 VND per dossier; the permit fee set by Đà Nẵng People's Council is paid separately.",
+          "The employer files the dossier with Đà Nẵng's Department of Home Affairs under Decree 219/2025/ND-CP. We help the company and employee compile the documents (criminal record, health certificate, degrees, proof of experience), explain consular legalisation of papers issued in China, translate them into Vietnamese and check the dossier before filing. The government fee set by Đà Nẵng People's Council is paid directly to the issuing authority; health checks, legalisation and certified translation are charged separately. Approval rests with the authority and is not guaranteed by ZhaoXi."
+        ],
+        "zh-CN": [
+          "外籍员工工作许可证材料协助",
+          "ZhaoXi服务费3,500,000越南盾/份；许可证规费按岘港市人民议会规定另行缴纳。",
+          "根据第219/2025/NĐ-CP号议定，由用人单位向岘港市内务厅递交申请。我们协助企业和员工整理材料清单（无犯罪记录证明、体检证明、学历、工作经历证明），说明在中国出具文件的领事认证流程，翻译成越南语并在递交前核对材料。政府规费由岘港市人民议会规定，直接向发证机关缴纳；体检、领事认证和公证翻译费用另计。是否发证由主管机关决定，ZhaoXi不承诺结果。"
+        ],
+        "zh-TW": [
+          "外籍員工工作許可證資料協助",
+          "ZhaoXi服務費3,500,000越南盾/份；許可證規費依峴港市人民議會規定另行繳納。",
+          "依據第219/2025/NĐ-CP號議定，由雇用單位向峴港市內務廳遞件。我們協助企業與員工整理文件清單（無犯罪紀錄證明、體檢證明、學歷、工作經歷證明），說明在中國核發文件的領事認證流程，翻譯成越南文並於遞件前核對資料。政府規費由峴港市人民議會規定，直接向核發機關繳納；體檢、領事認證與公證翻譯費用另計。是否核發由主管機關決定，ZhaoXi不保證結果。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-VISA-DN-06",
+      "price": 150000,
+      "imageUrl": "https://images.unsplash.com/photo-1553697388-94e804e2f0f6?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1564846824194-346b7871b855?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/person-holding-passports-0QcSnCM0aMc",
+        "https://unsplash.com/photos/9i5eqBarv-k"
+      ],
+      "meta": {
+        "unit": "lần",
+        "governmentFee": "Miễn phí",
+        "deadline": "Trong 12 giờ kể từ khi người nước ngoài đến nơi lưu trú (24 giờ ở vùng sâu, vùng xa)",
+        "languages": ["zh-CN", "zh-TW", "vi-VN"]
+      },
+      "t": {
+        "vi-VN": [
+          "Hỗ trợ khai báo tạm trú cho người nước ngoài",
+          "Phí dịch vụ ZhaoXi 150.000đ/lần; khai báo tạm trú với cơ quan nhà nước không mất phí.",
+          "Theo Luật Nhập cảnh, xuất cảnh, quá cảnh, cư trú của người nước ngoài, chủ nhà hoặc cơ sở lưu trú phải khai báo tạm trú cho người nước ngoài trong vòng 12 giờ kể từ khi đến ở. Khi bạn thuê nhà riêng hoặc căn hộ ở Đà Nẵng, ZhaoXi hướng dẫn chủ nhà khai báo qua trang thông tin điện tử của Bộ Công an (hoặc phiếu khai báo), chuẩn bị thông tin hộ chiếu, thị thực và giải thích bằng tiếng Trung để hai bên cùng hiểu. Việc khai báo do chủ nhà hoặc cơ sở lưu trú thực hiện; ZhaoXi chỉ hỗ trợ thủ tục."
+        ],
+        "en-US": [
+          "Temporary residence declaration support for foreigners",
+          "ZhaoXi service fee 150,000 VND per declaration; the government declaration itself is free.",
+          "Under Vietnam's law on foreigners' entry, exit and residence, the landlord or accommodation must declare a foreign guest's temporary residence within 12 hours of arrival. If you rent a private house or apartment in Đà Nẵng, we guide your landlord through the Ministry of Public Security's online declaration (or the paper form), prepare your passport and visa details and explain everything in Chinese so both sides understand. The declaration is made by the landlord or accommodation; ZhaoXi only assists with the procedure."
+        ],
+        "zh-CN": [
+          "外国人住宿登记（申报暂住）协助",
+          "ZhaoXi服务费150,000越南盾/次；向政府申报暂住本身免费。",
+          "根据越南外国人出入境、过境和居留法，房东或住宿场所须在外国人入住后12小时内为其申报暂住。若您在岘港租住私人房屋或公寓，我们指导房东通过越南公安部网上系统（或纸质申报表）申报，准备您的护照和签证信息，并用中文向双方说明。申报由房东或住宿场所完成，ZhaoXi仅提供手续协助。"
+        ],
+        "zh-TW": [
+          "外國人住宿登記（申報暫住）協助",
+          "ZhaoXi服務費150,000越南盾/次；向政府申報暫住本身免費。",
+          "依越南外國人出入境、過境及居留法，房東或住宿場所須於外國人入住後12小時內為其申報暫住。若您在峴港承租私人住宅或公寓，我們指導房東透過越南公安部線上系統（或紙本申報表）申報，準備您的護照與簽證資料，並以中文向雙方說明。申報由房東或住宿場所完成，ZhaoXi僅提供手續協助。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-VISA-DN-07",
+      "price": 180000,
+      "imageUrl": "https://images.unsplash.com/photo-1603796846097-bee99e4a601f?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/doplSDELX7E",
+        "https://unsplash.com/photos/OQMZwNd3ThU"
+      ],
+      "meta": {
+        "unit": "trang",
+        "languagePairs": ["zh-CN ↔ vi-VN", "zh-TW ↔ vi-VN"],
+        "notaryFee": "Thu theo biểu phí của tổ chức hành nghề công chứng / cơ quan chứng thực, tính riêng theo hóa đơn",
+        "turnaround": "1–3 ngày làm việc tùy số trang"
+      },
+      "t": {
+        "vi-VN": [
+          "Dịch thuật tiếng Trung – Việt kèm công chứng/chứng thực cho hồ sơ cư trú",
+          "Phí dịch thuật ZhaoXi 180.000đ/trang; phí công chứng/chứng thực thu theo biểu phí của nơi thực hiện.",
+          "Dịch các giấy tờ thường dùng trong hồ sơ thị thực, thẻ tạm trú, giấy phép lao động (hộ chiếu, bằng cấp, lý lịch tư pháp, giấy đăng ký kết hôn, giấy khai sinh…) từ tiếng Trung giản thể hoặc phồn thể sang tiếng Việt và ngược lại. ZhaoXi đưa bản dịch đến văn phòng công chứng hoặc cơ quan chứng thực tại Đà Nẵng; phí công chứng/chứng thực thu đúng theo hóa đơn của nơi thực hiện. Lưu ý: giấy tờ do Trung Quốc cấp thường phải hợp pháp hóa lãnh sự trước khi dùng tại Việt Nam, việc này không nằm trong giá dịch thuật."
+        ],
+        "en-US": [
+          "Chinese–Vietnamese translation with notarisation for residence dossiers",
+          "ZhaoXi translation fee 180,000 VND per page; notarisation/certification is charged at the notary's own rates.",
+          "We translate documents commonly needed for visa, TRC and work permit dossiers (passport, degrees, criminal record, marriage and birth certificates, etc.) between Simplified or Traditional Chinese and Vietnamese. ZhaoXi takes the translation to a notary office or certifying authority in Đà Nẵng; their fee is passed on at cost per their receipt. Note: documents issued in China usually need consular legalisation before use in Vietnam, which is not included in the translation price."
+        ],
+        "zh-CN": [
+          "中越文翻译及公证/认证（用于居留类材料）",
+          "ZhaoXi翻译费180,000越南盾/页；公证/认证费按办理机构收费标准另计。",
+          "翻译签证、临时居留卡、工作许可证申请常用文件（护照、学历、无犯罪记录证明、结婚证、出生证明等），支持简体或繁体中文与越南语互译。ZhaoXi将译文送至岘港的公证处或认证机关办理，公证/认证费用按办理机构收据如实收取。注意：中国出具的文件在越南使用前通常需办理领事认证，该费用不含在翻译价格内。"
+        ],
+        "zh-TW": [
+          "中越文翻譯及公證／認證（用於居留類文件）",
+          "ZhaoXi翻譯費180,000越南盾/頁；公證／認證費依辦理機構收費標準另計。",
+          "翻譯簽證、暫時居留卡、工作許可證申請常用文件（護照、學歷、無犯罪紀錄證明、結婚證書、出生證明等），支援簡體或繁體中文與越南文互譯。ZhaoXi將譯文送至峴港的公證處或認證機關辦理，公證／認證費用依辦理機構收據如實收取。注意：中國核發的文件在越南使用前通常須辦理領事認證，該費用不含於翻譯價格內。"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    "https://congan.nghean.gov.vn/thong-tin-chuyen-de/202604/quy-dinh-moi-ve-thu-phi-le-phi-xuat-nhap-canh-1056549/",
+    "https://thue.man.net.vn/thong-tu-28-2026/",
+    "https://congan.tayninh.gov.vn/vi/chi-tiet-tin-tuc?Id=268107",
+    "https://baoquocte.vn/phi-cap-visa-thi-thuc-va-cac-giay-to-co-gia-tri-xuat-canh-nhap-canh-moi-nhat-245078.html",
+    "https://thoibaotaichinhvietnam.vn/sua-doi-mot-so-quy-dinh-thu-phi-linh-vuc-xuat-nhap-canh-qua-canh-137074.html",
+    "https://lsvn.vn/chuan-hoa-thu-phi-xuat-nhap-canh-trong-boi-canh-thuc-hien-chinh-quyen-2-cap-a167490.html",
+    "https://evisa.gov.vn/",
+    "https://tanvanlang.com/xin-visa-viet-nam-cho-nguoi-trung-quoc-thu-tuc-le-phi/",
+    "https://www.vietnamtourism.com/en/extending-a-vietnam-visa-costs-process-and-visa-runs",
+    "https://tanvanlang.com/en/vietnam-visa-extension-for-foreigners/",
+    "https://tanvanlang.com/lam-the-tam-tru-tai-da-nang/",
+    "https://ketoananpha.vn/dich-vu-lam-visa-the-tam-tru.html",
+    "https://tanvanlang.com/lam-giay-phep-lao-dong-tai-da-nang/",
+    "https://hethongphapluat.com/quyet-dinh-75-2025-qd-ubnd-879e3faf7cee76c595342d20ca5f0ed0.html",
+    "https://congbaocdn.chinhphu.vn/CongBaoCP/VanBan/2025/8/45798/58141-1-20251073-1074219-2025-nd-cp.pdf",
+    "https://luatvietnam.vn/thue/nghi-quyet-56-2021-nq-hdnd-223649-d2.html",
+    "https://luatminhkhue.vn/huong-dan-dang-ky-tam-tru-online-cho-nguoi-nuoc-ngoai.aspx",
+    "https://plo.vn/khong-khai-bao-tam-tru-cho-khach-nuoc-ngoai-chu-khach-san-bi-phat-bao-nhieu-post885174.html",
+    "https://accgroup.vn/gia-dich-thuat-da-nang",
+    "https://thaonco.com/vi/translation-times/phap-ly/dich-thuat-cong-chung-tieng-trung/"
+  ],
+  "notes": "Lệ phí nhà nước lấy theo Thông tư 28/2026/TT-BTC (ban hành 27/3/2026, hiệu lực 01/4/2026, thay thế TT 25/2021 và 62/2023): thị thực 1 lần 25 USD; nhiều lần ≤90 ngày 50 USD; thẻ tạm trú 145/155/165 USD; gia hạn tạm trú 10 USD. Các mức này áp dụng cho e-visa theo cùng biểu phí (evisa.gov.vn là SPA nên không trích được trang phí trực tiếp — chủ cần mở cổng xác nhận). Thông tư 64/2025 (giảm 50% đến 31/12/2026) chỉ áp dụng Mục I (giấy tờ của công dân VN), không giảm phí thị thực người nước ngoài. Lệ phí giấy phép lao động Đà Nẵng: theo Nghị quyết 56/2021/NQ-HĐND (mức thường gặp 600.000đ cấp mới / 450.000đ cấp lại – gia hạn) nhưng chưa xác minh được toàn văn; sau sáp nhập Quảng Nam vào Đà Nẵng (2025) có thể đã có nghị quyết mới — phải kiểm tra trước khi báo giá cho khách. Cơ quan cấp GPLĐ: Sở Nội vụ Đà Nẵng (QĐ 75/2025/QĐ-UBND, hiệu lực 07/11/2025). Phí dịch vụ ZhaoXi đặt dưới mức đại lý tham khảo (gia hạn 1,2–1,5 triệu; trọn gói visa/thẻ tạm trú ~6 triệu; dịch tiếng Trung 80–250 nghìn/trang). Rủi ro pháp lý: dịch vụ chỉ là tư vấn/chuẩn bị hồ sơ/đi cùng nộp; không đại diện nộp thay khi luật yêu cầu đơn vị bảo lãnh tự nộp, không hứa kết quả, không 'lo' visa. Nếu ZhaoXi nhận nộp hồ sơ thay khách, nên kiểm tra có cần ngành nghề đăng ký kinh doanh phù hợp (dịch vụ hỗ trợ giấy tờ / dịch thuật). Ảnh hộ chiếu minh họa là hộ chiếu Mỹ (từ Unsplash), chỉ mang tính minh họa."
+}

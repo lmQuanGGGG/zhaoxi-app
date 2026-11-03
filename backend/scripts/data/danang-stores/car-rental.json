@@ -1,0 +1,378 @@
+{
+  "module": "car-rental",
+  "org": {
+    "code": "ZX-CAR-DN",
+    "type": "car-rental",
+    "name": "ZhaoXi Car Đà Nẵng",
+    "description": "Đặt xe đưa đón sân bay, xe có tài xế nói tiếng Trung theo ngày, xe đi Hội An – Bà Nà, cùng thuê ô tô tự lái và xe máy tại Đà Nẵng. Giá trọn gói theo xe, báo rõ phần đã gồm và chưa gồm.",
+    "addressText": "Hải Châu, Đà Nẵng",
+    "latitude": 16.0544,
+    "longitude": 108.2120,
+    "bannerUrl": "https://images.unsplash.com/photo-1528606589862-7d68b7e3c95a?auto=format&fit=crop&w=1400&q=80"
+  },
+  "items": [
+    {
+      "code": "ZX-CAR-DN-01",
+      "price": 200000,
+      "imageUrl": "https://images.unsplash.com/photo-1623869675781-80aa31012a5a?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1762271458978-077feb561cf6?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/white-sedan-on-gray-asphalt-road-during-daytime-73XAgT8DOpo",
+        "https://unsplash.com/photos/DIorrn_qPdc"
+      ],
+      "meta": {
+        "unit": "chuyến (1 chiều)",
+        "vehicle": "4 chỗ (tối đa 3 khách + 2 vali lớn)",
+        "route": "Sân bay Đà Nẵng ↔ khách sạn trung tâm / ven biển Mỹ Khê – Non Nước",
+        "duration": "15–30 phút",
+        "languages": ["zh-CN", "vi-VN"],
+        "nightSurcharge": "22:00–06:00: 250.000đ/chuyến",
+        "bookingNoticeHours": 6
+      },
+      "t": {
+        "vi-VN": [
+          "Đưa đón sân bay Đà Nẵng – xe 4 chỗ, tài xế nói tiếng Trung",
+          "Xe 4 chỗ đón/tiễn sân bay Đà Nẵng ↔ khách sạn trong thành phố: 200.000đ/chuyến.",
+          "Tài xế cầm bảng tên chờ ở sảnh đến, theo dõi giờ hạ cánh và hỗ trợ hành lý; giao tiếp được tiếng Trung cơ bản. Giá trọn gói một chiều gồm xăng, phí cầu đường, phí vào sân bay và bảo hiểm hành khách, áp dụng cho khách sạn trung tâm Đà Nẵng và ven biển Mỹ Khê – Non Nước. Chuyến từ 22:00 đến 06:00 là 250.000đ; đi Hội An xem dịch vụ xe Hội An. Phù hợp tối đa 3 khách và 2 vali lớn."
+        ],
+        "en-US": [
+          "Đà Nẵng airport transfer – 4-seat car, Chinese-speaking driver",
+          "4-seat car between Đà Nẵng airport and city hotels: 200,000 VND per trip.",
+          "Your driver waits in the arrivals hall with a name sign, tracks your flight and helps with luggage; basic Chinese spoken. The one-way flat rate covers fuel, tolls, airport entry fee and passenger insurance for hotels in central Đà Nẵng and along Mỹ Khê – Non Nước beach. Trips between 22:00 and 06:00 cost 250,000 VND; for Hội An see our Hội An transfer. Suits up to 3 passengers and 2 large suitcases."
+        ],
+        "zh-CN": [
+          "岘港机场接送机·4座轿车·中文司机",
+          "4座车岘港机场↔市区酒店接送：每趟200,000越南盾。",
+          "司机在到达大厅举牌等候，实时跟踪航班并协助搬运行李，可用基础中文沟通。单程一口价，含油费、路桥费、机场进场费及乘客保险，适用于岘港市中心及美溪—五行山沿海酒店。22:00–06:00时段每趟250,000越南盾；前往会安请选会安用车。最多可乘3人并携带2个大行李箱。"
+        ],
+        "zh-TW": [
+          "峴港機場接送機・4座轎車・中文司機",
+          "4座車峴港機場↔市區飯店接送：每趟200,000越南盾。",
+          "司機在入境大廳舉牌等候，即時追蹤航班並協助搬運行李，可用基礎中文溝通。單程一口價，含油資、過路費、機場進場費及乘客保險，適用於峴港市中心及美溪—五行山沿海飯店。22:00–06:00時段每趟250,000越南盾；前往會安請選會安用車。最多可乘3人並攜帶2個大行李箱。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-CAR-DN-02",
+      "price": 250000,
+      "imageUrl": "https://images.unsplash.com/photo-1675311183084-755007dbb223?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1675311149330-ff19be4aa6be?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/a-silver-minivan-parked-on-the-side-of-the-road-CHNoqIW7pfY",
+        "https://unsplash.com/photos/a-silver-minivan-parked-on-the-side-of-the-road-5du0SdIxMC0"
+      ],
+      "meta": {
+        "unit": "chuyến (1 chiều)",
+        "vehicle": "7 chỗ (tối đa 5–6 khách + 4 vali)",
+        "route": "Sân bay Đà Nẵng ↔ khách sạn trung tâm / ven biển Mỹ Khê – Non Nước",
+        "duration": "15–30 phút",
+        "languages": ["zh-CN", "vi-VN"],
+        "nightSurcharge": "22:00–06:00: 300.000đ/chuyến",
+        "bookingNoticeHours": 6
+      },
+      "t": {
+        "vi-VN": [
+          "Đưa đón sân bay Đà Nẵng – xe 7 chỗ, tài xế nói tiếng Trung",
+          "Xe 7 chỗ đón/tiễn sân bay Đà Nẵng ↔ khách sạn trong thành phố: 250.000đ/chuyến.",
+          "Phù hợp gia đình hoặc nhóm 5–6 người kèm hành lý. Tài xế đón tận sảnh đến với bảng tên, theo dõi chuyến bay, nói tiếng Trung cơ bản. Giá một chiều trọn gói gồm xăng, phí cầu đường, phí vào sân bay và bảo hiểm hành khách cho khách sạn trung tâm và ven biển Mỹ Khê – Non Nước; chuyến 22:00–06:00 là 300.000đ. Cần ghế trẻ em vui lòng báo trước khi đặt."
+        ],
+        "en-US": [
+          "Đà Nẵng airport transfer – 7-seat car, Chinese-speaking driver",
+          "7-seat car between Đà Nẵng airport and city hotels: 250,000 VND per trip.",
+          "Ideal for families or groups of 5–6 with luggage. The driver meets you in the arrivals hall with a name sign, tracks your flight and speaks basic Chinese. The one-way flat rate covers fuel, tolls, airport entry fee and passenger insurance for central and Mỹ Khê – Non Nước beach hotels; trips between 22:00 and 06:00 cost 300,000 VND. Please request a child seat in advance."
+        ],
+        "zh-CN": [
+          "岘港机场接送机·7座商务车·中文司机",
+          "7座车岘港机场↔市区酒店接送：每趟250,000越南盾。",
+          "适合带行李的家庭或5–6人小团。司机在到达大厅举牌接机，跟踪航班，可用基础中文沟通。单程一口价含油费、路桥费、机场进场费和乘客保险，适用于市中心及美溪—五行山沿海酒店；22:00–06:00时段每趟300,000越南盾。如需儿童座椅请提前告知。"
+        ],
+        "zh-TW": [
+          "峴港機場接送機・7座商務車・中文司機",
+          "7座車峴港機場↔市區飯店接送：每趟250,000越南盾。",
+          "適合攜帶行李的家庭或5–6人小團。司機在入境大廳舉牌接機，追蹤航班，可用基礎中文溝通。單程一口價含油資、過路費、機場進場費與乘客保險，適用於市中心及美溪—五行山沿海飯店；22:00–06:00時段每趟300,000越南盾。如需兒童安全座椅請提前告知。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-CAR-DN-03",
+      "price": 1700000,
+      "imageUrl": "https://images.unsplash.com/photo-1675311401495-6fb9a4564573?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1623869675781-80aa31012a5a?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1746985094087-e703bf52c71b?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/a-white-suv-parked-on-the-side-of-the-road-N4LGd4zAdyc",
+        "https://unsplash.com/photos/white-sedan-on-gray-asphalt-road-during-daytime-73XAgT8DOpo",
+        "https://unsplash.com/photos/a-grey-van-moves-quickly-down-the-road-CuTNGnapPEk"
+      ],
+      "meta": {
+        "unit": "ngày (8 giờ / 100 km)",
+        "vehicle": "4 chỗ: 1.700.000đ · 7 chỗ: 1.900.000đ",
+        "overtime": "100.000đ/giờ vượt; 10.000đ/km vượt",
+        "languages": ["zh-CN", "vi-VN"],
+        "serviceHours": "06:00–21:30",
+        "bookingNoticeHours": 24
+      },
+      "t": {
+        "vi-VN": [
+          "Thuê xe 4/7 chỗ có tài xế nói tiếng Trung theo ngày (8 giờ/100 km)",
+          "Xe riêng có tài xế tiếng Trung đi trong ngày: 4 chỗ 1.700.000đ/ngày, 7 chỗ 1.900.000đ/ngày.",
+          "Tự chọn lịch trình trong Đà Nẵng và vùng lân cận (Sơn Trà, Ngũ Hành Sơn, Hội An, Bà Nà…), tối đa 8 giờ và 100 km/ngày. Giá gồm xe, tài xế giao tiếp tiếng Trung, xăng, phí cầu đường, bến bãi và bảo hiểm hành khách; chưa gồm vé tham quan, ăn uống của khách. Vượt giờ 100.000đ/giờ, vượt km 10.000đ/km; ngày lễ, Tết phụ thu theo báo giá. Tài xế là người lái xe, không thay thế hướng dẫn viên du lịch."
+        ],
+        "en-US": [
+          "Private 4/7-seat car with Chinese-speaking driver – per day (8 h / 100 km)",
+          "Private car and Chinese-speaking driver for the day: 4-seat 1,700,000 VND/day, 7-seat 1,900,000 VND/day.",
+          "Plan your own route in and around Đà Nẵng (Sơn Trà, Marble Mountains, Hội An, Bà Nà…), up to 8 hours and 100 km per day. The price covers the vehicle, a Chinese-speaking driver, fuel, tolls, parking and passenger insurance; entrance tickets and your meals are not included. Extra time 100,000 VND/hour, extra distance 10,000 VND/km; public holiday and Tết surcharges are quoted separately. The driver drives only and does not replace a licensed tour guide."
+        ],
+        "zh-CN": [
+          "4/7座包车·中文司机·按天（8小时/100公里）",
+          "中文司机私人包车一日：4座1,700,000越南盾/天，7座1,900,000越南盾/天。",
+          "行程自由安排，适用于岘港及周边（山茶半岛、五行山、会安、巴拿山等），每天最多8小时、100公里。价格含车辆、会中文的司机、油费、路桥费、停车费和乘客保险；不含景点门票和客人餐费。超时每小时100,000越南盾，超公里每公里10,000越南盾；节假日及春节另行报价加收。司机只负责驾驶，不代替持证导游讲解。"
+        ],
+        "zh-TW": [
+          "4/7座包車・中文司機・按天（8小時/100公里）",
+          "中文司機私人包車一日：4座1,700,000越南盾/天，7座1,900,000越南盾/天。",
+          "行程自由安排，適用於峴港及周邊（山茶半島、五行山、會安、巴拿山等），每天最多8小時、100公里。價格含車輛、會中文的司機、油資、過路費、停車費與乘客保險；不含景點門票和客人餐費。超時每小時100,000越南盾，超公里每公里10,000越南盾；節假日及春節另行報價加收。司機只負責駕駛，不代替持證導遊解說。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-CAR-DN-04",
+      "price": 2600000,
+      "imageUrl": "https://images.unsplash.com/photo-1787028331201-75a0abb8ab0e?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [],
+      "photoSources": [
+        "https://unsplash.com/photos/white-van-at-airport-terminal-XDw-MK_Kp6Q"
+      ],
+      "meta": {
+        "unit": "ngày (8 giờ / 100 km)",
+        "vehicle": "16 chỗ (phù hợp 8–12 khách có hành lý)",
+        "overtime": "150.000đ/giờ vượt; 14.000đ/km vượt",
+        "languages": ["zh-CN", "vi-VN"],
+        "serviceHours": "06:00–21:30",
+        "bookingNoticeHours": 48
+      },
+      "t": {
+        "vi-VN": [
+          "Thuê xe 16 chỗ có tài xế nói tiếng Trung theo ngày (8 giờ/100 km)",
+          "Xe 16 chỗ có tài xế tiếng Trung cho đoàn, theo ngày: 2.600.000đ/ngày.",
+          "Dành cho đoàn công ty, gia đình đông người hoặc nhóm bạn 8–12 khách có hành lý. Lịch trình tự chọn trong Đà Nẵng – Hội An – Bà Nà, tối đa 8 giờ và 100 km/ngày; giá gồm xe, tài xế giao tiếp tiếng Trung, xăng, phí cầu đường, bến bãi và bảo hiểm hành khách. Vượt giờ 150.000đ/giờ, vượt km 14.000đ/km; đi Huế hoặc lịch nhiều ngày vui lòng yêu cầu báo giá. Nên đặt trước ít nhất 48 giờ, mùa cao điểm nên đặt sớm hơn."
+        ],
+        "en-US": [
+          "16-seat van with Chinese-speaking driver – per day (8 h / 100 km)",
+          "16-seat van with Chinese-speaking driver for groups: 2,600,000 VND/day.",
+          "For company groups, large families or friends travelling as 8–12 people with luggage. Choose your own route around Đà Nẵng – Hội An – Bà Nà, up to 8 hours and 100 km per day; the price includes the van, a Chinese-speaking driver, fuel, tolls, parking and passenger insurance. Extra time 150,000 VND/hour, extra distance 14,000 VND/km; for Huế or multi-day trips please ask for a quote. Book at least 48 hours ahead, earlier in peak season."
+        ],
+        "zh-CN": [
+          "16座中巴包车·中文司机·按天（8小时/100公里）",
+          "16座中巴中文司机团队包车：每天2,600,000越南盾。",
+          "适合公司团队、大家庭或8–12人带行李的朋友出行。岘港—会安—巴拿山范围内行程自选，每天最多8小时、100公里；价格含车辆、会中文的司机、油费、路桥费、停车费和乘客保险。超时每小时150,000越南盾，超公里每公里14,000越南盾；去顺化或多日行程请询价。请至少提前48小时预订，旺季建议更早。"
+        ],
+        "zh-TW": [
+          "16座中巴包車・中文司機・按天（8小時/100公里）",
+          "16座中巴中文司機團體包車：每天2,600,000越南盾。",
+          "適合公司團體、大家庭或8–12人攜帶行李的朋友出遊。峴港—會安—巴拿山範圍內行程自選，每天最多8小時、100公里；價格含車輛、會中文的司機、油資、過路費、停車費與乘客保險。超時每小時150,000越南盾，超公里每公里14,000越南盾；前往順化或多日行程請詢價。請至少提前48小時預訂，旺季建議更早。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-CAR-DN-05",
+      "price": 350000,
+      "imageUrl": "https://images.unsplash.com/photo-1571267012859-a81bae0c849b?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1623869675781-80aa31012a5a?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/wooden-boats-on-body-of-water-in-front-of-buildings-under-blue-sky-JjxdZZKyWq0",
+        "https://unsplash.com/photos/white-sedan-on-gray-asphalt-road-during-daytime-73XAgT8DOpo"
+      ],
+      "meta": {
+        "unit": "chuyến",
+        "prices": {"oneWay4": 350000, "oneWay7": 400000, "roundTrip4": 700000, "roundTrip7": 800000},
+        "roundTripWaiting": "Chờ tối đa 4 giờ tại Hội An",
+        "route": "Khách sạn Đà Nẵng ↔ phố cổ / khách sạn Hội An (khoảng 30 km)",
+        "duration": "40–50 phút mỗi chiều",
+        "languages": ["zh-CN", "vi-VN"],
+        "bookingNoticeHours": 6
+      },
+      "t": {
+        "vi-VN": [
+          "Xe Đà Nẵng ↔ Hội An 1 chiều / khứ hồi, tài xế nói tiếng Trung",
+          "Xe riêng Đà Nẵng – Hội An: 1 chiều từ 350.000đ (4 chỗ), khứ hồi trong ngày từ 700.000đ.",
+          "Đón tại khách sạn hoặc sân bay Đà Nẵng, đi khoảng 30 km theo đường biển đến phố cổ hoặc khách sạn ở Hội An. Bảng giá: 1 chiều 4 chỗ 350.000đ, 7 chỗ 400.000đ; khứ hồi trong ngày 4 chỗ 700.000đ, 7 chỗ 800.000đ (tài xế chờ tối đa 4 giờ, phù hợp đi dạo phố cổ buổi tối). Giá gồm xăng, phí cầu đường, đỗ xe và bảo hiểm hành khách; chưa gồm vé tham quan phố cổ. Chuyến sau 22:00 phụ thu theo báo giá."
+        ],
+        "en-US": [
+          "Đà Nẵng ↔ Hội An private car, one way or return, Chinese-speaking driver",
+          "Private car Đà Nẵng – Hội An: one way from 350,000 VND (4-seat), same-day return from 700,000 VND.",
+          "Pick-up at your Đà Nẵng hotel or the airport, about 30 km along the coast road to Hội An Old Town or your Hội An hotel. Rates: one way 4-seat 350,000 VND, 7-seat 400,000 VND; same-day return 4-seat 700,000 VND, 7-seat 800,000 VND (driver waits up to 4 hours – ideal for an evening in the old town). Includes fuel, tolls, parking and passenger insurance; the Old Town ticket is not included. Trips after 22:00 carry a quoted surcharge."
+        ],
+        "zh-CN": [
+          "岘港↔会安专车·单程/往返·中文司机",
+          "岘港—会安专车：单程4座350,000越南盾起，当日往返700,000越南盾起。",
+          "在岘港酒店或机场上车，沿海滨公路约30公里抵达会安古镇或会安酒店。价格：单程4座350,000越南盾、7座400,000越南盾；当日往返4座700,000越南盾、7座800,000越南盾（司机最多等候4小时，适合晚上逛古镇）。含油费、路桥费、停车费和乘客保险；不含古镇门票。22:00以后用车另行报价加收。"
+        ],
+        "zh-TW": [
+          "峴港↔會安專車・單程/來回・中文司機",
+          "峴港—會安專車：單程4座350,000越南盾起，當日來回700,000越南盾起。",
+          "在峴港飯店或機場上車，沿海濱公路約30公里抵達會安古鎮或會安飯店。價格：單程4座350,000越南盾、7座400,000越南盾；當日來回4座700,000越南盾、7座800,000越南盾（司機最多等候4小時，適合晚上逛古鎮）。含油資、過路費、停車費與乘客保險；不含古鎮門票。22:00以後用車另行報價加收。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-CAR-DN-06",
+      "price": 350000,
+      "imageUrl": "https://images.unsplash.com/photo-1528606589862-7d68b7e3c95a?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1741138327956-dfa75763b50d?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/three-vehicles-on-curved-road-N1AFXixF4qQ",
+        "https://unsplash.com/photos/golden-bridge-held-by-giant-hands-in-vietnam-CsoQ-jm_0vQ"
+      ],
+      "meta": {
+        "unit": "chuyến",
+        "prices": {"oneWay4": 350000, "oneWay7": 400000, "roundTrip4": 700000, "roundTrip7": 800000},
+        "roundTripWaiting": "Chờ tại ga cáp treo đến khoảng 17:00",
+        "route": "Khách sạn trung tâm Đà Nẵng ↔ ga cáp treo Sun World Bà Nà Hills (khoảng 30–35 km)",
+        "duration": "40–50 phút mỗi chiều",
+        "languages": ["zh-CN", "vi-VN"],
+        "bookingNoticeHours": 12
+      },
+      "t": {
+        "vi-VN": [
+          "Xe đưa đón Đà Nẵng ↔ Bà Nà Hills, tài xế nói tiếng Trung",
+          "Xe riêng từ khách sạn Đà Nẵng đến ga cáp treo Bà Nà: 1 chiều từ 350.000đ, khứ hồi từ 700.000đ.",
+          "Xe đón tại khách sạn trung tâm Đà Nẵng, đưa đến ga cáp treo Sun World Bà Nà Hills và chờ đón về trong ngày. Bảng giá: 1 chiều 4 chỗ 350.000đ, 7 chỗ 400.000đ; khứ hồi 4 chỗ 700.000đ, 7 chỗ 800.000đ. Giá gồm xăng, phí cầu đường, bến bãi và bảo hiểm hành khách; KHÔNG gồm vé cáp treo Bà Nà (giá niêm yết khách ngoại tỉnh/quốc tế 1.000.000đ người lớn, 800.000đ trẻ 1m–1,4m) – muốn trọn gói vé + hướng dẫn viên, xem tour Bà Nà của ZhaoXi Travel."
+        ],
+        "en-US": [
+          "Đà Nẵng ↔ Bà Nà Hills transfer, Chinese-speaking driver",
+          "Private car from your Đà Nẵng hotel to the Bà Nà cable car station: one way from 350,000 VND, return from 700,000 VND.",
+          "Pick-up at your central Đà Nẵng hotel, drop-off at the Sun World Bà Nà Hills cable car station and same-day return. Rates: one way 4-seat 350,000 VND, 7-seat 400,000 VND; return 4-seat 700,000 VND, 7-seat 800,000 VND. Includes fuel, tolls, parking and passenger insurance; the Bà Nà cable car ticket is NOT included (official non-local/international price 1,000,000 VND adult, 800,000 VND child 1–1.4 m) – for a package with tickets and a guide, see ZhaoXi Travel's Bà Nà tour."
+        ],
+        "zh-CN": [
+          "岘港↔巴拿山接送·中文司机",
+          "岘港酒店至巴拿山缆车站专车：单程350,000越南盾起，往返700,000越南盾起。",
+          "岘港市中心酒店上车，送至Sun World巴拿山缆车站，当日等候接回。价格：单程4座350,000越南盾、7座400,000越南盾；往返4座700,000越南盾、7座800,000越南盾。含油费、路桥费、停车费和乘客保险；不含巴拿山缆车票（官方外省/外国游客价：成人1,000,000越南盾，1–1.4米儿童800,000越南盾）。如需含票和导游的套餐，请选ZhaoXi Travel巴拿山一日游。"
+        ],
+        "zh-TW": [
+          "峴港↔巴拿山接送・中文司機",
+          "峴港飯店至巴拿山纜車站專車：單程350,000越南盾起，來回700,000越南盾起。",
+          "峴港市中心飯店上車，送至Sun World巴拿山纜車站，當日等候接回。價格：單程4座350,000越南盾、7座400,000越南盾；來回4座700,000越南盾、7座800,000越南盾。含油資、過路費、停車費與乘客保險；不含巴拿山纜車票（官方外省／外國旅客價：成人1,000,000越南盾，1–1.4公尺兒童800,000越南盾）。如需含票與導遊的套裝，請選ZhaoXi Travel巴拿山一日遊。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-CAR-DN-07",
+      "price": 900000,
+      "imageUrl": "https://images.unsplash.com/photo-1623869675781-80aa31012a5a?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1675311401495-6fb9a4564573?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/white-sedan-on-gray-asphalt-road-during-daytime-73XAgT8DOpo",
+        "https://unsplash.com/photos/a-white-suv-parked-on-the-side-of-the-road-N4LGd4zAdyc"
+      ],
+      "meta": {
+        "unit": "ngày (24 giờ)",
+        "vehicle": "5 chỗ số tự động: 900.000đ · 7 chỗ: 1.200.000đ",
+        "kmLimit": "300 km/ngày",
+        "licenceRequired": "GPLX Việt Nam hạng B (hoặc B1/B2 cấp trước 2025 còn hạn), hoặc IDP theo Công ước Viên 1968 kèm bằng gốc, hoặc bằng lái nước ASEAN",
+        "deposit": "Theo hợp đồng (tiền mặt hoặc tài sản đảm bảo)",
+        "languages": ["zh-CN", "vi-VN"],
+        "bookingNoticeHours": 24
+      },
+      "t": {
+        "vi-VN": [
+          "Thuê ô tô tự lái theo ngày tại Đà Nẵng (5 / 7 chỗ)",
+          "Thuê xe tự lái 5 chỗ số tự động từ 900.000đ/ngày, 7 chỗ 1.200.000đ/ngày.",
+          "Xe đời mới, bảo hiểm theo xe, giao nhận tại Đà Nẵng; giới hạn 300 km/ngày, đặt cọc và giấy tờ theo hợp đồng thuê. BẮT BUỘC người lái có giấy phép hợp lệ tại Việt Nam: GPLX Việt Nam hạng B (bằng nước ngoài có thể đổi sang bằng Việt Nam nếu có thẻ tạm trú/thường trú), hoặc giấy phép lái xe quốc tế (IDP) theo Công ước Viên 1968 kèm bằng gốc, hoặc bằng lái của nước ASEAN. Bằng lái Trung Quốc đại lục hay Đài Loan chưa đổi sang bằng Việt Nam thì KHÔNG được lái – trường hợp này hãy chọn xe có tài xế. Xăng, phí cầu đường, gửi xe và tiền phạt giao thông do người thuê chịu."
+        ],
+        "en-US": [
+          "Self-drive car rental in Đà Nẵng, per day (5 / 7 seats)",
+          "Self-drive 5-seat automatic from 900,000 VND/day, 7-seat 1,200,000 VND/day.",
+          "Recent-model cars with vehicle insurance, delivered and collected in Đà Nẵng; 300 km/day limit, deposit and documents per the rental contract. The driver MUST hold a licence valid in Vietnam: a Vietnamese class B licence (a foreign licence can be converted if you hold a temporary or permanent residence card), or an International Driving Permit issued under the 1968 Vienna Convention together with the home licence, or an ASEAN-country licence. Mainland China and Taiwan licences that have not been converted are NOT valid – please book a car with driver instead. Fuel, tolls, parking and traffic fines are paid by the renter."
+        ],
+        "zh-CN": [
+          "岘港自驾租车·按天（5座/7座）",
+          "自驾租车：5座自动挡每天900,000越南盾起，7座每天1,200,000越南盾。",
+          "新款车辆含车险，岘港市内送车取车；每天限300公里，押金和证件按租车合同办理。驾驶人必须持有在越南有效的驾照：越南B类驾照（持临时居留卡或永久居留卡者可将外国驾照换领为越南驾照），或依据1968年《维也纳公约》签发的国际驾照（IDP）并携带原驾照，或东盟国家驾照。未换领的中国大陆或台湾驾照在越南无效，不能自驾——请改订带司机包车。油费、路桥费、停车费及交通罚款由租车人承担。"
+        ],
+        "zh-TW": [
+          "峴港自駕租車・按天（5座/7座）",
+          "自駕租車：5座自排每天900,000越南盾起，7座每天1,200,000越南盾。",
+          "新款車輛含車險，峴港市內送車取車；每天限300公里，押金與證件依租車合約辦理。駕駛人必須持有在越南有效的駕照：越南B類駕照（持暫住卡或永久居留卡者可將外國駕照換發為越南駕照），或依1968年《維也納公約》簽發的國際駕照（IDP）並攜帶原駕照，或東協國家駕照。未換發的中國大陸或台灣駕照在越南無效，不能自駕——請改訂附司機包車。油資、過路費、停車費及交通罰款由承租人負擔。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-CAR-DN-08",
+      "price": 150000,
+      "imageUrl": "https://images.unsplash.com/photo-1773414001281-7e1cadd04a79?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1726038405793-be9a29b71f00?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/people-ride-a-scooter-down-a-sunny-city-street-dupMjRLnSkU",
+        "https://unsplash.com/photos/a-person-sitting-on-a-scooter-in-front-of-a-store-gJdaZvaIPr8"
+      ],
+      "meta": {
+        "unit": "ngày (24 giờ)",
+        "vehicle": "Xe tay ga 110–125cc (2 mũ bảo hiểm)",
+        "licenceRequired": "GPLX Việt Nam hạng A1 trở lên, hoặc IDP Công ước Viên 1968 có hạng xe mô tô kèm bằng gốc, hoặc bằng lái ASEAN có hạng mô tô",
+        "deposit": "Theo hợp đồng (tiền mặt), không giữ hộ chiếu",
+        "delivery": "Giao xe miễn phí tại khách sạn trung tâm khi thuê từ 2 ngày",
+        "languages": ["zh-CN", "vi-VN"],
+        "bookingNoticeHours": 12
+      },
+      "t": {
+        "vi-VN": [
+          "Thuê xe máy tay ga theo ngày tại Đà Nẵng",
+          "Xe tay ga 110–125cc kèm 2 mũ bảo hiểm: 150.000đ/ngày.",
+          "Xe tay ga đời mới, có 2 mũ bảo hiểm và áo mưa; giao xe miễn phí tại khách sạn trung tâm khi thuê từ 2 ngày, hỗ trợ bằng tiếng Trung qua điện thoại khi gặp sự cố. Người điều khiển xe trên 50cc BẮT BUỘC có giấy phép hợp lệ tại Việt Nam: GPLX Việt Nam hạng A1 trở lên, hoặc IDP theo Công ước Viên 1968 có hạng mô tô kèm bằng gốc, hoặc bằng lái ASEAN có hạng mô tô; bằng lái Trung Quốc đại lục/Đài Loan chưa đổi thì không được chạy xe. Luôn đội mũ bảo hiểm; xăng và tiền phạt giao thông do người thuê chịu, đặt cọc theo hợp đồng."
+        ],
+        "en-US": [
+          "Scooter rental in Đà Nẵng, per day",
+          "110–125cc automatic scooter with 2 helmets: 150,000 VND/day.",
+          "Recent-model automatic scooter with two helmets and a raincoat; free delivery to central hotels for rentals of 2 days or more, with Chinese-language phone support if anything goes wrong. Riders of scooters above 50cc MUST hold a licence valid in Vietnam: a Vietnamese class A1 (or higher) licence, or a 1968 Vienna Convention IDP with a motorcycle category plus the home licence, or an ASEAN licence with a motorcycle category; unconverted mainland China or Taiwan licences are not valid. Always wear a helmet; fuel and traffic fines are the renter's responsibility, deposit per contract."
+        ],
+        "zh-CN": [
+          "岘港摩托车（踏板车）按天租赁",
+          "110–125cc自动挡踏板车，配2顶头盔：每天150,000越南盾。",
+          "新款踏板车，配两顶头盔和雨衣；租2天以上免费送车至市中心酒店，遇到问题可电话中文协助。驾驶50cc以上摩托车必须持有在越南有效的驾照：越南A1类或以上驾照，或含摩托车类别的1968年《维也纳公约》国际驾照并携带原驾照，或含摩托车类别的东盟国家驾照；未换领的中国大陆或台湾驾照无效，不能骑行。骑车务必佩戴头盔；油费及交通罚款由租车人承担，押金按合同办理。"
+        ],
+        "zh-TW": [
+          "峴港機車（速克達）按天租賃",
+          "110–125cc自排速克達，附2頂安全帽：每天150,000越南盾。",
+          "新款速克達，附兩頂安全帽與雨衣；租2天以上免費送車至市中心飯店，遇到問題可電話中文協助。騎乘50cc以上機車必須持有在越南有效的駕照：越南A1類或以上駕照，或含機車類別的1968年《維也納公約》國際駕照並攜帶原駕照，或含機車類別的東協國家駕照；未換發的中國大陸或台灣駕照無效，不能騎乘。騎車務必配戴安全帽；油資及交通罰款由承租人負擔，押金依合約辦理。"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    "https://go365.vn/en/thue-xe-du-lich/da-nang-hue",
+    "https://www.vietnambooking.com/du-lich/tour-du-lich/xe-dua-don.html",
+    "https://topdrivervietnam.gumroad.com/l/thue-xe-dua-don-san-bay-da-nang",
+    "https://topdrivervietnam.gumroad.com/l/thue-xe-di-hoi-an",
+    "https://topdrivervietnam.gumroad.com/l/xe-hoi-an-di-ba-na-hills",
+    "https://topdrivervietnam.gumroad.com/p/xe-du-l-ch-16-ch-t-i-da-n-ng",
+    "https://sunparadiseland.com/SunParadiseLandDaNang/tin-tuc/di-chuyen-thoai-mai-cung-dich-vu-thue-xe-limousine-da-nang-23917",
+    "https://sunparadiseland.com/SunParadiseLandDaNang/tin-tuc/bi-quyet-chon-xe-da-nang-di-hoi-an-sieu-tiet-kiem-23518",
+    "https://sunparadiseland.com/SunParadiseLandDaNang/tin-tuc/kinh-nghiem-thue-xe-tu-lai-da-nang-thuan-tien-gia-hop-ly-23903",
+    "https://sunparadiseland.com/SunParadiseLandDaNang/tin-tuc/kinh-nghiem-thue-xe-may-da-nang-chi-tiet-danh-cho-du-khach-23919",
+    "https://vinpearl.com/vi/tiet-lo-kinh-nghiem-va-dia-chi-cho-thue-xe-may-da-nang-gia-re",
+    "https://muaban.net/cho-thue-xe-may-da-nang-l15-c53",
+    "https://scrapbox.io/Thue-Xe-Dien-Da-Nang-Dana-Booking/Thue-Xe-Dien-Da-Nang-Dana-Booking-VinFast-Tu-Lai-2026",
+    "https://sunworld.vn/vi/banahills/cam-nang-du-lich/chi-phi-di-ba-na-hillshtml",
+    "https://vietnamnews.vn/life-style/1781747/using-the-roads-in-viet-nam-as-a-foreigner.html",
+    "https://english.beijing.gov.cn/livinginbeijing/quickguideondrivinginbeijing/faq/202109/t20210906_2485909.html",
+    "https://tuoitrenews.vn/news/vietnam-life-vietq/20240314/is-converting-foreign-drivers-licenses-required-in-vietnam/78781.html",
+    "https://thuvienphapluat.vn/hoi-dap-phap-luat/bang-chuyen-doi-giay-phep-lai-xe-quoc-te-theo-thong-tu-12-2025-tt-bca-ve-sat-hach-lai-xe-138044683.html",
+    "https://plo.vn/thu-tuc-doi-bang-lai-xe-nuoc-ngoai-tai-viet-nam-post392844.html"
+  ],
+  "notes": "1) GIÁ: lấy mặt bằng go365.vn (sân bay 130k/170k, Hội An 300k/350k 1 chiều, Bà Nà 600k/650k khứ hồi, city tour 1,5–1,6tr/ngày) và các nhà xe Đà Nẵng khác, cộng phần chênh cho tài xế nói tiếng Trung (hiếm hơn); giá 16 chỗ/ngày (2,6tr) và phụ thu vượt giờ/km là ước tính thị trường – chủ cần xác nhận với đối tác xe thực tế. Giá chưa nêu VAT; nếu xuất hóa đơn cần quyết định giá đã gồm VAT hay chưa. 2) BẰNG LÁI (đã kiểm chứng): Việt Nam là thành viên Công ước Viên 1968, chỉ công nhận IDP cấp theo công ước này (IDP Geneva 1949 như Mỹ/Úc/Canada KHÔNG hợp lệ); Trung Quốc đại lục không tham gia Công ước 1968 nên không có IDP hợp lệ – khách TQ/Đài Loan chỉ được lái nếu đã đổi sang GPLX Việt Nam (thủ tục đổi yêu cầu thẻ tạm trú/thường trú, Thông tư 12/2025/TT-BCA). Khách du lịch ngắn ngày từ TQ thực tế KHÔNG được tự lái ô tô/xe máy >50cc – app nên hiển thị cảnh báo này và yêu cầu chụp GPLX/IDP khi đặt mục 07, 08. Theo Luật TTATGTĐB 2024 (hiệu lực 1/1/2025) hạng ô tô con là B (thay B1/B2), xe máy ≤125cc là A1. 3) PHÁP LÝ KINH DOANH: chở khách bằng xe có tài xế (mục 01–06) phải là kinh doanh vận tải hành khách theo hợp đồng có giấy phép, phù hiệu xe hợp đồng (Nghị định 158/2024/NĐ-CP) – ZhaoXi cần tự có giấy phép hoặc chỉ làm trung gian đặt xe với đơn vị vận tải có phép; cho thuê xe tự lái/xe máy cần hợp đồng thuê và bảo hiểm. Không giữ hộ chiếu khách làm tài sản cọc. 4) Tài xế chỉ lái xe, không được thuyết minh như HDV (cần thẻ HDV). 5) Ảnh là ảnh minh họa chung (xe sedan, minivan, van, xe máy trên phố); ảnh Hội An và Cầu Vàng dùng cho các tuyến tương ứng."
+}

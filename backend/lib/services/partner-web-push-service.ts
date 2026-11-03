@@ -1,13 +1,17 @@
 import webpush from "web-push";
 import { eq } from "drizzle-orm";
+import { after } from "next/server";
 import { getDb } from "@/db";
 import { partnerMobilePushDevices, partnerPushSubscriptions } from "@/db/schema";
+import { newOrderAlertTitle, partnerOrderKind } from "@/lib/services/partner-order-presentation";
+
+export type PartnerNewOrder = { id: string; requestCode: string; customerName: string; moduleCode?: string | null };
 
 const publicKey=process.env.ZHAOXI_WEB_PUSH_PUBLIC_KEY;
 const privateKey=process.env.ZHAOXI_WEB_PUSH_PRIVATE_KEY;
 const enabled=Boolean(publicKey&&privateKey);
 if(enabled)webpush.setVapidDetails("mailto:admin@zhaoxi.vn",publicKey!,privateKey!);
-async function sendMobilePush(organizationId:string,message:{title:string;body:string;orderId:string;kind:"new_order"|"payment_reported"}){
+async function sendMobilePush(organizationId:string,message:{title:string;body:string;orderId:string;kind:"new_order"|"payment_reported";moduleCode?:string|null}){
   const devices=await getDb().select().from(partnerMobilePushDevices).where(eq(partnerMobilePushDevices.organizationId,organizationId));
   const active=devices.filter(device=>device.enabled);
   if(!active.length)return {sent:0,enabled:true};
@@ -24,7 +28,7 @@ async function sendMobilePush(organizationId:string,message:{title:string;body:s
     body:JSON.stringify(uniqueActive.map(device=>({
       to:device.expoPushToken,title:message.title,body:message.body,
       sound:"order_alert.wav",priority:"high",channelId:"new-orders",
-      data:{orderId:message.orderId,kind:message.kind,screen:"orders"},
+      data:{orderId:message.orderId,kind:message.kind,moduleCode:message.moduleCode||null,screen:"orders"},
       categoryId:"ORDER_ACTIONS",mutableContent:true,
     }))),
   });
@@ -40,13 +44,19 @@ async function sendMobilePush(organizationId:string,message:{title:string;body:s
 }
 export const partnerWebPushService={
   publicKey:()=>publicKey||null,
-  async sendNewOrder(organizationId:string,order:{id:string;requestCode:string;customerName:string}){
-    const mobile=sendMobilePush(organizationId,{title:"🔔 Có đơn hàng mới",body:`${order.requestCode} · ${order.customerName}`,orderId:order.id,kind:"new_order"});
+  async sendNewOrder(organizationId:string,order:PartnerNewOrder){
+    const title=newOrderAlertTitle(partnerOrderKind(order.moduleCode));
+    const mobile=sendMobilePush(organizationId,{title,body:`${order.requestCode} · ${order.customerName}`,orderId:order.id,kind:"new_order",moduleCode:order.moduleCode});
     if(!enabled)return mobile;
     const subscriptions=await getDb().select().from(partnerPushSubscriptions).where(eq(partnerPushSubscriptions.organizationId,organizationId));
     let sent=0;
-    await Promise.all(subscriptions.map(async subscription=>{try{await webpush.sendNotification({endpoint:subscription.endpoint,keys:{p256dh:subscription.p256dh,auth:subscription.auth}},JSON.stringify({title:"🔔 Có đơn hàng mới",body:`${order.requestCode} · ${order.customerName}`,url:"/orders",tag:`zhaoxi-order-${order.id}`}));sent++;}catch(error){const code=Number((error as {statusCode?:number})?.statusCode||0);if(code===404||code===410)await getDb().delete(partnerPushSubscriptions).where(eq(partnerPushSubscriptions.id,subscription.id));}}));
+    await Promise.all(subscriptions.map(async subscription=>{try{await webpush.sendNotification({endpoint:subscription.endpoint,keys:{p256dh:subscription.p256dh,auth:subscription.auth}},JSON.stringify({title,body:`${order.requestCode} · ${order.customerName}`,url:"/orders",tag:`zhaoxi-order-${order.id}`}));sent++;}catch(error){const code=Number((error as {statusCode?:number})?.statusCode||0);if(code===404||code===410)await getDb().delete(partnerPushSubscriptions).where(eq(partnerPushSubscriptions.id,subscription.id));}}));
     const native=await mobile;return {sent:sent+native.sent,enabled:true};
+  },
+  /** Alerts the store owner about a new order of any module, after the HTTP response when inside a request. */
+  notifyNewOrderAfterResponse(organizationId:string,order:PartnerNewOrder){
+    const run=()=>this.sendNewOrder(organizationId,order).catch(error=>console.error("partner new-order push failed",error));
+    try{after(run)}catch{void run()}
   },
   async sendPaymentReported(organizationId:string,order:{id:string;requestCode:string;customerName:string;amount:string;currency:string}){
     const mobile=sendMobilePush(organizationId,{title:"💳 Khách đã báo chuyển khoản",body:`${order.customerName} · ${Number(order.amount).toLocaleString("vi-VN")} ${order.currency} · ${order.requestCode}`,orderId:order.id,kind:"payment_reported"});

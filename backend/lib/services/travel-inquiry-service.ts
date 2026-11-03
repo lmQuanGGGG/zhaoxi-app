@@ -1,6 +1,7 @@
 import {and,eq} from "drizzle-orm";
 import {getDb} from "@/db";
 import {modules,organizations,serviceRequests,serviceRequestStatusHistory,services} from "@/db/schema";
+import {partnerWebPushService} from "@/lib/services/partner-web-push-service";
 
 type Input={serviceId:string;customerId?:string;customerName:string;customerPhone:string;locale:string;visitDate?:string;visitTime?:string;guests?:number;adults?:number;children?:number;packageId?:string;preferredContact?:string;wechat?:string;whatsapp?:string;notes?:string};
 function clean(v:unknown,max=1000){return String(v||"").trim().slice(0,max)}
@@ -50,6 +51,7 @@ export class TravelInquiryService{
    addressText:clean(metadata.departurePoint||metadata.destination||"",1000)||"Travel experience",details
   }).returning();
   await db.insert(serviceRequestStatusHistory).values({requestId:created.id,toStatus:"assigned",note:"TRAVEL_INQUIRY_ASSIGNED_TO_PARTNER"});
+  partnerWebPushService.notifyNewOrderAfterResponse(row.organizationId,{id:created.id,requestCode:created.requestCode,customerName:created.customerName,moduleCode:row.moduleCode});
   return{...created,routing:{mode:"travel_partner_lead",organizationId:row.organizationId,organizationName:row.organizationName},paymentRequired:false};
  }
 }

@@ -5,6 +5,7 @@ import { errorResponse, json } from "@/lib/api";
 import { asObject, optionalString, requiredString, ValidationError } from "@/lib/validation";
 import { canManageRequestStatus } from "@/lib/security/access-policy";
 import { mayAccessRequest, requireSession } from "@/lib/security/route-authorization";
+import { customerMobilePushService } from "@/lib/services/customer-mobile-push-service";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +42,10 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     if (!access.exists || !canManageRequestStatus(gate.session, current, access)) {
       return errorResponse("Service request not found.", 404);
     }
+    // Travel bookings carry their own stage machine (capacity lock, platform fee snapshot).
+    if (gate.session.role === "partner" && (current.details as Record<string, unknown> | null)?.inquiryType === "travel_experience_inquiry") {
+      return errorResponse("Use the travel booking actions for this order.", 409, { code: "TRAVEL_BOOKING_ACTION_REQUIRED" });
+    }
     if (current.status === status) return json({ ok: true, data: current });
     if (status === "accepted" && (!current.customerPhone?.trim() || !current.addressText?.trim())) {
       return errorResponse("Customer phone and address are required before accepting this order.", 422);
@@ -75,6 +80,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     if (!updated) {
       return errorResponse("Service request state changed concurrently. Reload and retry.", 409, { code: "REQUEST_STATE_CONFLICT" });
     }
+    customerMobilePushService.notifyRequestEventAfterResponse({ requestId: id, toStatus: status, note, actorUserId: gate.session.userId });
 
     return json({ ok: true, data: updated });
   } catch (error) {

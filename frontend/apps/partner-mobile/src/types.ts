@@ -14,8 +14,18 @@ export type PartnerOrganization = { id: string; code?: string; name: string; typ
 
 export type OrderStage = "assigned" | "preparing" | "ready_for_pickup" | "courier_booked" | "handed_off";
 
+/** Backend-derived order view (backend lib/services/partner-order-presentation.ts). */
+export type PartnerOrderKind = "food_delivery" | "housing_inquiry" | "travel_booking" | "service_booking";
+export type OrderFact = { key: string; value: string | number; format: "text" | "date" | "time" | "money" | "count" | "months" | "payment" };
+export type PartnerOrderAction = "accept" | "start" | "complete" | "reject" | "cancel";
+
 export type Order = {
   requestId: string;
+  organizationId: string;
+  kind: PartnerOrderKind;
+  moduleName?: string;
+  facts: OrderFact[];
+  actions: PartnerOrderAction[];
   requestCode: string;
   status: string;
   stage: OrderStage;
@@ -116,4 +126,25 @@ export type AnalyticsData = {
   daily: DailyAnalytics[];
   topItems: TopItemAnalytics[];
   campaignPerformance: CampaignAnalytics[];
+};
+
+export type OrderChatSender = "customer" | "partner";
+export type OrderChatAttachment = { id: string; url: string; mimeType: string; width: number | null; height: number | null };
+export type OrderChatMessage = { id: string; senderRole: OrderChatSender; body: string; createdAt: string; clientMessageId: string | null; attachments?: OrderChatAttachment[]; pending?: boolean };
+export type OrderChatSummary = {
+  id: string;
+  requestId: string;
+  requestCode: string;
+  title: string;
+  subtitle: string;
+  moduleCode: string;
+  status: string;
+  lastMessage: string;
+  lastMessageAt: string;
+  lastSenderRole: OrderChatSender | null;
+  unreadCount: number;
+};
+export type OrderChatThread = {
+  thread: { id: string; requestId: string; requestCode: string; title: string; subtitle: string; status: string; moduleCode: string; canSend: boolean; counterpartReadAt: string | null };
+  messages: OrderChatMessage[];
 };

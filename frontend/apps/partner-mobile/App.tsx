@@ -8,11 +8,13 @@ import { ActivityIndicator, Animated, AppState, Easing, Image, Keyboard, Keyboar
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { getOrderHistory, getPartnerOrganizations, getQueue, getRestaurantAnalytics, fulfill, loadAuth, login, loginWithPhone, logout, registerPush, switchPartnerOrganization, updateKitchen } from "./src/api";
 import { configureNotifications, getPushToken, notifyNewOrder } from "./src/notifications";
+import { ServiceOrderCard, ServiceOrderModal } from "./src/service-orders";
 import { C, s } from "./src/styles";
 import type { AnalyticsData, AuthState, Order, OrderStage, PartnerOrganization, QueueData } from "./src/types";
 import { Language, LANGUAGES, LANGUAGE_STORAGE_KEY, I18N } from "./src/i18n";
 import { WebView } from "react-native-webview";
 import { THREE_SPHERE_HTML } from "./src/threeJsHtml";
+import { OrderChatList, OrderChatModal, isOrderMessagePush, orderChatCopy, useOrderChatUnread } from "./src/OrderChat";
 
 const EMPTY: QueueData = { generatedAt: "", counts: { waiting: 0, preparing: 0, ready: 0, courier: 0, late: 0 }, items: [] };
 const money = (value: number) => `${Number(value || 0).toLocaleString("vi-VN")} ₫`;
@@ -145,6 +147,7 @@ function OrderCard({
   onPriority,
   onEta,
   interactive = true,
+  onChanged,
   t,
 }: {
   order: Order;
@@ -155,8 +158,10 @@ function OrderCard({
   onPriority: (priority: Order["priority"]) => void;
   onEta: (minutes: number) => void;
   interactive?: boolean;
+  onChanged?: () => void;
   t: typeof I18N["vi"];
 }) {
+  if (order.kind !== "food_delivery") return <ServiceOrderCard order={order} t={t} interactive={interactive} onOpen={onOpen} onChanged={onChanged}/>;
   const provider = order.deliveryProvider === "grab" ? "Grab" : order.deliveryProvider === "green_sm" ? "Xanh SM" : "";
   const completed = order.status === "completed";
   const cancelled = ["cancelled", "rejected"].includes(order.status);
@@ -271,6 +276,8 @@ function OrderModal({
   waitingCount = 1,
   waitingIndex = 1,
   onSelectOrder,
+  onChat,
+  chatLabel,
   t,
 }: {
   order: Order | null;
@@ -279,6 +286,8 @@ function OrderModal({
   waitingCount?: number;
   waitingIndex?: number;
   onSelectOrder?: (order: Order) => void;
+  onChat?: (order: Order) => void;
+  chatLabel?: string;
   t: typeof I18N["vi"];
 }) {
   const [eta, setEta] = useState(15);
@@ -308,6 +317,7 @@ function OrderModal({
     }
   }
   if (!order) return null;
+  if (order.kind !== "food_delivery") return <ServiceOrderModal order={order} t={t} onClose={onClose} onRefresh={onRefresh}/>;
   const next = t.nextAction[order.stage];
   const remainingBehind = Math.max(0, waitingCount - waitingIndex);
   return (
@@ -327,6 +337,11 @@ function OrderModal({
               <Text style={s.code}>{order.requestCode}</Text>
               <Text style={s.modalTitle}>{order.serviceName} · ×{order.quantity}</Text>
             </View>
+            {onChat ? (
+              <Pressable accessibilityLabel={chatLabel} onPress={() => onChat(order)} hitSlop={8} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.mint, alignItems: "center", justifyContent: "center", marginRight: 8 }}>
+                <Ionicons name="chatbubble-ellipses" size={20} color={C.green}/>
+              </Pressable>
+            ) : null}
             <Pressable onPress={onClose} hitSlop={10}><Ionicons name="close-circle" size={32} color={C.muted}/></Pressable>
           </View>
           <View style={s.row}>
@@ -506,7 +521,11 @@ function Main({
   const [orderView, setOrderView] = useState<"new" | "history">("new");
   const [activeStage, setActiveStage] = useState<"waiting" | "preparing" | "ready">("waiting");
   const [historyFilter, setHistoryFilter] = useState<"all" | "completed" | "cancelled">("all");
-  const [tab, setTab] = useState<"orders" | "revenue" | "settings">("orders");
+  const [tab, setTab] = useState<"orders" | "messages" | "revenue" | "settings">("orders");
+  const [chatOrderId, setChatOrderId] = useState<string | null>(null);
+  const [chatTick, setChatTick] = useState(0);
+  const bumpChat = useCallback(() => setChatTick(x => x + 1), []);
+  const chatUnread = useOrderChatUnread(orgId, chatTick);
   type PeriodType = 1 | 7 | 30 | 90 | "custom";
   const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>(30);
   const [customFrom, setCustomFrom] = useState("");
@@ -615,7 +634,9 @@ function Main({
     } catch {
       const cached = await AsyncStorage.getItem(`queue:${orgId}`);
       if (cached && !initialized.current) {
-        const parsed = JSON.parse(cached) as QueueData;
+        const stored = JSON.parse(cached) as QueueData;
+        // Queues cached by older builds only held food orders and lack kind/facts/actions.
+        const parsed: QueueData = { ...stored, items: stored.items.map(item => ({ ...item, kind: item.kind || "food_delivery", facts: item.facts || [], actions: item.actions || [] })) };
         setData(parsed);
         return parsed;
       }
@@ -667,7 +688,10 @@ function Main({
       if (nextState === "active") {
         void load();
         void Notifications.getLastNotificationResponseAsync().then(resp => {
-          if (resp) {
+          if (resp && isOrderMessagePush(resp.notification.request.content.data)) {
+            setTab("messages");
+            setChatOrderId(resp.notification.request.content.data.orderId);
+          } else if (resp) {
             const id = extractOrderId(resp.notification.request.content.data);
             if (id) {
               seen.current.add(id);
@@ -766,6 +790,12 @@ function Main({
   useEffect(() => {
     const onResponse = (response: Notifications.NotificationResponse | null) => {
       if (!response) return;
+      const content = response.notification.request.content.data;
+      if (isOrderMessagePush(content)) {
+        setTab("messages");
+        setChatOrderId(content.orderId);
+        return;
+      }
       const id = extractOrderId(response.notification.request.content.data);
       if (id) {
         seen.current.add(id);
@@ -774,6 +804,10 @@ function Main({
       void handleNotificationTarget(id);
     };
     const onReceived = (notification: Notifications.Notification) => {
+      if (isOrderMessagePush(notification.request.content.data)) {
+        bumpChat();
+        return;
+      }
       const id = extractOrderId(notification.request.content.data);
       if (id) {
         seen.current.add(id);
@@ -789,7 +823,7 @@ function Main({
     const responseSub = Notifications.addNotificationResponseReceivedListener(onResponse);
     const receivedSub = Notifications.addNotificationReceivedListener(onReceived);
     return () => { responseSub.remove(); receivedSub.remove(); };
-  }, [handleNotificationTarget]);
+  }, [handleNotificationTarget, bumpChat]);
 
   const setPriority = async (order: Order, priority: Order["priority"]) => {
     if (order.priority === priority) return;
@@ -897,7 +931,7 @@ function Main({
           <View style={{ marginLeft: 10 }}>
             <Text style={s.brandName}>ZHAOXI</Text>
             <Text style={s.brandSub}>
-              {(tab === "orders" ? t.orders : tab === "revenue" ? t.revenue : t.settings)} · {auth.session.displayName || "Partner"}
+              {(tab === "orders" ? t.orders : tab === "messages" ? orderChatCopy(lang).title : tab === "revenue" ? t.revenue : t.settings)} · {auth.session.displayName || "Partner"}
             </Text>
           </View>
         </View>
@@ -1026,6 +1060,7 @@ function Main({
                         busy={actionBusy === order.requestId}
                         onPriority={priority => void setPriority(order, priority)}
                         onEta={() => setEta(order)}
+                        onChanged={() => void load()}
                         t={t}
                       />
                     ))}
@@ -1057,6 +1092,7 @@ function Main({
                         busy={actionBusy === order.requestId}
                         onPriority={priority => void setPriority(order, priority)}
                         onEta={() => setEta(order)}
+                        onChanged={() => void load()}
                         t={t}
                       />
                     ))}
@@ -1092,6 +1128,7 @@ function Main({
                         busy={actionBusy === order.requestId}
                         onPriority={priority => void setPriority(order, priority)}
                         onEta={() => setEta(order)}
+                        onChanged={() => void load()}
                         t={t}
                       />
                     ))}
@@ -1107,6 +1144,8 @@ function Main({
               </>
             )}
           </ScrollView>
+      ) : tab === "messages" ? (
+        <OrderChatList orgId={orgId} lang={lang} refreshKey={chatTick} onOpen={setChatOrderId}/>
       ) : tab === "revenue" ? (
         <ScrollView
           style={s.flex}
@@ -1408,6 +1447,17 @@ function Main({
           <Ionicons name={tab === "orders" ? "receipt" : "receipt-outline"} size={23} color={tab === "orders" ? C.green : C.muted}/>
           <Text style={[s.tabText, tab === "orders" && s.tabOn]}>{t.orders}</Text>
         </Pressable>
+        <Pressable style={s.tab} onPress={() => setTab("messages")}>
+          <View>
+            <Ionicons name={tab === "messages" ? "chatbubbles" : "chatbubbles-outline"} size={23} color={tab === "messages" ? C.green : C.muted}/>
+            {chatUnread > 0 ? (
+              <View style={{ position: "absolute", top: -4, right: -10, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4, backgroundColor: C.red, alignItems: "center", justifyContent: "center" }}>
+                <Text style={{ color: C.white, fontSize: 10, fontWeight: "900" }}>{chatUnread > 99 ? "99+" : chatUnread}</Text>
+              </View>
+            ) : null}
+          </View>
+          <Text style={[s.tabText, tab === "messages" && s.tabOn]}>{orderChatCopy(lang).title}</Text>
+        </Pressable>
         <Pressable style={s.tab} onPress={() => setTab("revenue")}>
           <Ionicons name={tab === "revenue" ? "bar-chart" : "bar-chart-outline"} size={23} color={tab === "revenue" ? C.green : C.muted}/>
           <Text style={[s.tabText, tab === "revenue" && s.tabOn]}>{t.revenue}</Text>
@@ -1424,8 +1474,15 @@ function Main({
         waitingCount={waiting.length}
         waitingIndex={selected ? Math.max(1, waiting.findIndex(x => x.requestId === selected.requestId) + 1) : 1}
         onSelectOrder={setSelected}
+        onChat={order => {
+          // Close the order sheet first: iOS will not present a second modal over a dismissing one.
+          setSelected(null);
+          setTimeout(() => setChatOrderId(order.requestId), 350);
+        }}
+        chatLabel={orderChatCopy(lang).start}
         t={t}
       />
+      <OrderChatModal orgId={orgId} requestId={chatOrderId} lang={lang} refreshKey={chatTick} onClose={() => setChatOrderId(null)} onChanged={bumpChat}/>
       <Modal visible={Boolean(confirmAction)} transparent animationType="fade" onRequestClose={() => setConfirmAction(null)}>
         <View style={s.confirmBackdrop}>
           <View style={s.confirmCard}>

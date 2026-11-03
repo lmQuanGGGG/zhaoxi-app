@@ -1,0 +1,224 @@
+{
+  "module": "emergency",
+  "org": {
+    "code": "ZX-SOS-DN",
+    "type": "emergency-assistance",
+    "name": "ZhaoXi Hỗ trợ Khẩn cấp Đà Nẵng",
+    "description": "Hỗ trợ bằng tiếng Trung khi gặp sự cố tại Đà Nẵng: phiên dịch qua điện thoại, đi cùng đến bệnh viện, công an, nhà thuốc. Khi khẩn cấp hãy gọi 113 (công an), 114 (cứu hỏa), 115 (cấp cứu) trước; ZhaoXi không thay thế các lực lượng này và không cung cấp dịch vụ y tế.",
+    "addressText": "Hải Châu, Đà Nẵng",
+    "latitude": 16.0544,
+    "longitude": 108.216,
+    "bannerUrl": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1400&q=80"
+  },
+  "items": [
+    {
+      "code": "ZX-SOS-DN-01",
+      "price": 100000,
+      "imageUrl": "https://images.unsplash.com/photo-1423784346385-c1d4dac9893a?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1512428559087-560fa5ceab42?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/silhouette-photo-of-person-holding-smartphone-pb_lF8VWaPU",
+        "https://unsplash.com/photos/person-holding-white-android-smartphone-in-white-shirt-q8U1YgBaRQk"
+      ],
+      "meta": {
+        "unit": "lượt (tối đa 30 phút)",
+        "availability": "24/7",
+        "emergencyNumbers": {"police": "113", "fire": "114", "ambulance": "115", "rescue": "112"},
+        "languages": ["zh-CN", "zh-TW", "vi-VN"]
+      },
+      "t": {
+        "vi-VN": [
+          "Hỗ trợ khẩn cấp qua điện thoại bằng tiếng Trung 24/7",
+          "100.000đ/lượt hỗ trợ (tối đa 30 phút phiên dịch qua điện thoại).",
+          "Khi nguy hiểm, hãy gọi 113 (công an), 114 (cứu hỏa), 115 (cấp cứu) hoặc 112 (cứu nạn) TRƯỚC, rồi mới liên hệ ZhaoXi. Nhân viên nói tiếng Trung của ZhaoXi phiên dịch qua điện thoại khi bạn trao đổi với người xung quanh, tài xế, nhân viên bệnh viện hoặc công an, giúp mô tả vị trí và tình huống, và cho biết bước tiếp theo. ZhaoXi không phải lực lượng cứu hộ, không tư vấn y tế và không thay thế các tổng đài khẩn cấp của nhà nước."
+        ],
+        "en-US": [
+          "24/7 Chinese-language emergency phone support",
+          "100,000 VND per call (up to 30 minutes of phone interpreting).",
+          "In danger, call 113 (police), 114 (fire), 115 (ambulance) or 112 (rescue) FIRST, then contact ZhaoXi. Our Chinese-speaking staff interpret by phone while you talk to bystanders, drivers, hospital staff or police, help you describe your location and situation, and explain the next steps. ZhaoXi is not a rescue service, gives no medical advice and does not replace Vietnam's official emergency lines."
+        ],
+        "zh-CN": [
+          "24小时中文紧急电话协助",
+          "100,000越南盾/次（电话翻译最长30分钟）。",
+          "遇到危险时，请先拨打113（公安）、114（消防）、115（急救）或112（搜救），再联系ZhaoXi。我们的中文工作人员会通过电话为您与周围人员、司机、医院工作人员或警察沟通翻译，协助说明您的位置和情况，并告知下一步怎么做。ZhaoXi不是救援机构，不提供医疗建议，也不能替代越南官方紧急电话。"
+        ],
+        "zh-TW": [
+          "24小時中文緊急電話協助",
+          "100,000越南盾/次（電話口譯最長30分鐘）。",
+          "遇到危險時，請先撥打113（公安）、114（消防）、115（救護）或112（搜救），再聯絡ZhaoXi。我們的中文人員會透過電話為您與周遭民眾、司機、醫院人員或警察溝通口譯，協助說明您的位置與狀況，並告知下一步該怎麼做。ZhaoXi不是救援單位，不提供醫療建議，也不能取代越南官方緊急電話。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-SOS-DN-02",
+      "price": 250000,
+      "imageUrl": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/hospital-lobby-reception-with-signage-nMyM7fxpokE",
+        "https://unsplash.com/photos/empty-hospital-bed-inside-room-zbpgmGe27p8"
+      ],
+      "meta": {
+        "unit": "giờ (tối thiểu 2 giờ)",
+        "hospitals": ["Bệnh viện Đà Nẵng", "Vinmec Đà Nẵng", "Hoàn Mỹ Đà Nẵng", "Family Medical Practice Đà Nẵng"],
+        "languages": ["zh-CN", "zh-TW", "vi-VN"]
+      },
+      "t": {
+        "vi-VN": [
+          "Đi cùng khám bệnh tại bệnh viện kèm phiên dịch tiếng Trung",
+          "250.000đ/giờ, tối thiểu 2 giờ; viện phí, thuốc và đi lại tính riêng.",
+          "Trường hợp cấp cứu hãy gọi 115 trước. Phiên dịch viên ZhaoXi gặp bạn tại bệnh viện ở Đà Nẵng (như Bệnh viện Đà Nẵng, Vinmec Đà Nẵng, Hoàn Mỹ Đà Nẵng, Family Medical Practice Đà Nẵng), hỗ trợ đăng ký khám, phiên dịch giữa bạn và bác sĩ, giải thích thủ tục thanh toán và giấy tờ cho bảo hiểm. ZhaoXi chỉ phiên dịch nguyên văn, không chẩn đoán, không tư vấn y tế và không phải đối tác của bệnh viện; viện phí do bạn thanh toán trực tiếp cho bệnh viện."
+        ],
+        "en-US": [
+          "Hospital visit accompaniment with Chinese interpreter",
+          "250,000 VND per hour, 2-hour minimum; hospital fees, medicine and transport extra.",
+          "In an emergency, call 115 first. A ZhaoXi interpreter meets you at a hospital in Đà Nẵng (such as Đà Nẵng Hospital, Vinmec Đà Nẵng, Hoàn Mỹ Đà Nẵng or Family Medical Practice Đà Nẵng), helps with registration, interprets between you and the doctor, and explains payment and insurance paperwork. ZhaoXi interprets only — we do not diagnose or give medical advice and are not a partner of any hospital; you pay the hospital directly."
+        ],
+        "zh-CN": [
+          "陪同就医（医院中文翻译）",
+          "250,000越南盾/小时，最少2小时；医疗费、药费和交通费另计。",
+          "紧急情况请先拨打115。ZhaoXi翻译人员会在岘港的医院（如岘港医院 Bệnh viện Đà Nẵng、Vinmec岘港国际医院、Hoàn Mỹ岘港医院、Family Medical Practice岘港诊所）与您会合，协助挂号、在您与医生之间翻译，并说明缴费流程和保险理赔所需单据。ZhaoXi仅提供如实翻译，不做诊断、不提供医疗建议，也不是任何医院的合作方；医疗费用由您直接向医院支付。"
+        ],
+        "zh-TW": [
+          "陪同就醫（醫院中文口譯）",
+          "250,000越南盾/小時，最少2小時；醫療費、藥費與交通費另計。",
+          "緊急情況請先撥打115。ZhaoXi口譯人員會在峴港的醫院（如峴港醫院 Bệnh viện Đà Nẵng、Vinmec峴港國際醫院、Hoàn Mỹ峴港醫院、Family Medical Practice峴港診所）與您會合，協助掛號、在您與醫師之間口譯，並說明繳費流程及保險理賠所需單據。ZhaoXi僅提供如實口譯，不做診斷、不提供醫療建議，也不是任何醫院的合作夥伴；醫療費用由您直接向醫院支付。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-SOS-DN-03",
+      "price": 600000,
+      "imageUrl": "https://images.unsplash.com/photo-1553697388-94e804e2f0f6?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1487637419635-a2a471ff5c7b?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/person-holding-passports-0QcSnCM0aMc",
+        "https://unsplash.com/photos/passport-book-RiUZQOfQ8XE"
+      ],
+      "meta": {
+        "unit": "lượt (tối đa 4 giờ)",
+        "consularPost": "Tổng Lãnh sự quán Trung Quốc tại Đà Nẵng (中国驻岘港总领事馆)",
+        "languages": ["zh-CN", "zh-TW", "vi-VN"]
+      },
+      "t": {
+        "vi-VN": [
+          "Hỗ trợ khi mất hộ chiếu tại Đà Nẵng",
+          "600.000đ/lượt (tối đa 4 giờ đi cùng); lệ phí cấp giấy tờ mới nộp riêng cho cơ quan cấp.",
+          "Nếu bị trộm cướp hoặc gặp nguy hiểm, hãy gọi 113 trước. ZhaoXi đi cùng bạn đến công an phường nơi mất để trình báo và xin giấy xác nhận, hướng dẫn liên hệ Tổng Lãnh sự quán Trung Quốc tại Đà Nẵng để xin cấp lại hộ chiếu hoặc giấy thông hành (bạn tự liên hệ và nộp hồ sơ), sau đó hướng dẫn thủ tục thị thực/xuất cảnh liên quan tại Phòng Quản lý xuất nhập cảnh Công an TP Đà Nẵng. Lệ phí của lãnh sự quán và cơ quan xuất nhập cảnh do bạn nộp trực tiếp; ZhaoXi không đại diện cho cơ quan nào và không cam kết thời gian cấp."
+        ],
+        "en-US": [
+          "Lost passport support in Đà Nẵng",
+          "600,000 VND per case (up to 4 hours accompanied); fees for new documents are paid separately to the issuing authority.",
+          "If you were robbed or are in danger, call 113 first. ZhaoXi accompanies you to the local ward police to report the loss and obtain a confirmation, guides you to contact the Consulate General of China in Đà Nẵng to apply for a new passport or travel document (you contact and apply yourself), then explains the related visa/exit steps at the Immigration Office of Đà Nẵng City Police. Consular and immigration fees are paid by you directly; ZhaoXi does not represent any authority and cannot guarantee processing times."
+        ],
+        "zh-CN": [
+          "岘港护照遗失协助",
+          "600,000越南盾/次（陪同最长4小时）；补办证件的规费另行向发证机关缴纳。",
+          "如遭遇盗抢或处于危险中，请先拨打113。ZhaoXi陪同您到遗失地所属的坊公安报案并取得报失证明，指导您联系中国驻岘港总领事馆申请补发护照或旅行证（由您本人联系和递交），之后说明在岘港市公安局出入境管理处办理相关签证/出境手续的流程。领事馆和出入境部门的费用由您直接缴纳；ZhaoXi不代表任何机关，也不承诺办理时间。"
+        ],
+        "zh-TW": [
+          "峴港護照遺失協助",
+          "600,000越南盾/次（陪同最長4小時）；補辦證件規費另行向核發機關繳納。",
+          "如遭竊盜搶奪或身處危險，請先撥打113。ZhaoXi陪同您至遺失地所屬的坊公安報案並取得報失證明，指導您聯絡中國駐峴港總領事館申請補發護照或旅行證（由您本人聯絡及遞件），之後說明在峴港市公安局出入境管理處辦理相關簽證／出境手續的流程。領事館與出入境機關的費用由您直接繳納；ZhaoXi不代表任何機關，亦不保證辦理時間。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-SOS-DN-04",
+      "price": 300000,
+      "imageUrl": "https://images.unsplash.com/photo-1543355890-20bc0a26fda1?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1676836443222-fb3994d7ba05?auto=format&fit=crop&w=1400&q=80"
+      ],
+      "photoSources": [
+        "https://unsplash.com/photos/cars-and-motorcycles-on-road-during-daytime-GZkvTnGxL-E",
+        "https://unsplash.com/photos/a-group-of-people-riding-motorcycles-down-a-street-Z5lWbuJCCzM"
+      ],
+      "meta": {
+        "unit": "giờ (tối thiểu 2 giờ)",
+        "scope": "Phiên dịch tại hiện trường / trụ sở công an; không đại diện pháp lý",
+        "languages": ["zh-CN", "zh-TW", "vi-VN"]
+      },
+      "t": {
+        "vi-VN": [
+          "Phiên dịch khi tai nạn giao thông hoặc trình báo công an",
+          "300.000đ/giờ, tối thiểu 2 giờ; chi phí đi lại ngoài trung tâm tính thêm.",
+          "Khi có tai nạn hoặc bị trộm cắp, hãy gọi 113 (công an) và 115 (cấp cứu nếu có người bị thương) trước. Phiên dịch viên ZhaoXi đến hiện trường hoặc trụ sở công an ở Đà Nẵng để phiên dịch cho bạn khi làm việc với công an và các bên liên quan, giúp bạn hiểu nội dung biên bản trước khi ký và ghi lại giấy tờ cần cho bảo hiểm. ZhaoXi chỉ phiên dịch, không phải luật sư, không đại diện thương lượng và không tác động đến kết quả xử lý của cơ quan chức năng."
+        ],
+        "en-US": [
+          "Interpreting for traffic accidents and police reports",
+          "300,000 VND per hour, 2-hour minimum; travel outside the city centre extra.",
+          "After an accident or theft, call 113 (police), and 115 (ambulance) if anyone is hurt, first. A ZhaoXi interpreter comes to the scene or the police station in Đà Nẵng to interpret between you, the police and other parties, helps you understand any report before you sign it, and notes the documents you will need for insurance. ZhaoXi interprets only — we are not lawyers, do not negotiate on your behalf and cannot influence the authorities' decisions."
+        ],
+        "zh-CN": [
+          "交通事故及报警现场中文翻译",
+          "300,000越南盾/小时，最少2小时；市中心以外的交通费另计。",
+          "发生交通事故或被盗时，请先拨打113（公安），如有人受伤同时拨打115（急救）。ZhaoXi翻译人员会前往岘港的事故现场或公安机关，为您与警方及相关方沟通翻译，在您签字前帮助您理解笔录内容，并记下保险理赔所需的文件。ZhaoXi仅提供翻译，不是律师，不代表您谈判，也不会干预主管机关的处理结果。"
+        ],
+        "zh-TW": [
+          "交通事故及報案現場中文口譯",
+          "300,000越南盾/小時，最少2小時；市中心以外的交通費另計。",
+          "發生交通事故或遭竊時，請先撥打113（公安），如有人受傷同時撥打115（救護）。ZhaoXi口譯人員會前往峴港的事故現場或公安機關，為您與警方及相關方溝通口譯，在您簽名前協助您理解筆錄內容，並記下保險理賠所需文件。ZhaoXi僅提供口譯，不是律師，不代表您協商，也不會干預主管機關的處理結果。"
+        ]
+      }
+    },
+    {
+      "code": "ZX-SOS-DN-05",
+      "price": 120000,
+      "imageUrl": "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [],
+      "photoSources": [
+        "https://unsplash.com/photos/a-pile-of-pills-sitting-next-to-each-other-on-top-of-a-table-RS0-h_pyByk"
+      ],
+      "meta": {
+        "unit": "lượt",
+        "area": "Hải Châu, Thanh Khê, Sơn Trà, Ngũ Hành Sơn",
+        "note": "Tiền thuốc thanh toán theo hóa đơn nhà thuốc; thuốc kê đơn chỉ mua khi có đơn hợp lệ",
+        "languages": ["zh-CN", "zh-TW", "vi-VN"]
+      },
+      "t": {
+        "vi-VN": [
+          "Hỗ trợ mua thuốc tại nhà thuốc (đi cùng hoặc mua hộ)",
+          "120.000đ/lượt trong khu trung tâm Đà Nẵng; chưa gồm tiền thuốc.",
+          "Nếu triệu chứng nặng hoặc khẩn cấp, hãy gọi 115 trước. ZhaoXi đi cùng bạn đến nhà thuốc đạt chuẩn hoặc mua hộ đúng tên thuốc bạn yêu cầu, phiên dịch với dược sĩ và chuyển hóa đơn cho bạn; thuốc kê đơn chỉ được mua khi có đơn thuốc hợp lệ. ZhaoXi không tư vấn, không chọn thuốc thay bạn và không cung cấp dịch vụ y tế; tiền thuốc thanh toán đúng theo hóa đơn nhà thuốc."
+        ],
+        "en-US": [
+          "Pharmacy and medicine purchase assistance",
+          "120,000 VND per trip within central Đà Nẵng; medicine cost not included.",
+          "If symptoms are severe or urgent, call 115 first. ZhaoXi goes with you to a licensed pharmacy, or buys exactly the medicine you name, interprets with the pharmacist and hands you the receipt; prescription medicines are bought only with a valid prescription. ZhaoXi gives no medical advice, does not choose medicines for you and provides no medical services; you pay the pharmacy's receipted price."
+        ],
+        "zh-CN": [
+          "药店购药协助（陪同或代购）",
+          "岘港市中心区域120,000越南盾/次；不含药费。",
+          "如症状严重或紧急，请先拨打115。ZhaoXi陪同您前往正规药店，或按您指定的药名代购，在您与药剂师之间翻译并把收据交给您；处方药必须凭有效处方购买。ZhaoXi不提供用药建议、不替您选药，也不提供任何医疗服务；药费按药店收据如实结算。"
+        ],
+        "zh-TW": [
+          "藥局購藥協助（陪同或代購）",
+          "峴港市中心區域120,000越南盾/次；不含藥費。",
+          "如症狀嚴重或緊急，請先撥打115。ZhaoXi陪同您前往合格藥局，或依您指定的藥名代購，在您與藥師之間口譯並將收據交給您；處方藥必須憑有效處方購買。ZhaoXi不提供用藥建議、不代您選藥，也不提供任何醫療服務；藥費依藥局收據如實結算。"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    "https://thuvienphapluat.vn/hoi-dap-phap-luat/111-113-114-115-la-so-dien-thoai-gi-138013545.html",
+    "https://viettelstore.vn/tin-tuc/112-la-so-dien-thoai-gi-y-nghia-va-nhung-dieu-can-biet-khi-goi-tong-dai-khan-cap",
+    "https://viettimes.vn/trung-quoc-chinh-thuc-khai-truong-tong-lanh-su-quan-tai-da-nang-post62199.html",
+    "https://baodautu.vn/khai-truong-tong-lanh-su-quan-trung-quoc-tai-da-nang-d71068.html",
+    "https://www.mfa.gov.cn/zwbd_673032/gzhd_673042/202201/t20220118_10629962.shtml",
+    "https://hcmc.vietnam.embassy.gov.au/files/hchi/list_of_hospitals_jul_2026.pdf",
+    "https://www.vinmec.com/vie/co-so-y-te/khoa-hoi-suc-cap-cuu-benh-vien-da-khoa-vinmec-da-nang",
+    "https://en.wikipedia.org/wiki/Da_Nang_Hospital",
+    "https://medpro.vn/tin-tuc/benh-vien-da-khoa-da-nang",
+    "https://www.csair.com/h5/cn/haiwai/asia/Hanoi/1ave35k1854f0.shtml",
+    "https://thaonco.com/?p=22805",
+    "https://www.jotme.io/vi/blog/translation-rates"
+  ],
+  "notes": "Mọi mô tả đều yêu cầu gọi 113/114/115 (và 112) trước. Cơ quan lãnh sự: đã xác minh Trung Quốc có Tổng Lãnh sự quán tại Đà Nẵng (khai trương 13/10/2017, đường Trần Trọng Khiêm, Khuê Mỹ, Ngũ Hành Sơn; lãnh thổ lãnh sự gồm Thừa Thiên-Huế, Đà Nẵng, Quảng Nam, Quảng Ngãi, Bình Định, Phú Yên — theo Viettimes; MFA còn đưa tin hoạt động năm 2022). Không ghi địa chỉ/điện thoại trong sản phẩm; chủ nên xác nhận đầu mối lãnh sự hiện hành (sau sáp nhập tỉnh 2025) trước khi vận hành. Bệnh viện nêu tên đã đối chiếu danh sách bệnh viện của Tổng Lãnh sự quán Úc tại TP.HCM (07/2026: Hoàn Mỹ Đà Nẵng, Vinmec Đà Nẵng, Family Medical Practice Đà Nẵng) và nguồn Bệnh viện Đà Nẵng (124 Hải Phòng); ZhaoXi KHÔNG phải đối tác của các bệnh viện này. Giá phiên dịch: không có bảng giá Đà Nẵng công khai cho phiên dịch tiếng Trung đi cùng; mức 250–300 nghìn/giờ đặt thấp hơn nhiều so với mức phiên dịch chuyên nghiệp quốc tế (80–250 USD/giờ) cho phù hợp dịch vụ cộng đồng — chủ tự điều chỉnh. Rủi ro pháp lý: (1) không được tư vấn/chỉ định thuốc — nhân viên chỉ mua đúng thuốc khách nêu, thuốc kê đơn phải có đơn; (2) phiên dịch tại công an chỉ là hỗ trợ ngôn ngữ, cơ quan công an có thể dùng phiên dịch riêng của họ; (3) đường dây 24/7 cần có người trực thật trước khi mở bán. Ảnh: hộ chiếu minh họa là hộ chiếu Mỹ; ảnh giao thông là đường phố Việt Nam (Hà Nội) — chỉ minh họa."
+}

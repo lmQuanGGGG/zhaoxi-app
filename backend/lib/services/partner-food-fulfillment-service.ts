@@ -1,6 +1,7 @@
 import {and,eq,sql} from "drizzle-orm";
 import {getDb} from "@/db";
 import {organizationMembers,paymentEvents,paymentTransactions,serviceRequests} from "@/db/schema";
+import {customerMobilePushService} from "@/lib/services/customer-mobile-push-service";
 
 export type FoodFulfillmentAction=
  "accept"|"start_preparing"|"ready_for_pickup"|"courier_booked"|"handed_off"|"delivered"|"cancelled";
@@ -92,6 +93,7 @@ export class PartnerFoodFulfillmentService{
   const row=rows[0];
   const updated=row?{...current,status:row.status,details:row.details,updatedAt:new Date(row.updated_at)}:undefined;
   if(!updated)return (await db.select().from(serviceRequests).where(eq(serviceRequests.id,requestId)).limit(1))[0]||current;
+  customerMobilePushService.notifyRequestEventAfterResponse({requestId,note,toStatus:updated.status,actorUserId:userId});
   if(action==="accept"&&details.paymentMethod==="bank_transfer"){
     const payment=(await db.select().from(paymentTransactions).where(eq(paymentTransactions.requestId,requestId)).limit(1))[0];
     if(payment?.status==="awaiting_payment"){
