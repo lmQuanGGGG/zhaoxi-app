@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test:partner-orders": "tsx --test tests/partner-order-presentation.test.ts tests/partner-order-notify.integration.test.ts",
+    "test:support": "tsx --test tests/support-thread.integration.test.ts",
     "verify:current": "node scripts/verify-current-architecture.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
