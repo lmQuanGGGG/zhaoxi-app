@@ -46,7 +46,7 @@ const sampleEdgeColors = `(function () {
 // lifting the finger restores the speed. The click that ends the hold is swallowed so the site's own
 // tap (pause / show controls) does not fire too.
 const holdForDoubleSpeed = `(function () {
-  var timer = null, boosted = [], swallow = false, badge = null;
+  var timer = null, boosted = [], swallow = false, badge = null, ramp = null;
   function playingVideos() {
     return Array.prototype.filter.call(document.querySelectorAll("video"), function (v) { return !v.paused && !v.ended; });
   }
@@ -54,15 +54,26 @@ const holdForDoubleSpeed = `(function () {
     if (!badge) {
       badge = document.createElement("div");
       badge.textContent = "2x \u25B6\u25B6";
-      badge.style.cssText = "position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:2147483647;padding:6px 14px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font:700 14px -apple-system,system-ui;letter-spacing:.5px;pointer-events:none;transition:opacity .15s";
+      badge.style.cssText = "position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:2147483647;padding:6px 14px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font:700 14px -apple-system,system-ui;letter-spacing:.5px;pointer-events:none;opacity:0;transition:opacity .15s;will-change:opacity";
       document.body.appendChild(badge);
     }
     badge.style.opacity = on ? "1" : "0";
   }
+  // Glide the rate in small steps instead of one jump: a single 1 -> 2 switch makes the
+  // player rebuild its audio time-stretch at once, which reads as a stutter.
+  function glide(items, to) {
+    if (ramp) clearInterval(ramp);
+    var steps = 4, i = 0, from = items.map(function (b) { return b.v.playbackRate; });
+    ramp = setInterval(function () {
+      i += 1;
+      items.forEach(function (b, k) { b.v.playbackRate = from[k] + ((typeof to === "number" ? to : b.rate) - from[k]) * (i / steps); });
+      if (i >= steps) { clearInterval(ramp); ramp = null; }
+    }, 50);
+  }
   function stop() {
     clearTimeout(timer); timer = null;
     if (boosted.length) {
-      boosted.forEach(function (b) { b.v.playbackRate = b.rate; });
+      glide(boosted, null);
       boosted = []; showBadge(false); swallow = true;
       setTimeout(function () { swallow = false; }, 400);
     }
@@ -74,7 +85,8 @@ const holdForDoubleSpeed = `(function () {
     timer = setTimeout(function () {
       var vids = playingVideos();
       if (!vids.length) return;
-      boosted = vids.map(function (v) { var b = { v: v, rate: v.playbackRate }; v.playbackRate = 2; return b; });
+      boosted = vids.map(function (v) { return { v: v, rate: v.playbackRate }; });
+      glide(boosted, 2);
       showBadge(true);
     }, 400);
   }, { passive: true, capture: true });
