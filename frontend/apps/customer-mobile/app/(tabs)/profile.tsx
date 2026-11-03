@@ -14,10 +14,11 @@ import { getPromotionsPreference, pushPermissionGranted, registerForPush, setPro
 import { profileCopy } from "../../src/profile-copy";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
-import { ArtLabel, HeaderFade, ListRow, PressableScale, Screen, type MenuArtKind } from "../../src/ui";
+import { ArtLabel, HeaderFade, ListRow, PressableScale, Screen, ServicesGem, styles as ui, type MenuArtKind } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
 
 const feedbackLabel = { "vi-VN": "Gửi phản hồi Beta", "en-US": "Beta feedback", "zh-CN": "Beta 反馈", "zh-TW": "Beta 回饋" } as const;
+const miniAppsLabel = { "vi-VN": "Mini app", "en-US": "Mini apps", "zh-CN": "小程序", "zh-TW": "小程式" } as const;
 
 export default function ProfileScreen() {
   const { t, locale } = useI18n();
@@ -118,6 +119,12 @@ export default function ProfileScreen() {
           <ListRow art="promotions" title={c.promotions} right={<Switch value={promotions} trackColor={{ true: colors.wechat }} onValueChange={(value) => { setPromotions(value); void setPromotionsPreference(value, locale); }} />} />
           <ListRow art="help" title={t.profile.help} onPress={() => router.push("/help")} />
           <ListRow art="feedback" title={feedbackLabel[locale]} onPress={() => router.push("/feedback")} />
+          {/* Cùng khung ListRow, biểu tượng là khối kính màu của nút dịch vụ ở dock. */}
+          <PressableScale onPress={() => router.push("/miniapps")} scaleTo={0.985} style={[ui.listRow, { paddingVertical: 10, gap: 12 }]}>
+            <View style={{ width: 40, height: 40, alignItems: "center", justifyContent: "center" }}><ServicesGem size={32} /></View>
+            <Text style={{ flex: 1, fontSize: 14, fontWeight: "600", color: colors.ink }} numberOfLines={1}>{miniAppsLabel[locale]}</Text>
+            <Text style={{ fontSize: 20, color: "#94A3B8" }}>›</Text>
+          </PressableScale>
         </View>
         <Text style={styles.version}>ZhaoXi · {t.profile.version} {APP_VERSION}</Text>
       </ScrollView>

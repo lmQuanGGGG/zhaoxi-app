@@ -81,6 +81,9 @@ function AppNavigator({ onboarded, locale }: { onboarded: boolean; locale: ZhaoX
         <Stack.Screen name="cart" options={{ presentation: "card" }} />
         <Stack.Screen name="location" options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }} />
         <Stack.Screen name="request-success" options={{ animation: "fade_from_bottom", gestureEnabled: false }} />
+        {/* Mini app phủ toàn màn hình; chỉ đóng bằng nút kính "×" để không lẫn với cử chỉ bên trong mini app.
+            Dùng card (không phải native modal) để toast của host và màn host mở từ mini app vẫn hiện lên trên. */}
+        <Stack.Screen name="miniapp/[id]" options={{ presentation: "card", animation: "slide_from_bottom", gestureEnabled: false }} />
         <Stack.Screen name="language" options={{ presentation: "formSheet", sheetAllowedDetents: [0.55, 0.9], sheetGrabberVisible: true, sheetCornerRadius: 28 }} />
       </Stack>
       <Dock />
