@@ -40,6 +40,7 @@ const config: ExpoConfig = {
   plugins: [
     "expo-secure-store",
     ["expo-notifications", { sounds: ["./assets/order_alert.wav"], color: "#0b8f55", defaultChannel: "new-orders" }],
+    ["expo-image-picker", { photosPermission: "ZhaoXi Partner cần truy cập ảnh để bạn gửi ảnh trong tin nhắn đơn hàng.", cameraPermission: "ZhaoXi Partner cần dùng camera để bạn chụp và gửi ảnh trong tin nhắn đơn hàng.", microphonePermission: false }],
     "./plugins/with-ios-scene-lifecycle",
   ],
   extra: {

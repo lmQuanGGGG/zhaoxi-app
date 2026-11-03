@@ -129,7 +129,8 @@ export type AnalyticsData = {
 };
 
 export type OrderChatSender = "customer" | "partner";
-export type OrderChatMessage = { id: string; senderRole: OrderChatSender; body: string; createdAt: string; clientMessageId: string | null; pending?: boolean };
+export type OrderChatAttachment = { id: string; url: string; mimeType: string; width: number | null; height: number | null };
+export type OrderChatMessage = { id: string; senderRole: OrderChatSender; body: string; createdAt: string; clientMessageId: string | null; attachments?: OrderChatAttachment[]; pending?: boolean };
 export type OrderChatSummary = {
   id: string;
   requestId: string;

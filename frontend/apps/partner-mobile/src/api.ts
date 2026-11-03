@@ -1,5 +1,5 @@
 import * as SecureStore from "expo-secure-store";
-import type { AnalyticsData, AuthState, Order, OrderChatMessage, OrderChatSummary, OrderChatThread, OrderFact, PartnerOrderAction, PartnerOrderKind, PartnerOrganization, QueueData, Session } from "./types";
+import type { AnalyticsData, AuthState, Order, OrderChatAttachment, OrderChatMessage, OrderChatSummary, OrderChatThread, OrderFact, PartnerOrderAction, PartnerOrderKind, PartnerOrganization, QueueData, Session } from "./types";
 
 const AUTH_KEY = "zhaoxi.partner.auth.v1";
 const configuredUrl = process.env.EXPO_PUBLIC_API_URL || "https://zhaoxi-app-puce.vercel.app";
@@ -20,10 +20,16 @@ async function saveAuth(value: AuthState | null) {
   else await SecureStore.deleteItemAsync(AUTH_KEY);
 }
 
+/** Bearer header for requests the app makes outside `request` (chat photos). */
+export function authHeaders(): Record<string, string> {
+  return auth?.accessToken ? { authorization: `Bearer ${auth.accessToken}` } : {};
+}
+
 async function raw(path: string, init: RequestInit = {}) {
   return fetch(`${API_URL}${path}`, {
     ...init,
-    headers: { "content-type": "application/json", ...(auth?.accessToken ? { authorization: `Bearer ${auth.accessToken}` } : {}), ...init.headers },
+    // Multipart uploads set their own boundary header.
+    headers: { ...(init.body instanceof FormData ? {} : { "content-type": "application/json" }), ...authHeaders(), ...init.headers },
   });
 }
 
@@ -200,7 +206,17 @@ export const getOrderChatUnread = (organizationId: string) =>
   request<{ unread: number }>(`/api/partner-order-chats?summary=1&organizationId=${encodeURIComponent(organizationId)}`);
 export const getOrderChat = (organizationId: string, requestId: string) =>
   request<OrderChatThread>(`${chatPath(requestId)}?organizationId=${encodeURIComponent(organizationId)}`);
-export const sendOrderChat = (organizationId: string, requestId: string, message: string, clientMessageId: string) =>
-  request<OrderChatMessage>(chatPath(requestId), { method: "POST", body: JSON.stringify({ organizationId, message, clientMessageId }) });
+export const sendOrderChat = (organizationId: string, requestId: string, message: string, clientMessageId: string, attachmentIds: string[] = []) =>
+  request<OrderChatMessage>(chatPath(requestId), { method: "POST", body: JSON.stringify({ organizationId, message, clientMessageId, attachmentIds }) });
+/** Uploads one already-compressed JPEG for the next message. */
+export function uploadOrderChatPhoto(organizationId: string, requestId: string, photo: { uri: string; width: number; height: number }) {
+  const form = new FormData();
+  form.append("file", { uri: photo.uri, name: "photo.jpg", type: "image/jpeg" } as unknown as Blob);
+  form.append("width", String(photo.width));
+  form.append("height", String(photo.height));
+  form.append("organizationId", organizationId);
+  return request<OrderChatAttachment>(`${chatPath(requestId)}/attachments`, { method: "POST", body: form });
+}
+export const orderChatPhotoUrl = (attachment: OrderChatAttachment, organizationId: string) => `${API_URL}${attachment.url}?organizationId=${encodeURIComponent(organizationId)}`;
 export const markOrderChatRead = (organizationId: string, requestId: string) =>
   request(chatPath(requestId), { method: "PATCH", body: JSON.stringify({ organizationId }) });
