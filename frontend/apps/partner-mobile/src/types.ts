@@ -127,3 +127,23 @@ export type AnalyticsData = {
   topItems: TopItemAnalytics[];
   campaignPerformance: CampaignAnalytics[];
 };
+
+export type OrderChatSender = "customer" | "partner";
+export type OrderChatMessage = { id: string; senderRole: OrderChatSender; body: string; createdAt: string; clientMessageId: string | null; pending?: boolean };
+export type OrderChatSummary = {
+  id: string;
+  requestId: string;
+  requestCode: string;
+  title: string;
+  subtitle: string;
+  moduleCode: string;
+  status: string;
+  lastMessage: string;
+  lastMessageAt: string;
+  lastSenderRole: OrderChatSender | null;
+  unreadCount: number;
+};
+export type OrderChatThread = {
+  thread: { id: string; requestId: string; requestCode: string; title: string; subtitle: string; status: string; moduleCode: string; canSend: boolean; counterpartReadAt: string | null };
+  messages: OrderChatMessage[];
+};

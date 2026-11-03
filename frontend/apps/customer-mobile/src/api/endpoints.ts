@@ -1,6 +1,6 @@
 import { json, request, requestRaw } from "./client";
 import type {
-  ApiModule, AvailableCoupon, CouponEvaluation, CustomerProfile, DeliveryQuote, DeliveryTracking, DeviceSession, DiscoveryResult,
+  ApiModule, AvailableCoupon, ChatMessage, CouponEvaluation, CustomerProfile, DeliveryQuote, DeliveryTracking, DeviceSession, DiscoveryResult,
   FavoriteItem, FoodPrice, HelpArticle, HomeFeed, HousingInquiry, MessageThread, MessageThreadSummary, NotificationInbox, NotificationPreferences,
   Order, OrderDetail, PartnerPaymentState, Payment, PaymentCapabilities, Point, Recommendation, RestaurantStatus, SavedAddress, Service, ServiceDetail,
   SupportConfig, TravelBooking, TravelSlot, UiConfig, UnreadSummary,
@@ -121,8 +121,8 @@ export const updateNotificationPreferences = (patch: Partial<NotificationPrefere
 export const getUnreadSummary = (locale: string) => request<UnreadSummary>(`/api/customer-unread-summary?${q({ locale })}`);
 export const getThreads = (locale: string) => request<{ threads: MessageThreadSummary[]; summary: { unread: number } }>(`/api/customer-messages?${q({ locale })}`);
 export const getThread = (threadId: string) => request<MessageThread>(`/api/customer-messages/${encodeURIComponent(threadId)}`);
-export const sendMessage = (threadId: string, message: string) =>
-  request(`/api/customer-messages/${encodeURIComponent(threadId)}`, { method: "POST", body: json({ message }) });
+export const sendMessage = (threadId: string, message: string, clientMessageId?: string) =>
+  request<ChatMessage>(`/api/customer-messages/${encodeURIComponent(threadId)}`, { method: "POST", body: json({ message, clientMessageId }) });
 export const markThreadRead = (threadId: string) => request(`/api/customer-messages/${encodeURIComponent(threadId)}`, { method: "PATCH", body: "{}" });
 export const createSupportThread = (subject: string, message: string) =>
   request<{ id: string }>("/api/customer-messages", { method: "POST", body: json({ subject, message }) });

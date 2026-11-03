@@ -1,0 +1,6 @@
+import { NextResponse as EdgeNextResponse } from "next/server";
+export const runtime="edge";
+async function safeJsonResponse(res:Response){try{const text=await res.text();return EdgeNextResponse.json(JSON.parse(text),{status:res.status});}catch{return EdgeNextResponse.json({ok:false,error:{code:"UPSTREAM_UNAVAILABLE",upstreamStatus:res.status}},{status:res.status>=400?res.status:502});}}
+import {NextRequest} from"next/server";export const dynamic="force-dynamic";const backend=()=>((process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"").includes("zhaoxi-backend.vercel.app")?"https://zhaoxi-app-puce.vercel.app":(process.env.ZHAOXI_BACKEND_URL||process.env.NEXT_PUBLIC_ZHAOXI_API_URL||"https://zhaoxi-app-puce.vercel.app")).replace(/\/+$/,"");
+function h(r:NextRequest){const x:Record<string,string>={};const token=r.cookies.get("zx_access_v2")?.value;if(token)x.authorization=`Bearer ${token}`;return x}
+export async function GET(r:NextRequest){try{const u=await fetch(`${backend()}/api/partner-order-chats?${r.nextUrl.searchParams}`,{headers:h(r),cache:"no-store"});return safeJsonResponse(u)}catch{return EdgeNextResponse.json({ok:false,error:{code:"ORDER_CHAT_UNAVAILABLE"}},{status:503})}}

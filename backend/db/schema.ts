@@ -1560,3 +1560,37 @@ export const customerMobilePushDevices = pgTable("customer_mobile_push_devices",
   index("customer_mobile_push_devices_user_idx").on(table.userId),
   index("customer_mobile_push_devices_promotions_idx").on(table.promotionsEnabled, table.enabled),
 ]);
+
+// One conversation per order (any module) between the customer and the store's
+// organization. Unread state is a per-side read cursor, so marking a thread read
+// is a single row update instead of touching every message.
+export const orderConversations = pgTable("order_conversations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  serviceRequestId: uuid("service_request_id").notNull().unique().references(() => serviceRequests.id, { onDelete: "cascade" }),
+  customerId: uuid("customer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+  lastMessageAt: timestamp("last_message_at", { withTimezone: true }),
+  lastMessagePreview: text("last_message_preview"),
+  lastSenderRole: varchar("last_sender_role", { length: 16 }),
+  customerLastReadAt: timestamp("customer_last_read_at", { withTimezone: true }),
+  partnerLastReadAt: timestamp("partner_last_read_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index("order_conversations_customer_idx").on(table.customerId, table.lastMessageAt),
+  index("order_conversations_org_idx").on(table.organizationId, table.lastMessageAt),
+]);
+
+export const orderMessages = pgTable("order_messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  conversationId: uuid("conversation_id").notNull().references(() => orderConversations.id, { onDelete: "cascade" }),
+  senderRole: varchar("sender_role", { length: 16 }).notNull(),
+  senderUserId: uuid("sender_user_id").references(() => users.id, { onDelete: "set null" }),
+  body: text("body").notNull(),
+  clientMessageId: varchar("client_message_id", { length: 64 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index("order_messages_conversation_idx").on(table.conversationId, table.createdAt),
+  uniqueIndex("order_messages_client_id_unique").on(table.conversationId, table.clientMessageId).where(sql`${table.clientMessageId} IS NOT NULL`),
+  check("order_messages_sender_role_check", sql`${table.senderRole} IN ('customer', 'partner')`),
+]);

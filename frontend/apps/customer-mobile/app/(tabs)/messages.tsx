@@ -14,7 +14,7 @@ import { usePullRefresh, useSession } from "../../src/hooks";
 import { useI18n } from "../../src/i18n";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
-import { Art3D, Badge, Header, PressableScale, Screen, SkeletonList } from "../../src/ui";
+import { Art3D, Badge, Header, PressableScale, Screen, ServiceIcon, SkeletonList } from "../../src/ui";
 
 const copy = {
   "vi-VN": { title: "Trung tâm tin nhắn", search: "Trung tâm tin nhắn…", assistant: "Trợ lý ZhaoXi", assistantHint: "Tư vấn dịch vụ và hỗ trợ tức thời", empty: "Chưa có hội thoại", help: "Trung tâm trợ giúp", create: "Tạo hội thoại hỗ trợ", notify: "Trung tâm thông báo", payment: "Hỗ trợ thanh toán", support: "Hỗ trợ ZhaoXi" },
@@ -23,7 +23,7 @@ const copy = {
   "zh-TW": { title: "消息中心", search: "消息中心…", assistant: "趙喜助手", assistantHint: "服務諮詢與即時支援", empty: "暫無對話", help: "幫助中心", create: "建立客服對話", notify: "通知中心", payment: "支付支援", support: "趙喜客服" },
 } as const;
 
-const tabs: Array<"all" | ThreadKind> = ["all", "housing", "travel", "payment", "support"];
+const tabs: Array<"all" | ThreadKind> = ["all", "order", "housing", "travel", "payment", "support"];
 
 export default function MessagesScreen() {
   const { t, locale } = useI18n();
@@ -33,7 +33,7 @@ export default function MessagesScreen() {
   const [query, setQuery] = useState("");
   const threads = useQuery({ queryKey: keys.threads(locale, userId), queryFn: () => getThreads(locale), enabled: Boolean(userId), refetchInterval: 20_000 });
   const pull = usePullRefresh(threads.refetch);
-  const label = (kind: "all" | ThreadKind) => (kind === "all" ? t.notifications.all : kind === "payment" ? c.payment : kind === "support" ? c.support : t.messages[kind]);
+  const label = (kind: "all" | ThreadKind) => (kind === "all" ? t.notifications.all : kind === "payment" ? c.payment : kind === "support" ? c.support : kind === "order" ? t.messages.order : t.messages[kind]);
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return (threads.data?.threads || []).filter((x) => (filter === "all" || x.kind === filter) && (!needle || `${x.title} ${x.lastMessage}`.toLowerCase().includes(needle)));
@@ -77,6 +77,7 @@ export default function MessagesScreen() {
         renderItem={({ item, index }) => (
           <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 30)} style={{ paddingHorizontal: 14, paddingBottom: 7 }}>
             <PressableScale scaleTo={0.985} onPress={() => router.push(`/chat/${encodeURIComponent(item.id)}`)} style={[styles.thread, shadow("card")]}>
+              {item.kind === "support" ? <View style={styles.supportAvatar}><Text style={styles.supportGlyph}>喜</Text></View> : <ServiceIcon code={item.kind === "order" ? item.moduleCode : item.kind} size={40} />}
               <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
                 <Text style={styles.meta}>{label(item.kind)}{item.subtitle ? ` · ${item.subtitle}` : ""} · {item.lastMessageAt ? relativeTime(item.lastMessageAt, locale) : ""}</Text>
                 <Text style={styles.threadTitle} numberOfLines={1}>{item.title}</Text>
@@ -103,5 +104,7 @@ const styles = StyleSheet.create({
   toolbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 12 },
   thread: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: 12, backgroundColor: colors.white, ...shadow("card") },
   meta: { fontSize: 11, color: colors.textSecondary },
+  supportAvatar: { width: 40, height: 40, borderRadius: 12, backgroundColor: "#DDEFE6", alignItems: "center", justifyContent: "center" },
+  supportGlyph: { fontSize: 17, fontWeight: "800", color: colors.brandDeep },
   threadTitle: { fontSize: 13.5, fontWeight: "700", color: colors.text },
 });

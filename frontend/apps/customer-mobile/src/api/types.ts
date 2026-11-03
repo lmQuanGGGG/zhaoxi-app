@@ -209,10 +209,11 @@ export type NotificationInbox = {
 };
 export type UnreadSummary = { messages: number; notifications: number; total: number };
 
-export type ThreadKind = "support" | "housing" | "travel" | "payment";
-export type MessageThreadSummary = { id: string; kind: ThreadKind; title: string; subtitle?: string; lastMessage: string; lastMessageAt: string; unreadCount: number; status?: string };
-export type ChatMessage = { id: string; body: string; createdAt: string; senderRole?: string; sender?: string; customerReadAt?: string | null };
-export type MessageThread = { thread: { id: string; kind: ThreadKind; title: string; status?: string }; messages: ChatMessage[] };
+export type ThreadKind = "support" | "housing" | "travel" | "payment" | "order";
+export type MessageThreadSummary = { id: string; kind: ThreadKind; title: string; subtitle?: string; lastMessage: string; lastMessageAt: string; unreadCount: number; status?: string; requestId?: string; moduleCode?: string };
+export type ChatMessage = { id: string; body: string; createdAt: string; senderRole?: string; sender?: string; customerReadAt?: string | null; clientMessageId?: string | null; pending?: boolean };
+/** Order threads also carry the order reference and the store's read cursor. */
+export type MessageThread = { thread: { id: string; kind: ThreadKind; title: string; status?: string; subtitle?: string; requestId?: string; requestCode?: string; moduleCode?: string; canSend?: boolean; counterpartReadAt?: string | null }; messages: ChatMessage[] };
 
 export type DiscoveryService = { id: string; name: string; moduleCode: string; moduleName?: string; organizationName?: string; organizationId?: string; imageUrl?: string | null; priceFrom?: number | string | null; currency?: string; publicHref?: string };
 export type DiscoveryPartner = { organizationId: string; name: string; code?: string; description?: string | null; serviceCount?: number; badgeCount?: number; href?: string };

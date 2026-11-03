@@ -14,15 +14,25 @@ export function shortDate(value: string | Date, locale: string) {
   return date.toLocaleString(locale, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
+// Hermes on iOS ships without Intl.RelativeTimeFormat, so relative times use a small table.
+const relativeCopy: Record<string, { now: string; minute: string; hour: string; day: string }> = {
+  "vi-VN": { now: "Vừa xong", minute: "{n} phút trước", hour: "{n} giờ trước", day: "{n} ngày trước" },
+  "en-US": { now: "Just now", minute: "{n} min ago", hour: "{n} h ago", day: "{n} d ago" },
+  "zh-CN": { now: "刚刚", minute: "{n}分钟前", hour: "{n}小时前", day: "{n}天前" },
+  "zh-TW": { now: "剛剛", minute: "{n}分鐘前", hour: "{n}小時前", day: "{n}天前" },
+};
+
 export function relativeTime(value: string, locale: string) {
-  const diff = Date.now() - new Date(value).getTime();
-  const minutes = Math.round(diff / 60000);
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
-  if (Math.abs(minutes) < 60) return rtf.format(-minutes, "minute");
+  const time = new Date(value).getTime();
+  if (Number.isNaN(time)) return "";
+  const copy = relativeCopy[locale] || relativeCopy["vi-VN"];
+  const minutes = Math.max(0, Math.round((Date.now() - time) / 60000));
+  if (minutes < 1) return copy.now;
+  if (minutes < 60) return copy.minute.replace("{n}", String(minutes));
   const hours = Math.round(minutes / 60);
-  if (Math.abs(hours) < 24) return rtf.format(-hours, "hour");
+  if (hours < 24) return copy.hour.replace("{n}", String(hours));
   const days = Math.round(hours / 24);
-  if (Math.abs(days) < 7) return rtf.format(-days, "day");
+  if (days < 7) return copy.day.replace("{n}", String(days));
   return shortDate(value, locale);
 }
 

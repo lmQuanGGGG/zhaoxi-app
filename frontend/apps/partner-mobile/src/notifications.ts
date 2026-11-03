@@ -25,6 +25,12 @@ export async function configureNotifications() {
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
       bypassDnd: false,
     });
+    await Notifications.setNotificationChannelAsync("messages", {
+      name: "Tin nhắn khách hàng",
+      description: "Tin nhắn mới của khách trong đơn hàng",
+      importance: Notifications.AndroidImportance.HIGH,
+      lightColor: "#16a36a",
+    });
   }
 }
 
