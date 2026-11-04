@@ -36,7 +36,9 @@ export function useMiniAppAccess() {
   const { userId, guest } = useSession();
   const enabled = Boolean(userId) && !guest;
   const account = useQuery({ queryKey: keys.accountAccess(userId), queryFn: getAccountAccess, enabled, staleTime: 5 * 60_000 });
-  const catalog = useQuery({ queryKey: keys.miniAppCatalog(Platform.OS, userId), queryFn: () => getMiniAppCatalog(Platform.OS), staleTime: 5 * 60_000, retry: 1 });
+  // Waits for the restored session: asked before it, the request went out as a guest and the empty
+  // answer stayed cached (persisted) under the user's key. Short staleTime so a newly published app shows up.
+  const catalog = useQuery({ queryKey: keys.miniAppCatalog(Platform.OS, userId), queryFn: () => getMiniAppCatalog(Platform.OS), enabled: Boolean(userId), staleTime: 60_000, retry: 1 });
   // Áp ngay trong lúc render (không làm gì nếu đã áp mảng này) để màn gọi hook thấy danh mục mới ở cùng lần render.
   const serverIds = catalog.data ? applyMiniAppCatalog(catalog.data) : null;
   const ready = serverIds !== null || (catalog.isFetched && (!enabled || account.isFetched));
@@ -50,5 +52,5 @@ export function useMiniAppAccess() {
     },
     [serverIds, data],
   );
-  return { ready, canOpen };
+  return { ready, canOpen, loading: catalog.isPending && enabled, error: catalog.isError && !catalog.data, refresh: catalog.refetch, refreshing: catalog.isRefetching };
 }
