@@ -1,7 +1,7 @@
 {
   "id": "zhaoxi.partner",
   "name": "ZhaoXi Partner",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "entry": "../partner-mobile/src/miniapp.tsx",
   "permissions": ["user.profile", "auth.handoff", "notifications.push"],
   "devPort": 8094

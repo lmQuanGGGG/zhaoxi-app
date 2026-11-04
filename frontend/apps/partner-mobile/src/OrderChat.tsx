@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, AppState, FlatList, Image, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, AppState, FlatList, Image, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { GlassFill, LIQUID_GLASS } from "./glass";
 import { authHeaders, getOrderChat, getOrderChatUnread, getOrderChats, markOrderChatRead, orderChatPhotoUrl, sendOrderChat, uploadOrderChatPhoto } from "./api";
 import { MAX_CHAT_PHOTOS, compressPhoto, loadPhotoModules, pickPhotos, takePhoto, type LocalPhoto } from "./chat-photos";
 import type { Language } from "./i18n";
@@ -11,6 +13,10 @@ import type { OrderChatMessage, OrderChatSummary, OrderChatThread } from "./type
 // Order chat with customers: the "Tin nhắn" tab list and the full-screen thread.
 // Realtime is polling (4s in an open thread, 10s on the list, 15s for the badge)
 // plus a refresh whenever a chat push arrives.
+
+// Floating Liquid Glass composer, same size as the ZhaoXi host chat (customer-mobile app/chat/[threadId].tsx).
+const COMPOSER_HEIGHT = 72;
+const COMPOSER_RADIUS = 36;
 
 const COPY = {
   vi: { title: "Tin nhắn", empty: "Chưa có tin nhắn", emptyDesc: "Khách nhắn theo đơn sẽ hiện ở đây.", placeholder: "Nhắn khách…", you: "Bạn", seen: "Đã xem", start: "Nhắn cho khách về đơn này", noStore: "Đơn không còn thuộc gian hàng này", error: "Không gửi được, thử lại.", photo: "Ảnh", camera: "Chụp ảnh", photoLimit: "Tối đa 5 ảnh mỗi lần gửi", cameraDenied: "Hãy cho phép dùng camera trong Cài đặt", failed: "Chưa gửi được", retry: "Gửi lại", discard: "Xoá" },
@@ -134,9 +140,18 @@ function PhotoGrid({ photos, dim, onOpen }: { photos: GridPhoto[]; dim: boolean;
   );
 }
 
+/**
+ * Full-screen chat of one order. As a Modal it covers the host's "••• ×" capsule, so the header uses the
+ * full width in the mini app too.
+ */
 export function OrderChatModal({ orgId, requestId, lang, refreshKey, onClose, onChanged }: { orgId: string; requestId: string | null; lang: Language; refreshKey: number; onClose: () => void; onChanged: () => void }) {
   const t = orderChatCopy(lang);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  // Insets from the app's SafeAreaProvider (React context crosses the Modal). A native <SafeAreaView> inside the
+  // Modal has no provider above it in the modal's view tree and reads its insets before the modal is laid out,
+  // so it kept 0 and the header slid under the status bar.
+  const insets = useSafeAreaInsets();
+  const [composerH, setComposerH] = useState(COMPOSER_HEIGHT + 18);
   const [data, setData] = useState<OrderChatThread | null>(null);
   const [outbox, setOutbox] = useState<Outgoing[]>([]);
   const [drafts, setDrafts] = useState<LocalPhoto[]>([]);
@@ -145,6 +160,11 @@ export function OrderChatModal({ orgId, requestId, lang, refreshKey, onClose, on
   const [text, setText] = useState("");
   const [error, setError] = useState("");
   const listRef = useRef<FlatList<Row>>(null);
+  // Native scroll-to-end (real content size). FlatList.scrollToEnd estimates the end from measured cells and ignores
+  // the content padding, so it stopped one composer height short and left the last message behind the glass pill.
+  const scrollToEnd = useCallback((animated: boolean) => {
+    (listRef.current?.getScrollResponder() as unknown as ScrollView | null | undefined)?.scrollToEnd({ animated });
+  }, []);
   // Uploaded photo ids per outgoing message, so a retry only sends what is missing.
   const uploaded = useRef(new Map<string, Record<string, string>>());
 
@@ -254,25 +274,31 @@ export function OrderChatModal({ orgId, requestId, lang, refreshKey, onClose, on
   }
 
   const canSend = data?.thread.canSend !== false;
+  const open = Boolean(requestId);
   return (
-    <Modal visible={Boolean(requestId)} animationType="slide" presentationStyle="fullScreen" onRequestClose={() => (viewer ? setViewer(null) : onClose())}>
-      <SafeAreaView style={[s.safe, { backgroundColor: C.white }]} edges={["top", "bottom"]}>
-        <View style={styles.header}>
+    <Modal visible={open} animationType="slide" presentationStyle="fullScreen" onRequestClose={() => (viewer ? setViewer(null) : onClose())}>
+      {/* White header: dark status bar text while the chat is open; the app's own (light) style comes back on close. */}
+      {open ? <StatusBar style={viewer ? "light" : "dark"}/> : null}
+      <View style={[s.safe, { backgroundColor: C.white }]}>
+        <View style={[styles.header, { paddingTop: insets.top + 6 }]}>
           <Pressable onPress={onClose} hitSlop={12} style={styles.back}><Ionicons name="chevron-back" size={26} color={C.ink} /></Pressable>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={styles.headerTitle} numberOfLines={1}>{data?.thread.title || " "}</Text>
             <Text style={styles.headerSub} numberOfLines={1}>{data?.thread.subtitle || ""}</Text>
           </View>
         </View>
-        <KeyboardAvoidingView style={s.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          {!data && !error ? <View style={[s.flex, { alignItems: "center", justifyContent: "center" }]}><ActivityIndicator color={C.green} /></View> : (
+        <KeyboardAvoidingView style={[s.flex, { backgroundColor: C.bg }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          {!data && !error ? <View style={[s.flex, { alignItems: "center", justifyContent: "center", paddingBottom: canSend ? composerH : insets.bottom }]}><ActivityIndicator color={C.green} /></View> : (
             <FlatList
               ref={listRef}
-              style={{ flex: 1, backgroundColor: C.bg }}
+              // The glass composer floats over the list's last `composerH` points (messages scroll behind it).
+              style={[s.flex, canSend && { marginBottom: -composerH }]}
               data={rows}
               keyExtractor={(item) => item.clientMessageId || item.id}
-              contentContainerStyle={{ padding: 16, gap: 8, flexGrow: 1, justifyContent: rows.length ? "flex-end" : "center" }}
-              onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
+              contentContainerStyle={{ padding: 16, paddingBottom: 16 + (canSend ? composerH : insets.bottom), gap: 8, flexGrow: 1, justifyContent: rows.length ? "flex-end" : "center" }}
+              onContentSizeChange={() => scrollToEnd(true)}
+              // The frame settles after the modal slides in, and changes with the keyboard: stay on the newest message.
+              onLayout={() => scrollToEnd(false)}
               keyboardDismissMode="interactive"
               ListEmptyComponent={<View style={{ alignItems: "center", gap: 8 }}><Ionicons name="chatbubble-ellipses-outline" size={36} color={C.green} /><Text style={s.emptyText}>{t.start}</Text></View>}
               renderItem={({ item }) => {
@@ -301,34 +327,40 @@ export function OrderChatModal({ orgId, requestId, lang, refreshKey, onClose, on
               }}
             />
           )}
-          {!!error && <Text style={[s.error, { marginHorizontal: 16, marginTop: 8, marginBottom: 0 }]}>{error}</Text>}
           {canSend ? (
-            <View style={styles.composerWrap}>
-              {drafts.length ? (
-                <View style={styles.drafts}>
-                  {drafts.map((photo) => (
-                    <View key={photo.key} style={styles.draft}>
-                      <Image source={{ uri: photo.uri }} style={styles.draftImage} />
-                      <Pressable hitSlop={8} onPress={() => setDrafts((current) => current.filter((p) => p.key !== photo.key))} style={styles.draftRemove}>
-                        <Ionicons name="close" size={12} color={C.white} />
-                      </Pressable>
-                    </View>
-                  ))}
-                </View>
-              ) : null}
-              <View style={styles.composer}>
-                {photosReady && drafts.length < MAX_CHAT_PHOTOS ? (
-                  <>
-                    <Pressable accessibilityLabel={t.camera} hitSlop={6} onPress={() => void addPhotos(true)} style={styles.tool}><Ionicons name="camera-outline" size={23} color={C.green} /></Pressable>
-                    <Pressable accessibilityLabel={t.photo} hitSlop={6} onPress={() => void addPhotos(false)} style={styles.tool}><Ionicons name="image-outline" size={23} color={C.green} /></Pressable>
-                  </>
+            <View onLayout={(e) => setComposerH(e.nativeEvent.layout.height)} style={[styles.composerWrap, { paddingBottom: Math.max(insets.bottom - 14, 10) }]}>
+              {!!error && <Text style={[s.error, { marginBottom: 8 }]}>{error}</Text>}
+              <View style={[styles.composerPill, !LIQUID_GLASS && styles.composerShadow]}>
+                {/* Backdrop only (pointerEvents none): Pressables nested inside a GlassView let taps fall through on iOS 26+. */}
+                <GlassFill radius={COMPOSER_RADIUS} />
+                {drafts.length ? (
+                  <View style={styles.drafts}>
+                    {drafts.map((photo) => (
+                      <View key={photo.key} style={styles.draft}>
+                        <Image source={{ uri: photo.uri }} style={styles.draftImage} />
+                        <Pressable hitSlop={8} onPress={() => setDrafts((current) => current.filter((p) => p.key !== photo.key))} style={styles.draftRemove}>
+                          <Ionicons name="close" size={12} color={C.white} />
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
                 ) : null}
-                <TextInput value={text} onChangeText={setText} placeholder={t.placeholder} placeholderTextColor={C.muted} style={styles.input} multiline maxLength={2000} />
-                <Pressable disabled={!text.trim() && !drafts.length} onPress={submit} style={[styles.send, !text.trim() && !drafts.length && { opacity: 0.5 }]}>
-                  <Ionicons name="send" size={18} color={C.white} />
-                </Pressable>
+                <View style={styles.composer}>
+                  {photosReady && drafts.length < MAX_CHAT_PHOTOS ? (
+                    <>
+                      <Pressable accessibilityLabel={t.camera} hitSlop={6} onPress={() => void addPhotos(true)} style={styles.tool}><Ionicons name="camera-outline" size={22} color={C.green} /></Pressable>
+                      <Pressable accessibilityLabel={t.photo} hitSlop={6} onPress={() => void addPhotos(false)} style={styles.tool}><Ionicons name="image-outline" size={22} color={C.green} /></Pressable>
+                    </>
+                  ) : null}
+                  <TextInput value={text} onChangeText={setText} placeholder={t.placeholder} placeholderTextColor={C.muted} style={styles.input} multiline maxLength={2000} />
+                  <Pressable disabled={!text.trim() && !drafts.length} onPress={submit} style={({ pressed }) => [styles.send, !text.trim() && !drafts.length && { opacity: 0.5 }, pressed && { transform: [{ scale: 0.94 }] }]}>
+                    <Ionicons name="send" size={20} color={C.white} />
+                  </Pressable>
+                </View>
               </View>
             </View>
+          ) : error ? (
+            <Text style={[s.error, { marginHorizontal: 16, marginTop: 8, marginBottom: insets.bottom + 8 }]}>{error}</Text>
           ) : null}
         </KeyboardAvoidingView>
         {viewer ? (
@@ -343,10 +375,10 @@ export function OrderChatModal({ orgId, requestId, lang, refreshKey, onClose, on
               showsHorizontalScrollIndicator={false}
               renderItem={({ item }) => <Image source={photoSource(item)} style={{ width: screenWidth, height: screenHeight }} resizeMode="contain" />}
             />
-            <Pressable onPress={() => setViewer(null)} hitSlop={12} style={styles.viewerClose}><Ionicons name="close" size={24} color={C.white} /></Pressable>
+            <Pressable onPress={() => setViewer(null)} hitSlop={12} style={[styles.viewerClose, { top: insets.top + 10 }]}><Ionicons name="close" size={24} color={C.white} /></Pressable>
           </View>
         ) : null}
-      </SafeAreaView>
+      </View>
     </Modal>
   );
 }
@@ -362,7 +394,7 @@ const styles = StyleSheet.create({
   time: { color: C.muted, fontSize: 11, marginTop: 3 },
   badge: { minWidth: 22, height: 22, borderRadius: 11, paddingHorizontal: 6, backgroundColor: C.red, alignItems: "center", justifyContent: "center", marginTop: 4 },
   badgeText: { color: C.white, fontSize: 11, fontWeight: "900" },
-  header: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10, paddingVertical: 10, backgroundColor: C.white, shadowColor: "#173c2c", shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 3, zIndex: 1 },
+  header: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10, paddingBottom: 10, backgroundColor: C.white, shadowColor: "#173c2c", shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 3, zIndex: 1 },
   back: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   headerTitle: { color: C.ink, fontSize: 18, fontWeight: "900" },
   headerSub: { color: C.muted, fontSize: 12, marginTop: 1 },
@@ -370,10 +402,14 @@ const styles = StyleSheet.create({
   own: { backgroundColor: C.green, borderBottomRightRadius: 6 },
   other: { backgroundColor: C.white, borderBottomLeftRadius: 6, shadowColor: "#173c2c", shadowOpacity: 0.07, shadowRadius: 10, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
   bubbleText: { color: C.ink, fontSize: 15, lineHeight: 21 },
-  composerWrap: { backgroundColor: C.white },
-  composer: { flexDirection: "row", alignItems: "flex-end", gap: 8, paddingHorizontal: 14, paddingVertical: 10 },
-  tool: { width: 34, height: 44, alignItems: "center", justifyContent: "center" },
-  drafts: { flexDirection: "row", gap: 8, paddingHorizontal: 14, paddingTop: 10 },
+  // Floating Liquid Glass pill like the tab dock (64pt), a little taller for typing; transparent around it.
+  composerWrap: { paddingHorizontal: 12, paddingTop: 8 },
+  composerPill: { minHeight: COMPOSER_HEIGHT, borderRadius: COMPOSER_RADIUS, paddingHorizontal: 10, paddingVertical: 10, justifyContent: "center" },
+  // Without real Liquid Glass the pill is a translucent white fill: the dock's soft shadow lifts it off the messages.
+  composerShadow: { shadowColor: "#18211E", shadowOpacity: 0.12, shadowRadius: 16, shadowOffset: { width: 0, height: 12 }, elevation: 6 },
+  composer: { flexDirection: "row", alignItems: "flex-end", gap: 4 },
+  tool: { width: 40, height: 52, alignItems: "center", justifyContent: "center" },
+  drafts: { flexDirection: "row", gap: 8, paddingHorizontal: 6, paddingTop: 2, paddingBottom: 8 },
   draft: { width: 56, height: 56 },
   draftImage: { width: 56, height: 56, borderRadius: 12 },
   draftRemove: { position: "absolute", top: -6, right: -6, width: 20, height: 20, borderRadius: 10, backgroundColor: "rgba(15,23,42,0.85)", alignItems: "center", justifyContent: "center" },
@@ -383,7 +419,7 @@ const styles = StyleSheet.create({
   failedRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 },
   failedAction: { fontSize: 12, fontWeight: "900", color: C.green },
   viewer: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.96)" },
-  viewerClose: { position: "absolute", top: 54, right: 18, width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.18)" },
-  input: { flex: 1, minHeight: 44, maxHeight: 120, borderRadius: 20, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, backgroundColor: "#f1f6f3", fontSize: 15, color: C.ink },
-  send: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.green, alignItems: "center", justifyContent: "center" },
+  viewerClose: { position: "absolute", right: 18, width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.18)" },
+  input: { flex: 1, minHeight: 52, maxHeight: 140, paddingHorizontal: 10, paddingTop: 16, paddingBottom: 16, fontSize: 16, color: C.ink },
+  send: { width: 52, height: 52, borderRadius: 26, backgroundColor: C.green, alignItems: "center", justifyContent: "center" },
 });

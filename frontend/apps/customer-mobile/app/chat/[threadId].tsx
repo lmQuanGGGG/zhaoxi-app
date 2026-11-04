@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ApiError } from "../../src/api/client";
@@ -35,6 +35,7 @@ export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const client = useQueryClient();
   const listRef = useRef<FlatList<Row>>(null);
+  const scrollToEnd = (animated: boolean) => (listRef.current?.getScrollResponder() as unknown as ScrollView | null | undefined)?.scrollToEnd({ animated });
   const [text, setText] = useState("");
   const [drafts, setDrafts] = useState<LocalPhoto[]>([]);
   const [outbox, setOutbox] = useState<Outgoing[]>([]);
@@ -159,7 +160,10 @@ export default function ChatScreen() {
             // The glass composer floats over the list's last `composerH` points (messages scroll behind it).
             style={canSend ? { marginBottom: -composerH } : undefined}
             contentContainerStyle={{ padding: space.lg, paddingBottom: space.lg + (canSend ? composerH : 0), gap: 8, flexGrow: 1, justifyContent: rows.length ? "flex-end" : "center" }}
-            onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
+            // Native scroll-to-end (real content size): FlatList.scrollToEnd estimates the end from measured
+            // cells and ignores the bottom padding the glass composer adds, so the last message stayed under it.
+            onContentSizeChange={() => scrollToEnd(true)}
+            onLayout={() => scrollToEnd(false)}
             keyboardDismissMode="interactive"
             ListEmptyComponent={<EmptyState icon="chatbubble-ellipses-outline" title={isOrder ? t.messages.storeChat : t.messages.empty} />}
             renderItem={({ item }) => {

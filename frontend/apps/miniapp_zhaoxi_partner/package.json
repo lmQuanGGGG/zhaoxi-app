@@ -1,6 +1,6 @@
 {
   "name": "miniapp_zhaoxi_partner",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "description": "Đóng gói app ZhaoXi Partner (mã nguồn ở partner-mobile) thành mini app chạy trong host ZhaoXi.",
   "scripts": {
