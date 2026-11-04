@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { isGuest, useAuth } from "./api/client";
 import { getFavoriteState, getService, getUnreadSummary, setFavorite } from "./api/endpoints";
-import type { RestaurantStatus, Service, ServiceDetail } from "./api/types";
+import type { FeedService, HomeFeed, RestaurantStatus, Service, ServiceDetail } from "./api/types";
 import { useI18n } from "./i18n";
 import { keys } from "./query";
 import { haptic } from "./ui/haptics";
@@ -74,7 +74,42 @@ export function useNow(intervalMs = 30_000) {
   return now;
 }
 
-/** Service detail with an instant placeholder built from any cached list containing it. */
+/** Every service row the home feed carries (resume, favorites, for-you, recently viewed). */
+export function feedServices(feed: HomeFeed | null | undefined): FeedService[] {
+  if (!feed) return [];
+  const rows = [feed.smartResume?.service, ...(feed.favorites || []), ...(feed.forYou || []), ...(feed.recentlyViewed || []).map((entry) => entry.item)];
+  return rows.filter((row): row is FeedService => Boolean(row?.id));
+}
+
+/** Detail-shaped placeholder from a list row, so the detail screen paints real content before `/api/services/:id` answers. */
+function detailFromRow(item: Service | FeedService): ServiceDetail {
+  // Module/menu rows carry the partner fields flat; feed rows nest the partner metadata under `metadata`.
+  const orgAddress = "organizationAddress" in item ? item.organizationAddress : undefined;
+  const orgMetadata = "organizationMetadata" in item ? item.organizationMetadata : (item as FeedService).metadata?.organizationMetadata;
+  const imageUrl = "imageUrl" in item ? item.imageUrl : undefined;
+  return {
+    id: item.id,
+    code: item.code || "",
+    moduleCode: item.moduleCode || "",
+    name: item.name,
+    summary: item.summary,
+    priceFrom: item.priceFrom == null ? null : String(item.priceFrom),
+    currency: item.currency,
+    // The feed puts the cover at the top level; the detail hero reads `metadata.imageUrl`.
+    metadata: imageUrl && !item.metadata?.imageUrl ? { ...item.metadata, imageUrl } : item.metadata,
+    organization: item.organizationId
+      ? {
+          id: item.organizationId,
+          code: item.organizationCode || undefined,
+          name: item.organizationName || undefined,
+          address: orgAddress,
+          metadata: orgMetadata,
+        }
+      : null,
+  };
+}
+
+/** Service detail with an instant placeholder built from any cached list containing it (module lists, restaurant menus, home feed). */
 export function useServiceDetail(id: string) {
   const { locale } = useI18n();
   const client = useQueryClient();
@@ -84,16 +119,24 @@ export function useServiceDetail(id: string) {
     placeholderData: (): ServiceDetail | undefined => {
       for (const [, list] of client.getQueriesData<Service[]>({ predicate: (q) => q.queryKey[0] === "nearby" || q.queryKey[0] === "org-services" })) {
         const item = Array.isArray(list) ? list.find((x) => x.id === id) : undefined;
-        if (item) {
-          return {
-            id: item.id, code: item.code, moduleCode: item.moduleCode, name: item.name, summary: item.summary, priceFrom: item.priceFrom, currency: item.currency, metadata: item.metadata,
-            organization: item.organizationId ? { id: item.organizationId, code: item.organizationCode || undefined, name: item.organizationName || undefined, address: item.organizationAddress, metadata: item.organizationMetadata } : null,
-          };
-        }
+        if (item) return detailFromRow(item);
+      }
+      for (const [, feed] of client.getQueriesData<HomeFeed | null>({ queryKey: ["home-feed", locale] })) {
+        const item = feedServices(feed).find((x) => x.id === id);
+        if (item) return detailFromRow(item);
       }
       return undefined;
     },
   });
+}
+
+/** Starts `/api/services/:id` on press-in so the detail usually has its full record by the time the push lands. */
+export function usePrefetchService() {
+  const { locale } = useI18n();
+  const client = useQueryClient();
+  return useCallback((id: string) => {
+    void client.prefetchQuery({ queryKey: keys.service(id, locale), queryFn: () => getService(id, locale), staleTime: 30_000 });
+  }, [client, locale]);
 }
 
 /** Pull-to-refresh state that only spins for user-initiated refreshes (not background refetches). */

@@ -50,6 +50,12 @@ const staticRoutes: Record<string, string> = {
   "/profile/security": "/account/security",
 };
 
+// A service's `publicHref` is `<module route>/<serviceId>` (backend unified-service-discovery-service.ts
+// `route()`: `/visa/<id>`, `/car-rental/<id>`, `/market/<id>`…), so every module head, PWA alias
+// included, opens the native service detail. Unknown heads used to fall back to "/", which from the
+// Home tab is a no-op: the card looked dead.
+const serviceDetailHeads = new Set(["service", "request", "payment", "emergency", "khan-cap", ...Object.keys(moduleAliases).map((path) => path.slice(1))]);
+
 export function routeForWebHref(href?: string | null): Href {
   if (!href) return "/";
   let url: URL;
@@ -71,11 +77,6 @@ export function routeForWebHref(href?: string | null): Href {
   switch (head) {
     case "order":
       return `/order/${decoded}`;
-    case "service":
-    case "housing":
-    case "travel":
-    case "request":
-      return `/service/${decoded}`;
     case "restaurant":
     case "partners":
       return `/restaurant/${decoded}`;
@@ -93,6 +94,6 @@ export function routeForWebHref(href?: string | null): Href {
       return `/miniapp/${encodeURIComponent(decoded)}${query ? `?${query}` : ""}`;
     }
     default:
-      return "/";
+      return serviceDetailHeads.has(head) ? `/service/${decoded}` : "/";
   }
 }

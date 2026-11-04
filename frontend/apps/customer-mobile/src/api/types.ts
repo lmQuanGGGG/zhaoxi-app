@@ -81,8 +81,10 @@ export type FeedService = {
   name?: string;
   moduleCode?: string;
   moduleName?: string;
+  organizationId?: string | null;
   organizationCode?: string;
   organizationName?: string;
+  summary?: string;
   imageUrl?: string | null;
   priceFrom?: number;
   currency?: string;
@@ -90,9 +92,13 @@ export type FeedService = {
   metadata?: { organizationMetadata?: Record<string, unknown> } & Record<string, unknown>;
 };
 
+/** `recentlyViewedPartners[]` of `/api/customer-home-feed` (customer-home-personalization-service.ts). */
+export type FeedPartner = { organizationId: string; code?: string; name?: string; href: string; lastServiceId?: string; lastServiceName?: string; verifiedBadgeCount?: number };
+
 export type HomeFeed = {
   smartResume?: { service?: FeedService } | null;
-  recentlyViewedPartners?: Array<{ id: string; code?: string; name?: string; href: string; verifiedBadgeCount?: number }>;
+  recentlyViewed?: Array<{ item: FeedService; viewedAt?: string | null }>;
+  recentlyViewedPartners?: FeedPartner[];
   favorites?: FeedService[];
   forYou?: FeedService[];
   intentShortcuts?: Array<{ id: string; label: string; shortcutHref: string; watchEnabled?: boolean; isPinned?: boolean }>;

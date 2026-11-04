@@ -13,8 +13,11 @@ import { shortDate } from "../../src/format";
 import { useI18n } from "../../src/i18n";
 import { keys } from "../../src/query";
 import { colors, font, radius, shadow, space } from "../../src/theme";
-import { EmptyState, Header, Ionicons, PressableScale, Screen, SkeletonList, haptic } from "../../src/ui";
+import { EmptyState, GlassFill, Header, Ionicons, LIQUID_GLASS, PressableScale, Screen, SkeletonList, haptic } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
+
+const COMPOSER_HEIGHT = 72;
+const COMPOSER_RADIUS = 36;
 
 const mine = (m: ChatMessage) => (m.senderRole || m.sender) === "customer";
 const time = (m: ChatMessage) => new Date(m.createdAt).getTime();
@@ -37,6 +40,7 @@ export default function ChatScreen() {
   const [outbox, setOutbox] = useState<Outgoing[]>([]);
   const [viewer, setViewer] = useState<{ photos: BubblePhoto[]; index: number } | null>(null);
   const [photosReady, setPhotosReady] = useState(false);
+  const [composerH, setComposerH] = useState(COMPOSER_HEIGHT + 30);
   // Photos already uploaded for an outgoing message, so a retry only sends what is missing.
   const uploaded = useRef(new Map<string, Record<string, string>>());
   // Order chats are live conversations with a store, so they poll faster than inquiry threads.
@@ -125,6 +129,10 @@ export default function ChatScreen() {
   const info = thread.data?.thread;
   const title = info?.kind === "support" ? info.title || t.messages.support : info?.title || t.messages.title;
   const subtitle = info?.kind === "support" ? t.messages.support : info?.kind === "order" ? info.requestCode : undefined;
+  // Every thread tied to a request (order chat, housing / travel inquiry, payment support) opens that
+  // request's detail; only the backend's order chat sends `requestId`, the others carry it in the thread id.
+  const [threadKind, threadRef] = threadId.split(":");
+  const requestId = info?.requestId || (["housing", "travel", "payment"].includes(threadKind) ? threadRef : undefined);
   const canSend = info?.canSend !== false;
   const canAttach = isOrder && photosReady && drafts.length < MAX_CHAT_PHOTOS;
   // "Seen" sits under the newest own message the store has read.
@@ -136,8 +144,8 @@ export default function ChatScreen() {
       <Header
         title={title}
         subtitle={subtitle}
-        right={info?.kind === "order" && info.requestId ? (
-          <Pressable accessibilityLabel={t.messages.viewOrder} onPress={() => router.push(`/order/${info.requestId}`)} style={({ pressed }) => [styles.orderButton, pressed && { transform: [{ scale: 0.94 }] }]}>
+        right={requestId ? (
+          <Pressable accessibilityLabel={t.messages.viewOrder} onPress={() => router.push(`/order/${requestId}`)} style={({ pressed }) => [styles.orderButton, pressed && { transform: [{ scale: 0.94 }] }]}>
             <Ionicons name="receipt-outline" size={18} color={colors.white} />
           </Pressable>
         ) : undefined}
@@ -148,7 +156,9 @@ export default function ChatScreen() {
             ref={listRef}
             data={rows}
             keyExtractor={(item) => item.clientMessageId || item.id}
-            contentContainerStyle={{ padding: space.lg, gap: 8, flexGrow: 1, justifyContent: rows.length ? "flex-end" : "center" }}
+            // The glass composer floats over the list's last `composerH` points (messages scroll behind it).
+            style={canSend ? { marginBottom: -composerH } : undefined}
+            contentContainerStyle={{ padding: space.lg, paddingBottom: space.lg + (canSend ? composerH : 0), gap: 8, flexGrow: 1, justifyContent: rows.length ? "flex-end" : "center" }}
             onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
             keyboardDismissMode="interactive"
             ListEmptyComponent={<EmptyState icon="chatbubble-ellipses-outline" title={isOrder ? t.messages.storeChat : t.messages.empty} />}
@@ -184,7 +194,10 @@ export default function ChatScreen() {
           />
         )}
         {canSend ? (
-          <View style={[styles.composerWrap, { paddingBottom: Math.max(insets.bottom, 10) }]}>
+          <View onLayout={(e) => setComposerH(e.nativeEvent.layout.height)} style={[styles.composerWrap, { paddingBottom: Math.max(insets.bottom - 14, 10) }]}>
+            <View style={[styles.composerPill, !LIQUID_GLASS && shadow("dock")]}>
+            {/* Backdrop only (pointerEvents none): Pressables nested inside a GlassView let taps fall through on iOS 26+. */}
+            <GlassFill radius={COMPOSER_RADIUS} />
             <DraftStrip photos={drafts} onRemove={(key) => setDrafts((current) => current.filter((p) => p.key !== key))} />
             <View style={styles.composer}>
               {canAttach ? (
@@ -199,8 +212,9 @@ export default function ChatScreen() {
               ) : null}
               <TextInput value={text} onChangeText={setText} placeholder={t.messages.placeholder} placeholderTextColor={colors.textMuted} style={styles.input} multiline maxLength={2000} />
               <PressableScale disabled={!text.trim() && !drafts.length} onPress={submit} style={styles.send}>
-                <Ionicons name="send" size={18} color={colors.white} />
+                <Ionicons name="send" size={20} color={colors.white} />
               </PressableScale>
+            </View>
             </View>
           </View>
         ) : (
@@ -221,11 +235,13 @@ const styles = StyleSheet.create({
   other: { backgroundColor: colors.white, borderBottomLeftRadius: 6, ...shadow("card") },
   failedRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 },
   failedAction: { fontSize: 12, fontWeight: "800", color: colors.brandStrong },
-  composerWrap: { backgroundColor: "rgba(255,255,255,0.97)", ...shadow("card") },
-  composer: { flexDirection: "row", alignItems: "flex-end", gap: 8, paddingHorizontal: space.lg, paddingTop: 10 },
-  tool: { width: 36, height: 44, alignItems: "center", justifyContent: "center" },
-  input: { flex: 1, minHeight: 44, maxHeight: 120, borderRadius: radius.lg, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, backgroundColor: colors.bgSoft, fontSize: 15, color: colors.text },
-  send: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.brand, alignItems: "center", justifyContent: "center" },
+  // Floating Liquid Glass pill like the dock (dock: 64pt), a little taller for typing.
+  composerWrap: { paddingHorizontal: 12, paddingTop: 8 },
+  composerPill: { minHeight: COMPOSER_HEIGHT, borderRadius: COMPOSER_RADIUS, paddingHorizontal: 10, paddingVertical: 10, justifyContent: "center" },
+  composer: { flexDirection: "row", alignItems: "flex-end", gap: 4 },
+  tool: { width: 40, height: 52, alignItems: "center", justifyContent: "center" },
+  input: { flex: 1, minHeight: 52, maxHeight: 140, paddingHorizontal: 10, paddingTop: 16, paddingBottom: 16, fontSize: 16, color: colors.text },
+  send: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.brand, alignItems: "center", justifyContent: "center" },
   closed: { alignItems: "center", paddingTop: 12, paddingHorizontal: space.lg },
   orderButton: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.22)" },
 });

@@ -6,7 +6,7 @@ import { RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "r
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { getThreads } from "../../src/api/endpoints";
 import type { ThreadKind } from "../../src/api/types";
-import { CenterChip, CenterEmpty, HeaderPill, SoftButton, TextLink } from "../../src/components/center";
+import { CenterChip, CenterEmpty, SoftButton, TextLink } from "../../src/components/center";
 import { TAB_BAR_SPACE } from "../../src/constants";
 import { relativeTime } from "../../src/format";
 import { usePullRefresh, useSession } from "../../src/hooks";
@@ -47,7 +47,7 @@ export default function MessagesScreen() {
         contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }}
         ListHeaderComponent={
           <View>
-            <Header back={false} title={c.title} subtitle={`${threads.data?.summary.unread || 0} ${t.notifications.unread}`} right={<HeaderPill icon="bell" label={undefined} onPress={() => router.push("/notifications")} />} />
+            <Header back={false} title={c.title} subtitle={`${threads.data?.summary.unread || 0} ${t.notifications.unread}`} />
             <View style={{ paddingHorizontal: 14, gap: 10, paddingTop: 4 }}>
               <View style={styles.search}>
                 <Art3D kind="search" size={16} />

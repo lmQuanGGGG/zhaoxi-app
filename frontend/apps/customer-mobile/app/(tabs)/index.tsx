@@ -2,17 +2,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { localizeOrganizationName, localizeServiceModuleName, localizeServiceName, statusLabels } from "@zhaoxi/i18n";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, type Href } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn, FadeInDown, useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import { getHomeFeed, getModules, getNearbyServices, getOrders, getRecommendations, getUiConfig } from "../../src/api/endpoints";
-import type { FeedService, HomeFeed, Recommendation } from "../../src/api/types";
+import type { FeedPartner, FeedService, HomeFeed, Recommendation } from "../../src/api/types";
 import { TAB_BAR_SPACE } from "../../src/constants";
 import { imageUri, money } from "../../src/format";
-import { useSession } from "../../src/hooks";
+import { feedServices, usePrefetchService, useSession } from "../../src/hooks";
 import { useI18n } from "../../src/i18n";
 import { routeForWebHref } from "../../src/links";
 import { locate, pointKey, useLocationState } from "../../src/location";
@@ -53,14 +53,6 @@ export default function HomeScreen() {
   const orders = useQuery({ queryKey: keys.orders(locale, userId), queryFn: () => getOrders(locale), enabled: Boolean(userId) });
   const activeOrder = orders.data?.find((order) => ACTIVE_STATUSES.has(order.status));
 
-
-  // Light status bar over the coral header only while Home is focused: the
-  // <StatusBar> entry unmounts on blur so the root "dark" style applies again.
-  const [focused, setFocused] = useState(true);
-  useFocusEffect(useCallback(() => {
-    setFocused(true);
-    return () => setFocused(false);
-  }, []));
 
   // Use the last known GPS point silently; only prompt when the user taps "Chọn vị trí".
   useEffect(() => { if (!location.point) void locate(false); }, [location.point]);
@@ -106,7 +98,7 @@ export default function HomeScreen() {
 
   return (
     <Screen topbar={false}>
-      {focused ? <StatusBar style={overHeader ? "light" : "dark"} animated /> : null}
+      <FocusedStatusBar style={overHeader ? "light" : "dark"} />
       <Animated.ScrollView
         contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.white} />}
@@ -183,15 +175,45 @@ export default function HomeScreen() {
   );
 }
 
+/**
+ * Light status bar over the coral header only while Home is focused: the <StatusBar> entry unmounts
+ * on blur so the root "dark" style applies again. The focus flag lives here, not in HomeScreen, so
+ * blurring Home (every push from it) re-renders this leaf instead of the whole Home tree while the
+ * next screen is mounting.
+ */
+function FocusedStatusBar({ style }: { style: "light" | "dark" }) {
+  const [focused, setFocused] = useState(true);
+  useFocusEffect(useCallback(() => {
+    setFocused(true);
+    return () => setFocused(false);
+  }, []));
+  return focused ? <StatusBar style={style} animated /> : null;
+}
+
+/**
+ * A recently viewed partner opens its menu when it is a restaurant; any other partner has no native
+ * storefront (the restaurant screen would sit on an empty food menu), so it reopens the service last
+ * viewed there.
+ */
+function partnerRoute(partner: FeedPartner, feed: HomeFeed): Href {
+  if (!partner.lastServiceId) return routeForWebHref(partner.href);
+  const last = feedServices(feed).find((item) => item.id === partner.lastServiceId);
+  return last?.moduleCode === "food" ? `/restaurant/${partner.organizationId}` : `/service/${partner.lastServiceId}`;
+}
+
 /** Coral strip behind the status bar once the header has scrolled away (keeps the light status bar readable). */
 /** `PersonalizedHomeFeed` from the PWA. */
 function PersonalFeed({ feed }: { feed?: HomeFeed | null }) {
   const { t, locale } = useI18n();
+  const prefetchService = usePrefetchService();
   if (!feed) return null;
   const resume = feed.smartResume?.service;
   const partner = feed.recentlyViewedPartners?.[0];
+  // Feed rows are services (the viewed / favourited / suggested item itself): open its detail like
+  // Explore and the favourites list do. `useServiceDetail` paints it at once from this feed's cache.
+  const openService = (item: FeedService) => router.push(`/service/${item.id}`);
   const card = (item: FeedService, fill = false) => (
-    <PressableScale key={item.id} onPress={() => router.push(routeForWebHref(item.publicHref || `/service/${item.id}`))} style={[styles.feedCard, fill ? { flex: 1 } : { width: 128 }, shadow("card")]}>
+    <PressableScale key={item.id} onPressIn={() => prefetchService(item.id)} onPress={() => openService(item)} style={[styles.feedCard, fill ? { flex: 1 } : { width: 128 }, shadow("card")]}>
       <View>
         <AppImage uri={imageUri(item.imageUrl)} fallbackCode={item.moduleCode} style={styles.feedThumb} />
         <View style={styles.feedBadge}><ServiceIcon code={item.moduleCode} size={20} /></View>
@@ -206,7 +228,7 @@ function PersonalFeed({ feed }: { feed?: HomeFeed | null }) {
       {resume || partner ? (
         <View style={{ flexDirection: "row", gap: 12 }}>
           {resume ? (
-            <PressableScale onPress={() => router.push(routeForWebHref(resume.publicHref || `/service/${resume.id}`))} style={[styles.shortcut, shadow("soft"), !partner && { flex: 0, width: "48.5%" }]}>
+            <PressableScale onPressIn={() => prefetchService(resume.id)} onPress={() => openService(resume)} style={[styles.shortcut, shadow("soft"), !partner && { flex: 0, width: "48.5%" }]}>
               <LinearGradient colors={["#F7FBFA", "#DDF4F0"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 20 }]} />
               <ArtLabel kind="play" size={18} style={styles.shortcutTitle}>{t.home.resume}</ArtLabel>
               <View style={styles.shortcutBody}>
@@ -220,7 +242,7 @@ function PersonalFeed({ feed }: { feed?: HomeFeed | null }) {
             </PressableScale>
           ) : null}
           {partner ? (
-            <PressableScale onPress={() => router.push(routeForWebHref(partner.href))} style={[styles.shortcut, shadow("soft")]}>
+            <PressableScale onPress={() => router.push(partnerRoute(partner, feed))} style={[styles.shortcut, shadow("soft")]}>
               <LinearGradient colors={["#FFFDF8", "#F5EBCD"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 20 }]} />
               <ArtLabel kind="store" size={18} style={styles.shortcutTitle}>{t.home.partners}</ArtLabel>
               <View style={styles.shortcutBody}>
