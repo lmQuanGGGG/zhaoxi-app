@@ -8,7 +8,7 @@ import { TAB_BAR_SPACE } from "../../src/constants";
 import { useI18n } from "../../src/i18n";
 import { openModule, resolveModules, type ServiceGroup } from "../../src/modules";
 import { useMiniAppAccess } from "../../src/miniapps/access";
-import { PARTNER_MINIAPP_ID, miniAppRegistry } from "../../src/miniapps/registry";
+import { PARTNER_MINIAPP_ID, findMiniApp, miniAppRegistry } from "../../src/miniapps/registry";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
 import { Art3D, Chip, Header, PressableScale, Screen, ServiceBadge, ZxIcon, type ZxIconName } from "../../src/ui";
@@ -47,6 +47,10 @@ export default function ServicesHub() {
   // "Gian hàng" module tile opens it for store members and partner sign-up for everyone else (app/store.tsx).
   const { canOpen } = useMiniAppAccess();
   const needle = query.trim().toLowerCase();
+  // Store owners: "Gian hàng" opens their store, so opening another one gets its own card (partner sign-up).
+  const partnerEntry = findMiniApp(PARTNER_MINIAPP_ID);
+  const newStore = { "vi-VN": { title: "Đăng ký gian hàng mới", desc: "Mở thêm một gian hàng bằng tài khoản này" }, "en-US": { title: "Open another store", desc: "Add a new store to this account" }, "zh-CN": { title: "开通新店铺", desc: "用此账号再开一家店铺" }, "zh-TW": { title: "開通新店鋪", desc: "用此帳號再開一家店鋪" } }[locale];
+  const showNewStore = (group === "all" || group === "life") && Boolean(partnerEntry && canOpen(partnerEntry)) && (!needle || `${newStore.title} ${newStore.desc}`.toLowerCase().includes(needle));
   const miniApps = group === "all" || group === "life" ? miniAppRegistry.filter((entry) => entry.id !== PARTNER_MINIAPP_ID && canOpen(entry)).filter((entry) => !needle || `${entry.title[locale]} ${entry.subtitle[locale]}`.toLowerCase().includes(needle)) : [];
 
   return (
@@ -79,6 +83,21 @@ export default function ServicesHub() {
                 </PressableScale>
               </Animated.View>
             ))}
+            {showNewStore ? (
+              <Animated.View entering={FadeInDown.duration(200)} layout={LinearTransition.duration(180)}>
+                <PressableScale onPress={() => router.push("/store?mode=new")} scaleTo={0.98} style={[styles.card, shadow("card")]}>
+                  <View style={styles.miniArt}>
+                    <SoftGlow color="#E2482F" size={66} />
+                    <Art3D kind="store" size={42} />
+                  </View>
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={styles.cardTitle} numberOfLines={1}>{newStore.title}</Text>
+                    <Text style={styles.cardDesc} numberOfLines={2}>{newStore.desc}</Text>
+                  </View>
+                  <ZxIcon name="plus" size={18} color="#64748B" />
+                </PressableScale>
+              </Animated.View>
+            ) : null}
             {items.map((item, index) => (
               <Animated.View key={item.code} entering={FadeInDown.delay(Math.min(index, 6) * 20).duration(200)} layout={LinearTransition.duration(180)}>
                 <PressableScale onPress={() => openModule(item.code)} scaleTo={0.98} style={[styles.card, shadow("card")]}>

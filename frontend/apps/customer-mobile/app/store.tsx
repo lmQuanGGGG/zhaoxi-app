@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { WebView } from "react-native-webview";
@@ -18,10 +18,10 @@ import { ServiceTile } from "../src/ui/service-icons";
 const PARTNER_WEB = "https://partner.zhaoxi.trieuhymedia.net";
 
 const copy = {
-  "vi-VN": { title: "Gian hàng của bạn", register: "Đăng ký gian hàng", guestTitle: "Đăng nhập để mở gian hàng", guestBody: "Gian hàng dùng chung tài khoản ZhaoXi: đăng nhập hoặc tạo tài khoản, rồi gửi hồ sơ gian hàng ngay trong app.", signIn: "Đăng nhập ZhaoXi", failed: "Chưa mở được trang đăng ký. Kiểm tra mạng rồi thử lại.", retry: "Thử lại" },
-  "en-US": { title: "Your store", register: "Open a store", guestTitle: "Sign in to open a store", guestBody: "Stores use your ZhaoXi account: sign in or sign up, then send your store profile right here.", signIn: "Sign in to ZhaoXi", failed: "Couldn't open the sign-up page. Check your connection and try again.", retry: "Retry" },
-  "zh-CN": { title: "我的店铺", register: "开通店铺", guestTitle: "登录后开通店铺", guestBody: "店铺使用您的赵喜账号：登录或注册后，直接在应用内提交店铺资料。", signIn: "登录赵喜", failed: "无法打开注册页面，请检查网络后重试。", retry: "重试" },
-  "zh-TW": { title: "我的店鋪", register: "開通店鋪", guestTitle: "登入後開通店鋪", guestBody: "店鋪使用您的趙喜帳號：登入或註冊後，直接在應用內提交店鋪資料。", signIn: "登入趙喜", failed: "無法開啟註冊頁面，請檢查網路後重試。", retry: "重試" },
+  "vi-VN": { title: "Gian hàng của bạn", register: "Đăng ký gian hàng", registerNew: "Đăng ký gian hàng mới", guestTitle: "Đăng nhập để mở gian hàng", guestBody: "Gian hàng dùng chung tài khoản ZhaoXi: đăng nhập hoặc tạo tài khoản, rồi gửi hồ sơ gian hàng ngay trong app.", signIn: "Đăng nhập ZhaoXi", failed: "Chưa mở được trang đăng ký. Kiểm tra mạng rồi thử lại.", retry: "Thử lại" },
+  "en-US": { title: "Your store", register: "Open a store", registerNew: "Open another store", guestTitle: "Sign in to open a store", guestBody: "Stores use your ZhaoXi account: sign in or sign up, then send your store profile right here.", signIn: "Sign in to ZhaoXi", failed: "Couldn't open the sign-up page. Check your connection and try again.", retry: "Retry" },
+  "zh-CN": { title: "我的店铺", register: "开通店铺", registerNew: "开通新店铺", guestTitle: "登录后开通店铺", guestBody: "店铺使用您的赵喜账号：登录或注册后，直接在应用内提交店铺资料。", signIn: "登录赵喜", failed: "无法打开注册页面，请检查网络后重试。", retry: "重试" },
+  "zh-TW": { title: "我的店鋪", register: "開通店鋪", registerNew: "開通新店鋪", guestTitle: "登入後開通店鋪", guestBody: "店鋪使用您的趙喜帳號：登入或註冊後，直接在應用內提交店鋪資料。", signIn: "登入趙喜", failed: "無法開啟註冊頁面，請檢查網路後重試。", retry: "重試" },
 } as const;
 
 /**
@@ -29,11 +29,14 @@ const copy = {
  * - a store member → the Partner mini app;
  * - signed in without a store → partner web sign-up in a WebView, signed in as this same ZhaoXi account
  *   (one-time role-switch code), so the application and the store it becomes belong to this account;
- * - guest → sign in / sign up to ZhaoXi first; the login screen comes back here.
+ * - guest → sign in / sign up to ZhaoXi first; the login screen comes back here;
+ * - `?mode=new` (services hub, owners) → partner sign-up for one more store.
  */
 export default function StoreScreen() {
   const { locale } = useI18n();
   const c = copy[locale];
+  // `?mode=new`: an owner opening another store goes straight to partner sign-up instead of their store.
+  const wantsNew = useLocalSearchParams<{ mode?: string }>().mode === "new";
   const { userId, guest } = useSession();
   const signedIn = Boolean(userId) && !guest;
   const access = useMiniAppAccess();
@@ -44,14 +47,14 @@ export default function StoreScreen() {
   const decided = signedIn && (isPartner || (access.ready && account.isFetched));
 
   useEffect(() => {
-    if (signedIn && isPartner) router.replace(`/miniapp/${PARTNER_MINIAPP_ID}`);
-  }, [signedIn, isPartner]);
+    if (signedIn && isPartner && !wantsNew) router.replace(`/miniapp/${PARTNER_MINIAPP_ID}`);
+  }, [signedIn, isPartner, wantsNew]);
 
   // The code is single-use and lives 60 s, so it is fetched per visit and never cached / persisted.
   const [url, setUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const needsWeb = decided && !isPartner;
+  const needsWeb = signedIn && (wantsNew || (decided && !isPartner));
   useEffect(() => {
     if (!needsWeb) return;
     let active = true;
@@ -99,7 +102,7 @@ export default function StoreScreen() {
 
   return (
     <Screen>
-      <Header title={signedIn && !isPartner ? c.register : c.title} />
+      <Header title={wantsNew ? c.registerNew : signedIn && !isPartner ? c.register : c.title} />
       {body}
     </Screen>
   );
