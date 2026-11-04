@@ -57,7 +57,7 @@ const config: ExpoConfig = {
   experiments: { typedRoutes: false },
   extra: {
     apiUrl: process.env.EXPO_PUBLIC_API_URL || "https://zhaoxi-app-puce.vercel.app",
-    eas: { projectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID || undefined },
+    eas: { projectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID || "dbbe73f4-8b81-4266-b23d-3c0710a7d0df" },
   },
 };
 
