@@ -3,21 +3,21 @@ import { localizeOrganizationName, localizeServiceName } from "@zhaoxi/i18n";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import Animated, { FadeIn, FadeInDown, LinearTransition } from "react-native-reanimated";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createServiceRequest, evaluateCoupon, getCoupons, getDeliveryQuote, getFoodPricing, getPaymentCapabilities, getProfile, getRestaurantStatus } from "../../src/api/endpoints";
 import type { CouponEvaluation, PaymentMethod, Point } from "../../src/api/types";
 import { cart } from "../../src/cart";
 import { imageUri, money, num, str } from "../../src/format";
-import { useDebounced, useServiceDetail, useSession } from "../../src/hooks";
+import { useServiceDetail, useSession } from "../../src/hooks";
 import { useI18n } from "../../src/i18n";
-import { formatAddress, getLocationState, locate, searchAddress, setManualLocation } from "../../src/location";
+import { getLocationState, setManualLocation } from "../../src/location";
 import { keys } from "../../src/query";
 import { colors, font, radius, shadow, space } from "../../src/theme";
-import { DeliveryMap } from "../../src/components/DeliveryMap";
+import { AddressPicker } from "../../src/components/AddressPicker";
 import { PaymentMethods } from "../../src/components/PaymentMethods";
-import { ArtLabel, Art3D, AppImage, BackButton, Button, Chip, Field, GlassCard, Ionicons, PressableScale, QuantityStepper, Row, Screen, SkeletonList, haptic } from "../../src/ui";
+import { ArtLabel, AppImage, Button, Chip, Field, GlassCard, Header, Ionicons, PressableScale, QuantityStepper, Row, Screen, SkeletonList, haptic } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
 
 type Courier = "green_sm" | "grab";
@@ -48,8 +48,6 @@ export default function CheckoutScreen() {
   const schedule = useMemo(defaultSchedule, []);
   const [form, setForm] = useState({ name: "", phone: "", address: "", date: schedule.date, time: schedule.time, quantity: 1, note: "" });
   const [point, setPoint] = useState<Point | null>(getLocationState().point);
-  const [addressQuery, setAddressQuery] = useState("");
-  const debouncedAddress = useDebounced(addressQuery, 450);
   const [payment, setPayment] = useState<PaymentMethod>("cash_on_delivery");
   const [bankConfirmed, setBankConfirmed] = useState(false);
   const [courier, setCourier] = useState<Courier>("green_sm");
@@ -94,7 +92,6 @@ export default function CheckoutScreen() {
   const currency = data?.currency || "VND";
 
   const coupons = useQuery({ queryKey: keys.coupons(orgId || "", Math.round(itemSubtotal)), queryFn: () => getCoupons(orgId || "", itemSubtotal), enabled: Boolean(isFood && orgId && itemSubtotal > 0) });
-  const addressResults = useQuery({ queryKey: ["geocode", debouncedAddress], queryFn: () => searchAddress(debouncedAddress), enabled: debouncedAddress.trim().length > 3 });
 
   const applyCoupon = useMutation({
     mutationFn: (code: string) => evaluateCoupon(orgId || "", code, itemSubtotal),
@@ -163,28 +160,14 @@ export default function CheckoutScreen() {
     submit.mutate();
   };
 
-  const useCurrentLocation = async () => {
-    const next = await locate(true);
-    if (next) {
-      setPoint(next);
-      const label = getLocationState().label;
-      if (label) setForm((f) => ({ ...f, address: label }));
-    }
-  };
-
   if (service.isPending) return <Screen soft><View style={{ padding: 14 }}><SkeletonList count={4} /></View></Screen>;
   const partnerName = localizeOrganizationName(locale, data?.organization?.code, data?.organization?.name, data?.organization?.metadata);
   const confirmTitle = ({ "vi-VN": "Xác nhận đơn dịch vụ", "en-US": "Confirm service order", "zh-CN": "确认服务订单", "zh-TW": "確認服務訂單" } as const)[locale];
   const deliveryTitle = ({ "vi-VN": "Vị trí giao hàng", "en-US": "Delivery location", "zh-CN": "配送位置", "zh-TW": "配送位置" } as const)[locale];
-  const searchLabel = ({ "vi-VN": "Tìm", "en-US": "Search", "zh-CN": "搜索", "zh-TW": "搜尋" } as const)[locale];
-  const searchPlaceholder = ({ "vi-VN": "Tìm đường, số nhà hoặc địa điểm", "en-US": "Search street, number or place", "zh-CN": "搜索街道、门牌或地点", "zh-TW": "搜尋街道、門牌或地點" } as const)[locale];
 
   return (
     <Screen soft>
-      <View style={styles.subHeader}>
-        <BackButton style={{ backgroundColor: colors.white }} />
-        <Text style={styles.subBrand}>ZHAOXI</Text>
-      </View>
+      <Header title={t.checkout.title} subtitle={partnerName || undefined} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={{ paddingBottom: 170 }} keyboardShouldPersistTaps="handled">
           <Animated.View entering={FadeInDown.duration(200)} style={[styles.formCard, shadow("float")]}>
@@ -224,33 +207,9 @@ export default function CheckoutScreen() {
             ) : null}
             <Field label={t.checkout.name} value={form.name} onChangeText={(name) => setForm((f) => ({ ...f, name }))} autoComplete="name" />
             <Field label={t.checkout.phone} value={form.phone} onChangeText={(phone) => setForm((f) => ({ ...f, phone }))} keyboardType="phone-pad" autoComplete="tel" placeholder="09…" />
-            {isFood ? (
-              <View style={{ gap: 10 }}>
-                <View style={styles.locHead}>
-                  <Text style={styles.locTitle}>{deliveryTitle}</Text>
-                  <PressableScale onPress={() => void useCurrentLocation()} style={styles.useLocation}><ArtLabel kind="pin" size={16} style={styles.useLocationText}>{t.checkout.useLocation}</ArtLabel></PressableScale>
-                </View>
-                <View style={[styles.mapSearch, shadow("card")]}>
-                  <Art3D kind="search" size={16} />
-                  <TextInput value={addressQuery} onChangeText={setAddressQuery} placeholder={searchPlaceholder} placeholderTextColor="#94A3B8" style={styles.mapSearchInput} returnKeyType="search" />
-                  <PressableScale onPress={() => setAddressQuery((q) => q.trim())} style={styles.mapSearchButton}><Text style={styles.mapSearchButtonText}>{searchLabel}</Text></PressableScale>
-                </View>
-                {addressResults.data?.length && addressQuery ? (
-                  <Animated.View entering={FadeIn.duration(200)} style={styles.suggestions}>
-                    {addressResults.data.map((result) => (
-                      <PressableScale key={`${result.latitude}-${result.longitude}`} onPress={() => { setPoint(result); setForm((f) => ({ ...f, address: result.label })); setAddressQuery(""); }} style={styles.suggestion}>
-                        <Ionicons name="location-outline" size={16} color={colors.brand} />
-                        <Text style={{ flex: 1, fontSize: 12, color: colors.text }} numberOfLines={2}>{result.label}</Text>
-                      </PressableScale>
-                    ))}
-                  </Animated.View>
-                ) : null}
-                <DeliveryMap point={point} onChange={async (next) => { setPoint(next); const label = await formatAddress(next); if (label) setForm((f) => ({ ...f, address: label })); }} />
-                <Field label={t.checkout.address} value={form.address} onChangeText={(address) => setForm((f) => ({ ...f, address }))} multiline style={{ minHeight: 60 }} />
-              </View>
-            ) : (
-              <Field label={t.checkout.address} value={form.address} onChangeText={(address) => setForm((f) => ({ ...f, address }))} multiline style={{ minHeight: 60 }} />
-            )}
+            {/* Every service picks the address on a map with search, not only food deliveries */}
+            <AddressPicker title={isFood ? deliveryTitle : t.checkout.pickPoint} point={point} onChange={(next, label) => { setPoint(next); if (label) setForm((f) => ({ ...f, address: label })); }} />
+            <Field label={t.checkout.address} value={form.address} onChangeText={(address) => setForm((f) => ({ ...f, address }))} multiline style={{ minHeight: 60 }} />
             <View style={{ flexDirection: "row", gap: 10 }}>
               <View style={{ flex: 1 }}><Field label={t.checkout.date} value={form.date} onChangeText={(date) => setForm((f) => ({ ...f, date }))} placeholder="YYYY-MM-DD" /></View>
               <View style={{ width: 110 }}><Field label={t.checkout.time} value={form.time} onChangeText={(time) => setForm((f) => ({ ...f, time }))} placeholder="HH:MM" /></View>
@@ -341,8 +300,6 @@ export default function CheckoutScreen() {
 }
 
 const styles = StyleSheet.create({
-  subHeader: { height: 46, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 14, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.border },
-  subBrand: { fontSize: 13, fontWeight: "800", color: "#059669", letterSpacing: 1.6 },
   formCard: { marginHorizontal: 14, marginTop: 10, padding: 16, borderRadius: 20, backgroundColor: colors.white, gap: 13, ...shadow("card") },
   serviceHead: { flexDirection: "row", alignItems: "center", gap: 12, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: "#EDF0EE" },
   thumb: { width: 46, height: 46, borderRadius: 11, backgroundColor: "#E8F9EF" },
@@ -352,19 +309,9 @@ const styles = StyleSheet.create({
   formTitle: { fontSize: 16, fontWeight: "800", color: colors.text },
   fieldLabel: { fontSize: 13, color: colors.ink },
   qtyRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  locHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
-  locTitle: { fontSize: 14, fontWeight: "800", color: colors.text },
-  useLocation: { paddingHorizontal: 14, height: 34, borderRadius: 999, backgroundColor: colors.brandSoft, borderWidth: 1, borderColor: "#A7F3D0", alignItems: "center", justifyContent: "center" },
-  useLocationText: { fontSize: 12, fontWeight: "700", color: "#167A55" },
-  mapSearch: { flexDirection: "row", alignItems: "center", gap: 8, padding: 7, paddingLeft: 14, borderRadius: 18, backgroundColor: colors.white, ...shadow("card") },
-  mapSearchInput: { flex: 1, height: 36, fontSize: 14, color: colors.text, backgroundColor: "#F8FAF9", borderRadius: 10, paddingHorizontal: 10 },
-  mapSearchButton: { height: 36, paddingHorizontal: 14, borderRadius: 11, backgroundColor: "#228662", alignItems: "center", justifyContent: "center" },
-  mapSearchButtonText: { color: colors.white, fontSize: 13, fontWeight: "800" },
   cartLine: { flexDirection: "row", gap: 10, paddingTop: 6, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   savedAddress: { width: 170, padding: 10, borderRadius: radius.md, backgroundColor: colors.white, gap: 3, ...shadow("card") },
   savedAddressActive: { borderColor: colors.brand, backgroundColor: colors.brandSoft },
-  suggestions: { borderRadius: radius.md, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, overflow: "hidden" },
-  suggestion: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   pointRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   courier: { flex: 1, padding: 12, gap: 4, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.white },
   radio: { position: "absolute", top: 12, right: 12, width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: "#CBD5E1", backgroundColor: colors.white },

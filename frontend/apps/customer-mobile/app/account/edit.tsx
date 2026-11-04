@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInDown, FadeOut, LinearTransition } from "react-native-reanimated";
 import { updateSessionProfile } from "../../src/api/client";
+import { AddressPicker } from "../../src/components/AddressPicker";
 import { addAddress, deleteAddress, getProfile, setDefaultAddress, updateProfile } from "../../src/api/endpoints";
 import type { Point } from "../../src/api/types";
 import { str } from "../../src/format";
 import { useSession } from "../../src/hooks";
 import { useI18n } from "../../src/i18n";
-import { getLocationState, locate } from "../../src/location";
 import { keys } from "../../src/query";
 import { colors, font, space } from "../../src/theme";
 import { Button, Field, GlassCard, Header, IconButton, Ionicons, Screen, SkeletonList, StatusPill, haptic } from "../../src/ui";
@@ -67,11 +67,8 @@ export default function EditProfile() {
                 {adding ? (
                   <Animated.View entering={FadeInDown.duration(200)} style={{ gap: 10 }}>
                     <Field label={t.profile.label} value={draft.label} onChangeText={(label) => setDraft((d) => ({ ...d, label }))} />
+                    <AddressPicker point={draft.point} onChange={(point, label) => setDraft((d) => ({ ...d, point, addressText: label || d.addressText }))} />
                     <Field label={t.checkout.address} value={draft.addressText} onChangeText={(addressText) => setDraft((d) => ({ ...d, addressText }))} multiline style={{ minHeight: 60 }} />
-                    <Button small variant="secondary" icon="navigate" title={draft.point ? t.checkout.pointSet : t.checkout.useLocation} onPress={async () => {
-                      const point = await locate(true);
-                      if (point) setDraft((d) => ({ ...d, point, addressText: d.addressText || getLocationState().label }));
-                    }} />
                     <Button title={t.profile.addAddress} icon="add-circle" loading={create.isPending} disabled={!draft.addressText.trim()} onPress={() => create.mutate()} />
                   </Animated.View>
                 ) : null}

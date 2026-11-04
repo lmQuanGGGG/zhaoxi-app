@@ -7,9 +7,12 @@ import { getModules } from "../../src/api/endpoints";
 import { TAB_BAR_SPACE } from "../../src/constants";
 import { useI18n } from "../../src/i18n";
 import { openModule, resolveModules, type ServiceGroup } from "../../src/modules";
+import { useMiniAppAccess } from "../../src/miniapps/access";
+import { miniAppRegistry } from "../../src/miniapps/registry";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
-import { Chip, Header, PressableScale, Screen, ServiceBadge, ZxIcon, type ZxIconName } from "../../src/ui";
+import { Art3D, Chip, Header, PressableScale, Screen, ServiceBadge, ZxIcon, type ZxIconName } from "../../src/ui";
+import { SoftGlow } from "../../src/ui/service-icons";
 
 const groups: Array<{ key: "all" | ServiceGroup; icon: ZxIconName }> = [
   { key: "all", icon: "services" },
@@ -40,6 +43,10 @@ export default function ServicesHub() {
     const needle = query.trim().toLowerCase();
     return resolveModules(modules.data, locale).filter((item) => (group === "all" || item.group === group) && (!needle || `${item.name} ${item.description}`.toLowerCase().includes(needle)));
   }, [modules.data, locale, group, query]);
+  // Mini apps this account may open (partners: "Quản lý gian hàng") sit with the services.
+  const { canOpen } = useMiniAppAccess();
+  const needle = query.trim().toLowerCase();
+  const miniApps = group === "all" || group === "life" ? miniAppRegistry.filter(canOpen).filter((entry) => !needle || `${entry.title[locale]} ${entry.subtitle[locale]}`.toLowerCase().includes(needle)) : [];
 
   return (
     <Screen tab>
@@ -56,6 +63,21 @@ export default function ServicesHub() {
             ))}
           </ScrollView>
           <View style={{ gap: 10 }}>
+            {miniApps.map((entry) => (
+              <Animated.View key={entry.id} entering={FadeInDown.duration(200)} layout={LinearTransition.duration(180)}>
+                <PressableScale onPress={() => router.push(`/miniapp/${encodeURIComponent(entry.id)}`)} scaleTo={0.98} style={[styles.card, shadow("card")]}>
+                  <View style={styles.miniArt}>
+                    <SoftGlow color={entry.tint} size={66} />
+                    <Art3D kind={entry.id === "zhaoxi.partner" ? "store" : "sparkle"} size={42} />
+                  </View>
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={styles.cardTitle} numberOfLines={1}>{entry.title[locale]}</Text>
+                    {entry.subtitle[locale] ? <Text style={styles.cardDesc} numberOfLines={2}>{entry.subtitle[locale]}</Text> : null}
+                  </View>
+                  <ZxIcon name="chevron" size={18} color="#64748B" />
+                </PressableScale>
+              </Animated.View>
+            ))}
             {items.map((item, index) => (
               <Animated.View key={item.code} entering={FadeInDown.delay(Math.min(index, 6) * 20).duration(200)} layout={LinearTransition.duration(180)}>
                 <PressableScale onPress={() => openModule(item.code)} scaleTo={0.98} style={[styles.card, shadow("card")]}>
@@ -79,6 +101,7 @@ const styles = StyleSheet.create({
   search: { height: 44, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   input: { flex: 1, fontSize: 14, color: colors.text },
   card: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12, paddingHorizontal: 14, minHeight: 78, borderRadius: 20, backgroundColor: colors.white, ...shadow("card") },
+  miniArt: { width: 52, height: 52, alignItems: "center", justifyContent: "center" },
   cardTitle: { fontSize: 15, fontWeight: "700", color: colors.ink },
   cardDesc: { fontSize: 12, color: colors.slate, marginTop: 3 },
 });
