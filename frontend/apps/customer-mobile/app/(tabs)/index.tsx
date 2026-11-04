@@ -67,7 +67,7 @@ export default function HomeScreen() {
   }, [modules, recommendations, feed, orders]);
 
   const prefetchModule = (code: string) => {
-    if (code === "emergency" || code === "payment" || code === "entertainment") return;
+    if (code === "emergency" || code === "payment" || code === "entertainment" || code === "store") return;
     void client.prefetchQuery({ queryKey: keys.nearby(code, locale, pointKey(location.point)), queryFn: () => getNearbyServices(code, locale, location.point), staleTime: 60_000 });
   };
   const lc = locationCopy[locale];

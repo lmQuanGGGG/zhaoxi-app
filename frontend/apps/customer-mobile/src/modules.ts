@@ -17,6 +17,8 @@ export const moduleCatalog: Array<{ code: string; group: ServiceGroup; descripti
   { code: "payment", group: "finance", description: { "vi-VN": "Thanh toán dịch vụ và hỗ trợ", "en-US": "Service payment and support", "zh-CN": "服务支付与支持", "zh-TW": "服務支付與支援" } },
   // App-only entry (not a backend module): the partner streaming site, embedded in-app.
   { code: "entertainment", group: "life", url: "https://cocodrama.trieuhymedia.net", name: { "vi-VN": "Giải trí", "en-US": "Entertainment", "zh-CN": "娱乐", "zh-TW": "娛樂" }, description: { "vi-VN": "Phim và chương trình giải trí", "en-US": "Dramas and shows to watch", "zh-CN": "剧集与娱乐节目", "zh-TW": "劇集與娛樂節目" } },
+  // App-only entry: the store owner's Partner mini app, or partner sign-up for accounts without a store (app/store.tsx).
+  { code: "store", group: "life", name: { "vi-VN": "Gian hàng", "en-US": "My store", "zh-CN": "我的店铺", "zh-TW": "我的店鋪" }, description: { "vi-VN": "Quản lý hoặc đăng ký gian hàng", "en-US": "Manage or open your store", "zh-CN": "管理或开通店铺", "zh-TW": "管理或開通店鋪" } },
   { code: "emergency", group: "support", description: { "vi-VN": "Y tế, công an và cứu hộ", "en-US": "Medical, police and rescue", "zh-CN": "医疗、公安与救援", "zh-TW": "醫療、公安與救援" } },
 ];
 
@@ -28,6 +30,7 @@ export function resolveModules(apiModules: ApiModule[] | undefined, locale: Zhao
   if (!codes.includes("emergency")) codes.push("emergency");
   // App-only entries always show, right before emergency.
   if (!codes.includes("entertainment")) codes.splice(codes.indexOf("emergency"), 0, "entertainment");
+  if (!codes.includes("store")) codes.splice(codes.indexOf("emergency"), 0, "store");
   return codes.map((code) => {
     const api = apiModules?.find((item) => item.code === code);
     const meta = known.get(code);
@@ -50,6 +53,7 @@ export function moduleRoute(code: string) {
 
 /** Open a module: partner web services embed in-app, the rest go to their native route. */
 export function openModule(code: string) {
+  if (code === "store") return router.push("/store");
   if (moduleCatalog.find((item) => item.code === code)?.url) return router.push(`/embed/${code}`);
   return router.push(moduleRoute(code));
 }

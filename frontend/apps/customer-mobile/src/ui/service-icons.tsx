@@ -19,6 +19,7 @@ export const servicePalettes: Record<string, { tint: string; accent: string }> =
   market: { tint: "#F2F8EA", accent: "#5C9A29" },
   emergency: { tint: "#FFEFEF", accent: "#D83A3A" },
   entertainment: { tint: "#FDEFF5", accent: "#E0447F" },
+  store: { tint: "#FFF1EC", accent: "#E2482F" },
 };
 
 const lin = (id: string, from: string, to: string, vertical = true) => (
@@ -1116,6 +1117,7 @@ const art: Record<string, () => React.JSX.Element> = {
   community: Community,
   market: Market,
   emergency: Emergency,
+  store: Store,
 };
 
 // Partner services that ship their own brand logo instead of a drawn illustration.

@@ -31,7 +31,7 @@ export default function ExploreScreen() {
   useEffect(() => { if (params.q) setQuery(params.q); }, [params.q]);
   const debounced = useDebounced(query.trim(), 300);
   const modules = useQuery({ queryKey: keys.modules(locale), queryFn: () => getModules(locale), staleTime: 5 * 60_000 });
-  const tiles = useMemo(() => resolveModules(modules.data, locale).filter((m) => m.code !== "emergency" && m.code !== "payment"), [modules.data, locale]);
+  const tiles = useMemo(() => resolveModules(modules.data, locale).filter((m) => m.code !== "emergency" && m.code !== "payment" && m.code !== "store" && m.code !== "entertainment"), [modules.data, locale]);
   const results = useQuery({ queryKey: keys.search(debounced, locale, module), queryFn: () => searchDiscovery(debounced, locale, module), placeholderData: (previous) => previous });
   const services = results.data?.services || [];
   const partners = results.data?.partners || [];

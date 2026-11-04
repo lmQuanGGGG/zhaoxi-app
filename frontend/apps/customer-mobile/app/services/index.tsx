@@ -8,7 +8,7 @@ import { TAB_BAR_SPACE } from "../../src/constants";
 import { useI18n } from "../../src/i18n";
 import { openModule, resolveModules, type ServiceGroup } from "../../src/modules";
 import { useMiniAppAccess } from "../../src/miniapps/access";
-import { miniAppRegistry } from "../../src/miniapps/registry";
+import { PARTNER_MINIAPP_ID, miniAppRegistry } from "../../src/miniapps/registry";
 import { keys } from "../../src/query";
 import { colors, shadow } from "../../src/theme";
 import { Art3D, Chip, Header, PressableScale, Screen, ServiceBadge, ZxIcon, type ZxIconName } from "../../src/ui";
@@ -43,10 +43,11 @@ export default function ServicesHub() {
     const needle = query.trim().toLowerCase();
     return resolveModules(modules.data, locale).filter((item) => (group === "all" || item.group === group) && (!needle || `${item.name} ${item.description}`.toLowerCase().includes(needle)));
   }, [modules.data, locale, group, query]);
-  // Mini apps this account may open (partners: "Quản lý gian hàng") sit with the services.
+  // Other mini apps this account may open sit with the services. Partner is not listed here: the
+  // "Gian hàng" module tile opens it for store members and partner sign-up for everyone else (app/store.tsx).
   const { canOpen } = useMiniAppAccess();
   const needle = query.trim().toLowerCase();
-  const miniApps = group === "all" || group === "life" ? miniAppRegistry.filter(canOpen).filter((entry) => !needle || `${entry.title[locale]} ${entry.subtitle[locale]}`.toLowerCase().includes(needle)) : [];
+  const miniApps = group === "all" || group === "life" ? miniAppRegistry.filter((entry) => entry.id !== PARTNER_MINIAPP_ID && canOpen(entry)).filter((entry) => !needle || `${entry.title[locale]} ${entry.subtitle[locale]}`.toLowerCase().includes(needle)) : [];
 
   return (
     <Screen tab>
