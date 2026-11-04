@@ -10,6 +10,7 @@ import { ensureSession, loadAuth, useAuth, isGuest } from "../src/api/client";
 import { hydrateCart } from "../src/cart";
 import { deviceLocale, I18nProvider, loadStoredLocale, type ZhaoXiLocale } from "../src/i18n";
 import { hydrateLocation } from "../src/location";
+import { useMiniAppPushGuard } from "../src/miniapps/push";
 import { configureNotificationChannels, registerForPush, useNotificationRouting } from "../src/notifications";
 import { CACHE_BUSTER, persister, queryClient } from "../src/query";
 import { ONBOARDING_KEY } from "../src/constants";
@@ -67,6 +68,7 @@ function AppNavigator({ onboarded, locale, onReady, splashActive }: { onboarded:
   const auth = useAuth();
   const [navigationReady, setNavigationReady] = useState(false);
   useNotificationRouting(navigationReady);
+  useMiniAppPushGuard();
 
   useEffect(() => {
     setNavigationReady(true);

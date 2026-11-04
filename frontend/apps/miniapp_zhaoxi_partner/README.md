@@ -10,5 +10,5 @@ npm run start       # dev server :8094 (host chạy với EXPO_PUBLIC_MINIAPP_DE
 npm run typecheck   # kiểm partner-mobile với các file .miniapp.ts
 ```
 
-- Quyền: `user.profile` (biết tài khoản host để gắn phiên partner), `auth.handoff` (xin mã đổi sang phiên partner).
+- Quyền: `user.profile` (biết tài khoản host để gắn phiên partner), `auth.handoff` (xin mã đổi sang phiên partner), `notifications.push` (lấy push token của host để nhận thông báo đơn hàng, host gỡ khi đăng xuất; từ 1.0.1, xem [docs §11](../../../docs/miniapp/README.md)).
 - Khác biệt với app độc lập nằm trong `partner-mobile/src/*.miniapp.ts(x)`: ảnh nhúng, three.js qua CDN, kính Liquid Glass.

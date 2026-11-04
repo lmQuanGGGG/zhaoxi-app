@@ -11,10 +11,29 @@ export function installNotificationHandler() {
   });
 }
 
-/** Push Partner (đơn mới `screen: "orders"`, tin nhắn `screen: "messages"`); push của host có `url`. */
+/** Mini app id backend ghi vào `data.miniappId` của push Partner (host dùng để mở đúng mini app). */
+export const PARTNER_MINIAPP_ID = "zhaoxi.partner";
+
+/**
+ * Push Partner (đơn mới `screen: "orders"`, tin nhắn `screen: "messages"`); push của host có `url`.
+ * Backend mới ghi thêm `miniappId: "zhaoxi.partner"`; push của mini app khác mang `miniappId` khác thì bỏ qua.
+ */
 export function isPartnerPush(data: unknown) {
   const record = data && typeof data === "object" ? data as Record<string, unknown> : null;
-  return Boolean(record && !record.url && (record.screen === "orders" || record.screen === "messages"));
+  if (!record || record.url) return false;
+  if (record.miniappId !== undefined && record.miniappId !== PARTNER_MINIAPP_ID) return false;
+  return record.screen === "orders" || record.screen === "messages";
+}
+
+/** Lý do không có token từ `bridge.getPushToken` của host → câu hiển thị ở tab Cài đặt (cùng giọng `getPushToken`). */
+export function hostPushReason(reason: string) {
+  switch (reason) {
+    case "simulator": return "Push cần chạy trên điện thoại thật.";
+    case "denied": return "Bạn chưa cho phép thông báo cho app ZhaoXi.";
+    case "no-project": return "Bản ZhaoXi này chưa cấu hình push.";
+    case "signed-out": return "Đăng nhập ZhaoXi để nhận thông báo đơn hàng.";
+    default: return "Không thể bật thông báo.";
+  }
 }
 
 export async function configureNotifications() {

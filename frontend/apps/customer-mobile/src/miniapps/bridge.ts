@@ -21,6 +21,7 @@ import { routeForWebHref } from "../links";
 import { colors, radius } from "../theme";
 import { haptic as hostHaptic } from "../ui/haptics";
 import { toast } from "../ui/toast";
+import { getMiniAppPushToken } from "./push";
 
 export const miniAppTheme: MiniAppTheme = {
   colors: {
@@ -113,6 +114,11 @@ export function createMiniAppBridge(manifest: MiniAppManifest, close: () => void
         body: JSON.stringify({ targetRole: role }),
       });
       return { code: handoff.code, role, expiresAt: handoff.expiresAt } satisfies MiniAppRoleHandoff;
+    },
+    getPushToken: async () => {
+      need("notifications.push");
+      // Host ghi lại mini app đã nhận token để gỡ đăng ký khi đăng xuất / đổi tài khoản (miniapps/push.ts).
+      return getMiniAppPushToken(manifest.id);
     },
   };
 }

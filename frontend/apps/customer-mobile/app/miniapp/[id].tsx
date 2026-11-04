@@ -10,6 +10,7 @@ import { buildMiniAppContext, createMiniAppBridge } from "../../src/miniapps/bri
 import { CAPSULE, containerCopy, MiniAppCapsuleButton, MiniAppErrorBoundary, MiniAppFailure, MiniAppLoading } from "../../src/miniapps/container";
 import { loadMiniApp, MiniAppIntegrityError, MiniAppLoadError, type LoadedMiniApp, type LoadStep } from "../../src/miniapps/loader";
 import { useMiniAppAccess } from "../../src/miniapps/access";
+import { decodeLaunchKey } from "../../src/miniapps/launch";
 import { findMiniApp, markMiniAppOpen } from "../../src/miniapps/registry";
 import { colors } from "../../src/theme";
 
@@ -22,7 +23,7 @@ export default function MiniAppScreen() {
   // Mọi query param ngoài `id` là tham số mở mini app (deep link / push).
   const launch = useMemo<Record<string, string>>(() => {
     const parsed = JSON.parse(launchKey) as Record<string, string | string[] | undefined>;
-    return Object.fromEntries(Object.entries(parsed).map(([key, value]) => [key, Array.isArray(value) ? value.join(",") : String(value ?? "")]));
+    return Object.fromEntries(Object.entries(parsed).map(([key, value]) => [decodeLaunchKey(key), Array.isArray(value) ? value.join(",") : String(value ?? "")]));
   }, [launchKey]);
   const entry = findMiniApp(id);
   const access = useMiniAppAccess();

@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Animated, AppState, Easing, Image, Keyboard, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getOrderHistory, getPartnerOrganizations, getQueue, getRestaurantAnalytics, fulfill, loadAuth, login, loginWithHandoff, loginWithPhone, logout, registerPush, switchPartnerOrganization, updateKitchen } from "./api";
-import { configureNotifications, getPushToken, isPartnerPush, notifyNewOrder } from "./notifications";
+import { configureNotifications, getPushToken, hostPushReason, isPartnerPush, notifyNewOrder } from "./notifications";
 import { ServiceOrderCard, ServiceOrderModal } from "./service-orders";
 import { C, s } from "./styles";
 import type { AnalyticsData, AuthState, Order, OrderStage, PartnerOrganization, QueueData } from "./types";
@@ -35,6 +35,11 @@ export type PartnerHost = {
   createHandoff: (() => Promise<string>) | null;
   /** Đóng mini app (như nút "×" của host). */
   close: () => void;
+  /**
+   * Expo push token của host (quyền `notifications.push`): Partner đăng ký nó với `/api/partner-push/mobile` như app
+   * độc lập, host gỡ khi người dùng đăng xuất ZhaoXi. null với host cũ: Partner tự lấy token qua expo-notifications.
+   */
+  getPushToken: (() => Promise<{ token: string | null; reason: string }>) | null;
 };
 
 const EMPTY: QueueData = { generatedAt: "", counts: { waiting: 0, preparing: 0, ready: 0, courier: 0, late: 0 }, items: [] };
@@ -576,6 +581,17 @@ function Main({
   const [chatOrderId, setChatOrderId] = useState<string | null>(null);
   const [chatTick, setChatTick] = useState(0);
   const bumpChat = useCallback(() => setChatTick(x => x + 1), []);
+  // Đơn đang mở chat theo push: `load()` không kéo về tab Đơn hàng / bật sheet đơn mới đè lên chat.
+  const chatTarget = useRef<string | null>(null);
+  // Mở cuộc chat của một đơn (push tin nhắn / `launch`). iOS không trình bày được Modal chat khi sheet chi tiết
+  // đơn (cũng là Modal) đang mở, nên đóng sheet trước rồi mới mở chat.
+  const openChat = useCallback((orderId: string) => {
+    chatTarget.current = orderId;
+    setTab("messages");
+    if (!selectedRef.current) return setChatOrderId(orderId);
+    setSelected(null);
+    setTimeout(() => setChatOrderId(orderId), 450);
+  }, []);
   const chatUnread = useOrderChatUnread(orgId, chatTick);
   type PeriodType = 1 | 7 | 30 | 90 | "custom";
   const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>(30);
@@ -637,12 +653,15 @@ function Main({
       const incoming = waiting.filter(x => !seen.current.has(x.requestId));
       const firstIncoming = incoming[0];
       const firstWaiting = waiting[0];
+      const chatOpen = Boolean(chatTarget.current);
       if (firstIncoming) {
         analyticsCacheRef.current.clear();
-        setTab("orders");
-        setOrderView("new");
-        setActiveStage("waiting");
-        if (!selectedRef.current) setSelected(firstIncoming);
+        if (!chatOpen) {
+          setTab("orders");
+          setOrderView("new");
+          setActiveStage("waiting");
+          if (!selectedRef.current) setSelected(firstIncoming);
+        }
         if (!notified.current.has(firstIncoming.requestId) && !notified.current.has(firstIncoming.requestCode)) {
           notified.current.add(firstIncoming.requestId);
           notified.current.add(firstIncoming.requestCode);
@@ -650,7 +669,7 @@ function Main({
             void notifyNewOrder(firstIncoming, { customSound: !host });
           }
         }
-      } else if (!initialized.current && firstWaiting) {
+      } else if (!initialized.current && firstWaiting && !chatOpen) {
         setTab("orders");
         setOrderView("new");
         setActiveStage("waiting");
@@ -738,12 +757,12 @@ function Main({
     const appStateSub = AppState.addEventListener("change", nextState => {
       if (nextState === "active") {
         void load();
+        // Trong host, chạm push đã đi qua listener (mini app đang mở) hoặc `launch` (host mở mini app); đọc lại
+        // phản hồi cuối ở đây sẽ mở lại đơn cũ mỗi lần app quay về foreground.
+        if (host) return;
         void Notifications.getLastNotificationResponseAsync().then(resp => {
-          // Trong host, phản hồi cuối có thể là push của chính ZhaoXi (đã được host xử lý).
-          if (resp && host && !isPartnerPush(resp.notification.request.content.data)) return;
           if (resp && isOrderMessagePush(resp.notification.request.content.data)) {
-            setTab("messages");
-            setChatOrderId(resp.notification.request.content.data.orderId);
+            openChat(resp.notification.request.content.data.orderId);
           } else if (resp) {
             const id = extractOrderId(resp.notification.request.content.data);
             if (id) {
@@ -756,7 +775,7 @@ function Main({
       }
     });
     return () => { clearInterval(timer); appStateSub.remove(); };
-  }, [load, handleNotificationTarget, host]);
+  }, [load, handleNotificationTarget, host, openChat]);
 
   // Mini app mở từ push / deep link của host: `launch` thay cho getLastNotificationResponseAsync.
   const launchScreen = host?.launch.screen;
@@ -764,14 +783,13 @@ function Main({
   useEffect(() => {
     if (!launchOrder) return;
     if (launchScreen === "messages") {
-      setTab("messages");
-      setChatOrderId(launchOrder);
+      openChat(launchOrder);
       return;
     }
     seen.current.add(launchOrder);
     notified.current.add(launchOrder);
     void handleNotificationTarget(launchOrder);
-  }, [launchScreen, launchOrder, handleNotificationTarget]);
+  }, [launchScreen, launchOrder, handleNotificationTarget, openChat]);
 
   useEffect(() => {
     if (orderView !== "history") return;
@@ -837,9 +855,12 @@ function Main({
 
   useEffect(() => {
     let alive = true;
+    const hostPushToken = host?.getPushToken;
     void (async () => {
-      await configureNotifications();
-      const result = await getPushToken();
+      // Trong host mới: kênh Android và quyền thông báo do host lo, token lấy qua bridge để host biết mà gỡ khi đăng xuất.
+      const result = hostPushToken
+        ? await hostPushToken().then(value => ({ token: value.token, reason: value.token ? "" : hostPushReason(value.reason) }))
+        : await configureNotifications().then(getPushToken);
       if (!alive) return;
       if (!result.token) return setPushStatus(result.reason);
       pushToken.current = result.token;
@@ -853,7 +874,7 @@ function Main({
       }
     })().catch(e => setPushStatus(e instanceof Error ? e.message : "Không thể bật thông báo."));
     return () => { alive = false; };
-  }, [orgId, t]);
+  }, [orgId, t, host?.getPushToken]);
 
   useEffect(() => {
     const onResponse = (response: Notifications.NotificationResponse | null) => {
@@ -861,8 +882,7 @@ function Main({
       const content = response.notification.request.content.data;
       if (host && !isPartnerPush(content)) return;
       if (isOrderMessagePush(content)) {
-        setTab("messages");
-        setChatOrderId(content.orderId);
+        openChat(content.orderId);
         return;
       }
       const id = extractOrderId(response.notification.request.content.data);
@@ -883,7 +903,8 @@ function Main({
         seen.current.add(id);
         notified.current.add(id);
       }
-      if (!selectedRef.current) {
+      // Đơn mới đến khi đang xem sheet đơn khác hoặc đang chat theo push: chỉ tải lại, chạm thông báo mới mở đơn.
+      if (!selectedRef.current && !chatTarget.current) {
         void handleNotificationTarget(id);
       } else {
         void load();
@@ -894,7 +915,7 @@ function Main({
     const responseSub = Notifications.addNotificationResponseReceivedListener(onResponse);
     const receivedSub = Notifications.addNotificationReceivedListener(onReceived);
     return () => { responseSub.remove(); receivedSub.remove(); };
-  }, [handleNotificationTarget, bumpChat, host]);
+  }, [handleNotificationTarget, bumpChat, host, openChat]);
 
   const setPriority = async (order: Order, priority: Order["priority"]) => {
     if (order.priority === priority) return;
@@ -1557,7 +1578,7 @@ function Main({
         chatLabel={orderChatCopy(lang).start}
         t={t}
       />
-      <OrderChatModal orgId={orgId} requestId={chatOrderId} lang={lang} refreshKey={chatTick} onClose={() => setChatOrderId(null)} onChanged={bumpChat}/>
+      <OrderChatModal orgId={orgId} requestId={chatOrderId} lang={lang} refreshKey={chatTick} onClose={() => { chatTarget.current = null; setChatOrderId(null); }} onChanged={bumpChat}/>
       <Modal visible={Boolean(confirmAction)} transparent animationType="fade" onRequestClose={() => setConfirmAction(null)}>
         <View style={s.confirmBackdrop}>
           <View style={s.confirmCard}>

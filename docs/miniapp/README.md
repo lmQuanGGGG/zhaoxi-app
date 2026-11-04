@@ -145,7 +145,7 @@ Quy tắc như VSP: **thư viện native mini app dùng phải có trong host** 
 - Chuỗi ký: `zhaoxi-miniapp:v1\n<id>\n<version>\n<platform>\n<runtime>\n<sha256>\n<permissions đã sort>` (`manifestSigningPayload` trong SDK; bản sao trong `tools/cli.mjs`). Quyền nằm trong phần ký nên CDN không nâng quyền được.
 - **Ed25519** thay cho RS256/JWT của Re.Pack: chữ ký 64 byte, khoá 32 byte, kiểm bằng `@noble/curves` (JS thuần, đã audit) nên không cần native. Ký một lần trên manifest (bao hash bundle) thay vì từng chunk.
 - `keyId` = 16 hex đầu của SHA-256(public key). Host tin các khoá trong `src/miniapps/keys.ts`: `env: "prod"` cho mọi bản; `env: "dev"` chỉ ở `__DEV__`. Bản release **bắt buộc** có chữ ký khoá prod; bản dev chấp nhận bundle chưa ký (cảnh báo).
-- Quyền (`miniapp.json` → manifest): `user.profile`, `api.zhaoxi`, `auth.token`, `navigation.host`. Bridge kiểm từng lời gọi (`MiniAppPermissionError`).
+- Quyền (`miniapp.json` → manifest): `user.profile`, `api.zhaoxi`, `auth.token`, `navigation.host`, `auth.handoff` (§7.2), `notifications.push` (§11). Bridge kiểm từng lời gọi (`MiniAppPermissionError`). Quyền mới phải thêm ở 3 nơi: SDK `types.ts`, `tools/metro.cjs`, backend `lib/miniapps/manifest.ts` (backend từ chối upload bản có quyền lạ).
 
 So với VSP, ZhaoXi **không mã hoá bundle khi lưu**: sandbox iOS + Data Protection đã che file khỏi app khác, và bundle được kiểm lại hash + chữ ký **mỗi lần nạp** (kể cả từ cache), nên sửa file trên máy cũng không chạy được. Mã hoá AES của VSP với khoá lưu cạnh dữ liệu chỉ làm khó việc đọc mã, không thêm toàn vẹn.
 
@@ -250,10 +250,10 @@ Kế hoạch cũ (giữ app độc lập, dùng chung mã) đã làm xong. Ảnh
 ### 7.4 Thông báo đẩy
 
 - `setNotificationHandler` chỉ còn ở app độc lập (`installNotificationHandler()`); trong host, handler là của host.
-- Partner vẫn đăng ký Expo push token **của host** với `/api/partner-push/mobile` khi mở mini app. Push đơn mới / tin nhắn đến app ZhaoXi cả khi đã tắt.
+- Partner vẫn đăng ký Expo push token **của host** với `/api/partner-push/mobile` khi mở mini app. Push đơn mới / tin nhắn đến app ZhaoXi cả khi đã tắt. Từ 1.0.1 token lấy qua bridge (`notifications.push`) và host tự gỡ khi đăng xuất: xem §11.
 - Chạm vào push: payload Partner (`screen: "orders" | "messages"`, `orderId`, không có `url`) được host mở thành `/miniapp/zhaoxi.partner?screen=…&order=…`. Nếu mini app đang mở, host bỏ qua và listener của mini app xử lý (chỉ nhận payload Partner, `remove()` khi đóng).
 - Trong host, thông báo cục bộ dùng âm mặc định (bản build host không có `order_alert.wav`).
-- Còn thiếu: chuông riêng `order_alert.wav` cho push đơn mới (thêm vào `sounds` của plugin expo-notifications ở host, cần build native); đăng xuất ở host chưa gỡ token khỏi `/api/partner-push/mobile` (máy vẫn nhận push Partner của tài khoản cũ cho tới khi mở lại mini app hoặc gỡ app).
+- Còn thiếu: chuông riêng `order_alert.wav` cho push đơn mới (thêm vào `sounds` của plugin expo-notifications ở host, cần build native). ~~Đăng xuất ở host chưa gỡ token~~: đã làm ở §11.
 
 ## 8. Kết quả kiểm thử (04/11/2026)
 
@@ -415,3 +415,55 @@ Quy trình (chủ dự án tự làm):
 | Logic host (`applyMiniAppCatalog`, `manifestUrlFor`) chạy bằng Node với backend cục bộ | danh mục lọc quyền, giữ object entry, URL `?v=1.0.0`, hash bundle khớp danh mục |
 
 Chưa thử: host trên simulator/máy thật với backend registry (không bật simulator đợt này để giảm tải máy), Android, CDN Vercel thật (header cache chỉ kiểm ở `next dev`).
+
+## 11. Thông báo đơn hàng cho chủ gian hàng trong app ZhaoXi (04/11/2026)
+
+Mục tiêu: chủ gian hàng chỉ cần cài app ZhaoXi. Push đơn mới, báo chuyển khoản và tin nhắn chat theo đơn (vốn gửi cho app ZhaoXi Partner) hiện như thông báo của ZhaoXi; chạm vào mở mini app "Quản lý gian hàng" ở đúng đơn / cuộc chat.
+
+### 11.1 Luồng
+
+```
+mở mini app Partner ──bridge.getPushToken()──▶ host: xin quyền thông báo, lấy Expo token CỦA HOST,
+   (quyền notifications.push)                        ghi nhớ {token, userId, ["zhaoxi.partner"]} (AsyncStorage)
+        │
+        └─ POST /api/partner-push/mobile {organizationId, expoPushToken, platform, deviceId=IDFV}  (phiên partner, API cũ)
+backend tạo đơn ─▶ partnerMobilePushTargets(org) ─▶ Expo ─▶ máy: data {orderId, screen, kind, miniappId:"zhaoxi.partner"}
+chạm thông báo ─▶ host: không có `url` + có `miniappId` ─▶ /miniapp/zhaoxi.partner?screen=orders|messages&order=<id>
+                         (mini app đang mở thì host bỏ qua, listener của mini app tự chuyển màn)
+đăng xuất / đổi tài khoản / hết là đối tác ─▶ host: DELETE /api/partner-push/mobile {expoPushToken} (phiên host)
+```
+
+### 11.2 Thay đổi
+
+| Phần | Việc |
+| --- | --- |
+| SDK | Quyền `notifications.push`, `bridge.getPushToken(): { token, platform, reason }` (`reason`: `simulator`, `denied`, `no-project`, `signed-out`, `error`). Không đổi `MINIAPP_RUNTIME_VERSION` (chỉ thêm). |
+| Host | [`src/miniapps/push.ts`](../../frontend/apps/customer-mobile/src/miniapps/push.ts): cấp token, ghi nhớ mini app đã nhận, `releaseMiniAppPush()` (gọi trong đăng xuất ở `ui/chrome.tsx`), `useMiniAppPushGuard()` ở `_layout` gỡ khi phiên đổi người / guest hoặc `/api/account/me` không còn là đối tác. Gỡ hỏng (mất mạng) thì giữ bản ghi, thử lại lần sau. Kênh Android `new-orders` (âm mặc định, rung mạnh) cho payload Partner. |
+| Host: chạm push | `notifications.ts` đọc `data.miniappId` (backend cũ không có thì nhận diện push Partner theo `screen` như trước). Push khách luôn có `url`, giữ nguyên. |
+| Host: tham số mở | **Lỗi có sẵn, đã sửa**: `router.push("/miniapp/x?screen=messages")` làm mất `screen` (khoá dành riêng của React Navigation), nên chạm push chat chỉ mở danh sách đơn. [`src/miniapps/launch.ts`](../../frontend/apps/customer-mobile/src/miniapps/launch.ts) đổi tên khoá dành riêng khi host tự điều hướng (`launch_screen`), màn chứa đổi lại. Deep link ngoài `zhaoxi://miniapp/…?screen=` vốn giữ được, vẫn chạy. |
+| Mini app Partner 1.0.1 | `miniapp.json` thêm `notifications.push`. Có `bridge.getPushToken` thì dùng (kênh/quyền do host lo), host cũ thì về cách 1.0.0. Nhận `miniappId`. Mở chat từ push: đóng sheet đơn trước (iOS không trình bày Modal chồng Modal), `load()` và thông báo cục bộ "đơn mới" không kéo sheet đè lên chat đang mở theo push; trong host bỏ đọc lại `getLastNotificationResponseAsync` mỗi lần về foreground (mở lại đơn cũ). Các sửa về chat cũng có tác dụng cho app Partner độc lập. |
+| Backend | [`partner-mobile-push-targets.ts`](../../backend/lib/services/partner-mobile-push-targets.ts) dùng chung cho push đơn mới, báo chuyển khoản và chat: chỉ thiết bị của **thành viên đang hoạt động** của gian hàng (nhân viên bị gỡ hết nhận dù máy chưa huỷ đăng ký), một lần mỗi token, một lần mỗi máy (11.3). Payload thêm `miniappId: "zhaoxi.partner"` (app Partner cũ bỏ qua trường lạ). `DELETE /api/partner-push/mobile`: phiên partner như cũ (chỉ xoá dòng của mình); phiên khác (host, kể cả guest) xoá theo token: giữ token là bằng chứng, token Expo ngẫu nhiên và không API nào liệt kê, hậu quả duy nhất là máy đó thôi nhận push gian hàng. `MINIAPP_PERMISSIONS` thêm `notifications.push`. **Không migration.** |
+
+### 11.3 Một máy cài cả app Partner lẫn app ZhaoXi
+
+Hai app có hai token khác nhau, cùng đăng ký cho một gian hàng. Backend gộp theo `device_id`: cả hai app gửi `identifierForVendor` (iOS, giống nhau giữa các app cùng nhà phát triển `vn.zhaoxi.*`), nên **iOS chỉ nhận một thông báo**, ở app chủ gian hàng mở gần nhất (mỗi lần mở app Partner / mini app là đăng ký lại, `updated_at` mới). `device_id` rỗng hoặc dạng chung (`partner-ios`) không bị gộp.
+
+**Android chấp nhận gửi cả hai**: `ANDROID_ID` khác nhau giữa hai app ký bằng hai khoá, không có mã máy chung nào lấy được mà không xin thêm quyền. Máy Android cài cả hai app sẽ kêu hai lần cho mỗi đơn; cách khắc phục là gỡ app Partner (mục tiêu của dự án) hoặc tắt thông báo ở một app.
+
+### 11.4 Kiểm thử (04/11/2026)
+
+| Kiểm tra | Kết quả |
+| --- | --- |
+| `tsc --noEmit` backend, customer-mobile, partner-mobile, miniapp_zhaoxi_partner, miniapp_zhaoxi_example | sạch |
+| `npm run test:partner-push` (Postgres 18 cục bộ tạm, `drizzle-kit push`) | 9/9: gộp theo token/máy, app mở gần nhất thắng, id rỗng/chung không gộp; mini app đăng ký token host bằng phiên partner, đăng ký lại không trùng, phiên khách không đăng ký được; payload đơn mới / chat / báo chuyển khoản có `miniappId` và giữ trường cũ; thành viên bị gỡ thôi nhận; phiên host gỡ token, phiên partner khác không gỡ được của chủ, token sai dạng 422, không phiên 401 |
+| `test:partner-orders`, `test:support`, `test:miniapps` | 16/16, 7/7, 12/12 (không vỡ) |
+| Simulator iPhone 17 (host Debug sẵn có, Metro worktree này, backend `next dev` + Postgres cục bộ, Partner 1.0.1 ký khoá dev qua CDN giả) | mở mini app → bản 1.0.1, `getPushToken` trả `simulator` ("Push cần chạy trên điện thoại thật."); `simctl push` payload mới: chạm khi app nền → mở đúng đơn; khởi động nguội → đúng đơn / đúng cuộc chat; chạm push chat khi mini app đang mở → host không mở chồng, mini app vào đúng chat; push khách có `url` → màn Ưu đãi như cũ |
+
+**Chưa thử**: push thật qua Expo (simulator không có Expo token, nên `getPushToken` → `simulator`; luồng ghi nhớ token + gỡ khi đăng xuất chưa chạy thật trên máy), Android (kênh `new-orders`, gửi trùng), bản Release host. Simulator có crash native có sẵn (`ExpoFabricView` thiếu view trong bản Debug cũ) khi gõ ở màn đăng nhập, không liên quan thay đổi này.
+
+### 11.5 Phát hành (chủ dự án)
+
+1. **Deploy backend** (không migration). An toàn với app cũ: app Partner cũ bỏ qua `miniappId`; host cũ vẫn nhận diện push Partner theo `screen`.
+2. **Build + publish Partner 1.0.1**, ký khoá prod: `cd frontend/apps/miniapp_zhaoxi_partner && ZHAOXI_MINIAPP_SIGNING_KEY=~/.zhaoxi/keys/zhaoxi-miniapp-prod-2026-11.pem npm run build`, rồi `cd backend && DATABASE_URL=<Neon> npx tsx scripts/publish-miniapp.ts ../frontend/apps/miniapp_zhaoxi_partner/dist --admin <adminUserId>`. Script chạy code backend **của nhánh này** (biết quyền `notifications.push`); upload qua web admin thì phải deploy backend trước. Host cũ nhận bản 1.0.1 vẫn chạy (không có `getPushToken` thì Partner tự lấy token như 1.0.0).
+3. **Phát hành host mới** (JS: gỡ token khi đăng xuất, đọc `miniappId`, sửa `screen`, kênh `new-orders`). Không thêm gói native nên không cần prebuild lại vì native, nhưng host không có OTA (`expo-updates`) nên vẫn phải build và nộp bản mới lên store. Chuông `order_alert.wav` cho host vẫn là việc riêng (cần build native).
+

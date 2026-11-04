@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { after } from "next/server";
 import { getDb } from "@/db";
 import { partnerMobilePushDevices, partnerPushSubscriptions } from "@/db/schema";
+import { PARTNER_PUSH_MINIAPP_ID, partnerMobilePushTargets } from "@/lib/services/partner-mobile-push-targets";
 import { newOrderAlertTitle, partnerOrderKind } from "@/lib/services/partner-order-presentation";
 
 export type PartnerNewOrder = { id: string; requestCode: string; customerName: string; moduleCode?: string | null };
@@ -12,23 +13,16 @@ const privateKey=process.env.ZHAOXI_WEB_PUSH_PRIVATE_KEY;
 const enabled=Boolean(publicKey&&privateKey);
 if(enabled)webpush.setVapidDetails("mailto:admin@zhaoxi.vn",publicKey!,privateKey!);
 async function sendMobilePush(organizationId:string,message:{title:string;body:string;orderId:string;kind:"new_order"|"payment_reported";moduleCode?:string|null}){
-  const devices=await getDb().select().from(partnerMobilePushDevices).where(eq(partnerMobilePushDevices.organizationId,organizationId));
-  const active=devices.filter(device=>device.enabled);
-  if(!active.length)return {sent:0,enabled:true};
-  const seenTokens = new Set<string>();
-  const uniqueActive = active.filter(device => {
-    if (!device.expoPushToken || seenTokens.has(device.expoPushToken)) return false;
-    seenTokens.add(device.expoPushToken);
-    return true;
-  });
+  // Active members only, one per token and per physical device (see partner-mobile-push-targets.ts).
+  const uniqueActive=await partnerMobilePushTargets(organizationId);
   if(!uniqueActive.length)return {sent:0,enabled:true};
   const response=await fetch("https://exp.host/--/api/v2/push/send",{
     method:"POST",
     headers:{"content-type":"application/json","accept":"application/json","accept-encoding":"gzip, deflate"},
     body:JSON.stringify(uniqueActive.map(device=>({
-      to:device.expoPushToken,title:message.title,body:message.body,
+      to:device.token,title:message.title,body:message.body,
       sound:"order_alert.wav",priority:"high",channelId:"new-orders",
-      data:{orderId:message.orderId,kind:message.kind,moduleCode:message.moduleCode||null,screen:"orders"},
+      data:{orderId:message.orderId,kind:message.kind,moduleCode:message.moduleCode||null,screen:"orders",miniappId:PARTNER_PUSH_MINIAPP_ID},
       categoryId:"ORDER_ACTIONS",mutableContent:true,
     }))),
   });

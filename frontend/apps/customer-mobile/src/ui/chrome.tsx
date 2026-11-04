@@ -12,6 +12,7 @@ import { logout } from "../api/client";
 import { useCart } from "../cart";
 import { useSession, useUnread } from "../hooks";
 import { useI18n } from "../i18n";
+import { releaseMiniAppPush } from "../miniapps/push";
 import { unregisterPush } from "../notifications";
 import { queryClient } from "../query";
 import { colors, shadow } from "../theme";
@@ -37,7 +38,7 @@ export function TopBar() {
     if (guest) return router.push("/login");
     Alert.alert(t.profile.signOut, "", [
       { text: t.common.cancel, style: "cancel" },
-      { text: t.profile.signOut, style: "destructive", onPress: async () => { await logout(locale, unregisterPush); queryClient.clear(); } },
+      { text: t.profile.signOut, style: "destructive", onPress: async () => { await logout(locale, () => Promise.all([unregisterPush(), releaseMiniAppPush()])); queryClient.clear(); } },
     ]);
   };
 

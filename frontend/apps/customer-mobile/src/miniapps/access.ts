@@ -15,8 +15,14 @@ function inAudience(audience: MiniAppAudience, account: AccountAccess | undefine
   if (!account) return false;
   if (audience === "members") return true;
   if (audience === "internal") return account.roles.includes("admin");
-  // Đổi phiên sang partner (`/api/auth/role-switch/create`) cần là thành viên gian hàng đang hoạt động;
-  // người có vai trò partner nhưng chưa gắn gian hàng vẫn thấy mini app và đăng nhập Partner bằng tay.
+  return isPartnerAccount(account);
+}
+
+/**
+ * Đổi phiên sang partner (`/api/auth/role-switch/create`) cần là thành viên gian hàng đang hoạt động;
+ * người có vai trò partner nhưng chưa gắn gian hàng vẫn thấy mini app và đăng nhập Partner bằng tay.
+ */
+export function isPartnerAccount(account: AccountAccess) {
   return account.roles.includes("partner") || account.organizations.some((organization) => (organization.status ?? "active") === "active");
 }
 
