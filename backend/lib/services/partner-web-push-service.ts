@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { after } from "next/server";
 import { getDb } from "@/db";
 import { partnerMobilePushDevices, partnerPushSubscriptions } from "@/db/schema";
-import { PARTNER_PUSH_MINIAPP_ID, partnerMobilePushTargets } from "@/lib/services/partner-mobile-push-targets";
+import { partnerMobilePushTargets, partnerPushData, partnerPushStore, storeAlertTitle } from "@/lib/services/partner-mobile-push-targets";
 import { newOrderAlertTitle, partnerOrderKind } from "@/lib/services/partner-order-presentation";
 
 export type PartnerNewOrder = { id: string; requestCode: string; customerName: string; moduleCode?: string | null };
@@ -14,15 +14,17 @@ const enabled=Boolean(publicKey&&privateKey);
 if(enabled)webpush.setVapidDetails("mailto:admin@zhaoxi.vn",publicKey!,privateKey!);
 async function sendMobilePush(organizationId:string,message:{title:string;body:string;orderId:string;kind:"new_order"|"payment_reported";moduleCode?:string|null}){
   // Active members only, one per token and per physical device (see partner-mobile-push-targets.ts).
-  const uniqueActive=await partnerMobilePushTargets(organizationId);
+  const [uniqueActive,store]=await Promise.all([partnerMobilePushTargets(organizationId),partnerPushStore(organizationId)]);
   if(!uniqueActive.length)return {sent:0,enabled:true};
+  // Owners of several stores get every store's alerts: the title names the store, `data` carries its id.
+  const title=storeAlertTitle(store.name,message.title);
   const response=await fetch("https://exp.host/--/api/v2/push/send",{
     method:"POST",
     headers:{"content-type":"application/json","accept":"application/json","accept-encoding":"gzip, deflate"},
     body:JSON.stringify(uniqueActive.map(device=>({
-      to:device.token,title:message.title,body:message.body,
+      to:device.token,title,body:message.body,
       sound:"order_alert.wav",priority:"high",channelId:"new-orders",
-      data:{orderId:message.orderId,kind:message.kind,moduleCode:message.moduleCode||null,screen:"orders",miniappId:PARTNER_PUSH_MINIAPP_ID},
+      data:partnerPushData(store,{orderId:message.orderId,kind:message.kind,moduleCode:message.moduleCode||null,screen:"orders"}),
       categoryId:"ORDER_ACTIONS",mutableContent:true,
     }))),
   });

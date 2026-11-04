@@ -27,8 +27,13 @@ export type PartnerHost = {
   language: Language;
   /** Chỗ chừa bên phải header cho nút kính "••• ×" của host. */
   capsuleInset: number;
-  /** Mở thẳng một đơn từ deep link / push của host (`?screen=orders|messages&order=<id>`). */
-  launch: { screen?: "orders" | "messages"; order?: string };
+  /**
+   * Mở thẳng một đơn từ deep link / push của host (`?screen=orders|messages&order=<id>&org=<gian hàng>`).
+   * `org` có từ host mới; host cũ không truyền thì Partner đọc từ push vừa chạm.
+   */
+  launch: { screen?: "orders" | "messages"; order?: string; organizationId?: string };
+  /** Thông báo ngắn của host (ví dụ "đã chuyển sang gian hàng X" khi chạm push của gian hàng khác). */
+  toast?: (message: string) => void;
   /** Người dùng host đang đăng nhập (null: khách guest). Phiên partner lấy qua host gắn với id này. */
   userId: string | null;
   /** Xin mã đổi vai trò partner bằng phiên host; null khi host không cấp quyền `auth.handoff`. */
@@ -491,6 +496,25 @@ function extractOrderId(data: unknown): string {
   return "";
 }
 
+/** Nơi một push Partner dẫn tới: đơn / cuộc chat, kèm gian hàng của đơn (backend mới ghi `organizationId`). */
+type PushTarget = { orderId: string; screen: "orders" | "messages"; organizationId?: string; organizationName?: string };
+
+function pushTargetOf(data: unknown): PushTarget {
+  const record = data && typeof data === "object" ? data as Record<string, unknown> : {};
+  const text = (value: unknown) => (typeof value === "string" && value.trim() ? value.trim() : undefined);
+  return {
+    orderId: extractOrderId(data),
+    screen: isOrderMessagePush(data) || record.screen === "messages" ? "messages" : "orders",
+    organizationId: text(record.organizationId),
+    organizationName: text(record.organizationName),
+  };
+}
+
+/** Mỗi lần chạm push chỉ xử lý một lần (đọc lại phản hồi cuối khi về foreground không được kéo về gian hàng cũ). */
+function pushResponseKey(response: Notifications.NotificationResponse) {
+  return `${response.notification.request.identifier}@${response.notification.date}`;
+}
+
 function GreenSphereAnalysisLoader({ visible, title, desc }: { visible: boolean; title: string; desc: string }) {
   if (!visible) return null;
 
@@ -570,6 +594,17 @@ function Main({
   const [selected, setSelected] = useState<Order | null>(null);
   const selectedRef = useRef<Order | null>(null);
   selectedRef.current = selected;
+  // Đơn đồ ăn và đơn dịch vụ dùng hai Modal khác nhau: đổi thẳng từ loại này sang loại kia thì iOS bỏ Modal mới
+  // (Modal cũ chưa đóng xong). Tự chọn đơn (push, đơn mới) khác loại thì đóng sheet cũ trước.
+  const selectOrder = useCallback((order: Order) => {
+    const current = selectedRef.current;
+    if (!current || current.requestId === order.requestId || current.kind === order.kind) return setSelected(order);
+    setSelected(null);
+    setTimeout(() => setSelected(order), 500);
+  }, []);
+  // `load()` của gian hàng trước còn đang chạy khi vừa đổi gian hàng: bỏ kết quả, không bật sheet đơn cũ.
+  const orgIdRef = useRef(orgId);
+  orgIdRef.current = orgId;
   const [successOrder, setSuccessOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -583,6 +618,8 @@ function Main({
   const bumpChat = useCallback(() => setChatTick(x => x + 1), []);
   // Đơn đang mở chat theo push: `load()` không kéo về tab Đơn hàng / bật sheet đơn mới đè lên chat.
   const chatTarget = useRef<string | null>(null);
+  // Push đang chờ đổi sang gian hàng của nó: `load()` cũng không tự bật sheet đơn của gian hàng đang rời đi.
+  const pendingPush = useRef<PushTarget | null>(null);
   // Mở cuộc chat của một đơn (push tin nhắn / `launch`). iOS không trình bày được Modal chat khi sheet chi tiết
   // đơn (cũng là Modal) đang mở, nên đóng sheet trước rồi mới mở chat.
   const openChat = useCallback((orderId: string) => {
@@ -647,13 +684,14 @@ function Main({
   const load = useCallback(async () => {
     try {
       const next = await getQueue(orgId);
+      if (orgIdRef.current !== orgId) return next;
       setData(next);
       await AsyncStorage.setItem(`queue:${orgId}`, JSON.stringify(next));
       const waiting = next.items.filter(x => x.stage === "assigned");
       const incoming = waiting.filter(x => !seen.current.has(x.requestId));
       const firstIncoming = incoming[0];
       const firstWaiting = waiting[0];
-      const chatOpen = Boolean(chatTarget.current);
+      const chatOpen = Boolean(chatTarget.current || pendingPush.current);
       if (firstIncoming) {
         analyticsCacheRef.current.clear();
         if (!chatOpen) {
@@ -666,7 +704,7 @@ function Main({
           notified.current.add(firstIncoming.requestId);
           notified.current.add(firstIncoming.requestCode);
           if (!pushReady.current) {
-            void notifyNewOrder(firstIncoming, { customSound: !host });
+            void notifyNewOrder(firstIncoming, { customSound: !host, organizationId: orgId });
           }
         }
       } else if (!initialized.current && firstWaiting && !chatOpen) {
@@ -692,12 +730,12 @@ function Main({
           if (tapped.stage === "assigned") setActiveStage("waiting");
           else if (tapped.stage === "preparing") setActiveStage("preparing");
           else setActiveStage("ready");
-          setSelected(tapped);
+          selectOrder(tapped);
         } else if (firstWaiting) {
           setTab("orders");
           setOrderView("new");
           setActiveStage("waiting");
-          setSelected(firstWaiting);
+          selectOrder(firstWaiting);
         }
       }
       return next;
@@ -714,7 +752,7 @@ function Main({
     } finally {
       setLoading(false);
     }
-  }, [orgId, host]);
+  }, [orgId, host, selectOrder]);
 
   const handleNotificationTarget = useCallback(async (targetId?: string) => {
     analyticsCacheRef.current.clear();
@@ -740,16 +778,81 @@ function Main({
         if (match.stage === "assigned") setActiveStage("waiting");
         else if (match.stage === "preparing") setActiveStage("preparing");
         else setActiveStage("ready");
-        setSelected(match);
+        selectOrder(match);
         return;
       }
     }
     const waiting = items.find(x => x.stage === "assigned");
     if (waiting) {
       setActiveStage("waiting");
-      setSelected(waiting);
+      selectOrder(waiting);
     }
-  }, [load]);
+  }, [load, selectOrder]);
+
+  // Chạm push: đơn của gian hàng khác thì đổi phiên partner sang gian hàng đó trước (chủ nhiều gian hàng nhận push
+  // của mọi gian hàng), rồi mở đơn / cuộc chat khi `orgId` đã đổi (effect bên dưới).
+  const handledPush = useRef(new Set<string>());
+  // Lúc đóng sheet / chat của gian hàng cũ: iOS bỏ qua Modal mở khi Modal khác chưa đóng xong.
+  const modalClosedAt = useRef(0);
+  const openPushTarget = useCallback((target: PushTarget) => {
+    if (target.organizationId && target.organizationId !== orgId) {
+      pendingPush.current = target;
+      if (selectedRef.current || chatTarget.current) modalClosedAt.current = Date.now();
+      // Đơn đang chờ mở thuộc gian hàng cũ: sau khi đổi, `load()` không tìm thấy sẽ rơi về đơn chờ đầu tiên.
+      pendingOrderId.current = "";
+      chatTarget.current = null;
+      setSelected(null);
+      setChatOrderId(null);
+      setSwitchingStore(true);
+      void switchPartnerOrganization(target.organizationId)
+        .then(next => {
+          onAuth(next);
+          host?.toast?.(t.switchStoreSuccessDesc(next.session.organizationName || target.organizationName || ""));
+        })
+        .catch(e => {
+          // Không còn là thành viên gian hàng đó (backend từ chối): ở lại gian hàng hiện tại.
+          pendingPush.current = null;
+          setPushStatus(e instanceof Error ? e.message : "Không thể đổi gian hàng.");
+        })
+        .finally(() => setSwitchingStore(false));
+      return;
+    }
+    if (target.screen === "messages" && target.orderId) {
+      openChat(target.orderId);
+      return;
+    }
+    if (target.orderId) {
+      seen.current.add(target.orderId);
+      notified.current.add(target.orderId);
+    }
+    void handleNotificationTarget(target.orderId);
+  }, [orgId, onAuth, host, t, openChat, handleNotificationTarget]);
+  const openPushTargetRef = useRef(openPushTarget);
+  openPushTargetRef.current = openPushTarget;
+
+  useEffect(() => {
+    const target = pendingPush.current;
+    if (!target || target.organizationId !== orgId) return;
+    const wait = Math.max(0, modalClosedAt.current + 500 - Date.now());
+    // Gọi bản mới nhất của openPushTarget (đã gắn `orgId` mới) khi hết hiệu ứng đóng Modal; tới lúc đó vẫn giữ
+    // `pendingPush` để thông báo đơn mới đến muộn không cướp màn.
+    const timer = setTimeout(() => {
+      if (pendingPush.current === target) pendingPush.current = null;
+      openPushTargetRef.current(target);
+    }, wait);
+    return () => clearTimeout(timer);
+  }, [orgId]);
+
+  const onPushResponse = useCallback((response: Notifications.NotificationResponse | null) => {
+    if (!response) return;
+    const key = pushResponseKey(response);
+    if (handledPush.current.has(key)) return;
+    handledPush.current.add(key);
+    const data = response.notification.request.content.data;
+    // Trong host, phản hồi cuối có thể là push của chính ZhaoXi (đã được host xử lý).
+    if (host && !isPartnerPush(data)) return;
+    openPushTargetRef.current(pushTargetOf(data));
+  }, [host]);
 
   useEffect(() => {
     void load();
@@ -757,39 +860,42 @@ function Main({
     const appStateSub = AppState.addEventListener("change", nextState => {
       if (nextState === "active") {
         void load();
-        // Trong host, chạm push đã đi qua listener (mini app đang mở) hoặc `launch` (host mở mini app); đọc lại
-        // phản hồi cuối ở đây sẽ mở lại đơn cũ mỗi lần app quay về foreground.
+        // Trong host, chạm push đã đi qua listener (mini app đang mở) hoặc `launch` (host mở mini app).
         if (host) return;
-        void Notifications.getLastNotificationResponseAsync().then(resp => {
-          if (resp && isOrderMessagePush(resp.notification.request.content.data)) {
-            openChat(resp.notification.request.content.data.orderId);
-          } else if (resp) {
-            const id = extractOrderId(resp.notification.request.content.data);
-            if (id) {
-              seen.current.add(id);
-              notified.current.add(id);
-            }
-            void handleNotificationTarget(id);
-          }
-        });
+        void Notifications.getLastNotificationResponseAsync().then(onPushResponse);
       }
     });
     return () => { clearInterval(timer); appStateSub.remove(); };
-  }, [load, handleNotificationTarget, host, openChat]);
+  }, [load, host, onPushResponse]);
 
-  // Mini app mở từ push / deep link của host: `launch` thay cho getLastNotificationResponseAsync.
+  // Mini app mở từ push / deep link của host: `launch` thay cho getLastNotificationResponseAsync. Xử lý một lần cho
+  // mỗi bộ tham số (đổi gian hàng làm các callback đổi theo, không được mở lại đơn của lần mở trước).
   const launchScreen = host?.launch.screen;
   const launchOrder = host?.launch.order;
+  const launchOrg = host?.launch.organizationId;
+  const handledLaunch = useRef("");
   useEffect(() => {
     if (!launchOrder) return;
-    if (launchScreen === "messages") {
-      openChat(launchOrder);
-      return;
-    }
-    seen.current.add(launchOrder);
-    notified.current.add(launchOrder);
-    void handleNotificationTarget(launchOrder);
-  }, [launchScreen, launchOrder, handleNotificationTarget, openChat]);
+    const key = `${launchScreen}|${launchOrder}|${launchOrg ?? ""}`;
+    if (handledLaunch.current === key) return;
+    handledLaunch.current = key;
+    const target: PushTarget = { orderId: launchOrder, screen: launchScreen === "messages" ? "messages" : "orders", organizationId: launchOrg };
+    // Đánh dấu ngay (trước khi chờ đọc push): `load()` / thông báo đơn mới đến trong lúc này không cướp màn.
+    pendingPush.current = target;
+    void (async () => {
+      // Push vừa chạm (nếu đúng đơn này): lấy gian hàng khi host cũ chưa truyền `org`, và đánh dấu đã xử lý để
+      // listener không mở lần nữa.
+      const response = await Notifications.getLastNotificationResponseAsync().catch(() => null);
+      if (response && extractOrderId(response.notification.request.content.data) === launchOrder) {
+        handledPush.current.add(pushResponseKey(response));
+        const fromPush = pushTargetOf(response.notification.request.content.data);
+        target.organizationId ??= fromPush.organizationId;
+        target.organizationName = fromPush.organizationName;
+      }
+      if (pendingPush.current === target) pendingPush.current = null;
+      openPushTargetRef.current(target);
+    })();
+  }, [launchScreen, launchOrder, launchOrg]);
 
   useEffect(() => {
     if (orderView !== "history") return;
@@ -877,23 +983,11 @@ function Main({
   }, [orgId, t, host?.getPushToken]);
 
   useEffect(() => {
-    const onResponse = (response: Notifications.NotificationResponse | null) => {
-      if (!response) return;
-      const content = response.notification.request.content.data;
-      if (host && !isPartnerPush(content)) return;
-      if (isOrderMessagePush(content)) {
-        openChat(content.orderId);
-        return;
-      }
-      const id = extractOrderId(response.notification.request.content.data);
-      if (id) {
-        seen.current.add(id);
-        notified.current.add(id);
-      }
-      void handleNotificationTarget(id);
-    };
     const onReceived = (notification: Notifications.Notification) => {
       if (host && !isPartnerPush(notification.request.content.data)) return;
+      // Push của gian hàng khác đến khi app đang mở: chỉ hiện banner, chạm vào mới đổi gian hàng.
+      const store = pushTargetOf(notification.request.content.data).organizationId;
+      if (store && store !== orgId) return;
       if (isOrderMessagePush(notification.request.content.data)) {
         bumpChat();
         return;
@@ -903,19 +997,20 @@ function Main({
         seen.current.add(id);
         notified.current.add(id);
       }
-      // Đơn mới đến khi đang xem sheet đơn khác hoặc đang chat theo push: chỉ tải lại, chạm thông báo mới mở đơn.
-      if (!selectedRef.current && !chatTarget.current) {
+      // Đơn mới đến khi đang xem sheet đơn khác, đang chat theo push hoặc đang đổi gian hàng theo push: chỉ tải lại,
+      // chạm thông báo mới mở đơn.
+      if (!selectedRef.current && !chatTarget.current && !pendingPush.current) {
         void handleNotificationTarget(id);
       } else {
         void load();
       }
     };
     // Trong host, push mở app do host nhận và chuyển thành `launch` (xem effect ở trên).
-    if (!host) void Notifications.getLastNotificationResponseAsync().then(onResponse);
-    const responseSub = Notifications.addNotificationResponseReceivedListener(onResponse);
+    if (!host) void Notifications.getLastNotificationResponseAsync().then(onPushResponse);
+    const responseSub = Notifications.addNotificationResponseReceivedListener(onPushResponse);
     const receivedSub = Notifications.addNotificationReceivedListener(onReceived);
     return () => { responseSub.remove(); receivedSub.remove(); };
-  }, [handleNotificationTarget, bumpChat, host, openChat]);
+  }, [handleNotificationTarget, bumpChat, host, onPushResponse, orgId, load]);
 
   const setPriority = async (order: Order, priority: Order["priority"]) => {
     if (order.priority === priority) return;

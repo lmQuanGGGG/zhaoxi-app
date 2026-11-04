@@ -1,9 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { organizationMembers, partnerMobilePushDevices } from "@/db/schema";
+import { organizationMembers, organizations, partnerMobilePushDevices } from "@/db/schema";
 
 // Which Expo tokens of `partner_mobile_push_devices` a store's push goes to. Shared by the new-order /
 // payment alerts and the order-chat push, so both apply the same rules:
+// - by user, not by the store the device registered under: a device rings for every store its user is an
+//   active member of (an owner of 12 stores gets every store's orders whichever store the app has open);
+//   the row's `organization_id` is only the store selected at registration time and is not used here;
 // - only devices whose user is still an active member of the store (removed staff stop ringing even if
 //   their app never unregistered);
 // - one message per token;
@@ -48,10 +51,39 @@ export async function partnerMobilePushTargets(organizationId: string): Promise<
     })
     .from(partnerMobilePushDevices)
     .innerJoin(organizationMembers, and(
-      eq(organizationMembers.organizationId, partnerMobilePushDevices.organizationId),
       eq(organizationMembers.userId, partnerMobilePushDevices.userId),
+      eq(organizationMembers.organizationId, organizationId),
       eq(organizationMembers.isActive, true),
     ))
-    .where(and(eq(partnerMobilePushDevices.organizationId, organizationId), eq(partnerMobilePushDevices.enabled, true)));
+    .where(eq(partnerMobilePushDevices.enabled, true));
   return pickPartnerPushTargets(rows);
+}
+
+export type PartnerPushStore = { id: string; name: string };
+
+/** Store an alert belongs to (its name goes into the title, its id into `data` so a tap switches store). */
+export async function partnerPushStore(organizationId: string): Promise<PartnerPushStore> {
+  const row = (await getDb().select({ name: organizations.name }).from(organizations).where(eq(organizations.id, organizationId)).limit(1))[0];
+  return { id: organizationId, name: row?.name?.trim() || "" };
+}
+
+/** "🔔 Có đơn hàng mới" + "ZhaoXi Car Đà Nẵng" → "🔔 ZhaoXi Car Đà Nẵng · Có đơn hàng mới" (emoji stays first). */
+export function storeAlertTitle(storeName: string, title: string) {
+  if (!storeName) return title;
+  const match = /^(\p{Extended_Pictographic}\uFE0F?)\s+(.*)$/u.exec(title);
+  return match ? `${match[1]} ${storeName} · ${match[2]}` : `${storeName} · ${title}`;
+}
+
+/**
+ * `data` of every partner Expo push. `screen`, `orderId`, `kind` are what the standalone Partner app always read;
+ * `miniappId` routes a tap in the ZhaoXi host; `organizationId` / `organizationName` let both apps switch to the
+ * order's store before opening it. Old apps ignore the extra fields.
+ */
+export function partnerPushData(store: PartnerPushStore, fields: { orderId: string; kind: string; screen: "orders" | "messages"; moduleCode?: string | null }) {
+  return {
+    ...fields,
+    miniappId: PARTNER_PUSH_MINIAPP_ID,
+    organizationId: store.id,
+    organizationName: store.name || null,
+  };
 }
