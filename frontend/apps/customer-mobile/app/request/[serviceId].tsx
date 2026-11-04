@@ -16,6 +16,7 @@ import { getLocationState, setManualLocation } from "../../src/location";
 import { keys } from "../../src/query";
 import { colors, font, radius, shadow, space } from "../../src/theme";
 import { AddressPicker } from "../../src/components/AddressPicker";
+import { DateStrip, nextDays } from "../../src/components/pickers";
 import { PaymentMethods } from "../../src/components/PaymentMethods";
 import { ArtLabel, AppImage, Button, Chip, Field, GlassCard, Header, Ionicons, PressableScale, QuantityStepper, Row, Screen, SkeletonList, haptic } from "../../src/ui";
 import { toast } from "../../src/ui/toast";
@@ -26,6 +27,13 @@ function defaultSchedule() {
   const target = new Date(Date.now() + 15 * 60_000);
   const pad = (n: number) => String(n).padStart(2, "0");
   return { date: `${target.getFullYear()}-${pad(target.getMonth() + 1)}-${pad(target.getDate())}`, time: `${pad(target.getHours())}:${pad(target.getMinutes())}` };
+}
+
+/** Half-hour slots 07:00–22:00; for today, the soonest time first and only later slots after it. */
+function timeSlots(soonest: string | null) {
+  const slots: string[] = [];
+  for (let minutes = 7 * 60; minutes <= 22 * 60; minutes += 30) slots.push(`${String(Math.floor(minutes / 60)).padStart(2, "0")}:${minutes % 60 ? "30" : "00"}`);
+  return soonest ? [soonest, ...slots.filter((slot) => slot > soonest)] : slots;
 }
 
 export default function CheckoutScreen() {
@@ -46,6 +54,7 @@ export default function CheckoutScreen() {
   const cartItems = useMemo(() => (cartOrg ? cart.itemsFor(cartOrg) : []), [cartOrg]);
   const locked = cartItems.length > 0;
   const schedule = useMemo(defaultSchedule, []);
+  const scheduleDays = useMemo(() => nextDays(14), []);
   const [form, setForm] = useState({ name: "", phone: "", address: "", date: schedule.date, time: schedule.time, quantity: 1, note: "" });
   const [point, setPoint] = useState<Point | null>(getLocationState().point);
   const [payment, setPayment] = useState<PaymentMethod>("cash_on_delivery");
@@ -162,6 +171,7 @@ export default function CheckoutScreen() {
 
   if (service.isPending) return <Screen soft><View style={{ padding: 14 }}><SkeletonList count={4} /></View></Screen>;
   const partnerName = localizeOrganizationName(locale, data?.organization?.code, data?.organization?.name, data?.organization?.metadata);
+  const soonest = ({ "vi-VN": "Sớm nhất", "en-US": "Soonest", "zh-CN": "尽快", "zh-TW": "盡快" } as const)[locale];
   const confirmTitle = ({ "vi-VN": "Xác nhận đơn dịch vụ", "en-US": "Confirm service order", "zh-CN": "确认服务订单", "zh-TW": "確認服務訂單" } as const)[locale];
   const deliveryTitle = ({ "vi-VN": "Vị trí giao hàng", "en-US": "Delivery location", "zh-CN": "配送位置", "zh-TW": "配送位置" } as const)[locale];
 
@@ -210,9 +220,16 @@ export default function CheckoutScreen() {
             {/* Every service picks the address on a map with search, not only food deliveries */}
             <AddressPicker title={isFood ? deliveryTitle : t.checkout.pickPoint} point={point} onChange={(next, label) => { setPoint(next); if (label) setForm((f) => ({ ...f, address: label })); }} />
             <Field label={t.checkout.address} value={form.address} onChangeText={(address) => setForm((f) => ({ ...f, address }))} multiline style={{ minHeight: 60 }} />
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <View style={{ flex: 1 }}><Field label={t.checkout.date} value={form.date} onChangeText={(date) => setForm((f) => ({ ...f, date }))} placeholder="YYYY-MM-DD" /></View>
-              <View style={{ width: 110 }}><Field label={t.checkout.time} value={form.time} onChangeText={(time) => setForm((f) => ({ ...f, time }))} placeholder="HH:MM" /></View>
+            {/* Date and time are picked, not typed (the inputs used to expect YYYY-MM-DD / HH:MM) */}
+            <View style={{ gap: 8 }}>
+              <Text style={styles.fieldLabel}>{t.checkout.date}</Text>
+              <DateStrip days={scheduleDays} value={form.date} onChange={(date) => setForm((f) => ({ ...f, date, time: date === schedule.date ? schedule.time : f.time < "07:00" || f.time > "22:00" || f.time === schedule.time ? "09:00" : f.time }))} locale={locale} />
+              <Text style={[styles.fieldLabel, { marginTop: 4 }]}>{t.checkout.time}</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 2 }}>
+                {timeSlots(form.date === schedule.date ? schedule.time : null).map((slot) => (
+                  <Chip key={slot} label={slot === schedule.time && form.date === schedule.date ? soonest : slot} active={form.time === slot} onPress={() => setForm((f) => ({ ...f, time: slot }))} />
+                ))}
+              </ScrollView>
             </View>
             <Text style={{ fontSize: 11, color: colors.slate }}>{t.checkout.scheduleHint}</Text>
             <Field label={t.checkout.note} value={form.note} onChangeText={(note) => setForm((f) => ({ ...f, note }))} multiline />
