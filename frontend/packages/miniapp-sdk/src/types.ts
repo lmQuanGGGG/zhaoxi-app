@@ -19,9 +19,12 @@ export type MiniAppLocale = "vi-VN" | "zh-CN" | "zh-TW" | "en-US";
  * - `navigation.host`: mở màn hình của host bằng `bridge.openHostRoute`.
  * - `auth.handoff`: xin mã đổi vai trò một lần (`bridge.createRoleHandoff`) để mini app tự lấy phiên
  *   riêng (ví dụ phiên partner) của cùng tài khoản, không cần đăng nhập lại và không thấy token của host.
+ * - `notifications.push`: lấy Expo push token **của host** (`bridge.getPushToken`) để đăng ký với backend của
+ *   mini app (ví dụ `/api/partner-push/mobile`). Host nhớ mini app đã nhận token và gỡ đăng ký khi người dùng
+ *   đăng xuất / đổi tài khoản / mất quyền. Push gửi tới token này nên có `data.miniappId` để host mở đúng mini app.
  */
-export type MiniAppPermission = "user.profile" | "api.zhaoxi" | "auth.token" | "navigation.host" | "auth.handoff";
-export const MINIAPP_PERMISSIONS: readonly MiniAppPermission[] = ["user.profile", "api.zhaoxi", "auth.token", "navigation.host", "auth.handoff"];
+export type MiniAppPermission = "user.profile" | "api.zhaoxi" | "auth.token" | "navigation.host" | "auth.handoff" | "notifications.push";
+export const MINIAPP_PERMISSIONS: readonly MiniAppPermission[] = ["user.profile", "api.zhaoxi", "auth.token", "navigation.host", "auth.handoff", "notifications.push"];
 
 export type MiniAppSource = "dev" | "network" | "cache";
 
@@ -91,6 +94,17 @@ export interface MiniAppRoleHandoff {
   expiresAt: string;
 }
 
+/**
+ * Kết quả `bridge.getPushToken`. `token` null kèm lý do: `simulator` (máy ảo không có Expo token),
+ * `denied` (người dùng tắt thông báo), `no-project` (bản host thiếu EAS projectId), `signed-out` (khách chưa
+ * đăng nhập hoặc là guest), `error`.
+ */
+export interface MiniAppPushToken {
+  token: string | null;
+  platform: MiniAppPlatform;
+  reason: "" | "simulator" | "denied" | "no-project" | "signed-out" | "error";
+}
+
 export type MiniAppToastTone = "success" | "error" | "info";
 export type MiniAppHaptic = "light" | "medium" | "success" | "warning" | "error";
 
@@ -115,6 +129,12 @@ export interface MiniAppBridge {
    * Lỗi khi khách là guest hoặc không có quyền.
    */
   createRoleHandoff(role: MiniAppHandoffRole): Promise<MiniAppRoleHandoff>;
+  /**
+   * Cần `notifications.push`. Expo push token của host (xin quyền thông báo nếu chưa có). Mini app tự đăng ký
+   * token với backend bằng phiên của nó; push tới token này hiện như thông báo của app ZhaoXi, chạm vào thì host
+   * mở `zhaoxi://miniapp/<data.miniappId>?screen=…&order=…`. Host bản cũ không có hàm này (kiểm `typeof`).
+   */
+  getPushToken(): Promise<MiniAppPushToken>;
 }
 
 /** Props host truyền cho component default export của mini app. */

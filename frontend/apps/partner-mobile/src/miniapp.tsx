@@ -26,6 +26,8 @@ export default function PartnerMiniApp({ context, bridge }: MiniAppProps) {
     // Host cũ chưa có createRoleHandoff: Partner chỉ còn đăng nhập tay.
     createHandoff: typeof bridge.createRoleHandoff === "function" ? async () => (await bridge.createRoleHandoff("partner")).code : null,
     close: bridge.close,
+    // Host cũ chưa có getPushToken: Partner tự lấy token qua expo-notifications (shared module) như bản 1.0.0.
+    getPushToken: typeof bridge.getPushToken === "function" ? () => bridge.getPushToken() : null,
   }), [context.locale, capsuleInset, screen, order, userId, bridge]);
   return <PartnerApp host={host}/>;
 }

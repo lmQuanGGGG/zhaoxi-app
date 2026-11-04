@@ -1,7 +1,8 @@
 import webpush from "web-push";
-import { and, eq, inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
 import { partnerMobilePushDevices, partnerPushSubscriptions } from "@/db/schema";
+import { PARTNER_PUSH_MINIAPP_ID, partnerMobilePushTargets } from "@/lib/services/partner-mobile-push-targets";
 
 // Push for a new customer message in an order chat, to every device of the
 // store: the partner mobile app (Expo) and the partner web (Web Push). Kept apart
@@ -17,12 +18,8 @@ type ExpoTicket = { status?: string; details?: { error?: string } };
 
 async function sendMobile(organizationId: string, message: OrderMessagePush) {
   const db = getDb();
-  const devices = await db
-    .select({ id: partnerMobilePushDevices.id, token: partnerMobilePushDevices.expoPushToken })
-    .from(partnerMobilePushDevices)
-    .where(and(eq(partnerMobilePushDevices.organizationId, organizationId), eq(partnerMobilePushDevices.enabled, true)));
-  const seen = new Set<string>();
-  const unique = devices.filter((device) => device.token && !seen.has(device.token) && Boolean(seen.add(device.token)));
+  // Active members only, one per token and per physical device (see partner-mobile-push-targets.ts).
+  const unique = await partnerMobilePushTargets(organizationId);
   if (!unique.length) return 0;
   const response = await fetch("https://exp.host/--/api/v2/push/send", {
     method: "POST",
@@ -34,7 +31,7 @@ async function sendMobile(organizationId: string, message: OrderMessagePush) {
       sound: "default",
       priority: "high",
       channelId: "messages",
-      data: { orderId: message.requestId, kind: "order_message", screen: "messages" },
+      data: { orderId: message.requestId, kind: "order_message", screen: "messages", miniappId: PARTNER_PUSH_MINIAPP_ID },
     }))),
   });
   if (!response.ok) return 0;

@@ -11,6 +11,7 @@
     "test:partner-orders": "tsx --test tests/partner-order-presentation.test.ts tests/partner-order-notify.integration.test.ts",
     "test:support": "tsx --test tests/support-thread.integration.test.ts",
     "test:miniapps": "tsx --test tests/miniapp-registry.integration.test.ts",
+    "test:partner-push": "tsx --test tests/partner-push-targets.test.ts tests/partner-miniapp-push.integration.test.ts",
     "db:apply:miniapps": "node scripts/migrate-0012-miniapp-registry.mjs",
     "verify:current": "node scripts/verify-current-architecture.mjs",
     "db:generate": "drizzle-kit generate",

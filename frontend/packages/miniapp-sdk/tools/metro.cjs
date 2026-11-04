@@ -18,7 +18,7 @@ const shared = require("../shared-modules.json");
 
 const ID_PATTERN = /^[a-z][a-z0-9_.-]{2,63}$/;
 const VERSION_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
-const PERMISSIONS = ["user.profile", "api.zhaoxi", "auth.token", "navigation.host", "auth.handoff"];
+const PERMISSIONS = ["user.profile", "api.zhaoxi", "auth.token", "navigation.host", "auth.handoff", "notifications.push"];
 const DEFAULT_DEV_PORT = 8092;
 
 function readMiniAppJson(projectRoot) {

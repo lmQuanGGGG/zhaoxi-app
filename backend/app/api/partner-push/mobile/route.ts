@@ -35,11 +35,24 @@ export async function POST(request: Request) {
   return json({ ok: true });
 }
 
+/**
+ * Partner session: removes its own registration (standalone Partner app / mini app logout).
+ * Any other signed-in session (the ZhaoXi host app, customer or guest): releases this device's own token from
+ * every store, whoever registered it. The host calls this when its user signs out, switches account or stops
+ * being a partner, because the partner session that registered the token lives inside the mini app.
+ * Holding the token is the proof: Expo tokens are random, never listed by any API, and the only effect is that
+ * this device stops receiving store alerts.
+ */
 export async function DELETE(request: Request) {
   const session = await authenticatedSession(request);
-  if (!session || session.role !== "partner") return errorResponse("Partner required.", 401);
+  if (!session) return errorResponse("Authentication required.", 401);
   const body = await request.json().catch(() => null);
   const expoPushToken = String(body?.expoPushToken || "");
+  if (session.role !== "partner") {
+    if (!validExpoToken(expoPushToken)) return errorResponse("Invalid mobile push registration.", 422);
+    await getDb().delete(partnerMobilePushDevices).where(eq(partnerMobilePushDevices.expoPushToken, expoPushToken));
+    return json({ ok: true });
+  }
   if (expoPushToken) {
     await getDb().delete(partnerMobilePushDevices).where(and(
       eq(partnerMobilePushDevices.userId, session.userId),

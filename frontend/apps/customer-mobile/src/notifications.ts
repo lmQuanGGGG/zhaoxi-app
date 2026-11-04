@@ -24,12 +24,22 @@ export async function configureNotificationChannels() {
     Notifications.setNotificationChannelAsync("orders", { name: "Đơn hàng & thanh toán", importance: Notifications.AndroidImportance.HIGH, vibrationPattern: [0, 250, 120, 250], lightColor: "#0FAF7A" }),
     Notifications.setNotificationChannelAsync("messages", { name: "Tin nhắn", importance: Notifications.AndroidImportance.HIGH, lightColor: "#0FAF7A" }),
     Notifications.setNotificationChannelAsync("promotions", { name: "Khuyến mãi", importance: Notifications.AndroidImportance.DEFAULT }),
+    // Push đơn mới / báo chuyển khoản của gian hàng (mini app Quản lý gian hàng) gửi `channelId: "new-orders"`.
+    // Host chưa có order_alert.wav nên dùng âm mặc định, rung mạnh để phân biệt.
+    Notifications.setNotificationChannelAsync("new-orders", {
+      name: "Đơn hàng mới của gian hàng",
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 500, 180, 500, 180, 900],
+      lightColor: "#16a36a",
+      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+    }),
   ]);
 }
 
 export type PushStatus = { enabled: boolean; reason: "" | "simulator" | "denied" | "no-project" | "error" };
 
-async function expoToken(prompt: boolean): Promise<{ token: string | null; status: PushStatus }> {
+/** Expo push token của host (xin quyền khi `prompt`). Dùng cho push khách và cho mini app (`miniapps/push.ts`). */
+export async function getExpoPushToken(prompt: boolean): Promise<{ token: string | null; status: PushStatus }> {
   const current = await Notifications.getPermissionsAsync();
   let granted = current.granted || current.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL;
   if (!granted && prompt && current.canAskAgain) {
@@ -54,7 +64,7 @@ export async function getPromotionsPreference() {
 
 /** Gets an Expo token (optionally prompting) and binds it to the current customer. */
 export async function registerForPush(locale: string, prompt = false): Promise<PushStatus> {
-  const { token, status } = await expoToken(prompt);
+  const { token, status } = await getExpoPushToken(prompt);
   if (!token) return status;
   const promotionsEnabled = await getPromotionsPreference();
   try {
@@ -83,23 +93,33 @@ export async function unregisterPush() {
 }
 
 /**
- * Push của ZhaoXi Partner (đơn mới `screen: "orders"`, tin nhắn `screen: "messages"`, không có `url`)
- * đến máy này khi người dùng đã mở mini app Partner trong host. Chạm vào thì mở mini app ở đúng đơn;
- * khi mini app đang mở, chính nó nhận sự kiện nên host bỏ qua.
+ * Push dành cho một mini app (không có `url`): backend ghi `data.miniappId` (Partner: `zhaoxi.partner`, đơn mới
+ * `screen: "orders"`, tin nhắn `screen: "messages"`, kèm `orderId`). Backend cũ chưa ghi `miniappId`: nhận diện
+ * push Partner theo `screen`. Chạm vào thì mở mini app ở đúng đơn / cuộc chat; khi mini app đang mở, chính nó nhận
+ * sự kiện nên host bỏ qua. Push của khách luôn có `url` và giữ nguyên cách xử lý.
  */
-function partnerPushHref(data: Record<string, unknown>) {
+const MINIAPP_ID_PATTERN = /^[a-z0-9]+(\.[a-z0-9-]+)+$/;
+
+function miniAppPushTarget(data: Record<string, unknown>) {
   const screen = data.screen === "messages" ? "messages" : data.screen === "orders" ? "orders" : null;
-  const order = typeof data.orderId === "string" ? data.orderId : "";
-  if (!screen || !order) return null;
-  return `/miniapp/${PARTNER_MINIAPP_ID}?${new URLSearchParams({ screen, order }).toString()}`;
+  const declared = typeof data.miniappId === "string" && MINIAPP_ID_PATTERN.test(data.miniappId) ? data.miniappId : null;
+  const miniappId = declared ?? (screen ? PARTNER_MINIAPP_ID : null);
+  if (!miniappId) return null;
+  const params = new URLSearchParams();
+  if (screen) params.set("screen", screen);
+  if (typeof data.orderId === "string" && data.orderId) params.set("order", data.orderId);
+  // Push Partner kiểu cũ luôn có đơn; thiếu đơn thì không phải push của mini app.
+  if (!declared && !params.has("order")) return null;
+  const query = params.toString();
+  return { miniappId, href: `/miniapp/${miniappId}${query ? `?${query}` : ""}` };
 }
 
 function openFromNotification(response: Notifications.NotificationResponse | null) {
-  const data = response?.notification.request.content.data as { url?: string } | undefined;
+  const data = response?.notification.request.content.data as Record<string, unknown> | undefined;
   if (!data) return;
-  if (!data.url) {
-    const partnerHref = partnerPushHref(data);
-    if (partnerHref && !isMiniAppOpen(PARTNER_MINIAPP_ID)) router.push(routeForWebHref(partnerHref));
+  if (typeof data.url !== "string" || !data.url) {
+    const target = miniAppPushTarget(data);
+    if (target && !isMiniAppOpen(target.miniappId)) router.push(routeForWebHref(target.href));
     return;
   }
   router.push(routeForWebHref(data.url));

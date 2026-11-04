@@ -1,4 +1,5 @@
 import type { Href } from "expo-router";
+import { encodeLaunchParams } from "./miniapps/launch";
 
 // The backend speaks in PWA paths (recommendation hrefs, notification hrefs,
 // push payload urls). Map them onto native routes so every link opens the
@@ -86,8 +87,9 @@ export function routeForWebHref(href?: string | null): Href {
     case "help":
       return `/help/${decoded}`;
     case "miniapp": {
-      // `/miniapp/zhaoxi.partner?screen=orders&order=<id>`: query thành `context.launch` của mini app.
-      const query = params.toString();
+      // `/miniapp/zhaoxi.partner?screen=orders&order=<id>`: query thành `context.launch` của mini app
+      // (khoá dành riêng của router như `screen` được đổi tên, màn chứa đổi lại: miniapps/launch.ts).
+      const query = encodeLaunchParams(params).toString();
       return `/miniapp/${encodeURIComponent(decoded)}${query ? `?${query}` : ""}`;
     }
     default:

@@ -4,7 +4,7 @@ import { findTrustedKey } from "./trusted-keys";
 /** Runtimes this registry accepts. Same number as `MINIAPP_RUNTIME_VERSION` in `@zhaoxi/miniapp-sdk`. */
 export const SUPPORTED_MINIAPP_RUNTIMES = [1] as const;
 export const MINIAPP_PLATFORMS = ["ios", "android"] as const;
-export const MINIAPP_PERMISSIONS = ["user.profile", "api.zhaoxi", "auth.token", "navigation.host", "auth.handoff"] as const;
+export const MINIAPP_PERMISSIONS = ["user.profile", "api.zhaoxi", "auth.token", "navigation.host", "auth.handoff", "notifications.push"] as const;
 
 export type MiniAppPlatform = (typeof MINIAPP_PLATFORMS)[number];
 
