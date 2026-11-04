@@ -89,7 +89,7 @@ describe("new orders of every module reach the store owner", { skip: isLocal ? f
     assert.equal(created.assignedOrganizationId, orgId);
     assert.equal(created.details.deliveryFulfillmentMode, undefined);
     const push = await waitForPush(created.id);
-    assert.equal(push.title, "🔔 Có đơn dịch vụ mới");
+    assert.equal(push.title, "🔔 Gian hàng test · Có đơn dịch vụ mới");
     assert.equal(push.data.moduleCode, "visa");
   });
 
@@ -101,7 +101,7 @@ describe("new orders of every module reach the store owner", { skip: isLocal ? f
     assert.equal(response.status, 201);
     const created = (await response.json()).data as { id: string; assignedOrganizationId: string };
     assert.equal(created.assignedOrganizationId, orgId);
-    assert.equal((await waitForPush(created.id)).title, "🏠 Có yêu cầu thuê nhà mới");
+    assert.equal((await waitForPush(created.id)).title, "🏠 Gian hàng test · Có yêu cầu thuê nhà mới");
   });
 
   it("alerts the store owner about a tour booking", async () => {
@@ -113,7 +113,7 @@ describe("new orders of every module reach the store owner", { skip: isLocal ? f
     assert.equal(response.status, 201);
     const created = (await response.json()).data as { id: string; assignedOrganizationId: string };
     assert.equal(created.assignedOrganizationId, orgId);
-    assert.equal((await waitForPush(created.id)).title, "🧭 Có yêu cầu đặt tour mới");
+    assert.equal((await waitForPush(created.id)).title, "🧭 Gian hàng test · Có yêu cầu đặt tour mới");
   });
 
   it("lets the partner act on each kind through the right endpoint", async () => {

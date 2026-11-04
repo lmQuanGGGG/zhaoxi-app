@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { pickPartnerPushTargets, type PartnerPushDeviceRow } from "@/lib/services/partner-mobile-push-targets";
+import { pickPartnerPushTargets, storeAlertTitle, type PartnerPushDeviceRow } from "@/lib/services/partner-mobile-push-targets";
 
 const at = (minute: number) => new Date(Date.UTC(2026, 10, 4, 8, minute));
 const row = (id: string, token: string, deviceId: string | null, minute: number): PartnerPushDeviceRow => ({ id, token, deviceId, updatedAt: at(minute) });
@@ -32,3 +32,13 @@ describe("pickPartnerPushTargets", () => {
     assert.equal(picked.length, 7);
   });
 });
+
+describe("storeAlertTitle", () => {
+  it("puts the store name after the leading emoji", () => {
+    assert.equal(storeAlertTitle("ZhaoXi Car Đà Nẵng", "🔔 Có đơn hàng mới"), "🔔 ZhaoXi Car Đà Nẵng · Có đơn hàng mới");
+    assert.equal(storeAlertTitle("Lẩu bò", "💳 Khách đã báo chuyển khoản"), "💳 Lẩu bò · Khách đã báo chuyển khoản");
+    assert.equal(storeAlertTitle("Lẩu bò", "Có đơn"), "Lẩu bò · Có đơn");
+    assert.equal(storeAlertTitle("", "🔔 Có đơn hàng mới"), "🔔 Có đơn hàng mới");
+  });
+});
+

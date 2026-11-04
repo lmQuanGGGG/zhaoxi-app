@@ -467,3 +467,39 @@ Hai app có hai token khác nhau, cùng đăng ký cho một gian hàng. Backend
 2. **Build + publish Partner 1.0.1**, ký khoá prod: `cd frontend/apps/miniapp_zhaoxi_partner && ZHAOXI_MINIAPP_SIGNING_KEY=~/.zhaoxi/keys/zhaoxi-miniapp-prod-2026-11.pem npm run build`, rồi `cd backend && DATABASE_URL=<Neon> npx tsx scripts/publish-miniapp.ts ../frontend/apps/miniapp_zhaoxi_partner/dist --admin <adminUserId>`. Script chạy code backend **của nhánh này** (biết quyền `notifications.push`); upload qua web admin thì phải deploy backend trước. Host cũ nhận bản 1.0.1 vẫn chạy (không có `getPushToken` thì Partner tự lấy token như 1.0.0).
 3. **Phát hành host mới** (JS: gỡ token khi đăng xuất, đọc `miniappId`, sửa `screen`, kênh `new-orders`). Không thêm gói native nên không cần prebuild lại vì native, nhưng host không có OTA (`expo-updates`) nên vẫn phải build và nộp bản mới lên store. Chuông `order_alert.wav` cho host vẫn là việc riêng (cần build native).
 
+## 12. Chủ nhiều gian hàng: push của mọi gian hàng, chạm vào tự đổi gian hàng (04/11/2026)
+
+Yêu cầu của chủ dự án: chủ gian hàng đang ở gian hàng nào cũng nhận thông báo đơn của mọi gian hàng mình quản lý; chạm vào đơn của gian hàng khác thì tự đổi sang đúng gian hàng đó. Tài khoản chủ thật (+84942411045) sở hữu 12 gian hàng.
+
+### 12.1 Trước đây
+
+`partner_mobile_push_devices.expo_push_token` là duy nhất, mỗi máy chỉ có **một** dòng gắn với **một** `organization_id`: gian hàng đang chọn lúc đăng ký (mở app / đổi gian hàng là đăng ký lại, ghi đè). Backend gửi theo `organization_id` của dòng, nên máy chỉ kêu cho gian hàng đang mở trong app; 11 gian hàng còn lại im lặng.
+
+### 12.2 Bây giờ (không migration)
+
+| Phần | Việc |
+| --- | --- |
+| Backend | `partnerMobilePushTargets(org)` chọn thiết bị **theo người dùng**: mọi thiết bị của thành viên đang hoạt động của gian hàng có đơn, bất kể máy đăng ký lúc đang ở gian hàng nào. `organization_id` của dòng chỉ còn là gian hàng chọn lúc đăng ký, không dùng để gửi. Giữ nguyên: một lần mỗi token, một lần mỗi máy (§11.3), nhân viên bị gỡ khỏi gian hàng thôi nhận ngay. API đăng ký không đổi. |
+| Payload | Thêm `organizationId`, `organizationName` (cho đơn mới, báo chuyển khoản, chat). Tiêu đề có tên gian hàng sau emoji: `🔔 ZhaoXi Car Đà Nẵng · Có đơn dịch vụ mới`, `💬 ZhaoXi Car Đà Nẵng · Khách · ZX-…`, `💳 … · Khách đã báo chuyển khoản`. App cũ bỏ qua trường lạ. |
+| Partner 1.0.2 (mini app + app độc lập, cùng mã) | Mọi đường chạm push (đang chạy, chạy nền, khởi động nguội, `launch` từ host) đi qua `openPushTarget`: đơn thuộc gian hàng khác thì gọi `POST /api/auth/session/organization` (API đổi gian hàng có sẵn), rồi mới mở đơn / cuộc chat. Host báo "Bạn đã chuyển qua gian hàng …". Đổi thất bại (không còn là thành viên) thì ở lại gian hàng hiện tại. Push của gian hàng khác đến khi app đang mở: chỉ hiện banner, không tự đổi. Mỗi lần chạm chỉ xử lý một lần (trước đây app độc lập mở lại đơn cũ mỗi lần về foreground; nay đổi gian hàng tay sau đó không bị kéo về). |
+| Partner: lỗi tìm ra khi thử | (1) `load()` của gian hàng cũ trả về sau khi đã đổi gian hàng, bật sheet đơn cũ: nay bỏ kết quả của gian hàng cũ. (2) Đơn đồ ăn và đơn dịch vụ dùng hai Modal khác nhau: đổi thẳng từ loại này sang loại kia thì iOS bỏ Modal mới: nay đóng sheet cũ, đợi 500 ms rồi mở. (3) Chuông cục bộ "đơn mới" của gian hàng cũ đến muộn kéo sang đơn khác: nay mang `organizationId`, và không điều hướng khi đang có push chờ đổi gian hàng. |
+| Host (customer-mobile) | `notifications.ts`: thêm `org=<organizationId>` vào tham số mở mini app. **Không bắt buộc**: host đã phát hành (không có `org`) thì Partner 1.0.2 đọc `organizationId` từ push vừa chạm (`getLastNotificationResponseAsync`, đối chiếu `orderId`). Không thêm gói native. |
+
+### 12.3 Kiểm thử (04/11/2026)
+
+| Kiểm tra | Kết quả |
+| --- | --- |
+| `tsc --noEmit` backend, customer-mobile, partner-mobile, miniapp_zhaoxi_partner, miniapp_zhaoxi_example | sạch |
+| `npm run test:partner-push` (Postgres 18 cục bộ tạm) | 11/11, thêm: chủ 2 gian hàng nhận đơn của gian hàng thứ hai trên máy đăng ký ở gian hàng thứ nhất, nhân viên không thuộc gian hàng đó không nhận, một dòng/token không nhân bản; tiêu đề có tên gian hàng; payload có `organizationId`/`organizationName` |
+| `test:partner-orders`, `test:support`, `test:miniapps` | 16/16 (đã cập nhật tiêu đề có tên gian hàng), 7/7, 12/12 |
+| Simulator iPhone 17, `partner.demo` chủ 2 gian hàng (川渝老火锅 + "ZhaoXi Car Đà Nẵng", dữ liệu cục bộ) | mini app đang mở ở 川渝老火锅, chạm push ZhaoXi Car → đổi gian hàng + mở đúng yêu cầu thuê nhà; khởi động nguội: push đơn → đổi + đúng sheet đơn (cả hai chiều, đơn đồ ăn ↔ đơn dịch vụ); push chat → đổi + đúng cuộc chat |
+
+Chưa thử: push thật, Android, app Partner độc lập trên máy (cùng mã với mini app, chỉ thử qua mini app), tài khoản 12 gian hàng thật.
+
+### 12.4 Phát hành
+
+1. Deploy backend (không migration). Từ lúc này máy của chủ kêu cho mọi gian hàng, kể cả với Partner 1.0.1 / app Partner cũ; chỉ có điều chạm vào đơn của gian hàng khác thì bản cũ mở danh sách gian hàng đang chọn (không tìm thấy đơn).
+2. Publish Partner 1.0.2 (ký khoá prod, `dist/` của worktree `miniapp-push-31d622` đã build và `verify`).
+3. Host: sửa nhỏ ở `notifications.ts` (truyền `org`), đi cùng lần phát hành host kế tiếp; không gấp.
+4. App Partner độc lập (`partner-mobile`): cùng mã, cần build + nộp bản mới nếu muốn app riêng cũng tự đổi gian hàng.
+

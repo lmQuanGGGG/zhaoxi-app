@@ -16,18 +16,19 @@ export default function PartnerMiniApp({ context, bridge }: MiniAppProps) {
   // Gọi khi render (trước mọi effect của con): API của Partner trỏ đúng backend host đang dùng.
   configureApi({ apiUrl: context.host.apiUrl, deviceName: "ZhaoXi Partner (mini app)" });
   const userId = context.user && !context.user.isGuest ? context.user.id : null;
-  const { screen, order } = context.launch;
+  const { screen, order, org } = context.launch;
   const capsuleInset = context.capsule.width + context.capsule.right + CAPSULE_GAP;
   const host = useMemo<PartnerHost>(() => ({
     language: LANGUAGE[context.locale] ?? "vi",
     capsuleInset,
-    launch: { screen: screen === "messages" ? "messages" : screen === "orders" ? "orders" : undefined, order: order || undefined },
+    launch: { screen: screen === "messages" ? "messages" : screen === "orders" ? "orders" : undefined, order: order || undefined, organizationId: org || undefined },
     userId,
     // Host cũ chưa có createRoleHandoff: Partner chỉ còn đăng nhập tay.
     createHandoff: typeof bridge.createRoleHandoff === "function" ? async () => (await bridge.createRoleHandoff("partner")).code : null,
     close: bridge.close,
+    toast: (message: string) => bridge.toast(message, "success"),
     // Host cũ chưa có getPushToken: Partner tự lấy token qua expo-notifications (shared module) như bản 1.0.0.
     getPushToken: typeof bridge.getPushToken === "function" ? () => bridge.getPushToken() : null,
-  }), [context.locale, capsuleInset, screen, order, userId, bridge]);
+  }), [context.locale, capsuleInset, screen, order, org, userId, bridge]);
   return <PartnerApp host={host}/>;
 }

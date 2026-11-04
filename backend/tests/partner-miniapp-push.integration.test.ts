@@ -92,7 +92,8 @@ describe("partner push to the ZhaoXi host app", { skip: isLocal ? false : "set T
     assert.deepEqual(tokensFor(orderId), [hostToken, staffToken].sort());
     const toHost = sent.find((m) => m.to === hostToken)!;
     assert.equal(toHost.channelId, "new-orders");
-    assert.deepEqual(toHost.data, { orderId, kind: "new_order", moduleCode: "food", screen: "orders", miniappId: "zhaoxi.partner" });
+    assert.equal(toHost.title, "🔔 Gian hàng push · Có đơn hàng mới");
+    assert.deepEqual(toHost.data, { orderId, kind: "new_order", moduleCode: "food", screen: "orders", miniappId: "zhaoxi.partner", organizationId: orgId, organizationName: "Gian hàng push" });
   });
 
   it("chat message: same targets, `screen: messages` + mini app id", async () => {
@@ -100,7 +101,26 @@ describe("partner push to the ZhaoXi host app", { skip: isLocal ? false : "set T
     const orderId = crypto.randomUUID();
     await partnerOrderMessagePushService.send(orgId, { requestId: orderId, title: "Tin nhắn", body: "Xin chào" });
     assert.deepEqual(tokensFor(orderId), [hostToken, staffToken].sort());
-    assert.deepEqual(sent.find((m) => m.to === hostToken)!.data, { orderId, kind: "order_message", screen: "messages", miniappId: "zhaoxi.partner" });
+    const toHost = sent.find((m) => m.to === hostToken)!;
+    assert.equal(toHost.title, "Gian hàng push · Tin nhắn");
+    assert.deepEqual(toHost.data, { orderId, kind: "order_message", screen: "messages", miniappId: "zhaoxi.partner", organizationId: orgId, organizationName: "Gian hàng push" });
+  });
+
+  it("an owner of several stores gets every store's orders, whichever store the device registered under", async () => {
+    // Second store owned by the same owner only: its alerts reach the owner's devices (registered under the
+    // first store) and not the staff, who is not a member there.
+    const [second] = await sql`insert into organizations (code, type, name, status) values (${"ZX-PUSH2-" + runId}, 'car-rental', 'ZhaoXi Car Đà Nẵng', 'active') returning id`;
+    await sql`insert into organization_members (organization_id, user_id, role, is_active) values (${second.id}, ${ownerId}, 'owner', true)`;
+    const { partnerWebPushService } = await import("@/lib/services/partner-web-push-service");
+    const orderId = crypto.randomUUID();
+    await partnerWebPushService.sendNewOrder(second.id, { id: orderId, requestCode: "ZX-CAR-1", customerName: "Khách", moduleCode: "car-rental" });
+    assert.deepEqual(tokensFor(orderId), [hostToken], "one alert for the owner's iPhone, none for the staff");
+    const message = sent.find((m) => m.data.orderId === orderId)!;
+    assert.equal(message.title, "🔔 ZhaoXi Car Đà Nẵng · Có đơn dịch vụ mới");
+    assert.equal(message.data.organizationId, second.id);
+    assert.equal(message.data.organizationName, "ZhaoXi Car Đà Nẵng");
+    // Registration never moves the device: still one row, under the store it was registered with.
+    assert.equal((await sql`select count(*)::int as n from partner_mobile_push_devices where expo_push_token = ${hostToken}`)[0].n, 1);
   });
 
   it("owner reopens the standalone Partner app: that app gets the alert instead of ZhaoXi", async () => {

@@ -94,7 +94,7 @@ export async function unregisterPush() {
 
 /**
  * Push dành cho một mini app (không có `url`): backend ghi `data.miniappId` (Partner: `zhaoxi.partner`, đơn mới
- * `screen: "orders"`, tin nhắn `screen: "messages"`, kèm `orderId`). Backend cũ chưa ghi `miniappId`: nhận diện
+ * `screen: "orders"`, tin nhắn `screen: "messages"`, kèm `orderId`, `organizationId`). Backend cũ chưa ghi `miniappId`: nhận diện
  * push Partner theo `screen`. Chạm vào thì mở mini app ở đúng đơn / cuộc chat; khi mini app đang mở, chính nó nhận
  * sự kiện nên host bỏ qua. Push của khách luôn có `url` và giữ nguyên cách xử lý.
  */
@@ -108,6 +108,8 @@ function miniAppPushTarget(data: Record<string, unknown>) {
   const params = new URLSearchParams();
   if (screen) params.set("screen", screen);
   if (typeof data.orderId === "string" && data.orderId) params.set("order", data.orderId);
+  // Gian hàng của đơn: chủ nhiều gian hàng chạm push của gian hàng khác thì mini app đổi sang gian hàng đó.
+  if (typeof data.organizationId === "string" && data.organizationId) params.set("org", data.organizationId);
   // Push Partner kiểu cũ luôn có đơn; thiếu đơn thì không phải push của mini app.
   if (!declared && !params.has("order")) return null;
   const query = params.toString();

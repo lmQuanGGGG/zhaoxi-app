@@ -83,14 +83,15 @@ const NEW_ORDER_TITLE: Record<PartnerOrderKind, string> = {
 };
 
 /** `customSound: false` trong host ZhaoXi: bản build của host không có order_alert.wav, dùng âm mặc định. */
-export async function notifyNewOrder(order: { requestId: string; requestCode: string; customerName: string; kind?: PartnerOrderKind }, options: { customSound?: boolean } = {}) {
+export async function notifyNewOrder(order: { requestId: string; requestCode: string; customerName: string; kind?: PartnerOrderKind }, options: { customSound?: boolean; organizationId?: string } = {}) {
   await Notifications.scheduleNotificationAsync({
     content: {
       title: NEW_ORDER_TITLE[order.kind || "food_delivery"],
       body: `${order.requestCode} · ${order.customerName}`,
       sound: options.customSound === false ? "default" : "order_alert.wav",
       categoryIdentifier: "ORDER_ACTIONS",
-      data: { orderId: order.requestId, screen: "orders" },
+      // `organizationId`: chuông cục bộ của gian hàng vừa rời đi (đổi gian hàng theo push) không mở đơn ở gian hàng mới.
+      data: { orderId: order.requestId, screen: "orders", ...(options.organizationId ? { organizationId: options.organizationId } : {}) },
     },
     trigger: Platform.OS === "android" ? { channelId: "new-orders" } : null,
   });
