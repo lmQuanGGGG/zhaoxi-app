@@ -1,17 +1,32 @@
-import {and,desc,eq,gte,lte} from "drizzle-orm";
+import {and,asc,desc,eq,gte,inArray,lte} from "drizzle-orm";
 import {getDb} from "@/db";
-import {couponRedemptions,organizationMembers,restaurantCoupons,serviceRequests} from "@/db/schema";
+import {couponRedemptions,organizationMembers,restaurantCoupons,serviceRequestStatusHistory,serviceRequests} from "@/db/schema";
+import {COMPLETED_STATUS,resolveRevenueWindow,safeTimeZone,summarizeStoreRevenue,type RevenueOrderRow,type RevenueWindow} from "@/lib/services/partner-revenue";
 
-type DailyRow={date:string;orders:number;completed:number;gmv:number;foodRevenue:number;promotionDiscount:number;couponDiscount:number;deliverySubsidy:number};
-
-function n(v:unknown){const x=Number(v);return Number.isFinite(x)?x:0}
-function dateKey(d:Date,timeZone:string){return new Intl.DateTimeFormat("en-CA",{timeZone,year:"numeric",month:"2-digit",day:"2-digit"}).format(d)}
-function pct(a:number,b:number){return b>0?Number((a/b*100).toFixed(1)):0}
 function money(v:number){return Math.round(v)}
-function parseDate(v:unknown){if(typeof v!=="string")return null;const d=new Date(v);return Number.isNaN(d.getTime())?null:d}
+
+/**
+ * Orders of the store that matter for a window: everything received in it, plus completed
+ * orders whose completion may fall in it (completion is never after `updatedAt`).
+ */
+export async function loadStoreRevenueRows(organizationId:string,window:Pick<RevenueWindow,"start"|"end">){
+  const db=getDb();
+  const [received,completed]=await Promise.all([
+    db.select().from(serviceRequests).where(and(eq(serviceRequests.assignedOrganizationId,organizationId),gte(serviceRequests.createdAt,window.start),lte(serviceRequests.createdAt,window.end))).orderBy(desc(serviceRequests.createdAt)).limit(5000),
+    db.select().from(serviceRequests).where(and(eq(serviceRequests.assignedOrganizationId,organizationId),eq(serviceRequests.status,COMPLETED_STATUS),gte(serviceRequests.updatedAt,window.start),lte(serviceRequests.createdAt,window.end))).orderBy(desc(serviceRequests.updatedAt)).limit(5000),
+  ]);
+  // A completed order received in the window comes back from both queries: keep it once.
+  const rows:RevenueOrderRow[]=[...new Map([...received,...completed].map(r=>[r.id,r])).values()];
+  const completedIds=[...new Set(completed.map(r=>r.id))];
+  const completedAt=new Map<string,Date>();
+  for(let i=0;i<completedIds.length;i+=500){
+    const history=await db.select({requestId:serviceRequestStatusHistory.requestId,createdAt:serviceRequestStatusHistory.createdAt}).from(serviceRequestStatusHistory).where(and(inArray(serviceRequestStatusHistory.requestId,completedIds.slice(i,i+500)),eq(serviceRequestStatusHistory.toStatus,COMPLETED_STATUS))).orderBy(asc(serviceRequestStatusHistory.createdAt));
+    for(const h of history)if(!completedAt.has(h.requestId))completedAt.set(h.requestId,h.createdAt);
+  }
+  return{rows,completedAt};
+}
 
 export class RestaurantAnalyticsService{
- private cache = new Map<string, { data: unknown; expiresAt: number }>();
 
  async authorize(userId:string,organizationId:string){
   const member=(await getDb().select().from(organizationMembers).where(and(eq(organizationMembers.organizationId,organizationId),eq(organizationMembers.userId,userId),eq(organizationMembers.isActive,true))).limit(1))[0];
@@ -21,99 +36,31 @@ export class RestaurantAnalyticsService{
   await this.authorize(userId,organizationId);
   return this.overviewForOrganization(organizationId,period,timeZone,from,to);
  }
- clearCache(organizationId?: string) {
-  if (organizationId) {
-    for (const key of this.cache.keys()) {
-      if (key.startsWith(organizationId)) this.cache.delete(key);
-    }
-  } else {
-    this.cache.clear();
-  }
- }
  async overviewForOrganization(organizationId:string,period:number=30,timeZone="Asia/Ho_Chi_Minh",from?:string,to?:string){
-  const cacheKey = `${organizationId}:${period}:${from || ""}:${to || ""}:${timeZone}`;
-  const cached = this.cache.get(cacheKey);
-  if (cached && cached.expiresAt > Date.now()) {
-    return cached.data;
-  }
-
-  let start: Date;
-  let end: Date = new Date();
-  let periodDays = period;
-
-  if (from && to) {
-    start = new Date(`${from}T00:00:00`);
-    end = new Date(`${to}T23:59:59.999`);
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-      start = new Date(Date.now() - 29 * 86400000);
-      start.setHours(0, 0, 0, 0);
-      end = new Date();
-    }
-    periodDays = Math.max(1, Math.min(180, Math.ceil((end.getTime() - start.getTime()) / 86400000)));
-  } else if (period === 1) {
-    start = new Date();
-    start.setHours(0, 0, 0, 0);
-    periodDays = 1;
-  } else {
-    start = new Date(Date.now() - (period - 1) * 86400000);
-    start.setHours(0, 0, 0, 0);
-    periodDays = period;
-  }
-
+  const tz=safeTimeZone(timeZone);
+  const window=resolveRevenueWindow({period,from,to,timeZone:tz});
+  const {start,end}=window;
   const db=getDb();
-  const conditions = [
-    eq(serviceRequests.assignedOrganizationId,organizationId),
-    gte(serviceRequests.createdAt,start),
-    lte(serviceRequests.createdAt,end),
-  ];
-  const rows=await db.select().from(serviceRequests).where(and(...conditions)).orderBy(desc(serviceRequests.createdAt)).limit(5000);
-  const foodRows=rows.filter(r=>((r.details||{}) as Record<string,unknown>).deliveryFulfillmentMode==="external_manual");
-  const completed=foodRows.filter(r=>r.status==="completed");
-  const cancelled=foodRows.filter(r=>["cancelled","rejected"].includes(r.status));
-  const inProgress=foodRows.filter(r=>["assigned","accepted","in_progress","waiting_customer"].includes(r.status));
-
-  let itemBaseRevenue=0,itemPromotionDiscount=0,couponDiscount=0,foodRevenue=0,deliveryGrossFee=0,deliverySubsidy=0,customerDeliveryFee=0,gmv=0;
-  let prepMinutesTotal=0,prepCount=0;
-  const items=new Map<string,{serviceId:string;name:string;quantity:number;revenue:number;discount:number;orders:Set<string>}>();
-  const coupons=new Map<string,{code:string;orders:number;discount:number;revenue:number}>();
-  const dailyMap=new Map<string,DailyRow>();
-
-  for(let i=0;i<periodDays;i++){const d=new Date(start.getTime()+i*86400000),key=dateKey(d,timeZone);dailyMap.set(key,{date:key,orders:0,completed:0,gmv:0,foodRevenue:0,promotionDiscount:0,couponDiscount:0,deliverySubsidy:0})}
-  for(const row of foodRows){
-    const d=(row.details||{}) as Record<string,unknown>,key=dateKey(row.createdAt,timeZone);
-    const day=dailyMap.get(key);if(day)day.orders++;
-    if(row.status!=="completed")continue;
-    if(day)day.completed++;
-    const base=n(d.itemBaseSubtotal||d.itemSubtotalBeforeCoupon||d.itemSubtotal),promotion=n(d.itemDiscount),coupon=n(d.couponDiscount),food=n(d.itemSubtotal),grossShip=n(d.deliveryGrossFee),subsidy=n(d.deliverySubsidy),customerShip=n(d.deliveryCustomerFee),total=n(d.totalAmount);
-    itemBaseRevenue+=base;itemPromotionDiscount+=promotion;couponDiscount+=coupon;foodRevenue+=food;deliveryGrossFee+=grossShip;deliverySubsidy+=subsidy;customerDeliveryFee+=customerShip;gmv+=total;
-    if(day){day.gmv+=total;day.foodRevenue+=food;day.promotionDiscount+=promotion;day.couponDiscount+=coupon;day.deliverySubsidy+=subsidy}
-    const started=parseDate(d.preparationStartedAt||d.acceptedAt),ready=parseDate(d.foodReadyAt);
-    if(started&&ready&&ready>=started){prepMinutesTotal+=(ready.getTime()-started.getTime())/60000;prepCount++}
-    const lines=Array.isArray(d.items)?d.items as Array<Record<string,unknown>>:[];
-    for(const line of lines){const serviceId=String(line.serviceId||"unknown"),name=String(line.name||line.itemName||line.title||serviceId),current=items.get(serviceId)||{serviceId,name,quantity:0,revenue:0,discount:0,orders:new Set<string>()};current.quantity+=n(line.quantity)||1;current.revenue+=n(line.subtotal);current.discount+=n(line.discount);current.orders.add(row.id);items.set(serviceId,current)}
-    const code=String(d.couponCode||"").trim();if(code){const c=coupons.get(code)||{code,orders:0,discount:0,revenue:0};c.orders++;c.discount+=coupon;c.revenue+=total;coupons.set(code,c)}
-  }
+  const {rows,completedAt}=await loadStoreRevenueRows(organizationId,window);
+  const summary=summarizeStoreRevenue({rows,completedAt,window,timeZone:tz});
+  const coupons=summary.coupons;
 
   const couponRows=await db.select().from(restaurantCoupons).where(eq(restaurantCoupons.organizationId,organizationId)).orderBy(desc(restaurantCoupons.usedCount)).limit(100);
   const redemptions=await db.select().from(couponRedemptions).where(and(eq(couponRedemptions.organizationId,organizationId),gte(couponRedemptions.redeemedAt,start),lte(couponRedemptions.redeemedAt,end))).orderBy(desc(couponRedemptions.redeemedAt)).limit(5000);
   const redemptionByCode=new Map<string,{redemptions:number;discount:number}>();
   for(const r of redemptions){const c=redemptionByCode.get(r.couponCode)||{redemptions:0,discount:0};c.redemptions++;c.discount+=r.discountAmount;redemptionByCode.set(r.couponCode,c)}
 
-  const topItems=[...items.values()].map(x=>({...x,orders:x.orders.size})).sort((a,b)=>b.revenue-a.revenue||b.quantity-a.quantity).slice(0,10);
   const campaignPerformance=couponRows.map(row=>{const completedStats=coupons.get(row.code)||{orders:0,discount:0,revenue:0},redemption=redemptionByCode.get(row.code)||{redemptions:0,discount:0};return{id:row.id,code:row.code,title:row.title,enabled:row.enabled,usedCount:row.usedCount,totalUsageLimit:row.totalUsageLimit,completedOrders:completedStats.orders,completedDiscount:money(completedStats.discount),completedRevenue:money(completedStats.revenue),periodRedemptions:redemption.redemptions,periodRedeemedDiscount:money(redemption.discount),discountType:row.discountType,discountValue:row.discountValue}}).sort((a,b)=>b.completedRevenue-a.completedRevenue||b.periodRedemptions-a.periodRedemptions);
 
-  const result = {
-    periodDays,from:from||undefined,to:to||undefined,timeZone,generatedAt:new Date().toISOString(),
-    orders:{total:foodRows.length,completed:completed.length,cancelled:cancelled.length,inProgress:inProgress.length,completionRate:pct(completed.length,foodRows.length),cancellationRate:pct(cancelled.length,foodRows.length)},
-    revenue:{gmv:money(gmv),itemBaseRevenue:money(itemBaseRevenue),itemPromotionDiscount:money(itemPromotionDiscount),couponDiscount:money(couponDiscount),foodRevenue:money(foodRevenue),deliveryGrossFee:money(deliveryGrossFee),deliverySubsidy:money(deliverySubsidy),customerDeliveryFee:money(customerDeliveryFee),averageOrderValue:completed.length?money(gmv/completed.length):0},
-    operations:{averagePreparationMinutes:prepCount?Number((prepMinutesTotal/prepCount).toFixed(1)):0,preparationSamples:prepCount},
-    daily:[...dailyMap.values()].map(x=>({...x,gmv:money(x.gmv),foodRevenue:money(x.foodRevenue),promotionDiscount:money(x.promotionDiscount),couponDiscount:money(x.couponDiscount),deliverySubsidy:money(x.deliverySubsidy)})),
-    topItems,
+  return {
+    periodDays:window.dayKeys.length,from:from||undefined,to:to||undefined,timeZone:tz,generatedAt:new Date().toISOString(),
+    orders:summary.orders,
+    revenue:summary.revenue,
+    operations:summary.operations,
+    daily:summary.daily,
+    topItems:summary.topItems,
     campaignPerformance,
   };
-
-  this.cache.set(cacheKey, { data: result, expiresAt: Date.now() + 30000 });
-  return result;
  }
 }
 export const restaurantAnalyticsService=new RestaurantAnalyticsService();

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "test:partner-revenue": "tsx --test tests/partner-revenue.test.ts",
     "test:partner-orders": "tsx --test tests/partner-order-presentation.test.ts tests/partner-order-notify.integration.test.ts",
     "test:support": "tsx --test tests/support-thread.integration.test.ts",
     "test:miniapps": "tsx --test tests/miniapp-registry.integration.test.ts",
