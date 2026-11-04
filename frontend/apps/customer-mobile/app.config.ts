@@ -33,7 +33,7 @@ const config: ExpoConfig = {
   },
   android: {
     package: "vn.zhaoxi.app",
-    adaptiveIcon: { foregroundImage: "./assets/adaptive-icon.png", backgroundColor: "#0FAF7A" },
+    adaptiveIcon: { foregroundImage: "./assets/adaptive-icon.png", backgroundColor: "#00323A" },
     permissions: ["POST_NOTIFICATIONS", "VIBRATE", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
     blockedPermissions: [
       "android.permission.READ_EXTERNAL_STORAGE",
