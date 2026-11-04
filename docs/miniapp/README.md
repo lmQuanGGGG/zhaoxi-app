@@ -151,10 +151,10 @@ So với VSP, ZhaoXi **không mã hoá bundle khi lưu**: sandbox iOS + Data Pro
 
 ### 4.4 Tải, phiên bản, cache
 
-- URL: `${EXPO_PUBLIC_MINIAPP_CDN_URL}/<id>/<ios|android>/manifest.json`. Mặc định dev: `http://localhost:8093` (`zhaoxi-miniapp serve`); release: `${API_URL}/miniapps` (đặt `EXPO_PUBLIC_MINIAPP_CDN_URL` khi có CDN thật, ví dụ R2/S3 + Cloudflare).
+- URL: `${EXPO_PUBLIC_MINIAPP_CDN_URL}/<id>/<ios|android>/manifest.json[?v=<version>]`. Mặc định dev: `http://localhost:8093` (`zhaoxi-miniapp serve`); release: `${API_URL}/miniapps`, do backend registry phát (§10). `?v=` là bản danh mục backend chọn cho người dùng (rollout %); thiếu `?v=` thì nhận bản ổn định.
 - Luôn hỏi manifest trước (timeout 6 s). Hash trùng bản cache → dùng cache (không tải lại). Khác → tải, kiểm, ghi `Documents/miniapps/<id>/<version>-<hash8>.js` + `current.json`, xoá bản cũ. Mất mạng → chạy bản cache sau khi kiểm lại chữ ký + hash.
 - Bộ nhớ: bundle đã eval giữ theo `id@version#hash`; mở lại không eval lại. Bản mới (hash khác) chạy ngay lần mở kế tiếp, **không cần tắt host** (khác VSP).
-- Rollback = phát hành lại manifest trỏ về bản cũ (bản cũ vẫn còn trên CDN vì tên file có version).
+- Rollback = bấm "Rollback" ở web admin: manifest quay về bản phát hành trước (bản cũ vẫn còn vì tên file có version), tối đa ~30 s cache CDN (§10.4).
 
 ### 4.5 Context, bridge, điều hướng
 
@@ -186,22 +186,23 @@ Host render `default export` của mini app với `MiniAppProps = { context, bri
 | --- | --- |
 | Re.Pack ScriptManager + `Federated.importModule(name, './App')` | `loadMiniApp(entry)` → eval → `default export` |
 | `ModuleFederationPlugin.shared` + `src/shared-dependencies/index.ts` | `shared-modules.json` + `src/miniapps/shared.ts` |
-| `config/config.json` containers + `getDebugConfig()` | `registry.ts` + `EXPO_PUBLIC_MINIAPP_DEV` |
-| `/api/miniapps/config/runtime` | (giai đoạn sau) `GET /api/miniapps` |
+| `config/config.json` containers + `getDebugConfig()` | `GET /api/miniapps` (registry.ts dự phòng) + `EXPO_PUBLIC_MINIAPP_DEV` |
+| `/api/miniapps/config/runtime` | `GET /api/miniapps?platform=` (lọc quyền, chọn bản rollout theo người dùng) |
+| signed URL MinIO | `${API_URL}/miniapps/<id>/<platform>/…` (bundle trong Postgres, CDN Vercel cache `immutable`) |
 | `CodeSigningPlugin` (RS256 JWT mỗi chunk) + `RepackPublicKey` | Ed25519 trên manifest (bao SHA-256 bundle) + `keys.ts` nhiều khoá, phân dev/prod |
 | AES-256 tại chỗ + giải mã ra cache | Lưu nguyên, kiểm chữ ký + hash mỗi lần nạp |
 | `MiniAppProps.registerReducer`, `UserService`, `i18next`, event bus | `MiniAppProps { context, bridge }` có quyền |
 | `MiniAppErrorBoundary` + `LoadingBlockerView` | `MiniAppErrorBoundary` + màn chờ/lỗi theo bước + nút kính |
-| `pack-miniapp.sh` + `check-miniapp-package.py` → admin-portal → MinIO | `zhaoxi-miniapp build` (tự kiểm hash, ký) → CDN; `zhaoxi-miniapp verify` cho CI |
+| `pack-miniapp.sh` + `check-miniapp-package.py` → admin-portal → MinIO | `zhaoxi-miniapp build` (tự kiểm hash, ký) → web admin "Mini app" (server kiểm lại như `verify`) → publish / rollout / rollback |
 
 ## 6. Hạn chế v1 và việc tiếp theo
 
-1. **Backend registry** (chưa làm, không ghi production trong đợt này): bảng `miniapps` (id, tên đa ngữ, icon, tint, chrome, audience) + `miniapp_releases` (id, platform, version, manifest JSON, trạng thái, rollout %), `GET /api/miniapps` cho host, trang admin upload `dist/` (kiểm chữ ký phía server bằng `zhaoxi-miniapp verify`), lưu bundle lên Blob/R2. Host: đọc danh mục từ API, `registry.ts` thành bản dự phòng.
-2. **Khoá prod**: tạo bằng `zhaoxi-miniapp keygen` trên máy an toàn, đưa vào CI secret (`ZHAOXI_MINIAPP_SIGNING_KEY`), thêm public key `env: "prod"` vào `keys.ts`. Thu hồi: xoá khoá, phát hành host mới.
+1. ~~**Backend registry**~~: đã làm 04/11/2026, xem §10. Còn chờ chủ dự án chạy migration + deploy (§10.7).
+2. ~~**Khoá prod**~~: đã tạo 04/11/2026, public key trong `keys.ts`; khoá riêng chưa vào kho bí mật (§10.6).
 3. **Asset cục bộ** (ảnh trong bundle): v1 báo lỗi build; dùng URL CDN. Hướng làm: serializer gom asset vào `dist/<platform>/assets/` và host đăng ký `AssetRegistry` với `httpServerLocation` trỏ CDN.
 4. **Source map** cho bundle mini app (crash report): v1 trả map rỗng.
 5. **Code splitting / `import()`**: chưa hỗ trợ; mỗi mini app là một file bundle (mẫu 9 KB minified).
-6. **Kill switch**: thêm `blocked: true` / `minVersion` vào danh mục backend để chặn bản lỗi.
+6. ~~**Kill switch**~~: `miniapps.enabled = false` (nút "Tắt mini app" ở admin) gỡ khỏi danh mục và manifest/bundle trả 404. Chưa có `minVersion` theo từng bản.
 7. **Tách lỗi**: error boundary chỉ bắt lỗi render; lỗi trong promise/timer của mini app vẫn lên global handler của host. Có thể bọc `ErrorUtils` khi mini app đang mở.
 8. **Android**: code đã tính sẵn (`Platform.OS`, build `--platform android`) nhưng đợt này chỉ chạy thử iOS simulator.
 9. **Chuyển sang Module Federation** khi `@callstack/repack-expo` phát hành: giữ hợp đồng `default export (props: MiniAppProps)`, thay `tools/metro.cjs` + `loader.ts` bằng Re.Pack ScriptManager.
@@ -306,9 +307,111 @@ DATABASE_URL=… node scripts/seed.mjs
 DATABASE_URL=… npx next dev -p 3099
 DATABASE_URL=… API_URL=http://127.0.0.1:3099 node scripts/seed-partner-miniapp-dev.mjs   # tài khoản đối tác + tài khoản đối chứng, xem đầu file
 
+# registry cục bộ (§10): migration lên DB cục bộ rồi chạy test
+DATABASE_URL=… npm run db:apply:miniapps          # chỉ DB cục bộ/staging; production: chủ dự án tự chạy
+TEST_DATABASE_URL=… npm run test:miniapps         # 12 ca: upload → verify → publish → rollout → rollback → kill switch
+DATABASE_URL=… MINIAPP_ACCEPT_DEV_KEYS=1 npx next dev -p 3199   # nhận cả bản ký khoá dev
+
+# web admin cục bộ trỏ vào backend trên
+cd frontend/apps/admin && ZHAOXI_BACKEND_URL=http://127.0.0.1:3199 npx next dev -p 3198   # /?view=miniapps
+
 # host (dev build, Metro cổng khác 8081 nếu máy đang chạy app khác)
 # thêm EXPO_PUBLIC_API_URL=http://127.0.0.1:3099 khi thử với backend cục bộ
 cd frontend/apps/customer-mobile
 EXPO_PUBLIC_MINIAPP_DEV=zhaoxi.example npx expo start --dev-client --port 8095
 xcrun simctl openurl booted "zhaoxi://miniapp/zhaoxi.example"
 ```
+
+## 10. Registry: lưu trữ và phát hành mini app (04/11/2026)
+
+Nơi lưu bundle + danh mục + web admin để upload mini app, thay cho việc tự đặt file lên CDN. Ảnh chụp web admin (dữ liệu thật trên Postgres cục bộ):
+
+| Ảnh | Nội dung |
+| --- | --- |
+| [admin-01-list.jpg](screenshots/admin-01-list.jpg) | Mục "Mini app" (nhóm NỀN TẢNG): upload `dist/`/zip, danh sách mini app, bản đang phát mỗi nền tảng |
+| [admin-02-app-detail.jpg](screenshots/admin-02-app-detail.jpg) | Sửa tên 4 ngôn ngữ, icon, màu, nút kính, ai thấy, thứ tự, kill switch; bản iOS đã phát hành 100 % |
+| [admin-03-rollout-manifest.jpg](screenshots/admin-03-rollout-manifest.jpg) | Android phát hành 20 %, đặt %, rollback, xem manifest đã ký |
+
+### 10.1 Nơi lưu bundle
+
+| Phương án | Chi phí | Tốc độ ở VN | Độ phức tạp |
+| --- | --- | --- | --- |
+| **Postgres (Neon) + CDN Vercel** (đang dùng) | ~0 (100 bản × 200 KB ≈ 20 MB) | Edge Vercel SIN/HKG; bundle cache `immutable` nên DB chỉ bị đọc khi cache miss | Không tài khoản/bí mật mới. Upload qua function Vercel nên ≤ 4,5 MB/lần |
+| Cloudflare R2 (khi cần) | 10 GB miễn phí, egress 0 đ | PoP Hà Nội, TP.HCM | Cần tài khoản Cloudflare, bucket, API token, domain riêng |
+| DigitalOcean Spaces SGP1 | $5/tháng cố định | Singapore + CDN | Tạo Space + key |
+| Droplet SGP1 có sẵn | 0 đ thêm | Singapore, không CDN | Một máy duy nhất, tự lo TLS/backup/vá. Không khuyến nghị |
+
+Bundle đi qua `BundleStore` ([`backend/lib/miniapps/bundle-store.ts`](../../backend/lib/miniapps/bundle-store.ts)): driver `postgres` (mặc định) giữ byte trong `miniapp_releases.bundle_data`. Driver object storage (R2/Spaces/MinIO đều S3 API) chỉ cần `put` + `locate` (route bundle trả 302 sang URL public); **URL host không đổi** vì manifest luôn do backend phát (rollout, rollback, kill switch cần logic). Chuyển sang R2 khi có asset ảnh trong bundle, source map, hoặc bundle > 4 MB.
+
+### 10.2 Dữ liệu (migration [`0012_miniapp_registry.sql`](../../backend/migrations/0012_miniapp_registry.sql), chỉ thêm, chạy lại được)
+
+- `miniapps`: `id` (`zhaoxi.partner`), `title`/`subtitle` jsonb 4 ngôn ngữ, `icon` (tên Ionicons), `tint`, `chrome` (`light|dark`), `audience` (`null` mọi người, `members` đã đăng nhập, `partner`, `internal` = có vai trò admin), `enabled` (kill switch), `sort_order`.
+- `miniapp_releases`: một dòng cho mỗi (mini app, platform, version): `runtime`, `manifest` jsonb (nguyên bản đã ký), `sha256`, `size_bytes`, `key_id`, `bundle_file`, `storage`/`storage_key`/`bundle_data`, `status` (`draft → published ⇄ rolled_back`), `rollout_percent`, `notes`, ai/lúc nào tạo, phát hành, rollback (+ lý do). Duy nhất theo `(miniapp_id, platform, version)`.
+- Mọi thao tác admin ghi `operations_audit_logs` với `area = 'miniapp_registry'`: `upload`, `publish`, `rollout`, `rollback`, `update`, `disable`, `enable` (trước/sau).
+
+### 10.3 API
+
+| Route | Ai | Việc |
+| --- | --- | --- |
+| `GET /api/miniapps?platform=ios\|android` | host (có hoặc không phiên) | Mini app bật, người này được thấy, có bản đang phát; kèm `release.version` chọn theo rollout. Không phiên: chỉ mục mở cho mọi người, chỉ bản 100 % |
+| `GET /miniapps/<id>/<platform>/manifest.json[?v=]` | host | Manifest đã ký. `?v=` bản đó nếu còn published, không thì bản ổn định. `s-maxage=30` |
+| `GET /miniapps/<id>/<platform>/<id>-<ver>.<platform>.js` | host | Bundle (cả bản đã rollback, để lượt tải dở vẫn xong). `immutable` |
+| `GET /api/admin-miniapps` | admin | Mọi mini app + releases (có manifest, không có byte bundle) |
+| `POST /api/admin-miniapps` (multipart `archive` = zip, hoặc nhiều `files`; `notes`) | admin | Kiểm như `zhaoxi-miniapp verify`: schema, id/version/bundle hợp lệ, runtime hỗ trợ, quyền hợp lệ, SHA-256 + size khớp, **khoá nằm trong danh sách tin cậy**, chữ ký Ed25519. Lưu dạng draft; mini app chưa có thì tạo. Gửi lại đúng bản đó = không làm gì; cùng version khác bundle hoặc khác khoá = 409 |
+| `PATCH /api/admin-miniapps/<id>` | admin | Sửa thông tin hiển thị, `audience`, `enabled`, `sortOrder` |
+| `PATCH /api/admin-miniapps/releases/<id>` `{ action: publish\|rollout\|rollback, rolloutPercent?, reason? }` | admin | Chuyển trạng thái (chặn hai admin bấm cùng lúc bằng điều kiện trạng thái cũ) |
+
+Web admin gọi các route trên qua proxy `frontend/apps/admin/app/api/admin-miniapps/**` (cookie `zx_access_v2`), giống các mục admin khác. Chỉ phiên `role = admin` qua được.
+
+**Khoá tin cậy phía server**: [`backend/lib/miniapps/trusted-keys.ts`](../../backend/lib/miniapps/trusted-keys.ts), phải trùng `keys.ts` của host (test kiểm). Khoá `prod` luôn nhận; khoá `dev` chỉ khi backend có `MINIAPP_ACCEPT_DEV_KEYS=1` (máy cục bộ/staging, **không đặt trên production**), vì host bản release từ chối bản ký khoá dev.
+
+### 10.4 Rollout và rollback
+
+- Bản người dùng nhận = bản **published mới nhất** (theo `published_at`) mà rollout phủ họ; ai nằm ngoài rơi xuống bản trước (bản 100 %). Nhóm của người dùng: `sha256("<id>:<userId>") mod 100 < rollout%`, cố định theo người và mini app nên tăng % không đổi nhóm người đã nhận.
+- Ví dụ: 1.0.0 đang 100 %, phát hành 1.1.0 ở 10 % → 10 % người dùng nhận 1.1.0. Đặt 100 % → mọi người. Rollback 1.1.0 → mọi người về 1.0.0 (kể cả máy giữ danh mục cũ trỏ `?v=1.1.0`). Có thể phát hành lại bản đã rollback.
+- Thời gian tới máy: danh mục host cache 5 phút (react-query, giữ qua lần mở app), manifest ở CDN tối đa 30 s. Kill switch (`enabled = false`) làm manifest 404: host đang có mạng sẽ không mở bản cache.
+
+### 10.5 Host
+
+- [`src/miniapps/access.ts`](../../frontend/apps/customer-mobile/src/miniapps/access.ts): `useMiniAppAccess()` (hook mà tab Cá nhân, danh sách Mini app và màn chứa đã gọi) hỏi thêm `GET /api/miniapps?platform=`; có danh mục thì `canOpen` theo danh mục (backend đã lọc quyền), chưa có thì về cách cũ (`entry.audience` + `/api/account/me`).
+- [`src/miniapps/registry.ts`](../../frontend/apps/customer-mobile/src/miniapps/registry.ts): `fallbackMiniApps` là bản dự phòng; `applyMiniAppCatalog` cập nhật `miniAppRegistry` **tại chỗ** (giữ object entry) nên không phải sửa file UI. Mini app mới thêm ở admin hiện ra trong danh sách mà không cần build host mới (icon phải là tên Ionicons host có, sai thì dùng `apps-outline`). Bản `__DEV__` giữ thêm mục dự phòng backend không có, để thử với `zhaoxi-miniapp serve`.
+- `manifestUrlFor` thêm `?v=<version>` từ danh mục. Loader, kiểm chữ ký, cache không đổi.
+
+### 10.6 Khoá ký production
+
+Đã tạo 04/11/2026 trên máy dev của chủ dự án (Mac), **không nằm trong repo**:
+
+- Khoá riêng: `~/.zhaoxi/keys/zhaoxi-miniapp-prod-2026-11.pem` (thư mục `700`, file `600`).
+- Khoá công khai: `keyId 5d81cc2da9ad8163`, `3FVJYQfo6kYDwWgqj1/c+qtkVUbApIkkWGUiyvnRpUA=`, đã thêm `env: "prod"` vào `keys.ts` (host) và `trusted-keys.ts` (backend). Đã thử: ký mini app mẫu bằng khoá này → backend ở chế độ production (không nhận khoá dev) và `zhaoxi-miniapp verify` đều nhận.
+
+Quy trình (chủ dự án tự làm):
+
+1. **Sao lưu ngay** nội dung file `.pem` vào trình quản lý mật khẩu (1Password/Bitwarden, mục "ZhaoXi mini app signing prod 2026-11"). Mất khoá thì không ký được bản mới cho các host đã phát hành; phải tạo khoá mới + phát hành host mới.
+2. Khi có CI build mini app: đưa nội dung khoá vào secret của CI, ghi ra file tạm và đặt `ZHAOXI_MINIAPP_SIGNING_KEY=<đường dẫn>` lúc `zhaoxi-miniapp build`. **Không** đưa khoá lên Vercel/backend: server chỉ cần khoá công khai.
+3. Sau khi đã sao lưu và (nếu có) đưa vào CI, xoá bản trên máy: `rm ~/.zhaoxi/keys/zhaoxi-miniapp-prod-2026-11.pem`. Khi cần ký tay: lấy lại từ trình quản lý mật khẩu vào file `600` ngoài repo, ký xong xoá.
+4. Ký bản phát hành: `ZHAOXI_MINIAPP_SIGNING_KEY=… npm run build` trong thư mục mini app → upload `dist/` ở web admin → publish.
+5. Xoay khoá: `npx zhaoxi-miniapp keygen --out ~/.zhaoxi/keys/<tên-mới>.pem`, thêm dòng `prod` mới vào `keys.ts` và `trusted-keys.ts` (giữ khoá cũ), phát hành host mới, đợi đa số người dùng cập nhật, rồi mới bỏ khoá cũ. Khoá lộ: bỏ ngay khỏi `trusted-keys.ts` (backend không nhận upload ký bằng nó nữa) + phát hành host mới.
+
+### 10.7 Chủ dự án cần quyết / làm
+
+| Việc | Ghi chú |
+| --- | --- |
+| Duyệt nơi lưu bundle | Đề xuất: Postgres + CDN Vercel ngay (không tốn tiền, không tài khoản mới); R2 khi cần. Chưa tạo tài nguyên nào |
+| Chạy migration production | `cd backend && DATABASE_URL=<Neon unpooled> npm run db:apply:miniapps` (`--check` để xem trước). Chỉ tạo 2 bảng mới |
+| Deploy backend rồi web admin | Backend trước (route `/miniapps/**`, `/api/miniapps`, `/api/admin-miniapps/**`); không đặt `MINIAPP_ACCEPT_DEV_KEYS` trên production |
+| Sao lưu khoá prod và xoá bản trên máy | §10.6 |
+| Upload bản phát hành đầu | Build Partner + mẫu bằng khoá prod, upload ở "Mini app", sửa tên/icon/ai thấy (Partner: `storefront-outline`, `#0B8F55`, `partner`), publish |
+| Phát hành host mới | Có `keys.ts` mới (khoá prod) và đọc danh mục backend. Host cũ vẫn dùng `registry.ts` cũ + URL không `?v=` (backend vẫn phục vụ bản ổn định) |
+
+### 10.8 Kiểm thử (04/11/2026, Postgres 18 cục bộ, không ghi production)
+
+| Kiểm tra | Kết quả |
+| --- | --- |
+| `tsc --noEmit` backend, admin, customer-mobile | sạch |
+| Migration 0012 chạy 2 lần trên DB trống | không lỗi; cột, index, check trùng khít `drizzle-kit push` từ `db/schema.ts` |
+| `npm run test:miniapps` (gọi thẳng route handler) | 12/12: chỉ admin upload; từ chối khoá lạ, bundle bị sửa, manifest bị nâng quyền, chưa ký, khoá dev ở chế độ production; upload zip + files; trùng/xung đột; draft ẩn; publish → danh mục → manifest → bundle khớp hash; rollout 0 %/theo nhóm/100 %; rollback (cả `?v=` cũ); phát hành lại; audience partner/members/guest; kill switch; audit đủ 7 loại; khoá server = `keys.ts` |
+| `next dev` + HTTP thật | Build mini app mẫu bằng CLI → zip → `curl` upload → publish → danh mục → tải manifest/bundle → `zhaoxi-miniapp verify` hợp lệ |
+| Web admin cục bộ | Upload zip Partner 187 KB qua giao diện, sửa thông tin, publish iOS 100 %, Android 20 %, xem manifest (ảnh ở trên) |
+| Logic host (`applyMiniAppCatalog`, `manifestUrlFor`) chạy bằng Node với backend cục bộ | danh mục lọc quyền, giữ object entry, URL `?v=1.0.0`, hash bundle khớp danh mục |
+
+Chưa thử: host trên simulator/máy thật với backend registry (không bật simulator đợt này để giảm tải máy), Android, CDN Vercel thật (header cache chỉ kiểm ở `next dev`).
