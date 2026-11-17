@@ -4,6 +4,9 @@ import {useZhaoXiSession} from "@zhaoxi/auth";
 import {useZhaoXiLocale} from "@zhaoxi/i18n";
 import {getCached,setCached} from "./_lib/client-cache";
 import PartnerWorkspaceNav from "./PartnerWorkspaceNav";
+import HousingAnalyticsDashboard from "./HousingAnalyticsDashboard";
+import {STORE_FEATURES,STORE_WORDS} from "./_lib/store-modules";
+import {useStoreModule} from "./_lib/use-store-module";
 
 type Daily={date:string;orders:number;completed:number;gmv:number;foodRevenue:number;promotionDiscount:number;couponDiscount:number;deliverySubsidy:number};
 type TopItem={serviceId:string;name:string;quantity:number;revenue:number;discount:number;orders:number};
@@ -23,8 +26,19 @@ const copy={
 } as const;
 const money=(v:number)=>`${Math.round(v||0).toLocaleString("vi-VN")} VND`;
 
+/** Titles for stores that are not restaurants (no kitchen). */
+const general={
+ "zh-CN":{title:"经营分析",subtitle:"查看订单、收入与完成情况。"},
+ "zh-TW":{title:"營運分析",subtitle:"查看訂單、收入與完成情況。"},
+ "vi-VN":{title:"Phân tích kinh doanh",subtitle:"Theo dõi đơn hàng, doanh thu và tỷ lệ hoàn thành."},
+ "en-US":{title:"Business analytics",subtitle:"Track orders, revenue and completion."},
+} as const;
+
 export default function RestaurantAnalyticsDashboard(){
- const session=useZhaoXiSession();const{locale}=useZhaoXiLocale();const t=copy[locale];const orgId=session?.organizationId||"";
+ const session=useZhaoXiSession();const{locale}=useZhaoXiLocale();const orgId=session?.organizationId||"";
+ // Same figures for every store; restaurants also see kitchen time, dish promotions, delivery and coupons.
+ const storeModule=useStoreModule();const kitchen=!storeModule||STORE_FEATURES[storeModule].kitchen;const words=storeModule?STORE_WORDS[storeModule]:null;
+ const t=kitchen?copy[locale]:{...copy[locale],...general[locale],foodRevenue:words?.revenue[locale]??copy[locale].foodRevenue,top:words?.top[locale]??copy[locale].top};
  const[days,setDays]=useState<7|30|90>(30);
  const cacheKey=`partner_analytics_${orgId}_${days}`;
  const[data,setData]=useState<Analytics|null>(()=>getCached<Analytics>(cacheKey));
@@ -55,13 +69,14 @@ export default function RestaurantAnalyticsDashboard(){
   <section style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center",margin:"18px 0",flexWrap:"wrap"}}><div style={{display:"flex",gap:6}}>{([7,30,90] as const).map(v=><button key={v} onClick={()=>setDays(v)} style={{border:"1px solid #dbe4df",borderRadius:999,padding:"12px 16px",background:days===v?"#07c160":"#fff",color:days===v?"#fff":"#111827",fontSize:18,fontWeight:850}}>{v===7?t.d7:v===30?t.d30:t.d90}</button>)}</div><button onClick={()=>void load()} style={{border:0,borderRadius:10,padding:"8px 10px",background:"#eef7f1",color:"#078343",fontWeight:800}}>{t.refresh}</button></section>
   {error&&<p style={{padding:20,borderRadius:12,background:"#fff1f2",color:"#b42318"}}>{error}</p>}
   {loading&&!data?<p>{t.loading}</p>:data?<>
-   <section style={metrics}><Metric label={t.gmv} value={money(data.revenue.gmv)}/><Metric label={t.foodRevenue} value={money(data.revenue.foodRevenue)}/><Metric label={t.aov} value={money(data.revenue.averageOrderValue)}/><Metric label={t.orders} value={String(data.orders.total)}/></section>
-   <section style={metrics}><Metric label={t.completed} value={`${data.orders.completed} · ${data.orders.completionRate}%`}/><Metric label={t.cancelled} value={`${data.orders.cancelled} · ${data.orders.cancellationRate}%`}/><Metric label={t.inProgress} value={String(data.orders.inProgress)}/><Metric label={t.prep} value={`${data.operations.averagePreparationMinutes} ${t.minutes}`}/></section>
-   <section style={{...card,marginTop:12}}><h2 style={heading}>{t.period}</h2><div style={metrics}><Metric label={t.promotion} value={`−${money(data.revenue.itemPromotionDiscount)}`}/><Metric label={t.coupon} value={`−${money(data.revenue.couponDiscount)}`}/><Metric label={t.shipSubsidy} value={`−${money(data.revenue.deliverySubsidy)}`}/><Metric label={t.delivery} value={money(data.revenue.customerDeliveryFee)}/></div></section>
+   <section className="zx-metric-grid" style={metrics}><Metric label={t.gmv} value={money(data.revenue.gmv)}/><Metric label={t.foodRevenue} value={money(data.revenue.foodRevenue)}/><Metric label={t.aov} value={money(data.revenue.averageOrderValue)}/><Metric label={t.orders} value={String(data.orders.total)}/></section>
+   <section className="zx-metric-grid" style={metrics}><Metric label={t.completed} value={`${data.orders.completed} · ${data.orders.completionRate}%`}/><Metric label={t.cancelled} value={`${data.orders.cancelled} · ${data.orders.cancellationRate}%`}/><Metric label={t.inProgress} value={String(data.orders.inProgress)}/>{kitchen&&<Metric label={t.prep} value={`${data.operations.averagePreparationMinutes} ${t.minutes}`}/>}</section>
+   {storeModule==="housing"&&<div style={{marginTop:12}}><HousingAnalyticsDashboard organizationId={orgId}/></div>}
+   {kitchen&&<section style={{...card,marginTop:12}}><h2 style={heading}>{t.period}</h2><div className="zx-metric-grid" style={metrics}><Metric label={t.promotion} value={`−${money(data.revenue.itemPromotionDiscount)}`}/><Metric label={t.coupon} value={`−${money(data.revenue.couponDiscount)}`}/><Metric label={t.shipSubsidy} value={`−${money(data.revenue.deliverySubsidy)}`}/><Metric label={t.delivery} value={money(data.revenue.customerDeliveryFee)}/></div></section>}
    <section style={{...card,marginTop:12}}><h2 style={heading}>{t.trend}</h2><div style={{display:"flex",alignItems:"end",gap:4,height:170,overflowX:"auto",paddingTop:10}}>{data.daily.map(day=><div key={day.date} title={`${day.date} · ${money(day.gmv)}`} style={{minWidth:18,flex:"1 0 18px",height:"100%",display:"flex",flexDirection:"column",justifyContent:"end",alignItems:"center",gap:4}}><div style={{width:"100%",height:`${Math.max(day.gmv?4:1,day.gmv/maxGmv*130)}px`,borderRadius:"6px 6px 2px 2px",background:"#07c160"}}/><small style={{fontSize:6,color:"#94a3b8",writingMode:"vertical-rl"}}>{day.date.slice(5)}</small></div>)}</div></section>
    <section style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:12,marginTop:12}}>
     <section style={card}><h2 style={heading}>{t.top}</h2>{!data.topItems.length?<small>{t.empty}</small>:<div style={{display:"grid",gap:7}}>{data.topItems.map((x,i)=><article key={x.serviceId} style={row}><span style={rank}>{i+1}</span><div style={{minWidth:0}}><b style={{fontSize:18,display:"block",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{x.name}</b><small style={{color:"#64748b"}}>{t.quantity}: {x.quantity} · {x.orders} {t.orders.toLowerCase()}</small></div><b style={{fontSize:18,marginLeft:"auto"}}>{money(x.revenue)}</b></article>)}</div>}</section>
-    <section style={card}><h2 style={heading}>{t.campaigns}</h2>{!data.campaignPerformance.length?<small>{t.empty}</small>:<div style={{display:"grid",gap:7}}>{data.campaignPerformance.slice(0,10).map(x=><article key={x.id} style={{...row,gridTemplateColumns:"1fr auto"}}><div><b style={{fontSize:18}}>{x.code} · {x.title}</b><small style={{display:"block",color:"#64748b",marginTop:3}}>{t.redemptions}: {x.periodRedemptions} · {t.campaignOrders}: {x.completedOrders} · {t.used}: {x.usedCount}{x.totalUsageLimit?`/${x.totalUsageLimit}`:""}</small><small style={{display:"block",color:"#c2410c",marginTop:2}}>{t.discount}: −{money(x.completedDiscount)}</small></div><b style={{fontSize:18}}>{money(x.completedRevenue)}</b></article>)}</div>}</section>
+    {kitchen&&<section style={card}><h2 style={heading}>{t.campaigns}</h2>{!data.campaignPerformance.length?<small>{t.empty}</small>:<div style={{display:"grid",gap:7}}>{data.campaignPerformance.slice(0,10).map(x=><article key={x.id} style={{...row,gridTemplateColumns:"1fr auto"}}><div><b style={{fontSize:18}}>{x.code} · {x.title}</b><small style={{display:"block",color:"#64748b",marginTop:3}}>{t.redemptions}: {x.periodRedemptions} · {t.campaignOrders}: {x.completedOrders} · {t.used}: {x.usedCount}{x.totalUsageLimit?`/${x.totalUsageLimit}`:""}</small><small style={{display:"block",color:"#c2410c",marginTop:2}}>{t.discount}: −{money(x.completedDiscount)}</small></div><b style={{fontSize:18}}>{money(x.completedRevenue)}</b></article>)}</div>}</section>}
    </section>
   </>:<p>{t.empty}</p>}
  </main>

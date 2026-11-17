@@ -2,7 +2,7 @@
 import {useCallback,useEffect,useMemo,useState} from "react";
 import {useZhaoXiSession} from "@zhaoxi/auth";
 import {createZhaoXiSdk,type PartnerOrderAction,type ServiceRequestRow} from "@zhaoxi/sdk";
-import {statusLabels,useZhaoXiLocale} from "@zhaoxi/i18n";
+import {statusLabels,useZhaoXiLocale,type ZhaoXiLocale} from "@zhaoxi/i18n";
 import {useVisiblePolling} from "@zhaoxi/hooks";
 import {ActionButton,EmptyState,MetricCard,StatusBadge,Surface,appShellStyle} from "@zhaoxi/ui";
 import {getCached,setCached} from "./_lib/client-cache";
@@ -24,6 +24,8 @@ import PartnerVerificationBadges from "./PartnerVerificationBadges";
 import PartnerPublicStorefrontSettings from "./PartnerPublicStorefrontSettings";
 import PartnerPaymentTransactionPanel from "./PartnerPaymentTransactionPanel";
 import KitchenQueue from "./KitchenQueue";
+import {STORE_FEATURES,STORE_WORDS,type StoreModule} from "./_lib/store-modules";
+import {useStoreModule} from "./_lib/use-store-module";
 import {ServiceOrderActions,ServiceOrderFacts,orderKindLabel,orderKindOf,runServiceOrderAction} from "./PartnerServiceOrder";
 import {OrderChatButton} from "./OrderChat";
 import {paymentMethodLabel,paymentStatusLabel} from "@zhaoxi/payment";
@@ -37,6 +39,7 @@ const copy={
 } as const;
 const money=(v:unknown)=>Number(v||0).toLocaleString("vi-VN")+" VND";
 
+const generalSubtitle:Record<ZhaoXiLocale,string>={"zh-CN":"在这里接收并处理店铺的所有订单与服务请求。","zh-TW":"在這裡接收並處理店鋪的所有訂單與服務請求。","vi-VN":"Tiếp nhận và xử lý mọi đơn hàng, yêu cầu dịch vụ của gian hàng.","en-US":"Receive and handle every order and service request for your store."};
 export default function OperationsBoard(){
  const session=useZhaoXiSession();const{locale}=useZhaoXiLocale();const t=copy[locale];const orgId=session?.organizationId||"";
  const cacheKey=`partner_requests_${orgId}_${locale}`;
@@ -46,7 +49,9 @@ export default function OperationsBoard(){
  const load=useCallback(async()=>{if(!orgId){setLoading(false);return}try{const r=await sdk.listRequests({scope:"operations",organizationId:orgId,locale});const next=r.data||[];setRows(next);setCached(cacheKey,next);setError("")}catch(e){const msg=e instanceof Error?e.message:"ERROR";setError(msg.includes("<!DOCTYPE")||msg.includes("Unexpected token")?"Hệ thống đang đồng bộ. Vui lòng thử lại sau vài giây.":msg)}finally{setLoading(false)}},[orgId,locale,cacheKey]);
  useVisiblePolling(load,{enabled:Boolean(orgId),intervalMs:30_000});
  useEffect(()=>{const refresh=()=>void load();window.addEventListener("zhaoxi:fulfillment-updated",refresh);return()=>window.removeEventListener("zhaoxi:fulfillment-updated",refresh)},[load]);
- const metrics=useMemo(()=>({waiting:rows.filter(r=>r.status==="assigned").length,preparing:rows.filter(r=>String(r.details?.fulfillmentStage||"")==="preparing").length,ready:rows.filter(r=>["ready_for_pickup","courier_booked"].includes(String(r.details?.fulfillmentStage||""))).length}),[rows]);
+ // Restaurants count kitchen stages; other stores count by request status (they have no kitchen stage).
+ const storeModule=useStoreModule();const kitchen=!storeModule||STORE_FEATURES[storeModule].kitchen;const words=storeModule?STORE_WORDS[storeModule]:null;
+ const metrics=useMemo(()=>kitchen?{waiting:rows.filter(r=>r.status==="assigned").length,preparing:rows.filter(r=>String(r.details?.fulfillmentStage||"")==="preparing").length,ready:rows.filter(r=>["ready_for_pickup","courier_booked"].includes(String(r.details?.fulfillmentStage||""))).length}:{waiting:rows.filter(r=>r.status==="assigned"||r.status==="new").length,preparing:rows.filter(r=>["accepted","in_progress","waiting_customer"].includes(r.status)).length,ready:rows.filter(r=>r.status==="completed").length},[rows,kitchen]);
  function optimisticFulfillment(row:ServiceRequestRow,action:string,extra:Record<string,unknown>={}){
   const details={...(row.details||{})} as Record<string,unknown>;
   const at=new Date().toISOString();
@@ -77,11 +82,11 @@ export default function OperationsBoard(){
  }
  async function saveCourier(){if(!courierOrder)return;await action(courierOrder,"courier_booked",courier);setCourierOrder(null);setCourier({courierName:"",courierPhone:"",courierReference:""})}
  return <main className="zx-native-workspace" style={{...appShellStyle,maxWidth:1180,margin:"0 auto",padding:"24px 18px"}}>
-  <header className="zx-page-head"><small className="zx-eyebrow">ZhaoXi Partner</small><h1>{t.title}</h1><p>{t.subtitle}</p></header>
+  <header className="zx-page-head"><small className="zx-eyebrow">ZhaoXi Partner</small><h1>{t.title}</h1><p>{kitchen?t.subtitle:generalSubtitle[locale]}</p></header>
   <PartnerWorkspaceNav/>
-  <KitchenQueue organizationId={orgId}/>
-  <section style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:12}}><MetricCard label={t.waiting} value={metrics.waiting}/><MetricCard label={t.preparing} value={metrics.preparing}/><MetricCard label={t.ready} value={metrics.ready}/></section>
-  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"26px 0 12px"}}><h2>{t.requests}</h2><ActionButton tone="neutral" onClick={()=>void load()}>{t.refresh}</ActionButton></div>
+  {kitchen&&<KitchenQueue organizationId={orgId}/>}
+  <section style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:12}}><MetricCard label={t.waiting} value={metrics.waiting}/><MetricCard label={words?.inProgress[locale]??t.preparing} value={metrics.preparing}/><MetricCard label={kitchen?t.ready:statusLabels[locale].completed} value={metrics.ready}/></section>
+  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"26px 0 12px"}}><h2>{words?.orders[locale]??t.requests}</h2><ActionButton tone="neutral" onClick={()=>void load()}>{t.refresh}</ActionButton></div>
   {error&&<p style={{background:"#fff1f2",color:"#be123c",padding:20,borderRadius:12}}>{error}</p>}
   {loading?<p>…</p>:!rows.length?<Surface><EmptyState title={t.empty}/></Surface>:<section style={{display:"grid",gap:12}}>{rows.map(r=>{const d=r.details||{};const stage=String(d.fulfillmentStage||"");const kind=orderKindOf(r);const external=kind==="food_delivery"&&d.deliveryFulfillmentMode==="external_manual";const displayPhone=(typeof d.recipientPhone==="string"&&d.recipientPhone.trim())?d.recipientPhone.trim():(r.customerPhone||"—");const isFriend=Boolean(typeof d.recipientPhone==="string"&&d.recipientPhone.trim()&&d.recipientPhone.trim()!==r.customerPhone);const valid=Boolean(displayPhone!=="—"&&r.addressText?.trim());return <Surface key={r.id}><div style={{display:"flex",justifyContent:"space-between",gap:10,flexWrap:"wrap"}}><b>{r.requestCode}</b><StatusBadge>{statusLabels[locale][r.status]||r.status}</StatusBadge></div><h3>{r.serviceName||r.title}</h3><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,padding:"9px 12px",borderRadius:12,background:"#f0fdf4",border:"1px solid #bbf7d0",margin:"8px 0",flexWrap:"wrap"}}><span style={{color:"#166534",fontSize:13,fontWeight:700}}>👤 {r.customerName}</span><a href={`tel:${displayPhone}`} style={{display:"inline-flex",alignItems:"center",gap:5,background:"#07c160",color:"#fff",padding:"5px 12px",borderRadius:999,textDecoration:"none",fontSize:13,fontWeight:800}}>📞 {displayPhone}{isFriend?" (Nhận hộ)":""}</a></div><p style={{color:valid?"#64748b":"#be123c",fontSize:13,margin:"4px 0"}}>📍 {r.addressText||t.missing}</p>{external&&<small style={{display:"inline-flex",padding:"4px 8px",borderRadius:999,background:"#ecfdf5",color:"#067647",fontWeight:800}}>{t.external} · {stage||"assigned"}</small>}{Boolean(d.deliveryProvider)&&<small style={{display:"inline-flex",alignItems:"center",gap:6,padding:"3px 8px",borderRadius:999,background:d.deliveryProvider==="grab"?"#dcfce7":"#ccfbf1",color:d.deliveryProvider==="grab"?"#15803d":"#0f766e",fontWeight:850}}><img src={d.deliveryProvider==="grab"?"/couriers/grab.png":"/couriers/green-sm.png"} alt={d.deliveryProvider==="grab"?"Grab":"Green SM"} style={{height:14,width:"auto",objectFit:"contain",verticalAlign:"middle"}}/><span>{t.bookCourier} {d.deliveryProvider==="grab"?"Grab":"Xanh SM"} ({t.customerDirectShip})</span></small>}{kind!=="food_delivery"&&<small style={{display:"inline-flex",padding:"4px 8px",borderRadius:999,background:"#eff6ff",color:"#1d4ed8",fontWeight:800}}>{r.moduleName?`${r.moduleName} · `:""}{orderKindLabel(kind,locale)}</small>}
     {kind!=="food_delivery"&&<ServiceOrderFacts row={r} locale={locale}/>}
@@ -89,7 +94,20 @@ export default function OperationsBoard(){
     <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:12}}>{external?<>{r.status==="assigned"&&<ActionButton disabled={!!busy||!valid} onClick={()=>window.dispatchEvent(new CustomEvent("zhaoxi-open-order",{detail:r}))}>{t.accept}</ActionButton>}{r.status==="in_progress"&&(!stage||stage==="preparing")&&<ActionButton disabled={!!busy} onClick={()=>void action(r,"ready_for_pickup")}>{t.readyAction}</ActionButton>}{stage==="ready_for_pickup"&&<ActionButton disabled={!!busy} onClick={()=>{setCourierOrder(r);const p=String(d.deliveryProviderLabel||(d.deliveryProvider==="grab"?"Grab":d.deliveryProvider==="green_sm"?"Xanh SM":""));setCourier({courierName:p,courierPhone:"",courierReference:""})}}>{t.courier}</ActionButton>}{stage==="courier_booked"&&<ActionButton disabled={!!busy} onClick={()=>void action(r,"handed_off")}>{t.handoff}</ActionButton>}{stage==="handed_off"&&<ActionButton tone="dark" disabled={!!busy} onClick={()=>void action(r,"delivered")}>{t.delivered}</ActionButton>}{!["completed","cancelled","rejected"].includes(r.status)&&<ActionButton tone="danger" disabled={!!busy} onClick={()=>void action(r,"cancelled")}>{t.cancel}</ActionButton>}</>:<ServiceOrderActions row={r} locale={locale} busy={!!busy} disabled={!valid} onRun={next=>void serviceAction(r,next)}/>}</div>
     <div style={{marginTop:10}}><OrderChatButton requestId={r.id}/></div>
    </Surface>})}</section>}
-  <section className="zx-partner-home-shortcuts"><a href="/catalog">Dịch vụ</a><a href="/housing-inventory">Nhà ở</a><a href="/travel-inventory">Du lịch</a><a href="/settlements">Đối soát</a><a href="/tools">Công cụ</a></section>
+  <section className="zx-partner-home-shortcuts">{shortcuts(storeModule,locale).map(x=><a key={x.href} href={x.href}>{x.label}</a>)}</section>
   {courierOrder&&<div style={{position:"fixed",inset:0,zIndex:80,background:"rgba(15,23,42,.42)",display:"grid",placeItems:"center",padding:20}}><section style={{width:"min(100%,420px)",background:"#fff",borderRadius:20,padding:18,display:"grid",gap:10}}><h2 style={{margin:0}}>{t.courier}</h2>{Boolean(courierOrder.details?.deliveryProvider)&&<small style={{display:"block",color:"#067647",fontWeight:750,background:"#ecfdf5",border:"1px solid #bbf7d0",padding:"8px 12px",borderRadius:10}}>ℹ {t.courierModalHint}</small>}<label>{t.courierName}<input value={courier.courierName} onChange={e=>setCourier(v=>({...v,courierName:e.target.value}))}/></label><label>{t.courierPhone}<input value={courier.courierPhone} onChange={e=>setCourier(v=>({...v,courierPhone:e.target.value}))}/></label><label>{t.courierRef}<input value={courier.courierReference} onChange={e=>setCourier(v=>({...v,courierReference:e.target.value}))}/></label><div style={{display:"flex",gap:8}}><button onClick={()=>setCourierOrder(null)} style={{flex:1,padding:11,borderRadius:12,border:0,background:"#fff",boxShadow:"var(--zx-shadow-card)"}}>×</button><button onClick={()=>void saveCourier()} style={{flex:2,padding:11,borderRadius:12,border:0,background:"#07c160",color:"#fff",fontWeight:850}}>{t.saveCourier}</button></div></section></div>}
  </main>
+}
+
+/** Home shortcuts for the kind of store: its catalogue, its inventory screen (if any), money and tools. */
+function shortcuts(module:StoreModule|null,locale:ZhaoXiLocale){
+ const L=(vi:string,en:string,zh:string,tw=zh)=>({"vi-VN":vi,"en-US":en,"zh-CN":zh,"zh-TW":tw}[locale]);
+ const inventory=module?STORE_FEATURES[module].inventory:null;
+ return [
+  {href:"/catalog",label:module?STORE_WORDS[module].catalog[locale]:L("Dịch vụ","Services","服务","服務")},
+  ...(!module||inventory==="housing"?[{href:"/housing-inventory",label:L("Kho nhà/phòng","Housing inventory","房源库存","房源庫存")}]:[]),
+  ...(!module||inventory==="travel"?[{href:"/travel-inventory",label:L("Kho tour","Tour inventory","旅游产品","旅遊產品")}]:[]),
+  {href:"/settlements",label:L("Đối soát","Settlement","财务对账","財務對帳")},
+  {href:"/tools",label:L("Công cụ","Tools","工具")},
+ ];
 }

@@ -332,3 +332,10 @@
   .newStore :global(.zx-btn) { width: 100%; }
   .storeList :global(.zx-btn) { min-width: 0; padding: 0 16px; }
 }
+
+/* service-specific questions under the service cards */
+.questions { display: grid; gap: 14px; padding: 16px; border-radius: var(--zx-r-lg); background: linear-gradient(180deg, #f6fbf8, #ffffff); box-shadow: inset 0 0 0 1px rgba(15, 175, 122, 0.12); }
+.questions h3 { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--zx-ink); font-size: 16px; font-weight: 850; }
+.fieldLabel { color: var(--zx-ink); font-size: 14px; font-weight: 800; }
+.fieldLabel em { color: var(--zx-subtle); font-style: normal; font-weight: 650; }
+.field[data-error="true"] .chips button:not([data-on="true"]) { box-shadow: inset 0 0 0 1.5px #f87171; }

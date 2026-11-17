@@ -9,9 +9,10 @@ import {
   CITIES, LIMITS, MODULES, STEPS,
   clearDraft, emptyForm, firstInvalidStep, formFromApplication, hasContent, isModule, loadDraft, saveDraft, submitPayload, validateStep,
   OPEN_APPLICATION_LIMIT, draftSlot, openApplications, partnerApplications,
-  type Application, type FieldErrors, type FieldKey, type OnboardingForm, type OnboardingStatus, type PartnerOrganization, type Target,
+  type Application, type ErrorCode, type FieldErrors, type FieldKey, type OnboardingForm, type OnboardingStatus, type PartnerOrganization, type Target,
 } from "./form";
 import { ServiceArt } from "./ServiceArt";
+import { SIGNUP_QUESTIONS, type SignupQuestion } from "../_lib/store-modules";
 import styles from "./onboarding.module.css";
 
 type Load = { state: "loading" } | { state: "error"; auth: boolean } | { state: "ready"; data: OnboardingStatus };
@@ -237,6 +238,13 @@ function Wizard({ t, locale, userId, target, onCancel, onSubmitted }: { t: Copy;
     if (key in errors) setErrors((prev) => { const next = { ...prev }; delete next[key as FieldKey]; return next; });
   };
 
+  // Accepts an updater so quick successive taps on choices build on the latest answer.
+  const setAnswer = (key: string, value: string | string[] | ((previous: string | string[] | undefined) => string | string[])) => {
+    dirty.current = true;
+    setForm((prev) => ({ ...prev, answers: { ...prev.answers, [key]: typeof value === "function" ? value(prev.answers[key]) : value } }));
+    setErrors((prev) => { if (!(`q.${key}` in prev)) return prev; const copy = { ...prev }; delete copy[`q.${key}`]; return copy; });
+  };
+
   const next = () => {
     const found = validateStep(stepKey, form);
     if (Object.keys(found).length) {
@@ -319,7 +327,7 @@ function Wizard({ t, locale, userId, target, onCancel, onSubmitted }: { t: Copy;
       {stepKey === "service" && <fieldset className={styles.modules} aria-describedby="zx-onb-businessType-msg">
         <legend className={styles.srOnly}>{copyStep.title}</legend>
         {MODULES.map((code, index) => <label key={code} className={styles.module} data-selected={form.businessType === code}>
-          <input id={index === 0 ? "zx-onb-businessType" : undefined} type="radio" name="businessType" value={code} checked={form.businessType === code} onChange={() => set("businessType", code)} />
+          <input id={index === 0 ? "zx-onb-businessType" : undefined} type="radio" name="businessType" value={code} checked={form.businessType === code} onChange={() => { set("businessType", code); requestAnimationFrame(() => document.getElementById("zx-onb-questions")?.scrollIntoView({ behavior: "smooth", block: "center" })); }} />
           <span className={styles.moduleArt}><ServiceArt code={code} size={52} /></span>
           <b>{t.modules[code].label}</b>
           <small>{t.modules[code].desc}</small>
@@ -327,6 +335,12 @@ function Wizard({ t, locale, userId, target, onCancel, onSubmitted }: { t: Copy;
         </label>)}
         <p id="zx-onb-businessType-msg" className={styles.errorText} role={errors.businessType ? "alert" : undefined}>{errors.businessType ? t.err[errors.businessType] : ""}</p>
       </fieldset>}
+      {stepKey === "service" && isModule(form.businessType) && <section className={styles.questions} aria-labelledby="zx-onb-questions">
+        <h3 id="zx-onb-questions"><ServiceArt code={form.businessType} size={30} />{t.questionsTitle(t.modules[form.businessType].label)}</h3>
+        <div className={`${styles.fields} ${styles.twoCol}`}>
+          {SIGNUP_QUESTIONS[form.businessType].map((question) => <QuestionField key={`${form.businessType}-${question.key}`} question={question} locale={locale} t={t} value={form.answers[question.key]} error={errors[`q.${question.key}`]} onChange={(value) => setAnswer(question.key, value)} />)}
+        </div>
+      </section>}
 
       {stepKey === "location" && <div className={styles.fields}>
         <Field id="city" label={t.f.city} error={errors.city} t={t}>
@@ -364,7 +378,7 @@ function Wizard({ t, locale, userId, target, onCancel, onSubmitted }: { t: Copy;
 
       {stepKey === "review" && <div className={styles.review}>
         <ReviewBlock title={t.steps.store.title} onEdit={() => goTo(0)} t={t} rows={[[t.f.businessName, form.businessName], [t.f.intro, form.intro]]} />
-        <ReviewBlock title={t.steps.service.title} onEdit={() => goTo(1)} t={t} art={form.businessType || undefined} rows={[[t.summary.service, isModule(form.businessType) ? `${t.modules[form.businessType].label} · ${t.modules[form.businessType].desc}` : ""]]} />
+        <ReviewBlock title={t.steps.service.title} onEdit={() => goTo(1)} t={t} art={form.businessType || undefined} rows={[[t.summary.service, isModule(form.businessType) ? `${t.modules[form.businessType].label} · ${t.modules[form.businessType].desc}` : ""], ...(isModule(form.businessType) ? SIGNUP_QUESTIONS[form.businessType].map((question): [string, string] => [question.label[locale], answerText(question, form.answers[question.key], locale)]) : [])]} />
         <ReviewBlock title={t.steps.location.title} onEdit={() => goTo(2)} t={t} rows={[[t.f.city, form.city], [t.f.address, form.addressText], ["", point ? `✓ ${t.f.pointSet}` : t.f.pointMissing]]} />
         <ReviewBlock title={t.steps.contact.title} onEdit={() => goTo(3)} t={t} rows={[[t.f.contactName, form.contactName], [t.f.phone, form.phone], [t.f.email, form.email], [t.f.license, form.license], [t.f.notes, form.notes]]} />
         <label className={styles.agree} data-error={Boolean(errors.agree)}>
@@ -410,4 +424,37 @@ function ReviewBlock({ title, rows, onEdit, t, art }: { title: string; rows: [st
       <dl>{rows.map(([k, v], index) => <div key={`${k}-${index}`}>{k && <dt>{k}</dt>}<dd>{v.trim() || t.review.empty}</dd></div>)}</dl>
     </div>
   </section>;
+}
+
+/** Shown text of an answer: option labels for choices, the raw value otherwise. */
+function answerText(question: SignupQuestion, answer: string | string[] | undefined, locale: ZhaoXiLocale) {
+  const values = Array.isArray(answer) ? answer : [String(answer ?? "").trim()].filter(Boolean);
+  return values.map((value) => question.options?.find((option) => option.value === value)?.label[locale] || value).join(", ");
+}
+
+/** One service question: free text, number, single choice or several choices (pill buttons). */
+type Answer = string | string[];
+function QuestionField({ question, locale, t, value, error, onChange }: { question: SignupQuestion; locale: ZhaoXiLocale; t: Copy; value: Answer | undefined; error?: ErrorCode; onChange: (value: Answer | ((previous: Answer | undefined) => Answer)) => void }) {
+  const id = `zx-onb-q.${question.key}`;
+  const label = <>{question.label[locale]}{!question.required && <em> · {t.f.optional}</em>}</>;
+  const foot = <div className={styles.fieldFoot}><span id={`${id}-msg`} className={error ? styles.errorText : styles.hint} role={error ? "alert" : undefined}>{error ? t.err[error] : question.kind === "multi" ? t.multiHint : ""}</span></div>;
+  if (question.options) {
+    const selected = Array.isArray(value) ? value : value ? [value] : [];
+    const toggle = (option: string) => {
+      if (question.kind === "multi") onChange((previous) => { const current = Array.isArray(previous) ? previous : []; return current.includes(option) ? current.filter((v) => v !== option) : [...current, option]; });
+      else onChange(option);
+    };
+    return <div className={`${styles.field} ${styles.wide}`} data-error={Boolean(error)} role="group" aria-labelledby={`${id}-label`} aria-describedby={`${id}-msg`}>
+      <span id={`${id}-label`} className={styles.fieldLabel}>{label}</span>
+      <div className={styles.chips}>
+        {question.options.map((option, index) => <button key={option.value} id={index === 0 ? id : undefined} type="button" role={question.kind === "multi" ? "checkbox" : "radio"} aria-checked={selected.includes(option.value)} data-on={selected.includes(option.value)} onClick={() => toggle(option.value)}>{question.kind === "multi" && selected.includes(option.value) ? "✓ " : ""}{option.label[locale]}</button>)}
+      </div>
+      {foot}
+    </div>;
+  }
+  return <div className={styles.field} data-error={Boolean(error)}>
+    <label htmlFor={id}>{label}</label>
+    <input id={id} value={typeof value === "string" ? value : ""} inputMode={question.kind === "number" ? "numeric" : undefined} maxLength={question.max} placeholder={question.placeholder?.[locale]} onChange={(e) => onChange(question.kind === "number" ? e.target.value.replace(/\D/g, "") : e.target.value)} aria-invalid={Boolean(error)} aria-describedby={`${id}-msg`} />
+    {foot}
+  </div>;
 }

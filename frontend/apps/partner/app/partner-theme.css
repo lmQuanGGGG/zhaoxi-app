@@ -513,3 +513,8 @@ body {
   .zx-partner-app .zx-native-workspace [style*="grid-template-columns"][style*="auto-fill"] { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)) !important; }
 }
 .zx-partner-app .zx-native-workspace [style*="repeat(3,minmax(0,1fr))"] { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+
+/* metric tiles: two per row on phones instead of the legacy one-column stack */
+@media (max-width: 767px) {
+  .zx-partner-app .zx-native-workspace .zx-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}

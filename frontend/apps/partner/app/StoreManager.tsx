@@ -15,6 +15,8 @@ import RestaurantOperationsPanel from "./RestaurantOperationsPanel";
 import FoodCommercialEditor from "./FoodCommercialEditor";
 import CouponManager from "./CouponManager";
 import { LocationPicker, type LocationPoint } from "@zhaoxi/onboarding";
+import { STORE_MODULES } from "./_lib/store-modules";
+import { useStoreModule } from "./_lib/use-store-module";
 
 type Item = {
   id: string;
@@ -64,7 +66,7 @@ const copy = {
     category: "Loại dịch vụ", chooseImage: "Chọn ảnh", chooseImages: "Chọn nhiều ảnh", uploading: "Đang tải ảnh…", remove: "Xóa",
     urlFallback: "Hoặc dán URL hình ảnh", uploadHint: "Hỗ trợ JPG, PNG, WEBP, GIF; tối đa 5 MB mỗi ảnh.",
     preview: "Xem trước", saved: "Đã lưu", uploadFailed: "Tải ảnh thất bại", details: "Thông tin chi tiết", deleteItem: "Xóa mục", deleteConfirm: "Bạn có chắc muốn xóa mục này?", logout: "Đăng xuất", confirmBanners: "Xác nhận banner", bannersConfirmed: "Banner đã xác nhận", syncServices: "Đồng bộ dịch vụ", syncing: "Đang đồng bộ…", synced: "Đã đồng bộ sang Customer", syncHint: "Xác nhận banner và nội dung trước khi đồng bộ sang Customer.", lockItem: "Khóa món", unlockItem: "Mở bán lại", available: "Đang bán", soldOut: "Hết món", bannerPreview: "Xem thử banner chạy", imageUploaded: "Ảnh đã tải lên", address: "Địa chỉ", contactPhone: "Số điện thoại liên hệ", wechat: "WeChat", infoTab: "Thông tin nhà hàng", ordersTab: "Quản lý đơn hàng / dịch vụ", housingGallery:"Bộ ảnh nhà/phòng", addGallery:"Thêm ảnh vào gallery", galleryHint:"Có thể tải nhiều ảnh để Customer vuốt ngang khi xem chi tiết.", loadingStore:"Đang tải gian hàng", loadingStoreHint:"Nội dung sẽ cập nhật ngay khi hoàn tất.", chooseOrPasteImage:"chọn ảnh hoặc dán URL", imageWillUpload:"Ảnh sẽ tải lên khi lưu danh sách", imageRemoved:"Đã gỡ ảnh khỏi món này.", imageUrlWillUse:"Sẽ dùng URL ảnh này khi lưu danh sách.", itemReadyToSave:"Đã thêm vào danh sách. Ảnh chưa được tải lên; tiếp tục thêm món rồi lưu danh sách khi xong.", requiredItemFields:"Vui lòng điền:",
-    categories: { food: "Ăn uống", housing: "Nhà ở", visa: "Thị thực", "car-rental": "Thuê xe", translation: "Phiên dịch", travel: "Du lịch", payment: "Thanh toán", community: "Cộng đồng", market: "Gian hàng", emergency: "Khẩn cấp" },
+    categories: { food: "Ăn uống", housing: "Nhà ở", visa: "Thị thực", "car-rental": "Thuê xe", translation: "Phiên dịch", travel: "Du lịch", payment: "Thanh toán", community: "Cộng đồng", market: "Cửa hàng", emergency: "Khẩn cấp" },
   },
   "en-US": {
     title: "Store management", orders: "Orders", store: "Store profile", menu: "Products and services", storeName: "Store name",
@@ -73,7 +75,7 @@ const copy = {
     category: "Service category", chooseImage: "Choose image", chooseImages: "Choose multiple images", uploading: "Uploading…", remove: "Remove",
     urlFallback: "Or paste an image URL", uploadHint: "JPG, PNG, WEBP and GIF; maximum 5 MB per image.",
     preview: "Preview", saved: "Saved", uploadFailed: "Image upload failed", details: "Service details", deleteItem: "Delete item", deleteConfirm: "Delete this item?", logout: "Sign out", confirmBanners: "Confirm banners", bannersConfirmed: "Banners confirmed", syncServices: "Sync services", syncing: "Syncing…", synced: "Synced to Customer", syncHint: "Confirm banners and items before syncing to Customer.", lockItem: "Lock item", unlockItem: "Reopen item", available: "Available", soldOut: "Sold out", bannerPreview: "Banner slideshow preview", imageUploaded: "Image uploaded", address: "Address", contactPhone: "Contact phone", wechat: "WeChat", infoTab: "Store information", ordersTab: "Order / service management", housingGallery:"Property gallery", addGallery:"Add gallery photos", galleryHint:"Upload multiple photos for the Customer swipe gallery.", loadingStore:"Loading store", loadingStoreHint:"Content will update as soon as it is ready.", chooseOrPasteImage:"choose an image or paste a URL", imageWillUpload:"The image will upload when the list is saved", imageRemoved:"Image removed from this item.", imageUrlWillUse:"This image URL will be used when the list is saved.", itemReadyToSave:"Added to the list. The image has not uploaded yet; keep adding items, then save the list.", requiredItemFields:"Please complete:",
-    categories: { food: "Food & drink", housing: "Housing", visa: "Visa", "car-rental": "Car rental", translation: "Interpretation", travel: "Travel", payment: "Payments", community: "Community", market: "Marketplace", emergency: "Emergency" },
+    categories: { food: "Food & drink", housing: "Housing", visa: "Visa", "car-rental": "Car rental", translation: "Interpretation", travel: "Travel", payment: "Payments", community: "Community", market: "Shop", emergency: "Emergency" },
   },
 } as const;
 
@@ -91,23 +93,26 @@ const moduleFields: Record<string, Record<ZhaoXiLocale, DynamicField[]>> = {
     "en-US": [{ key: "propertyType", label: "Property type" }, { key: "bedrooms", label: "Bedrooms", type: "number" }, { key: "bathrooms", label: "Bathrooms", type: "number" }, { key: "areaSqm", label: "Area (m²)", type: "number" }, {key:"district",label:"Area / district"},{key:"propertyAddress",label:"Property address"},{key:"housingAvailabilityStatus",label:"Property status",type:"select",options:["available","reserved","rented"]},{key:"furnished",label:"Furnishing",type:"select",options:["yes","no","partial"]},{key:"depositMonths",label:"Deposit (months)",type:"number"},{key:"availableFrom",label:"Available from",type:"date"},{key:"minLeaseMonths",label:"Minimum lease (months)",type:"number"},{key:"amenities",label:"Amenities (comma separated)"},{key:"latitude",label:"Latitude",type:"number"},{key:"longitude",label:"Longitude",type:"number"}],
   },
   "car-rental": {
-    "zh-CN": [{ key: "vehicleType", label: "车型" }, { key: "seats", label: "座位数", type: "number" }, { key: "priceUnit", label: "计价单位", type: "select", options: ["hour", "day", "trip"] }],
-    "zh-TW": [{ key: "vehicleType", label: "車型" }, { key: "seats", label: "座位數", type: "number" }, { key: "priceUnit", label: "計價單位", type: "select", options: ["hour", "day", "trip"] }],
-    "vi-VN": [{ key: "vehicleType", label: "Loại xe" }, { key: "seats", label: "Số chỗ", type: "number" }, { key: "priceUnit", label: "Đơn vị tính giá", type: "select", options: ["hour", "day", "trip"] }],
-    "en-US": [{ key: "vehicleType", label: "Vehicle type" }, { key: "seats", label: "Seats", type: "number" }, { key: "priceUnit", label: "Pricing unit", type: "select", options: ["hour", "day", "trip"] }],
+    "zh-CN": [{ key: "vehicleType", label: "车型" }, { key: "seats", label: "座位数", type: "number" }, { key: "transmission", label: "变速箱", type: "select", options: ["automatic", "manual"] }, { key: "rentalMode", label: "租车方式", type: "select", options: ["withDriver", "selfDrive"] }, { key: "priceUnit", label: "计价单位", type: "select", options: ["hour", "day", "trip"] }, { key: "deposit", label: "押金（越南盾）", type: "number" }, { key: "includes", label: "包含（油费、过路费…）" }],
+    "zh-TW": [{ key: "vehicleType", label: "車型" }, { key: "seats", label: "座位數", type: "number" }, { key: "transmission", label: "變速箱", type: "select", options: ["automatic", "manual"] }, { key: "rentalMode", label: "租車方式", type: "select", options: ["withDriver", "selfDrive"] }, { key: "priceUnit", label: "計價單位", type: "select", options: ["hour", "day", "trip"] }, { key: "deposit", label: "押金（越南盾）", type: "number" }, { key: "includes", label: "包含（油費、過路費…）" }],
+    "vi-VN": [{ key: "vehicleType", label: "Loại xe" }, { key: "seats", label: "Số chỗ", type: "number" }, { key: "transmission", label: "Hộp số", type: "select", options: ["automatic", "manual"] }, { key: "rentalMode", label: "Hình thức thuê", type: "select", options: ["withDriver", "selfDrive"] }, { key: "priceUnit", label: "Đơn vị tính giá", type: "select", options: ["hour", "day", "trip"] }, { key: "deposit", label: "Đặt cọc (VND)", type: "number" }, { key: "includes", label: "Giá đã gồm (xăng, phí cầu đường…)" }],
+    "en-US": [{ key: "vehicleType", label: "Vehicle type" }, { key: "seats", label: "Seats", type: "number" }, { key: "transmission", label: "Transmission", type: "select", options: ["automatic", "manual"] }, { key: "rentalMode", label: "Rental type", type: "select", options: ["withDriver", "selfDrive"] }, { key: "priceUnit", label: "Pricing unit", type: "select", options: ["hour", "day", "trip"] }, { key: "deposit", label: "Deposit (VND)", type: "number" }, { key: "includes", label: "Price includes (fuel, tolls…)" }],
   },
+
   visa: {
-    "zh-CN": [{ key: "visaType", label: "签证类型" }, { key: "processingDays", label: "办理天数", type: "number" }],
-    "zh-TW": [{ key: "visaType", label: "簽證類型" }, { key: "processingDays", label: "辦理天數", type: "number" }],
-    "vi-VN": [{ key: "visaType", label: "Loại thị thực" }, { key: "processingDays", label: "Số ngày xử lý", type: "number" }],
-    "en-US": [{ key: "visaType", label: "Visa type" }, { key: "processingDays", label: "Processing days", type: "number" }],
+    "zh-CN": [{ key: "visaType", label: "签证类型" }, { key: "country", label: "适用国家/地区" }, { key: "processingDays", label: "办理天数", type: "number" }, { key: "requirements", label: "所需材料" }],
+    "zh-TW": [{ key: "visaType", label: "簽證類型" }, { key: "country", label: "適用國家/地區" }, { key: "processingDays", label: "辦理天數", type: "number" }, { key: "requirements", label: "所需文件" }],
+    "vi-VN": [{ key: "visaType", label: "Loại thủ tục / thị thực" }, { key: "country", label: "Quốc gia áp dụng" }, { key: "processingDays", label: "Số ngày xử lý", type: "number" }, { key: "requirements", label: "Giấy tờ khách cần chuẩn bị" }],
+    "en-US": [{ key: "visaType", label: "Visa / permit type" }, { key: "country", label: "Country" }, { key: "processingDays", label: "Processing days", type: "number" }, { key: "requirements", label: "Documents the client needs" }],
   },
+
   translation: {
-    "zh-CN": [{ key: "languagePair", label: "语言组合" }, { key: "priceUnit", label: "计价单位", type: "select", options: ["hour", "day", "document"] }],
-    "zh-TW": [{ key: "languagePair", label: "語言組合" }, { key: "priceUnit", label: "計價單位", type: "select", options: ["hour", "day", "document"] }],
-    "vi-VN": [{ key: "languagePair", label: "Cặp ngôn ngữ" }, { key: "priceUnit", label: "Đơn vị tính giá", type: "select", options: ["hour", "day", "document"] }],
-    "en-US": [{ key: "languagePair", label: "Language pair" }, { key: "priceUnit", label: "Pricing unit", type: "select", options: ["hour", "day", "document"] }],
+    "zh-CN": [{ key: "languagePair", label: "语言组合" }, { key: "format", label: "服务形式", type: "select", options: ["onsite", "remote", "written"] }, { key: "priceUnit", label: "计价单位", type: "select", options: ["hour", "day", "document"] }, { key: "minimumUnits", label: "最少计费单位", type: "number" }, { key: "specialty", label: "擅长领域" }],
+    "zh-TW": [{ key: "languagePair", label: "語言組合" }, { key: "format", label: "服務形式", type: "select", options: ["onsite", "remote", "written"] }, { key: "priceUnit", label: "計價單位", type: "select", options: ["hour", "day", "document"] }, { key: "minimumUnits", label: "最少計費單位", type: "number" }, { key: "specialty", label: "擅長領域" }],
+    "vi-VN": [{ key: "languagePair", label: "Cặp ngôn ngữ" }, { key: "format", label: "Hình thức", type: "select", options: ["onsite", "remote", "written"] }, { key: "priceUnit", label: "Đơn vị tính giá", type: "select", options: ["hour", "day", "document"] }, { key: "minimumUnits", label: "Số đơn vị tối thiểu", type: "number" }, { key: "specialty", label: "Lĩnh vực chuyên môn" }],
+    "en-US": [{ key: "languagePair", label: "Language pair" }, { key: "format", label: "Format", type: "select", options: ["onsite", "remote", "written"] }, { key: "priceUnit", label: "Pricing unit", type: "select", options: ["hour", "day", "document"] }, { key: "minimumUnits", label: "Minimum units", type: "number" }, { key: "specialty", label: "Specialty" }],
   },
+
   travel: {
     "zh-CN": [{key:"experienceType",label:"体验类型"},{key:"destination",label:"目的地"},{key:"duration",label:"行程时长"},{key:"departurePoint",label:"出发地点"},{key:"maxGuests",label:"最多人数",type:"number"},{key:"serviceLanguage",label:"服务语言"},{key:"availableDays",label:"可预约日期"},{key:"startTime",label:"出发时间"},{key:"startTimes",label:"多个出发时间（逗号分隔）"},{key:"travelAvailabilityStatus",label:"体验状态",type:"select",options:["available","unavailable"]},{key:"bookingNoticeHours",label:"提前预订（小时）",type:"number"},{key:"includes",label:"费用包含（逗号分隔）"},{key:"excludes",label:"费用不含（逗号分隔）"}],
     "zh-TW": [{key:"experienceType",label:"體驗類型"},{key:"destination",label:"目的地"},{key:"duration",label:"行程時長"},{key:"departurePoint",label:"出發地點"},{key:"maxGuests",label:"最多人數",type:"number"},{key:"serviceLanguage",label:"服務語言"},{key:"availableDays",label:"可預約日期"},{key:"startTime",label:"出發時間"},{key:"startTimes",label:"多個出發時間（逗號分隔）"},{key:"travelAvailabilityStatus",label:"體驗狀態",type:"select",options:["available","unavailable"]},{key:"bookingNoticeHours",label:"提前預訂（小時）",type:"number"},{key:"includes",label:"費用包含（逗號分隔）"},{key:"excludes",label:"費用不含（逗號分隔）"}],
@@ -127,11 +132,12 @@ const moduleFields: Record<string, Record<ZhaoXiLocale, DynamicField[]>> = {
     "en-US": [{ key: "eventDate", label: "Event date" }, { key: "eventLocation", label: "Event location" }],
   },
   market: {
-    "zh-CN": [{ key: "sku", label: "商品编号" }, { key: "stock", label: "库存", type: "number" }],
-    "zh-TW": [{ key: "sku", label: "商品編號" }, { key: "stock", label: "庫存", type: "number" }],
-    "vi-VN": [{ key: "sku", label: "Mã sản phẩm" }, { key: "stock", label: "Tồn kho", type: "number" }],
-    "en-US": [{ key: "sku", label: "SKU" }, { key: "stock", label: "Stock", type: "number" }],
+    "zh-CN": [{ key: "sku", label: "商品编号" }, { key: "productCategory", label: "商品分类" }, { key: "unit", label: "销售单位（件、盒、公斤…）" }, { key: "stock", label: "库存", type: "number" }, { key: "origin", label: "产地" }],
+    "zh-TW": [{ key: "sku", label: "商品編號" }, { key: "productCategory", label: "商品分類" }, { key: "unit", label: "銷售單位（件、盒、公斤…）" }, { key: "stock", label: "庫存", type: "number" }, { key: "origin", label: "產地" }],
+    "vi-VN": [{ key: "sku", label: "Mã sản phẩm" }, { key: "productCategory", label: "Nhóm hàng" }, { key: "unit", label: "Đơn vị bán (cái, hộp, kg…)" }, { key: "stock", label: "Tồn kho", type: "number" }, { key: "origin", label: "Xuất xứ" }],
+    "en-US": [{ key: "sku", label: "SKU" }, { key: "productCategory", label: "Product category" }, { key: "unit", label: "Sold by (piece, box, kg…)" }, { key: "stock", label: "Stock", type: "number" }, { key: "origin", label: "Origin" }],
   },
+
   emergency: {
     "zh-CN": [{ key: "hotline", label: "紧急电话" }, { key: "availability", label: "服务时间" }],
     "zh-TW": [{ key: "hotline", label: "緊急電話" }, { key: "availability", label: "服務時間" }],
@@ -150,7 +156,21 @@ function localizedOption(fieldKey:string,option:string,locale:ZhaoXiLocale){
   partial:{"zh-CN":"部分家具","zh-TW":"部分家具","vi-VN":"Nội thất một phần","en-US":"Partly furnished"},
  };
  if(fieldKey==="housingAvailabilityStatus"||fieldKey==="furnished")return housingStatus[option]?.[locale]||option;
- return option;
+ const shared:Record<string,Record<ZhaoXiLocale,string>>={
+  hour:{"zh-CN":"按小时","zh-TW":"按小時","vi-VN":"Theo giờ","en-US":"Per hour"},
+  day:{"zh-CN":"按天","zh-TW":"按天","vi-VN":"Theo ngày","en-US":"Per day"},
+  trip:{"zh-CN":"按趟","zh-TW":"按趟","vi-VN":"Theo chuyến","en-US":"Per trip"},
+  document:{"zh-CN":"按文件","zh-TW":"按文件","vi-VN":"Theo tài liệu","en-US":"Per document"},
+  automatic:{"zh-CN":"自动挡","zh-TW":"自排","vi-VN":"Số tự động","en-US":"Automatic"},
+  manual:{"zh-CN":"手动挡","zh-TW":"手排","vi-VN":"Số sàn","en-US":"Manual"},
+  withDriver:{"zh-CN":"带司机","zh-TW":"附司機","vi-VN":"Có tài xế","en-US":"With driver"},
+  selfDrive:{"zh-CN":"自驾","zh-TW":"自駕","vi-VN":"Tự lái","en-US":"Self-drive"},
+  onsite:{"zh-CN":"现场口译","zh-TW":"現場口譯","vi-VN":"Phiên dịch trực tiếp","en-US":"On-site"},
+  remote:{"zh-CN":"线上口译","zh-TW":"線上口譯","vi-VN":"Phiên dịch online","en-US":"Remote"},
+  written:{"zh-CN":"笔译","zh-TW":"筆譯","vi-VN":"Dịch viết / tài liệu","en-US":"Written translation"},
+  unavailable:{"zh-CN":"暂停","zh-TW":"暫停","vi-VN":"Tạm ngưng","en-US":"Unavailable"},
+ };
+ return shared[option]?.[locale]||housingStatus[option]?.[locale]||option;
 }
 
 const modulePresentation: Record<string, Record<ZhaoXiLocale, { store: string; menu: string; add: string; image: string; banners: string }>> = {
@@ -233,7 +253,11 @@ export default function StoreManager() {
   const { locale } = useZhaoXiLocale();
   const t = copy[locale];
   const orgId = session?.organizationId || "";
-  const [moduleCode, setModuleCode] = useState("food");
+  // Opens on the kind of store this is (set at sign-up); the picker is for stores that sell in more than one category.
+  const storeModule = useStoreModule();
+  const [picked, setPicked] = useState<{ orgId: string; code: string } | null>(null);
+  const moduleCode = picked && picked.orgId === orgId ? picked.code : storeModule || "food";
+  const setModuleCode = (code: string) => setPicked({ orgId, code });
   const cacheKey = `partner_store_${orgId}_${moduleCode}_${locale}`;
   const cachedData = typeof window !== "undefined" ? getCached<{ items: Item[]; org: any }>(cacheKey) : null;
   const [items, setItems] = useState<Item[]>(() => cachedData?.items || []);
@@ -865,7 +889,7 @@ export default function StoreManager() {
     {isLoadingStore && <div className="zx-store-loading" role="status" aria-live="polite"><span className="zx-store-loading-spinner" /><div><b>{t.loadingStore}</b><small>{t.loadingStoreHint}</small></div></div>}
 
     <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
-      <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 11px", border: "1px dashed #cbd5e1", borderRadius: 12, background: "rgba(255,255,255,.55)" }}><small>{t.category}</small><select value={moduleCode} onChange={(e) => setModuleCode(e.target.value)}>{Object.entries(t.categories).map(([code, label]) => <option key={code} value={code}>{label}</option>)}</select></label>
+      <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 11px", border: "1px dashed #cbd5e1", borderRadius: 12, background: "rgba(255,255,255,.55)" }}><small>{t.category}</small><select value={moduleCode} onChange={(e) => setModuleCode(e.target.value)}>{STORE_MODULES.map((code) => <option key={code} value={code}>{t.categories[code]}{code === storeModule ? " ★" : ""}</option>)}</select></label>
     </div>
 
     {msg && <div role="status" style={{ marginTop: 14, padding: 12, borderRadius: 12, background: msg.startsWith("✓") ? "#ecfdf3" : "#fff1f2", color: msg.startsWith("✓") ? "#087a3e" : "#b42318", fontWeight: 700 }}>{msg}</div>}

@@ -4,10 +4,12 @@
  * Pure functions only, so the wizard UI stays thin and this file is easy to test.
  */
 
-/** Service modules a store can sign up for (subset of backend SERVICE_MODULES that partners run). */
-export const MODULES = ["food", "market", "housing", "travel", "car-rental", "translation", "visa"] as const;
-export type ModuleCode = (typeof MODULES)[number];
-export const isModule = (value: unknown): value is ModuleCode => MODULES.includes(value as ModuleCode);
+import { ALL_QUESTION_LABELS, SIGNUP_QUESTIONS, STORE_MODULES, answersFromLines, answersToLines, isStoreModule, questionError, type SignupAnswers, type StoreModule } from "../_lib/store-modules";
+
+/** Service modules a store can sign up for (shared with the workspace, see _lib/store-modules). */
+export const MODULES = STORE_MODULES;
+export type ModuleCode = StoreModule;
+export const isModule = isStoreModule;
 
 export const CITIES = ["Đà Nẵng", "Hội An", "Huế", "Quảng Nam"] as const;
 
@@ -29,12 +31,16 @@ export type OnboardingForm = {
   email: string;
   license: string;
   notes: string;
+  /** Answers to the questions of the chosen service (SIGNUP_QUESTIONS), keyed by question. */
+  answers: SignupAnswers;
   agree: boolean;
 };
 
-export type FieldKey = Exclude<keyof OnboardingForm, "latitude" | "longitude">;
-export type ErrorCode = "required" | "tooShort" | "tooLong" | "phone" | "email" | "agree";
-export type FieldErrors = Partial<Record<FieldKey, ErrorCode>>;
+export type FieldKey = Exclude<keyof OnboardingForm, "latitude" | "longitude" | "answers">;
+/** Service questions report under `q.<key>`. */
+export type ErrorKey = FieldKey | `q.${string}`;
+export type ErrorCode = "required" | "choose" | "tooShort" | "tooLong" | "phone" | "email" | "agree" | "number";
+export type FieldErrors = Partial<Record<ErrorKey, ErrorCode>>;
 
 export type Application = {
   id: string;
@@ -77,6 +83,7 @@ export const emptyForm = (): OnboardingForm => ({
   email: "",
   license: "",
   notes: "",
+  answers: {},
   agree: false,
 });
 
@@ -101,7 +108,13 @@ export function validateStep(step: StepKey, form: OnboardingForm): FieldErrors {
     length(errors, "businessName", form.businessName, 2, LIMITS.businessName);
     length(errors, "intro", form.intro, 0, LIMITS.intro, false);
   }
-  if (step === "service" && !isModule(form.businessType)) errors.businessType = "required";
+  if (step === "service") {
+    if (!isModule(form.businessType)) errors.businessType = "required";
+    else for (const question of SIGNUP_QUESTIONS[form.businessType]) {
+      const problem = questionError(question, form.answers[question.key]);
+      if (problem) errors[`q.${question.key}`] = problem;
+    }
+  }
   if (step === "location") {
     length(errors, "city", form.city, 2, LIMITS.city);
     length(errors, "addressText", form.addressText, 5, LIMITS.addressText);
@@ -132,31 +145,35 @@ export function firstInvalidStep(form: OnboardingForm): number {
 const NOTE_LABELS = { intro: "Giới thiệu", email: "Email", license: "Giấy phép KD / MST", notes: "Ghi chú" } as const;
 type NoteKey = keyof typeof NOTE_LABELS;
 
-export function composeNotes(form: Pick<OnboardingForm, NoteKey>): string {
-  return (Object.keys(NOTE_LABELS) as NoteKey[])
+export function composeNotes(form: Pick<OnboardingForm, NoteKey | "businessType" | "answers">): string {
+  const answers = isModule(form.businessType) ? answersToLines(form.businessType, form.answers) : [];
+  const own = (Object.keys(NOTE_LABELS) as NoteKey[])
     .map((key) => [key, text(form[key])] as const)
     .filter(([, value]) => value)
-    .map(([key, value]) => `${NOTE_LABELS[key]}: ${value}`)
-    .join("\n")
-    .slice(0, 1000);
+    .map(([key, value]) => `${NOTE_LABELS[key]}: ${value}`);
+  // Service answers first: they are what Admin checks before anything else.
+  return [...answers, ...own].join("\n").slice(0, 1000);
 }
 
-export function parseNotes(notes: string | null | undefined): Pick<OnboardingForm, NoteKey> {
-  const out: Pick<OnboardingForm, NoteKey> = { intro: "", email: "", license: "", notes: "" };
+export function parseNotes(notes: string | null | undefined, module?: ModuleCode | ""): Pick<OnboardingForm, NoteKey | "answers"> {
+  const out: Pick<OnboardingForm, NoteKey | "answers"> = { intro: "", email: "", license: "", notes: "", answers: {} };
   const raw = (notes || "").trim();
   if (!raw) return out;
   const byLabel = new Map<string, NoteKey>((Object.keys(NOTE_LABELS) as NoteKey[]).map((key) => [NOTE_LABELS[key], key]));
   let current: NoteKey | null = null;
   let matched = false;
+  const answerLines = new Map<string, string>();
   for (const line of raw.split(/\r?\n/)) {
-    const hit = /^([^:]{2,30}):\s?(.*)$/.exec(line);
+    const hit = /^([^:]{2,40}):\s?(.*)$/.exec(line);
+    if (hit && ALL_QUESTION_LABELS.has(hit[1].trim())) { answerLines.set(hit[1].trim(), hit[2].trim()); matched = true; current = null; continue; }
     const key = hit ? byLabel.get(hit[1].trim()) : undefined;
     if (key && hit) { current = key; matched = true; out[key] = hit[2]; continue; }
     if (current) out[current] = out[current] ? `${out[current]}\n${line}` : line;
     else out.notes = out.notes ? `${out.notes}\n${line}` : line;
   }
   // Older free-text notes (written before this wizard) stay in "notes" untouched.
-  if (!matched) return { intro: "", email: "", license: "", notes: raw.slice(0, LIMITS.notes) };
+  if (!matched) return { intro: "", email: "", license: "", notes: raw.slice(0, LIMITS.notes), answers: {} };
+  if (module) out.answers = answersFromLines(module, answerLines);
   return out;
 }
 
@@ -174,7 +191,7 @@ export function formFromApplication(app: Application): OnboardingForm {
     longitude: toNumber(app.longitude),
     contactName: app.displayName || "",
     phone: app.phone || "",
-    ...parseNotes(app.notes),
+    ...parseNotes(app.notes, isModule(app.businessType) ? app.businessType : ""),
   };
 }
 
@@ -210,7 +227,7 @@ export function loadDraft(userId?: string, slot?: string): Draft | null {
     if (!value || typeof value !== "object" || !value.form) return null;
     // Drafts older than 30 days are dropped rather than resurfacing stale details.
     if (Date.now() - Number(value.savedAt || 0) > 30 * 24 * 3600 * 1000) { clearDraft(userId, slot); return null; }
-    const form = { ...emptyForm(), ...value.form, agree: false };
+    const form = { ...emptyForm(), ...value.form, answers: { ...(value.form.answers || {}) }, agree: false };
     if (!isModule(form.businessType)) form.businessType = "";
     return { form, step: Math.min(Math.max(0, Number(value.step) || 0), STEPS.length - 1), savedAt: Number(value.savedAt) };
   } catch {

@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { useZhaoXiLocale, type ZhaoXiLocale } from "@zhaoxi/i18n";
 import PartnerStoreSwitcher from "./PartnerStoreSwitcher";
 import { useOrderChatUnread } from "./OrderChat";
+import { STORE_FEATURES } from "./_lib/store-modules";
+import { useStoreModule } from "./_lib/use-store-module";
 
 type Key = "orders" | "store" | "messages" | "analytics" | "settlements" | "onboarding" | "housing" | "travel" | "tools" | "support" | "account";
 type IconName = Key;
@@ -79,6 +81,12 @@ function FrameNav() {
   const moreOpen = openOn === path;
   const setMoreOpen = (open: boolean) => setOpenOn(open ? path : null);
   const active = activeKey(path);
+  // Inventory screens belong to one kind of store; unknown (older) store types keep every entry.
+  const storeModule = useStoreModule();
+  const inventory = storeModule ? STORE_FEATURES[storeModule].inventory : null;
+  const shown = (key: Key) => (key === "housing" ? !storeModule || inventory === "housing" : key === "travel" ? !storeModule || inventory === "travel" : true);
+  const tabs = tabOrder.filter(shown);
+  const more = moreOrder.filter(shown);
 
   useEffect(() => {
     if (!moreOpen) return;
@@ -88,11 +96,11 @@ function FrameNav() {
   }, [moreOpen]);
 
   const badge = unread > 0 ? <span className="zx-pnav-badge" aria-label={`${unread}`}>{unread > 99 ? "99+" : unread}</span> : null;
-  const moreActive = moreOrder.includes(active);
+  const moreActive = more.includes(active);
 
   return <div className="zx-partner-nav-wrapper">
     <nav className="zx-pnav-tabs" aria-label={t.nav}>
-      {tabOrder.map((key) => <Link key={key} href={routes[key]} data-active={active === key} aria-current={active === key ? "page" : undefined}>
+      {tabs.map((key) => <Link key={key} href={routes[key]} data-active={active === key} aria-current={active === key ? "page" : undefined}>
         <PartnerNavIcon name={key} />{t[key]}{key === "messages" ? badge : null}
       </Link>)}
     </nav>
@@ -112,7 +120,7 @@ function FrameNav() {
         <div className="zx-pnav-sheet-grip" />
         <header><b>{t.moreTitle}</b><button type="button" onClick={() => setMoreOpen(false)} aria-label={t.close}>×</button></header>
         <div className="zx-pnav-sheet-grid">
-          {moreOrder.map((key) => <Link key={key} href={routes[key]} data-active={active === key}><i><PartnerNavIcon name={key} /></i>{t[key]}</Link>)}
+          {more.map((key) => <Link key={key} href={routes[key]} data-active={active === key}><i><PartnerNavIcon name={key} /></i>{t[key]}</Link>)}
         </div>
       </section>
     </div>}
