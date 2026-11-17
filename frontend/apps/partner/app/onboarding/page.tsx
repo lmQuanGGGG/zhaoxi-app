@@ -1,6 +1,41 @@
 "use client";
 import Link from "next/link";
-import { OnboardingCenter } from "@zhaoxi/onboarding";
+import { useZhaoXiSession } from "@zhaoxi/auth";
 import { useZhaoXiLocale, type ZhaoXiLocale } from "@zhaoxi/i18n";
-const copy: Record<ZhaoXiLocale, { title: string; description: string }> = { "zh-CN": { title: "完善合作伙伴资料", description: "提交您的商家资料、查看审批结果，并在获批后完成门店配置。" }, "zh-TW": { title: "完成合作夥伴資料", description: "提交您的商家資料、查看審核結果，並在核准後完成門店設定。" }, "vi-VN": { title: "Hoàn thiện hồ sơ đối tác", description: "Gửi hồ sơ gian hàng để được duyệt và bắt đầu cấu hình cửa hàng." }, "en-US": { title: "Complete partner profile", description: "Submit your business profile for approval, then set up your store." } };
-export default function OnboardingPage(){const { locale }=useZhaoXiLocale();const t=copy[locale];return <main style={{width:"min(100%,1100px)",margin:"0 auto",minHeight:"100dvh",padding:24,background:"#f6faf7",fontFamily:"Inter,Arial,sans-serif"}}><Link href="/" style={{textDecoration:"none",color:"#64748b"}}>← ZhaoXi</Link><div style={{maxWidth:640}}><small style={{display:"block",marginTop:18,color:"#07a856",fontWeight:800}}>ZHAOXI PARTNER</small><h1 style={{fontSize:28}}>{t.title}</h1><p style={{color:"#64748b",fontSize:18}}>{t.description}</p><div style={{marginTop:18}}><OnboardingCenter fixedRole="partner"/></div></div></main>}
+import { LOCALE_SHORT, onboardingCopy } from "./copy";
+import PartnerOnboarding from "./PartnerOnboarding";
+import styles from "./onboarding.module.css";
+
+const workspaceLabel = { "vi-VN": "Khu quản lý", "en-US": "Workspace", "zh-CN": "工作台", "zh-TW": "工作台" } as const;
+const LANGUAGES: ZhaoXiLocale[] = ["vi-VN", "en-US", "zh-CN", "zh-TW"];
+const languageLabel = { "vi-VN": "Ngôn ngữ", "en-US": "Language", "zh-CN": "语言", "zh-TW": "語言" } as const;
+
+export default function OnboardingPage() {
+  const { locale, setLocale } = useZhaoXiLocale();
+  const session = useZhaoXiSession();
+  const t = onboardingCopy[locale];
+
+  return <main className={styles.page}>
+    <header className={styles.hero}>
+      <div className={styles.heroBar}>
+        <div className={styles.brand}>
+          <img src="/brand-logo.png" alt="" width={40} height={40} />
+          <span><b>ZhaoXi</b><small>Partner</small></span>
+        </div>
+        <div className={styles.heroTools}>
+          <div className={styles.lang} role="group" aria-label={languageLabel[locale]}>
+            {LANGUAGES.map((code) => <button key={code} type="button" aria-pressed={code === locale} onClick={() => setLocale(code)}>{LOCALE_SHORT[code]}</button>)}
+          </div>
+          {session?.role === "partner" && <Link className={styles.heroLink} href="/">{workspaceLabel[locale]} →</Link>}
+        </div>
+      </div>
+      <div className={styles.heroCopy}>
+        <small className="zx-eyebrow">{t.eyebrow}</small>
+        <h1>{t.title}</h1>
+        <p>{t.lede}</p>
+        <ul className={styles.perks}>{t.perks.map((perk) => <li key={perk}>✓ {perk}</li>)}</ul>
+      </div>
+    </header>
+    <div className={styles.body}><PartnerOnboarding /></div>
+  </main>;
+}

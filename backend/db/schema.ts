@@ -1031,7 +1031,11 @@ export const onboardingApplications = pgTable("onboarding_applications", {
   reviewNote: text("review_note"), reviewedBy: uuid("reviewed_by").references(()=>users.id,{onDelete:"set null"}),
   submittedAt: timestamp("submitted_at",{withTimezone:true}), reviewedAt: timestamp("reviewed_at",{withTimezone:true}),
   createdAt: timestamp("created_at",{withTimezone:true}).notNull().defaultNow(), updatedAt: timestamp("updated_at",{withTimezone:true}).notNull().defaultNow(),
-},t=>[uniqueIndex("onboarding_user_role_unique").on(t.userId,t.role),index("onboarding_status_idx").on(t.status),index("onboarding_role_idx").on(t.role)]);
+},t=>[
+  // Customer/driver: one application per account. Partner: one per store, so an owner can apply for a second or third store.
+  uniqueIndex("onboarding_user_role_single_unique").on(t.userId,t.role).where(sql`${t.role} <> 'partner'`),
+  index("onboarding_user_role_idx").on(t.userId,t.role),
+  index("onboarding_status_idx").on(t.status),index("onboarding_role_idx").on(t.role)]);
 
 
 export const roleSwitchHandoffs = pgTable(

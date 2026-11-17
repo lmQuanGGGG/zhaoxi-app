@@ -36,11 +36,11 @@ export function BrandMark({ compact = false }: { compact?: boolean }) {
 }
 
 export function MetricCard({ label, value, note }: { label:string; value:string|number; note?:string }) {
-  return <div style={cardStyle}><div style={{fontSize:13,color:uiTokens.colors.muted}}>{label}</div><div style={{fontSize:27,fontWeight:800,color:uiTokens.colors.brand,marginTop:8}}>{value}</div>{note&&<div style={{fontSize:12,color:uiTokens.colors.muted,marginTop:5}}>{note}</div>}</div>;
+  return <div className="zx-ui-metric" style={cardStyle}><div style={{fontSize:13,fontWeight:650,color:`var(--zx-ui-muted, ${uiTokens.colors.muted})`}}>{label}</div><div style={{fontSize:27,fontWeight:800,color:`var(--zx-ui-metric, ${uiTokens.colors.brand})`,marginTop:8}}>{value}</div>{note&&<div style={{fontSize:12,color:`var(--zx-ui-muted, ${uiTokens.colors.muted})`,marginTop:5}}>{note}</div>}</div>;
 }
 
 export function Surface({ children, style }: { children:ReactNode; style?:CSSProperties }) {
-  return <section style={{...cardStyle,...style}}>{children}</section>;
+  return <section className="zx-ui-surface" style={{...cardStyle,...style}}>{children}</section>;
 }
 
 export function StatusBadge({ children, tone="green" }: { children:ReactNode; tone?:"green"|"orange"|"neutral" }) {
@@ -48,37 +48,41 @@ export function StatusBadge({ children, tone="green" }: { children:ReactNode; to
     ? {background:uiTokens.colors.brandSoft,color:"#A75122"}
     : tone === "neutral" ? {background:"#EEF0EE",color:"#59605B"}
     : {background:"#EAF7F0",color:"#216649"};
-  return <span style={{...tones,display:"inline-block",borderRadius:999,padding:"4px 9px",fontSize:12}}>{children}</span>;
+  return <span className="zx-ui-badge" style={{...tones,display:"inline-block",borderRadius:999,padding:"4px 9px",fontSize:12}}>{children}</span>;
 }
 
 export function PrimaryButton({ children }: { children:ReactNode }) {
   return <button type="button" style={{border:0,borderRadius:10,background:uiTokens.colors.primary,color:"white",padding:"10px 14px",fontWeight:700}}>{children}</button>;
 }
 
+/*
+ * Apps can restyle the shared components by defining --zx-ui-* CSS variables
+ * (e.g. the Partner web theme); without them every value falls back to the original token.
+ */
 export const appShellStyle: CSSProperties = {
   minHeight:"100dvh",
-  background:uiTokens.auroraBackground,
+  background:`var(--zx-ui-shell-bg, ${uiTokens.auroraBackground})`,
   color:uiTokens.colors.text,
-  fontFamily:uiTokens.fontFamily
+  fontFamily:`var(--zx-ui-font, ${uiTokens.fontFamily})`
 };
 export const cardStyle: CSSProperties = {
-  background:uiTokens.colors.glassStrong,
+  background:`var(--zx-ui-card-bg, ${uiTokens.colors.glassStrong})`,
   border:0,
-  borderRadius:uiTokens.radius.lg,
-  padding:17,
-  boxShadow:uiTokens.shadowSoft,
+  borderRadius:`var(--zx-ui-card-radius, ${uiTokens.radius.lg}px)`,
+  padding:"var(--zx-ui-card-pad, 17px)",
+  boxShadow:`var(--zx-ui-card-shadow, ${uiTokens.shadowSoft})`,
   backdropFilter:uiTokens.blur,
   WebkitBackdropFilter:uiTokens.blur
 };
 
 export function ActionButton({ children, onClick, disabled=false, tone="primary" }: { children:ReactNode; onClick?:()=>void; disabled?:boolean; tone?:"primary"|"dark"|"danger"|"neutral" }) {
-  const background = tone === "dark" ? "#0f172a" : tone === "danger" ? "#dc2626" : tone === "neutral" ? "#eef2f0" : uiTokens.colors.primary;
-  const color = tone === "neutral" ? uiTokens.colors.text : "#fff";
-  return <button type="button" onClick={onClick} disabled={disabled} style={{border:0,borderRadius:12,background,color,padding:"10px 14px",fontWeight:750,cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.55:1}}>{children}</button>;
+  const background = tone === "dark" ? "var(--zx-ui-dark, #0f172a)" : tone === "danger" ? "var(--zx-ui-danger, #dc2626)" : tone === "neutral" ? "var(--zx-ui-neutral, #eef2f0)" : `var(--zx-ui-primary, ${uiTokens.colors.primary})`;
+  const color = tone === "neutral" ? uiTokens.colors.text : "var(--zx-ui-primary-ink, #fff)";
+  return <button type="button" className={`zx-ui-button zx-ui-button--${tone}`} onClick={onClick} disabled={disabled} style={{border:0,borderRadius:"var(--zx-ui-btn-radius, 12px)",minHeight:"var(--zx-ui-btn-min-h, auto)",background,color,padding:"var(--zx-ui-btn-pad, 10px 14px)",fontWeight:750,cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.55:1}}>{children}</button>;
 }
 
 export function EmptyState({ title, description }: { title:string; description?:string }) {
-  return <div style={{...cardStyle,textAlign:"center",padding:34,borderStyle:"dashed"}}><div style={{fontSize:28,marginBottom:8}}>喜</div><b>{title}</b>{description&&<p style={{color:uiTokens.colors.muted,marginBottom:0}}>{description}</p>}</div>;
+  return <div className="zx-ui-empty" style={{...cardStyle,textAlign:"center",padding:34,borderStyle:"dashed"}}><div style={{fontSize:28,marginBottom:8}}>喜</div><b>{title}</b>{description&&<p style={{color:uiTokens.colors.muted,marginBottom:0}}>{description}</p>}</div>;
 }
 
 
