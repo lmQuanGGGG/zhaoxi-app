@@ -44,7 +44,7 @@ export default function CouponManager({organizationId}:{organizationId:string}){
  }
  async function patch(row:Coupon,values:Record<string,unknown>){await fetch(`/api/partner-coupons/${row.id}`,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({organizationId,...values})});await load()}
  async function remove(row:Coupon){if(!window.confirm(t.deleteConfirm))return;await fetch(`/api/partner-coupons/${row.id}?organizationId=${encodeURIComponent(organizationId)}`,{method:"DELETE"});await load()}
- return <section style={{margin:"18px 0",padding:16,border:"1px solid #dfe7e3",borderRadius:18,background:"#fff",display:"grid",gap:12}}>
+ return <section style={{margin:"18px 0",padding:16,border:0,borderRadius:18,background:"#fff",display:"grid",gap:12,boxShadow:"var(--zx-shadow-card)"}}>
   <h2 style={{margin:0}}>{t.title}</h2>
   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))",gap:8}}>
    <Field l={t.code}><input value={form.code} onChange={e=>setForm((v:any)=>({...v,code:e.target.value.toUpperCase()}))}/></Field>

@@ -1,0 +1,515 @@
+/*
+ * ZhaoXi Partner web — app style layer (loaded after globals.css).
+ *
+ * Mirrors the ZhaoXi app (frontend/apps/customer-mobile/src/theme.ts, ui/glass.tsx, ui/chrome.tsx):
+ * petrol header #00323A fading into a light page, borderless cards on soft shadows,
+ * frosted "liquid glass" pills, brand greens #07C160 / #0FAF7A, bold readable type.
+ *
+ * Everything new is driven by the tokens below. @zhaoxi/ui reads the --zx-ui-* tokens
+ * (with its own fallbacks), so the shared components follow this theme here only.
+ */
+
+:root {
+  /* brand */
+  --zx-petrol: #00323a;
+  --zx-petrol-2: #0a4a50;
+  --zx-petrol-3: #13605f;
+  --zx-green: #07c160;
+  --zx-green-2: #0faf7a;
+  --zx-green-strong: #078343;
+  --zx-green-deep: #183f35;
+  --zx-green-soft: #ecfdf5;
+  --zx-mint: #e2f0e8;
+  --zx-glow: rgba(15, 175, 122, 0.22);
+  /* surfaces */
+  --zx-bg: #f3f6f5;
+  --zx-surface: #ffffff;
+  --zx-surface-muted: #f6f8f8;
+  --zx-glass: rgba(255, 255, 255, 0.74);
+  --zx-glass-strong: rgba(255, 255, 255, 0.9);
+  --zx-glass-edge: rgba(255, 255, 255, 0.92);
+  --zx-glass-dark: rgba(255, 255, 255, 0.12);
+  --zx-glass-dark-edge: rgba(255, 255, 255, 0.18);
+  --zx-blur: saturate(170%) blur(22px);
+  /* text */
+  --zx-text: #18211e;
+  --zx-ink: #1e293b;
+  --zx-muted: #5f6b66;
+  --zx-subtle: #8a928e;
+  --zx-on-petrol: #ffffff;
+  --zx-on-petrol-muted: rgba(226, 244, 240, 0.74);
+  --zx-line: #e9eef0;
+  /* status */
+  --zx-danger: #dc2626;
+  --zx-danger-soft: #fff1f2;
+  --zx-warning: #b45309;
+  --zx-warning-soft: #fff7ed;
+  --zx-info: #1d4ed8;
+  --zx-info-soft: #eff6ff;
+  /* shape */
+  --zx-r-xs: 9px;
+  --zx-r-sm: 12px;
+  --zx-r-md: 16px;
+  --zx-r-lg: 20px;
+  --zx-r-xl: 24px;
+  --zx-r-pill: 999px;
+  --zx-shadow-card: 0 10px 34px rgba(15, 23, 42, 0.075);
+  --zx-shadow-soft: 0 14px 40px rgba(24, 33, 30, 0.09);
+  --zx-shadow-dock: 0 12px 36px rgba(24, 33, 30, 0.16);
+  --zx-shadow-press: 0 8px 20px rgba(7, 193, 96, 0.26);
+  --zx-focus: 0 0 0 3px rgba(15, 175, 122, 0.28);
+  /* type */
+  --zx-font: Inter, "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Roboto, Arial, sans-serif;
+  /* layout */
+  --zx-tap: 44px;
+  --zx-gutter: 16px;
+  --zx-content-max: 1240px;
+  --zx-safe-top: env(safe-area-inset-top, 0px);
+  --zx-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --zx-safe-left: env(safe-area-inset-left, 0px);
+  --zx-safe-right: env(safe-area-inset-right, 0px);
+  --zx-dock-h: 64px;
+  --zx-dock-space: 0px;
+
+  /* @zhaoxi/ui reads these (fallbacks keep other apps unchanged) */
+  --zx-ui-card-bg: var(--zx-surface);
+  --zx-ui-card-radius: var(--zx-r-lg);
+  --zx-ui-card-shadow: var(--zx-shadow-card);
+  --zx-ui-card-pad: 18px;
+  --zx-ui-primary: var(--zx-green);
+  --zx-ui-primary-ink: #ffffff;
+  --zx-ui-dark: var(--zx-petrol);
+  --zx-ui-danger: var(--zx-danger);
+  --zx-ui-neutral: #eef3f1;
+  --zx-ui-btn-radius: var(--zx-r-pill);
+  --zx-ui-btn-min-h: var(--zx-tap);
+  --zx-ui-btn-pad: 0 18px;
+  --zx-ui-muted: var(--zx-muted);
+  --zx-ui-metric: var(--zx-petrol);
+  --zx-ui-shell-bg: transparent;
+  --zx-ui-font: var(--zx-font);
+}
+
+@media (max-width: 767px) {
+  :root { --zx-dock-space: calc(var(--zx-dock-h) + 22px + var(--zx-safe-bottom)); --zx-gutter: 14px; }
+}
+
+/* ---------- base ---------- */
+html { background: var(--zx-bg); }
+body {
+  background: var(--zx-bg);
+  color: var(--zx-text);
+  font-family: var(--zx-font);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+.zx-partner-app { background: var(--zx-bg); font-family: var(--zx-font); }
+.zx-partner-app :where(a, button, input, select, textarea, summary):focus-visible { outline: 0; box-shadow: var(--zx-focus); }
+.zx-partner-app :where(h1, h2, h3) { color: var(--zx-ink); letter-spacing: -0.01em; }
+
+/* ---------- global top bar (SessionToolbar from @zhaoxi/auth) on petrol ---------- */
+.zx-partner-app .zx-global-topbar {
+  position: relative;
+  top: auto;
+  z-index: 210;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  min-height: calc(58px + var(--zx-safe-top));
+  margin: 0;
+  padding: calc(8px + var(--zx-safe-top)) max(var(--zx-gutter), var(--zx-safe-right)) 6px max(var(--zx-gutter), var(--zx-safe-left));
+  border: 0;
+  border-radius: 0;
+  background: var(--zx-petrol);
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  color: var(--zx-on-petrol);
+}
+.zx-partner-app .zx-global-topbar .zx-topbar-copy strong { color: var(--zx-on-petrol); letter-spacing: 0.04em; }
+.zx-partner-app .zx-global-topbar .zx-topbar-copy small { color: var(--zx-on-petrol-muted) !important; }
+.zx-partner-app .zx-global-topbar .zx-topbar-logo { border-radius: 12px; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22) !important; }
+.zx-partner-app .zx-global-topbar :is(.zx-topbar-language, .zx-topbar-icon) {
+  height: 40px;
+  min-width: 40px;
+  border: 1px solid var(--zx-glass-dark-edge);
+  border-radius: var(--zx-r-pill);
+  background: var(--zx-glass-dark);
+  color: var(--zx-on-petrol);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: var(--zx-blur);
+  backdrop-filter: var(--zx-blur);
+}
+.zx-partner-app .zx-global-topbar .zx-topbar-icon { width: 40px; }
+.zx-partner-app .zx-global-topbar .zx-topbar-logout { color: #ffd2d2; }
+
+/* ---------- workspace header: tabs + store switcher ---------- */
+.zx-partner-web-frame { position: relative; }
+.zx-partner-app .zx-partner-web-header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  padding: 6px max(var(--zx-gutter), var(--zx-safe-right)) 12px max(var(--zx-gutter), var(--zx-safe-left));
+  border: 0;
+  background: var(--zx-petrol);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.zx-partner-app .zx-partner-web-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 28px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 50, 58, 0.16), rgba(0, 50, 58, 0));
+}
+.zx-partner-app .zx-partner-web-header .zx-partner-nav-wrapper {
+  max-width: var(--zx-content-max);
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px !important;
+}
+.zx-pnav-tabs {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  border: 1px solid var(--zx-glass-dark-edge);
+  border-radius: var(--zx-r-pill);
+  background: var(--zx-glass-dark);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+}
+.zx-pnav-tabs::-webkit-scrollbar { display: none; }
+.zx-pnav-tabs a {
+  flex: 0 0 auto;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 15px;
+  border-radius: var(--zx-r-pill);
+  color: var(--zx-on-petrol-muted);
+  font-size: 13.5px;
+  font-weight: 750;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+.zx-pnav-tabs a:last-child { margin-right: 22px; }
+.zx-pnav-tabs a svg { width: 18px; height: 18px; flex: 0 0 auto; }
+.zx-pnav-tabs a:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+.zx-pnav-tabs a[data-active="true"] {
+  color: var(--zx-petrol);
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+.zx-pnav-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--zx-r-pill);
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* store switcher as a glass pill on petrol */
+.zx-partner-app .zx-partner-web-header .zx-store-switcher {
+  min-height: 48px;
+  padding: 4px 4px 4px 12px;
+  border: 1px solid var(--zx-glass-dark-edge);
+  border-radius: var(--zx-r-pill);
+  background: var(--zx-glass-dark);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.zx-partner-app .zx-partner-web-header .zx-store-switcher-icon { background: rgba(255, 255, 255, 0.16); color: #bff5d9; border-radius: 9px; }
+.zx-partner-app .zx-partner-web-header .zx-store-switcher-label { color: var(--zx-on-petrol-muted); }
+.zx-partner-app .zx-partner-web-header .zx-store-switcher-trigger {
+  min-height: 40px;
+  border: 0;
+  border-radius: var(--zx-r-pill);
+  background: #fff;
+  color: var(--zx-text);
+  font-size: 13px;
+  padding: 0 14px 0 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+}
+.zx-partner-app .zx-store-switcher-options {
+  border: 0;
+  border-radius: var(--zx-r-lg);
+  background: var(--zx-glass-strong);
+  -webkit-backdrop-filter: var(--zx-blur);
+  backdrop-filter: var(--zx-blur);
+  box-shadow: var(--zx-shadow-dock);
+  padding: 6px;
+}
+.zx-partner-app .zx-store-switcher-options button { min-height: var(--zx-tap); border-radius: var(--zx-r-sm); font-size: 13px; }
+
+/* phone dock + "more" sheet (hidden on larger screens) */
+.zx-pnav-dock, .zx-pnav-sheet-backdrop { display: none; }
+
+@media (max-width: 767px) {
+  .zx-pnav-tabs { display: none; }
+  .zx-partner-app .zx-partner-web-header { position: relative; padding-top: 2px; }
+  .zx-partner-app .zx-partner-web-header .zx-partner-nav-wrapper { flex-direction: column; align-items: stretch; }
+  .zx-partner-app .zx-partner-web-header .zx-store-switcher { width: 100%; }
+  .zx-partner-app .zx-partner-web-header .zx-store-switcher-menu { flex: 1; min-width: 0; max-width: none; }
+
+  .zx-pnav-dock {
+    position: fixed;
+    z-index: 900;
+    left: max(12px, var(--zx-safe-left));
+    right: max(12px, var(--zx-safe-right));
+    bottom: calc(10px + var(--zx-safe-bottom));
+    height: var(--zx-dock-h);
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: center;
+    padding: 0 6px;
+    border: 1px solid var(--zx-glass-edge);
+    border-radius: 32px;
+    background: var(--zx-glass);
+    -webkit-backdrop-filter: var(--zx-blur);
+    backdrop-filter: var(--zx-blur);
+    box-shadow: var(--zx-shadow-dock), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+  .zx-pnav-dock :is(a, button) {
+    position: relative;
+    min-width: 0;
+    height: 54px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 3px;
+    padding: 0;
+    border: 0;
+    border-radius: 26px;
+    background: transparent;
+    color: #3f4a46;
+    font: 700 10.5px/1.1 var(--zx-font);
+    text-decoration: none;
+  }
+  .zx-pnav-dock :is(a, button) span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 2px; }
+  .zx-pnav-dock svg { width: 23px; height: 23px; }
+  .zx-pnav-dock [data-active="true"] { color: var(--zx-green-deep); background: rgba(15, 175, 122, 0.13); }
+  .zx-pnav-dock [data-active="true"] svg { stroke-width: 2.3; }
+  .zx-pnav-dock .zx-pnav-badge { position: absolute; top: 3px; left: calc(50% + 6px); min-width: 18px; height: 18px; font-size: 10px; border: 2px solid #fff; }
+
+  .zx-pnav-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 950;
+    display: grid;
+    align-items: end;
+    background: rgba(8, 22, 19, 0.45);
+    animation: zx-fade-in 0.18s ease both;
+  }
+  .zx-pnav-sheet {
+    margin: 0 max(10px, var(--zx-safe-left)) calc(10px + var(--zx-safe-bottom));
+    padding: 10px 14px 16px;
+    border-radius: 28px;
+    background: var(--zx-glass-strong);
+    -webkit-backdrop-filter: var(--zx-blur);
+    backdrop-filter: var(--zx-blur);
+    box-shadow: var(--zx-shadow-dock);
+    animation: zx-sheet-up 0.24s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .zx-pnav-sheet-grip { width: 38px; height: 5px; margin: 0 auto 10px; border-radius: 99px; background: rgba(24, 33, 30, 0.18); }
+  .zx-pnav-sheet header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .zx-pnav-sheet header b { font-size: 17px; color: var(--zx-ink); }
+  .zx-pnav-sheet header button { width: var(--zx-tap); height: var(--zx-tap); border: 0; border-radius: 50%; background: rgba(24, 33, 30, 0.07); color: var(--zx-ink); font-size: 22px; line-height: 1; }
+  .zx-pnav-sheet-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .zx-pnav-sheet-grid a {
+    min-height: 88px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 7px;
+    padding: 10px 6px;
+    border-radius: var(--zx-r-lg);
+    background: #fff;
+    box-shadow: var(--zx-shadow-card);
+    color: var(--zx-ink);
+    font-size: 12.5px;
+    font-weight: 750;
+    text-align: center;
+    text-decoration: none;
+  }
+  .zx-pnav-sheet-grid a[data-active="true"] { background: var(--zx-green-soft); color: var(--zx-green-strong); }
+  .zx-pnav-sheet-grid i {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #f1fbf6, #dcefe6);
+    color: var(--zx-green-strong);
+    box-shadow: inset 0 1px 0 #fff, 0 6px 14px rgba(15, 175, 122, 0.18);
+  }
+  .zx-pnav-sheet-grid i svg { width: 22px; height: 22px; }
+
+  /* keep content and floating alerts clear of the dock */
+  .zx-partner-web-frame { padding-bottom: var(--zx-dock-space); }
+  .zx-partner-app .zx-bottom-alert { bottom: calc(var(--zx-dock-h) + 22px + var(--zx-safe-bottom)) !important; }
+}
+
+.zx-pnav-icon { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+@keyframes zx-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes zx-sheet-up { from { transform: translateY(28px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ---------- page content ---------- */
+.zx-partner-web-frame > main,
+.zx-partner-web-frame > div > main,
+.zx-partner-web-frame main.zx-native-workspace {
+  width: 100%;
+  max-width: var(--zx-content-max) !important;
+  min-width: 0;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  background: transparent !important;
+  font-family: var(--zx-font) !important;
+}
+.zx-partner-web-frame main { padding-left: max(var(--zx-gutter), var(--zx-safe-left)); padding-right: max(var(--zx-gutter), var(--zx-safe-right)); }
+.zx-partner-web-frame main :where(img, video, canvas, iframe) { max-width: 100%; }
+.zx-partner-web-frame main :where(section, article, div) { min-width: 0; }
+
+/* fields: the borderless soft-shadow look comes from the global field rule in globals.css; only sizing here */
+.zx-partner-web-frame main :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]), select) { min-height: var(--zx-tap); max-width: 100%; font-family: var(--zx-font); }
+.zx-partner-web-frame main :where(input[type="checkbox"], input[type="radio"]) { width: 20px; height: 20px; accent-color: var(--zx-green); }
+.zx-partner-web-frame main :where(button) { min-height: 40px; font-family: var(--zx-font); }
+
+/* tables: a real table on tablet/desktop (scrolls sideways inside its card), stacked label/value cards on phones.
+   Legacy CSS turns every table in .zx-native-workspace into cards up to 1440px with !important, so .zx-table
+   overrides it explicitly. Cells carry data-label for the phone layout. */
+.zx-partner-app .zx-table-wrap { width: 100%; overflow-x: auto; border-radius: var(--zx-r-lg); background: var(--zx-surface); box-shadow: var(--zx-shadow-card); }
+.zx-partner-app .zx-table { display: table !important; width: 100% !important; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+.zx-partner-app .zx-table thead { display: table-header-group !important; }
+.zx-partner-app .zx-table tbody { display: table-row-group !important; }
+.zx-partner-app .zx-table tr { display: table-row !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: transparent !important; }
+.zx-partner-app .zx-table th { padding: 12px 14px; background: var(--zx-surface-muted); color: var(--zx-muted); font-size: 12px; font-weight: 800; text-align: left; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+.zx-partner-app .zx-table td { display: table-cell !important; padding: 13px 14px !important; border: 0 !important; border-top: 1px solid var(--zx-line) !important; font-size: 14px !important; vertical-align: middle; }
+.zx-partner-app .zx-table tbody tr:hover td { background: #fafcfb; }
+@media (max-width: 640px) {
+  .zx-partner-app .zx-table-wrap { overflow: visible; background: transparent; box-shadow: none; }
+  .zx-partner-app .zx-table, .zx-partner-app .zx-table tbody { display: grid !important; gap: 12px; }
+  .zx-partner-app .zx-table thead { display: none !important; }
+  .zx-partner-app .zx-table tr { display: block !important; padding: 4px 14px !important; border-radius: var(--zx-r-lg) !important; background: var(--zx-surface) !important; box-shadow: var(--zx-shadow-card) !important; }
+  .zx-partner-app .zx-table td { display: flex !important; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 0 !important; text-align: right; }
+  .zx-partner-app .zx-table td:first-child { border-top: 0 !important; }
+  .zx-partner-app .zx-table td::before { content: attr(data-label); flex: 0 0 auto; color: var(--zx-muted); font-size: 12.5px; font-weight: 700; text-align: left; }
+  .zx-partner-app .zx-table td[data-label=""]::before { content: none; }
+}
+
+/* home shortcuts: glass pills that scroll instead of squeezing */
+.zx-partner-app .zx-partner-home-shortcuts { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 2px 8px; margin: 4px auto 18px; }
+.zx-partner-app .zx-partner-home-shortcuts::-webkit-scrollbar { display: none; }
+.zx-partner-app .zx-partner-home-shortcuts a {
+  flex: 0 0 auto;
+  min-height: var(--zx-tap);
+  display: inline-flex;
+  align-items: center;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--zx-r-pill);
+  background: #fff;
+  color: var(--zx-ink);
+  font-size: 13px;
+  font-weight: 750;
+  box-shadow: var(--zx-shadow-card);
+}
+
+/* ---------- shared building blocks (used by redesigned screens) ---------- */
+.zx-eyebrow { display: block; color: var(--zx-green-2); font-size: 11px; font-weight: 850; letter-spacing: 0.12em; text-transform: uppercase; }
+.zx-card { border: 0; border-radius: var(--zx-r-lg); background: var(--zx-surface); box-shadow: var(--zx-shadow-card); padding: 18px; }
+.zx-glass { border: 1px solid var(--zx-glass-edge); background: var(--zx-glass); -webkit-backdrop-filter: var(--zx-blur); backdrop-filter: var(--zx-blur); box-shadow: var(--zx-shadow-soft); }
+.zx-btn {
+  min-height: var(--zx-tap);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--zx-r-pill);
+  font: 800 14.5px/1.1 var(--zx-font);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.18s ease, background 0.18s ease, opacity 0.18s ease;
+}
+.zx-btn:active:not(:disabled) { transform: scale(0.98); }
+.zx-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.zx-btn--primary { background: linear-gradient(180deg, #0bd06c, var(--zx-green)); color: #fff; box-shadow: var(--zx-shadow-press), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+.zx-btn--dark { background: var(--zx-petrol); color: #fff; box-shadow: 0 8px 20px rgba(0, 50, 58, 0.25); }
+.zx-btn--glass { background: var(--zx-glass-strong); color: var(--zx-ink); box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08), inset 0 0 0 1px rgba(15, 23, 42, 0.05); }
+.zx-btn--ghost { background: transparent; color: var(--zx-green-strong); padding: 0 12px; box-shadow: none; }
+.zx-btn--danger { background: var(--zx-danger-soft); color: var(--zx-danger); }
+.zx-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 11px; border-radius: var(--zx-r-pill); font-size: 12px; font-weight: 800; }
+.zx-chip--green { background: var(--zx-green-soft); color: var(--zx-green-strong); }
+.zx-chip--amber { background: var(--zx-warning-soft); color: var(--zx-warning); }
+.zx-chip--red { background: var(--zx-danger-soft); color: var(--zx-danger); }
+.zx-chip--glass { background: var(--zx-glass-dark); color: var(--zx-on-petrol); border: 1px solid var(--zx-glass-dark-edge); }
+
+@media (prefers-reduced-motion: reduce) {
+  .zx-partner-app *, .zx-pnav-sheet, .zx-pnav-sheet-backdrop { animation: none !important; transition: none !important; }
+}
+
+/* page heading: eyebrow + bold title + muted lede, left aligned like the app screens */
+.zx-partner-app .zx-page-head { display: grid; gap: 6px; margin: 14px 0 18px; padding: 0; text-align: left; }
+.zx-partner-app .zx-page-head h1 { margin: 0; color: var(--zx-ink); font-size: clamp(24px, 3.2vw, 32px); font-weight: 850; line-height: 1.15; }
+.zx-partner-app .zx-page-head p { margin: 0; max-width: 64ch !important; color: var(--zx-muted); font-size: 14.5px; line-height: 1.5; }
+
+/* legacy global `button` rule draws a brown 3D under-shadow; replace with the app's soft lift.
+   :where() keeps specificity at a bare element so component classes and inline styles still win. */
+:where(.zx-partner-app, .zx-onb-app) button { border-color: transparent; box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.7); }
+:where(.zx-partner-app, .zx-onb-app) button:active:not(:disabled) { transform: scale(0.98); }
+.zx-partner-app .zx-ui-button--primary { box-shadow: var(--zx-shadow-press); }
+.zx-partner-app .zx-ui-button--neutral { box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07); }
+.zx-partner-app .zx-ui-badge { font-weight: 750; padding: 5px 11px !important; }
+
+/* kitchen queue: columns side by side when there is room (legacy CSS forced a single column) */
+@media (min-width: 1024px) { .zx-partner-app .zx-kitchen-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important; } }
+
+/* ---------- store sign-up shell (/onboarding, outside the partner workspace) ---------- */
+.zx-onb-app { min-height: 100dvh; background: var(--zx-bg); font-family: var(--zx-font); color: var(--zx-text); }
+.zx-onb-app :where(a, button, input, textarea, select):focus-visible { outline: 0; box-shadow: var(--zx-focus); }
+.zx-onb-splash { min-height: 100dvh; display: grid; place-items: center; background: var(--zx-petrol); }
+.zx-onb-spinner { width: 34px; height: 34px; border: 3px solid rgba(255, 255, 255, 0.2); border-top-color: #7ee7b5; border-radius: 50%; animation: zx-onb-spin 0.8s linear infinite; }
+@keyframes zx-onb-spin { to { transform: rotate(360deg); } }
+:where(.zx-partner-app, .zx-onb-app) button:not(:disabled):hover { transform: none; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.7); }
+.zx-btn--primary:not(:disabled):hover { box-shadow: 0 10px 24px rgba(7, 193, 96, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+.zx-btn--dark:not(:disabled):hover { box-shadow: 0 10px 24px rgba(0, 50, 58, 0.3); }
+.zx-btn--ghost:not(:disabled):hover { box-shadow: none; background: var(--zx-green-soft); }
+
+/* inputs inside grids/flex rows may shrink below their intrinsic width (time/date pickers on phones) */
+.zx-partner-web-frame main :where(input, select, textarea) { min-width: 0; }
+.zx-partner-web-frame main :where(input[type="time"], input[type="date"], input[type="datetime-local"], input[type="number"]) { width: 100%; }
+
+/* tablet: store switcher on its own row, tabs full width below (legacy CSS ≤820px makes the switcher 100% wide) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .zx-partner-app .zx-partner-web-header .zx-partner-nav-wrapper { flex-direction: column-reverse; align-items: stretch; gap: 8px !important; }
+  .zx-partner-app .zx-partner-web-header .zx-pnav-tabs { width: 100%; }
+}
+
+/* Legacy CSS collapses every inline grid in .zx-native-workspace to one column up to 1440px.
+   Responsive (auto-fit/auto-fill) grids get their columns back from tablet up; three-up metric rows stay three-up. */
+@media (min-width: 768px) {
+  .zx-partner-app .zx-native-workspace [style*="grid-template-columns"][style*="auto-fit"],
+  .zx-partner-app .zx-native-workspace [style*="grid-template-columns"][style*="auto-fill"] { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)) !important; }
+}
+.zx-partner-app .zx-native-workspace [style*="repeat(3,minmax(0,1fr))"] { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }

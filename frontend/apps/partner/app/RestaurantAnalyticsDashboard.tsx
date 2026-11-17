@@ -50,7 +50,7 @@ export default function RestaurantAnalyticsDashboard(){
  useEffect(()=>{void load()},[orgId,days,cacheKey]);
  const maxGmv=useMemo(()=>Math.max(1,...(data?.daily||[]).map(x=>x.gmv)),[data]);
  return <main className="zx-native-workspace" style={{minHeight:"100vh",maxWidth:1180,margin:"0 auto",padding:"24px 18px",fontFamily:"Inter,Arial,sans-serif",color:"#111827"}}>
-  <header style={{textAlign:"center",padding:"10px 0 4px"}}><small style={{color:"#07c160",fontWeight:900}}>ZHAOXI PARTNER</small><h1 style={{margin:"7px 0 6px"}}>{t.title}</h1><p style={{margin:0,color:"#64748b"}}>{t.subtitle}</p></header>
+  <header className="zx-page-head"><small className="zx-eyebrow">ZhaoXi Partner</small><h1>{t.title}</h1><p>{t.subtitle}</p></header>
   <PartnerWorkspaceNav/>
   <section style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center",margin:"18px 0",flexWrap:"wrap"}}><div style={{display:"flex",gap:6}}>{([7,30,90] as const).map(v=><button key={v} onClick={()=>setDays(v)} style={{border:"1px solid #dbe4df",borderRadius:999,padding:"12px 16px",background:days===v?"#07c160":"#fff",color:days===v?"#fff":"#111827",fontSize:18,fontWeight:850}}>{v===7?t.d7:v===30?t.d30:t.d90}</button>)}</div><button onClick={()=>void load()} style={{border:0,borderRadius:10,padding:"8px 10px",background:"#eef7f1",color:"#078343",fontWeight:800}}>{t.refresh}</button></section>
   {error&&<p style={{padding:20,borderRadius:12,background:"#fff1f2",color:"#b42318"}}>{error}</p>}
@@ -66,9 +66,9 @@ export default function RestaurantAnalyticsDashboard(){
   </>:<p>{t.empty}</p>}
  </main>
 }
-function Metric({label,value}:{label:string;value:string}){return <div style={{padding:20,border:"1px solid #e8eeeb",borderRadius:14,background:"#fff"}}><small style={{display:"block",color:"#64748b",fontSize:18}}>{label}</small><b style={{display:"block",marginTop:5,fontSize:18}}>{value}</b></div>}
+function Metric({label,value}:{label:string;value:string}){return <div style={{padding:20,border:0,borderRadius:14,background:"#fff",boxShadow:"var(--zx-shadow-card)"}}><small style={{display:"block",color:"#64748b",fontSize:18}}>{label}</small><b style={{display:"block",marginTop:5,fontSize:18}}>{value}</b></div>}
 const metrics={display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(145px,1fr))",gap:8} as const;
-const card={padding:14,border:"1px solid #e3eae6",borderRadius:18,background:"#fff"} as const;
+const card={padding:14,border:0,borderRadius:18,background:"#fff",boxShadow:"var(--zx-shadow-card)"} as const;
 const heading={margin:"0 0 10px",fontSize:18} as const;
 const row={display:"grid",gridTemplateColumns:"28px 1fr auto",gap:8,alignItems:"center",padding:"8px 0",borderBottom:"1px solid #f0f3f1"} as const;
 const rank={display:"grid",placeItems:"center",width:24,height:24,borderRadius:999,background:"#ecfdf5",color:"#078343",fontSize:18,fontWeight:900} as const;
