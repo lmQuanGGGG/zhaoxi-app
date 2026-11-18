@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useZhaoXiLocale, type ZhaoXiLocale } from "@zhaoxi/i18n";
+import { Art3D, ServiceArt3D } from "@zhaoxi/ui";
 import PartnerStoreSwitcher from "./PartnerStoreSwitcher";
 import { useOrderChatUnread } from "./OrderChat";
 import { STORE_FEATURES } from "./_lib/store-modules";
@@ -40,17 +41,28 @@ const dockOrder: Key[] = ["orders", "store", "messages", "analytics"];
 const moreOrder: Key[] = ["settlements", "housing", "travel", "onboarding", "tools", "support", "account"];
 
 const paths: Record<IconName, string> = {
-  orders: "M7 3.5h10a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2ZM9 8.5h6M9 12h6M9 15.5h3.5",
-  store: "M4.5 9.5 6 4.5h12l1.5 5M4.5 9.5a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0M6 12v7.5h12V12M10 19.5v-4h4v4",
-  messages: "M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3v-3H5A1.5 1.5 0 0 1 3.5 16V7A1.5 1.5 0 0 1 5 5.5ZM8 11h.01M12 11h.01M16 11h.01",
+  orders: "M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z M9 3v3h6V3M9 11h6M9 15h4M8.5 8.5l1.2 1.2 2-2",
+  store: "M5 9V5h14v4l-1 3H6Zm1 3v9h12v-9M9 21v-5h6v5",
+  messages: "M4 5h16v12H8l-4 3z",
   analytics: "M4.5 19.5h15M7 16v-4M11 16V8M15 16v-6M19 16V5",
-  settlements: "M4 7.5h16v10a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5zM4 7.5 6.5 4.5h11L20 7.5M8 12.5h4M15.5 14.5h1",
+  settlements: "M3 6h18v13H3Zm0 4h18M7 15h4",
   onboarding: "M12 3.5l7 3v5c0 4.4-3 7.7-7 9-4-1.3-7-4.6-7-9v-5zM9 12l2 2 4-4",
-  housing: "M4 10.5 12 4l8 6.5V20h-5.5v-5.5h-5V20H4z",
-  travel: "M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.4 12 21 12 21ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z",
+  housing: "M4 21V8l8-5 8 5v13M8 11h3v3H8zm5 0h3v3h-3m-5 3h3v4H8m5-4h3v4h-3",
+  travel: "M4 18h16M7 18l2-12h6l2 12M9 9h6M8 13h8",
   tools: "M14.5 6.5a4 4 0 0 0-5.3 5L4.5 16.2V19.5h3.3l4.7-4.7a4 4 0 0 0 5-5.3l-2.4 2.4-2.6-.6-.6-2.6z",
-  support: "M4.5 13v-1a7.5 7.5 0 0 1 15 0v1M4.5 13h2.5v5H6a1.5 1.5 0 0 1-1.5-1.5zM19.5 13H17v5h1a1.5 1.5 0 0 0 1.5-1.5zM17 18c0 1.5-1.5 2.5-4 2.5",
-  account: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4.5 20.5a7.5 7.5 0 0 1 15 0",
+  support: "M12 3a8 8 0 0 0-8 8v5h4v-5a4 4 0 0 1 8 0v5h4v-5a8 8 0 0 0-8-8Zm4 13c0 2-1.2 3-4 3",
+  account: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-7 9a7 7 0 0 1 14 0",
+};
+
+/** Clay icons for the "More" sheet (same set as the app's profile menu). */
+const moreArt: Partial<Record<Key, React.ReactNode>> = {
+  settlements: <Art3D kind="wallet" size={26} />,
+  housing: <ServiceArt3D code="housing" size={26} />,
+  travel: <ServiceArt3D code="travel" size={26} />,
+  onboarding: <Art3D kind="clipboard" size={26} />,
+  tools: <Art3D kind="pencil" size={26} />,
+  support: <Art3D kind="help" size={26} />,
+  account: <Art3D kind="people" size={26} />,
 };
 
 export function PartnerNavIcon({ name }: { name: IconName }) {
@@ -120,7 +132,7 @@ function FrameNav() {
         <div className="zx-pnav-sheet-grip" />
         <header><b>{t.moreTitle}</b><button type="button" onClick={() => setMoreOpen(false)} aria-label={t.close}>×</button></header>
         <div className="zx-pnav-sheet-grid">
-          {more.map((key) => <Link key={key} href={routes[key]} data-active={active === key}><i><PartnerNavIcon name={key} /></i>{t[key]}</Link>)}
+          {more.map((key) => <Link key={key} href={routes[key]} data-active={active === key}><i>{moreArt[key]}</i>{t[key]}</Link>)}
         </div>
       </section>
     </div>}

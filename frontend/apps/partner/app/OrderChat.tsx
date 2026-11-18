@@ -1,4 +1,5 @@
 "use client";
+import { Art3D } from "@zhaoxi/ui";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -91,7 +92,7 @@ export function useOrderChatUnread() {
 /** "Message customer" link on an order card. */
 export function OrderChatButton({ requestId }: { requestId: string }) {
   const t = useCopy();
-  return <Link href={`/messages?order=${encodeURIComponent(requestId)}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 12, background: "#ecfdf3", color: "#067a3a", fontWeight: 850, textDecoration: "none" }}>💬 {t.chat}</Link>;
+  return <Link href={`/messages?order=${encodeURIComponent(requestId)}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 12, background: "#ecfdf3", color: "#067a3a", fontWeight: 850, textDecoration: "none" }}><Art3D kind="feedback"/> {t.chat}</Link>;
 }
 
 export function OrderChatInbox() {
@@ -119,7 +120,7 @@ export function OrderChatInbox() {
       <aside className="zx-ochat-list">
         <h2>{t.title}</h2>
         {threads === null ? <p className="zx-ochat-muted">…</p> : !threads.length ? (
-          <div className="zx-ochat-empty"><b>💬 {t.empty}</b><span>{t.emptyHint}</span></div>
+          <div className="zx-ochat-empty"><b><Art3D kind="feedback"/> {t.empty}</b><span>{t.emptyHint}</span></div>
         ) : threads.map((x) => (
           <button key={x.id} type="button" className="zx-ochat-item" data-active={x.requestId === active} onClick={() => open(x.requestId)}>
             <span className="zx-ochat-avatar">{(x.title || "?").trim().charAt(0).toUpperCase()}</span>
@@ -252,7 +253,7 @@ function OrderChatThread({ orgId, requestId, onBack, onChanged }: { orgId: strin
         <div><b>{data?.thread.title || "…"}</b><small>{data?.thread.subtitle || ""}</small></div>
       </header>
       <div className="zx-ochat-messages">
-        {data && !rows.length && <p className="zx-ochat-muted" style={{ textAlign: "center", margin: "auto" }}>💬 {t.start}</p>}
+        {data && !rows.length && <p className="zx-ochat-muted" style={{ textAlign: "center", margin: "auto" }}><Art3D kind="feedback"/> {t.start}</p>}
         {rows.map((m) => (
           <div key={m.clientMessageId || m.id} className="zx-ochat-msg" data-own={m.senderRole === "partner"} data-pending={Boolean(m.outgoing && !m.outgoing.failed)}>
             {m.photos.length > 0 && (
@@ -264,7 +265,7 @@ function OrderChatThread({ orgId, requestId, onBack, onChanged }: { orgId: strin
             )}
             {m.body && <p>{m.body}</p>}
             {m.outgoing?.failed ? (
-              <small className="zx-ochat-failed">⚠ {t.failed} · <button type="button" onClick={() => void deliver(m.outgoing!)}>{t.retry}</button> · <button type="button" onClick={() => discard(m.outgoing!)}>{t.discard}</button></small>
+              <small className="zx-ochat-failed"><Art3D kind="attention"/> {t.failed} · <button type="button" onClick={() => void deliver(m.outgoing!)}>{t.retry}</button> · <button type="button" onClick={() => discard(m.outgoing!)}>{t.discard}</button></small>
             ) : (
               <small>{m.outgoing ? "…" : clock(m.createdAt)}{m.id === seenId ? ` · ${t.seen}` : ""}</small>
             )}

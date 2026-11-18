@@ -123,3 +123,6 @@ export{useZhaoXiDevice,MobileWorkspace,MobileCard,MobileToolbar,MobileDataList,M
 export type{ZhaoXiDevice}from"./mobile-workspace";
 
 export type{NativeViewState}from"./mobile-workspace";
+
+export { Art3D, ServiceArt3D } from "./art3d";
+export type { Art3DKind, ServiceArtCode } from "./art3d";

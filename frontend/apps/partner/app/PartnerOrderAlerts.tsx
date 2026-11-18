@@ -1,4 +1,5 @@
 "use client";
+import { Art3D } from "@zhaoxi/ui";
 import {useCallback,useEffect,useRef,useState} from "react";
 import {useZhaoXiSession} from "@zhaoxi/auth";
 import {useZhaoXiLocale} from "@zhaoxi/i18n";
@@ -118,7 +119,7 @@ export default function PartnerOrderAlerts(){const session=useZhaoXiSession();co
  return <div className="zx-order-modal-backdrop" role="dialog" aria-modal="true">
   <section className="zx-order-modal">
     {step==="order"?<>
-      <div className="zx-order-bell" onClick={playLoudOrderChime} style={{cursor:"pointer"}} title="Bấm để thử chuông">🔔</div>
+      <div className="zx-order-bell" onClick={playLoudOrderChime} style={{cursor:"pointer"}} title="Bấm để thử chuông"><Art3D kind="notifications"/></div>
       <small>ZHAOXI PARTNER</small>
       <h2>{bankTransferReported?(locale==="vi-VN"?"Khách đã báo chuyển khoản":locale==="en-US"?"Customer reported a transfer":locale==="zh-TW"?"客戶已回報轉帳":"顾客已报告转账"):isService?newOrderLabel(kind,locale):t.newOrder}</h2>
       <strong className="zx-order-code">{order.requestCode}</strong>
@@ -131,9 +132,9 @@ export default function PartnerOrderAlerts(){const session=useZhaoXiSession();co
             <IosPhoneIcon size={13} color="#111827"/> {displayPhone || "Khách chưa có SĐT"}{isFriend ? " (Nhận hộ)" : ""}
           </a>
         </div>
-        {order.addressText&&<div style={{fontSize:13,color:"#1F2937",lineHeight:1.4}}>📍 <b>{t.address}:</b> {order.addressText}</div>}
+        {order.addressText&&<div style={{fontSize:13,color:"#1F2937",lineHeight:1.4}}><Art3D kind="pin"/> <b>{t.address}:</b> {order.addressText}</div>}
         {Boolean(d.deliveryProvider)&&<div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"4px 10px",borderRadius:999,background:d.deliveryProvider==="grab"?"#dcfce7":"#ccfbf1",color:d.deliveryProvider==="grab"?"#15803d":"#0f766e",fontWeight:850,fontSize:13,width:"fit-content"}}><img src={d.deliveryProvider==="grab"?"/couriers/grab.png":"/couriers/green-sm.png"} alt={d.deliveryProvider==="grab"?"Grab":"Green SM"} style={{height:15,width:"auto",objectFit:"contain",verticalAlign:"middle"}}/><span>{t.shipVia} {d.deliveryProvider==="grab"?"Grab":"Xanh SM"} ({t.customerSelfPay})</span></div>}
-        {!isService&&d.totalAmount!=null&&<div style={{fontSize:14,fontWeight:800,color:"#078343",marginTop:2}}>💰 {t.total}: {money(d.totalAmount)}</div>}
+        {!isService&&d.totalAmount!=null&&<div style={{fontSize:14,fontWeight:800,color:"#078343",marginTop:2}}><Art3D kind="wallet"/> {t.total}: {money(d.totalAmount)}</div>}
         {isService&&<ServiceOrderFacts row={order} locale={locale}/>}
       </div>
       {isService&&notice&&<p role="alert" style={{margin:"0 0 10px",padding:"9px 11px",borderRadius:10,background:"#fff1f2",color:"#b42318",fontSize:13,fontWeight:700}}>{notice}</p>}
@@ -150,7 +151,7 @@ export default function PartnerOrderAlerts(){const session=useZhaoXiSession();co
             <IosPhoneIcon size={12} color="#111827"/> {displayPhone || "Chưa có SĐT"}{isFriend ? " (Nhận hộ)" : ""}
           </a>
         </div>
-        {order.addressText&&<div style={{fontSize:12,color:"#4B5563",lineHeight:1.35}}>📍 {order.addressText}</div>}
+        {order.addressText&&<div style={{fontSize:12,color:"#4B5563",lineHeight:1.35}}><Art3D kind="pin"/> {order.addressText}</div>}
         {Boolean(d.deliveryProvider)&&<div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"3px 8px",borderRadius:999,background:d.deliveryProvider==="grab"?"#dcfce7":"#ccfbf1",color:d.deliveryProvider==="grab"?"#15803d":"#0f766e",fontWeight:850,fontSize:12,width:"fit-content"}}><img src={d.deliveryProvider==="grab"?"/couriers/grab.png":"/couriers/green-sm.png"} alt={d.deliveryProvider==="grab"?"Grab":"Green SM"} style={{height:14,width:"auto",objectFit:"contain",verticalAlign:"middle"}}/><span>{t.shipVia} {d.deliveryProvider==="grab"?"Grab":"Xanh SM"} ({t.customerSelfPay})</span></div>}
       </div>
       <div className="zx-eta-grid">

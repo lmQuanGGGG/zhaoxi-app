@@ -35,7 +35,16 @@
 .brand span { display: grid; line-height: 1.1; }
 .brand b { font-size: 16px; letter-spacing: 0.04em; }
 .brand small { color: var(--zx-on-petrol-muted); font-size: 12px; font-weight: 650; }
-.heroTools { display: flex; align-items: center; gap: 8px; }
+.heroTools { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.brand span { min-width: 0; overflow: hidden; }
+.brand b, .brand small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Phones: the language switch + link need the whole bar, so the brand keeps only its logo. */
+@media (max-width: 480px) {
+  .brand span { display: none; }
+  .heroTools { gap: 6px; }
+  .lang button { min-width: 34px; padding: 0 8px; font-size: 12px; }
+  .heroLink { padding: 0 12px; font-size: 12.5px; }
+}
 .lang {
   display: flex;
   padding: 3px;

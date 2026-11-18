@@ -8,7 +8,7 @@ import {
   type ZhaoXiLocale,
   localizeOrganizationName,
 } from "@zhaoxi/i18n";
-import { ActionButton, Surface, appShellStyle } from "@zhaoxi/ui";
+import { ActionButton, Surface, appShellStyle, ServiceArt3D } from "@zhaoxi/ui";
 import { getCached, setCached } from "./_lib/client-cache";
 import PartnerOrderAlerts from "./PartnerOrderAlerts";
 import RestaurantOperationsPanel from "./RestaurantOperationsPanel";
@@ -247,7 +247,7 @@ function ImagePreview({ url, alt, height = 120 }: { url: string; alt: string; he
 function ItemImage({ url, alt }: { url: string; alt: string }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [url]);
-  if (!url || failed) return <div style={{ width: 100, height: 100, borderRadius: 14, background: "#eef8f1", display: "grid", placeItems: "center", fontSize: 34 }}>🍽️</div>;
+  if (!url || failed) return <div style={{ width: 100, height: 100, borderRadius: 14, background: "#eef8f1", display: "grid", placeItems: "center", fontSize: 34 }}><ServiceArt3D code="food"/></div>;
   return <img src={url} alt={alt} onError={() => setFailed(true)} style={{ width: 100, height: 100, borderRadius: 14, objectFit: "cover", border: "1px solid #dfe7e2", display: "block" }} />;
 }
 

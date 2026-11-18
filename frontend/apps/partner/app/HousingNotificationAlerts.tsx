@@ -1,4 +1,5 @@
 "use client";
+import { ServiceArt3D } from "@zhaoxi/ui";
 import { sharedNotificationFetch } from "./shared-notification-fetch";
 import{useCallback,useEffect,useState}from"react";import{useZhaoXiSession}from"@zhaoxi/auth";import{useZhaoXiLocale}from"@zhaoxi/i18n";
 import{useVisiblePolling}from"@zhaoxi/hooks";
@@ -13,5 +14,5 @@ export default function HousingNotificationAlerts(){const session=useZhaoXiSessi
  useVisiblePolling(poll,{enabled:Boolean(orgId),intervalMs:30_000});
  function close(){if(!item)return;try{const x=JSON.parse(localStorage.getItem("zhaoxi-partner-housing-alerts")||"[]") as string[];localStorage.setItem("zhaoxi-partner-housing-alerts",JSON.stringify(Array.from(new Set([...x,item.id])).slice(-200)))}catch{}setItem(null)}
  if(!item)return null;const message=String(item.note||"").startsWith("HOUSING_MESSAGE:")?t.message:t.reminder;
- return <div className="zx-customer-alert zx-bottom-alert"><button aria-label={t.close} onClick={close}>×</button><div>🏠</div><b>{item.customerName||item.requestCode}</b><p>{message}</p><button onClick={()=>{close();window.location.href="/"}}>{t.open}</button></div>
+ return <div className="zx-customer-alert zx-bottom-alert"><button aria-label={t.close} onClick={close}>×</button><div><ServiceArt3D code="housing"/></div><b>{item.customerName||item.requestCode}</b><p>{message}</p><button onClick={()=>{close();window.location.href="/"}}>{t.open}</button></div>
 }
