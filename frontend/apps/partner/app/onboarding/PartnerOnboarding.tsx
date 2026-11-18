@@ -12,7 +12,7 @@ import {
   type Application, type ErrorCode, type FieldErrors, type FieldKey, type OnboardingForm, type OnboardingStatus, type PartnerOrganization, type Target,
 } from "./form";
 import { ServiceArt } from "./ServiceArt";
-import { SIGNUP_QUESTIONS, type SignupQuestion } from "../_lib/store-modules";
+import { SIGNUP_QUESTIONS, storeModuleOf, type SignupQuestion } from "../_lib/store-modules";
 import styles from "./onboarding.module.css";
 
 type Load = { state: "loading" } | { state: "error"; auth: boolean } | { state: "ready"; data: OnboardingStatus };
@@ -33,7 +33,9 @@ async function loadStatus(): Promise<Load> {
     return { state: "error", auth: false };
   }
 }
-const artOf = (code: string | null | undefined) => (isModule(code) ? code : "store");
+/** Artwork for a store type, matched the same way as the workspace (free-text types included). */
+const artOf = (type: string | null | undefined) => { const module = storeModuleOf(type); return module === "community" ? "people" : module === "emergency" ? "shield" : module && isModule(module) ? module : "store"; };
+const serviceLabel = (t: Copy, type: string | null | undefined) => { const module = storeModuleOf(type); return module && isModule(module) ? t.modules[module].label : null; };
 
 /**
  * Store sign-up for ZhaoXi Partner. One account can run several stores, so the page is a hub:
@@ -176,7 +178,7 @@ function StoresCard({ t, stores }: { t: Copy; stores: PartnerOrganization[] }) {
     <StatusHead chip={t.approved.chip} tone="green" title={t.hub.stores(stores.length)} body={t.approved.body} art={artOf(stores[0]?.type)} />
     <ul className={styles.storeList}>{stores.map((store) => <li key={store.id}>
       <span className={styles.storeArt}><ServiceArt code={artOf(store.type)} size={40} /></span>
-      <span className={styles.storeName}><b>{store.name}</b><small>{isModule(store.type) ? `${t.modules[store.type].label} · ${store.code}` : store.code}</small></span>
+      <span className={styles.storeName}><b>{store.name}</b><small>{[serviceLabel(t, store.type), store.code].filter(Boolean).join(" · ")}</small></span>
       <button type="button" className="zx-btn zx-btn--dark" disabled={busy !== null} onClick={() => open(store.id)}>{busy === store.id ? t.approved.opening : t.hub.manage}</button>
     </li>)}</ul>
     {embedded && <p className={styles.muted}>{t.approved.inApp}</p>}

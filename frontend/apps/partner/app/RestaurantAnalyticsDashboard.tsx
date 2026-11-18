@@ -37,7 +37,7 @@ const general={
 export default function RestaurantAnalyticsDashboard(){
  const session=useZhaoXiSession();const{locale}=useZhaoXiLocale();const orgId=session?.organizationId||"";
  // Same figures for every store; restaurants also see kitchen time, dish promotions, delivery and coupons.
- const storeModule=useStoreModule();const kitchen=!storeModule||STORE_FEATURES[storeModule].kitchen;const words=storeModule?STORE_WORDS[storeModule]:null;
+ const storeModule=useStoreModule();const kitchen=storeModule?STORE_FEATURES[storeModule].kitchen:false;const words=storeModule?STORE_WORDS[storeModule]:null;
  const t=kitchen?copy[locale]:{...copy[locale],...general[locale],foodRevenue:words?.revenue[locale]??copy[locale].foodRevenue,top:words?.top[locale]??copy[locale].top};
  const[days,setDays]=useState<7|30|90>(30);
  const cacheKey=`partner_analytics_${orgId}_${days}`;

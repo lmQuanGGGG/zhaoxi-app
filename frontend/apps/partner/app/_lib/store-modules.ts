@@ -3,8 +3,9 @@
  * workspace both read it, so a car-rental company is asked about its fleet when it applies and,
  * once approved, lands on vehicle management without a kitchen queue.
  *
- * The codes are the backend SERVICE_MODULES a partner operates (backend/lib/core/domain.ts);
- * an organization's `type` is the code chosen at sign-up.
+ * The codes are the backend SERVICE_MODULES (backend/lib/core/domain.ts). STORE_MODULES are the ones
+ * a partner can apply for; the workspace also serves stores ZhaoXi runs itself (community, emergency,
+ * payment) and "general" for a store whose kind cannot be told.
  */
 import type { ZhaoXiLocale } from "@zhaoxi/i18n";
 
@@ -12,12 +13,53 @@ export const STORE_MODULES = ["food", "market", "housing", "travel", "car-rental
 export type StoreModule = (typeof STORE_MODULES)[number];
 export const isStoreModule = (value: unknown): value is StoreModule => STORE_MODULES.includes(value as StoreModule);
 
-/** Older stores were created with free-text types; map the ones seen in data, anything else is unknown. */
-const ALIASES: Record<string, StoreModule> = { restaurant: "food", cafe: "food", shop: "market", store: "market", retail: "market", homestay: "housing", rental: "housing", tour: "travel", "car_rental": "car-rental", interpreter: "translation" };
-export function storeModuleOf(type: string | null | undefined): StoreModule | null {
-  const code = String(type || "").trim().toLowerCase();
-  if (isStoreModule(code)) return code;
-  return ALIASES[code] || null;
+/** Service modules a store's catalogue can live in (same codes as backend SERVICE_MODULES, minus none). */
+export const SERVICE_MODULES = [...STORE_MODULES, "community", "emergency", "payment"] as const;
+export type ServiceModule = (typeof SERVICE_MODULES)[number];
+export const isServiceModule = (value: unknown): value is ServiceModule => SERVICE_MODULES.includes(value as ServiceModule);
+
+/** What the workspace adapts to: a service module, or "general" when the kind of store is unknown. */
+export type WorkspaceModule = ServiceModule | "general";
+
+/**
+ * Store types in production are free text set when each store was created ("restaurant",
+ * "translation-interpreting", "real-estate", "grocery-store", "tour-operator", "visa-service",
+ * "community-hub", "emergency-assistance", "payment-assistance", "life-service", "Tech"…), so
+ * the type is matched by words, in English, Vietnamese (accents stripped) and Chinese.
+ * Order matters: the more specific kinds are tried first ("grocery-store" is a shop, not food).
+ */
+const RULES: [ServiceModule, RegExp][] = [
+  ["car-rental", /(^|-)(car|cars|vehicle|vehicles|xe|chauffeur|limo|limousine|transport)(-|$)|car-?rental|thue-?xe|租车|租車|包车|包車/],
+  ["translation", /translat|interpret|phien-?dich|dich-?thuat|翻译|翻譯|口译|口譯/],
+  ["visa", /visa|immigration|(^|-)permit|thi-?thuc|签证|簽證/],
+  ["emergency", /emergenc|rescue|khan-?cap|cuu-?ho|紧急|緊急|急救/],
+  ["payment", /payment|(^|-)pay(-|$)|top-?up|thanh-?toan|支付|缴费|繳費/],
+  ["housing", /real-?estate|housing|apartment|homestay|accommodation|property|lodging|(^|-)nha-?o(-|$)|bat-?dong-?san|can-?ho|房/],
+  ["travel", /travel|(^|-)tours?(-|$)|tour-?operator|touris|du-?lich|旅/],
+  ["market", /market|grocer|(^|-)(shop|store|retail|mart|supermarket|cho)(-|$)|cua-?hang|tap-?hoa|商城|超市|商店/],
+  ["community", /communit|life-?service|(^|-)(club|association|hub)(-|$)|cong-?dong|社区|社區|生活/],
+  ["food", /food|restaurant|(^|-)(cafe|coffee|bakery|tea|eatery|bistro|kitchen|bar)(-|$)|nha-?hang|quan-?an|an-?uong|ca-?phe|餐|饮|飲|咖啡/],
+];
+
+const normalize = (value: string) => value.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/[\s_/]+/g, "-");
+
+/**
+ * Kind of store from its organization type. null: no type yet (session still loading);
+ * "general": a type that matches nothing (the workspace may still infer it from the catalogue).
+ */
+export function storeModuleOf(type: string | null | undefined): WorkspaceModule | null {
+  const raw = String(type || "").trim();
+  if (!raw) return null;
+  const code = normalize(raw);
+  if (isServiceModule(code)) return code;
+  return RULES.find(([, rule]) => rule.test(code))?.[0] ?? "general";
+}
+
+/** The catalogue module that holds most of a store's items (used when its type says nothing). */
+export function dominantModule(moduleCodes: (string | null | undefined)[]): ServiceModule | null {
+  const counts = new Map<ServiceModule, number>();
+  for (const code of moduleCodes) if (isServiceModule(code)) counts.set(code, (counts.get(code) || 0) + 1);
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 }
 
 type L = Record<ZhaoXiLocale, string>;
@@ -30,7 +72,7 @@ export type StoreFeatures = {
   inventory: "housing" | "travel" | null;
 };
 
-export const STORE_FEATURES: Record<StoreModule, StoreFeatures> = {
+export const STORE_FEATURES: Record<WorkspaceModule, StoreFeatures> = {
   food: { kitchen: true, inventory: null },
   market: { kitchen: false, inventory: null },
   housing: { kitchen: false, inventory: "housing" },
@@ -38,10 +80,14 @@ export const STORE_FEATURES: Record<StoreModule, StoreFeatures> = {
   "car-rental": { kitchen: false, inventory: null },
   translation: { kitchen: false, inventory: null },
   visa: { kitchen: false, inventory: null },
+  community: { kitchen: false, inventory: null },
+  emergency: { kitchen: false, inventory: null },
+  payment: { kitchen: false, inventory: null },
+  general: { kitchen: false, inventory: null },
 };
 
 /** Words that change with the kind of store: what an order is called and what the catalogue holds. */
-export const STORE_WORDS: Record<StoreModule, { catalog: L; orders: L; inProgress: L; revenue: L; top: L }> = {
+export const STORE_WORDS: Record<WorkspaceModule, { catalog: L; orders: L; inProgress: L; revenue: L; top: L }> = {
   food: { catalog: L("Thực đơn", "Menu", "菜单", "菜單"), orders: L("Đơn món ăn", "Food orders", "餐饮订单", "餐飲訂單"), inProgress: L("Đang chuẩn bị", "Preparing", "备餐中", "備餐中"), revenue: L("Doanh thu món", "Food revenue", "菜品收入", "餐點收入"), top: L("Món bán chạy", "Best sellers", "热销菜品", "熱銷餐點") },
   market: { catalog: L("Sản phẩm", "Products", "商品"), orders: L("Đơn hàng", "Orders", "订单", "訂單"), inProgress: L("Đang đóng gói", "Packing", "打包中"), revenue: L("Doanh thu hàng", "Product revenue", "商品收入"), top: L("Sản phẩm bán chạy", "Best-selling products", "热销商品", "熱銷商品") },
   housing: { catalog: L("Nhà/phòng cho thuê", "Listings", "房源"), orders: L("Yêu cầu thuê", "Rental inquiries", "租房咨询", "租屋諮詢"), inProgress: L("Đang tư vấn", "In progress", "跟进中", "跟進中"), revenue: L("Doanh thu cho thuê", "Rental revenue", "租赁收入", "租賃收入"), top: L("Nhà/phòng được quan tâm", "Most requested listings", "热门房源", "熱門房源") },
@@ -49,6 +95,10 @@ export const STORE_WORDS: Record<StoreModule, { catalog: L; orders: L; inProgres
   "car-rental": { catalog: L("Xe cho thuê", "Vehicles", "车辆", "車輛"), orders: L("Đơn thuê xe", "Rental bookings", "租车订单", "租車訂單"), inProgress: L("Đang chuẩn bị xe", "Preparing vehicle", "备车中", "備車中"), revenue: L("Doanh thu thuê xe", "Rental revenue", "租车收入", "租車收入"), top: L("Xe được thuê nhiều", "Most rented vehicles", "热门车辆", "熱門車輛") },
   translation: { catalog: L("Gói phiên dịch", "Translation services", "翻译服务", "翻譯服務"), orders: L("Yêu cầu phiên dịch", "Translation requests", "翻译需求", "翻譯需求"), inProgress: L("Đang thực hiện", "In progress", "进行中", "進行中"), revenue: L("Doanh thu dịch vụ", "Service revenue", "服务收入", "服務收入"), top: L("Dịch vụ dùng nhiều", "Most used services", "热门服务", "熱門服務") },
   visa: { catalog: L("Gói thủ tục", "Visa services", "签证服务", "簽證服務"), orders: L("Hồ sơ khách", "Client cases", "客户案件", "客戶案件"), inProgress: L("Đang xử lý hồ sơ", "Processing", "办理中", "辦理中"), revenue: L("Doanh thu dịch vụ", "Service revenue", "服务收入", "服務收入"), top: L("Dịch vụ dùng nhiều", "Most used services", "热门服务", "熱門服務") },
+  community: { catalog: L("Hoạt động & dịch vụ", "Activities & services", "活动与生活服务", "活動與生活服務"), orders: L("Đăng ký tham gia", "Sign-ups", "报名", "報名"), inProgress: L("Đang xử lý", "In progress", "处理中", "處理中"), revenue: L("Doanh thu", "Revenue", "收入"), top: L("Hoạt động được quan tâm", "Most popular", "热门活动", "熱門活動") },
+  emergency: { catalog: L("Dịch vụ hỗ trợ", "Assistance services", "援助服务", "援助服務"), orders: L("Yêu cầu hỗ trợ", "Assistance requests", "求助请求", "求助請求"), inProgress: L("Đang hỗ trợ", "Assisting", "处理中", "處理中"), revenue: L("Doanh thu dịch vụ", "Service revenue", "服务收入", "服務收入"), top: L("Dịch vụ được gọi nhiều", "Most requested", "常用服务", "常用服務") },
+  payment: { catalog: L("Dịch vụ thanh toán", "Payment services", "支付服务", "支付服務"), orders: L("Yêu cầu thanh toán", "Payment requests", "支付请求", "支付請求"), inProgress: L("Đang xử lý", "Processing", "处理中", "處理中"), revenue: L("Doanh thu phí dịch vụ", "Fee revenue", "服务费收入", "服務費收入"), top: L("Dịch vụ dùng nhiều", "Most used services", "热门服务", "熱門服務") },
+  general: { catalog: L("Sản phẩm & dịch vụ", "Products & services", "商品与服务", "商品與服務"), orders: L("Đơn hàng", "Orders", "订单", "訂單"), inProgress: L("Đang xử lý", "In progress", "处理中", "處理中"), revenue: L("Doanh thu", "Revenue", "收入"), top: L("Dịch vụ dùng nhiều", "Most used", "热门服务", "熱門服務") },
 };
 
 /* ---------------------------------------------------------------- sign-up questions */

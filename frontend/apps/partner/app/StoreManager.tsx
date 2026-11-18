@@ -15,7 +15,7 @@ import RestaurantOperationsPanel from "./RestaurantOperationsPanel";
 import FoodCommercialEditor from "./FoodCommercialEditor";
 import CouponManager from "./CouponManager";
 import { LocationPicker, type LocationPoint } from "@zhaoxi/onboarding";
-import { STORE_MODULES } from "./_lib/store-modules";
+import { SERVICE_MODULES } from "./_lib/store-modules";
 import { useStoreModule } from "./_lib/use-store-module";
 
 type Item = {
@@ -120,17 +120,19 @@ const moduleFields: Record<string, Record<ZhaoXiLocale, DynamicField[]>> = {
     "en-US": [{key:"experienceType",label:"Experience type"},{key:"destination",label:"Destination"},{key:"duration",label:"Tour duration"},{key:"departurePoint",label:"Departure point"},{key:"maxGuests",label:"Maximum guests",type:"number"},{key:"serviceLanguage",label:"Service language"},{key:"availableDays",label:"Available days"},{key:"startTime",label:"Start time"},{key:"startTimes",label:"Multiple start times (comma separated)"},{key:"travelAvailabilityStatus",label:"Experience status",type:"select",options:["available","unavailable"]},{key:"bookingNoticeHours",label:"Minimum booking notice (hours)",type:"number"},{key:"includes",label:"Includes (comma separated)"},{key:"excludes",label:"Excludes (comma separated)"}],
   },
   payment: {
-    "zh-CN": [{ key: "paymentMethod", label: "支付方式" }, { key: "feeRate", label: "服务费率（%）", type: "number" }],
-    "zh-TW": [{ key: "paymentMethod", label: "支付方式" }, { key: "feeRate", label: "服務費率（%）", type: "number" }],
-    "vi-VN": [{ key: "paymentMethod", label: "Phương thức thanh toán" }, { key: "feeRate", label: "Phí dịch vụ (%)", type: "number" }],
-    "en-US": [{ key: "paymentMethod", label: "Payment method" }, { key: "feeRate", label: "Service fee (%)", type: "number" }],
+    "zh-CN": [{ key: "paymentMethod", label: "支付方式" }, { key: "feeRate", label: "服务费率（%）", type: "number" }, { key: "fixedFee", label: "固定手续费（越南盾）", type: "number" }, { key: "processingTime", label: "到账时间" }, { key: "supportedBanks", label: "支持的银行/钱包" }],
+    "zh-TW": [{ key: "paymentMethod", label: "支付方式" }, { key: "feeRate", label: "服務費率（%）", type: "number" }, { key: "fixedFee", label: "固定手續費（越南盾）", type: "number" }, { key: "processingTime", label: "到帳時間" }, { key: "supportedBanks", label: "支援的銀行/錢包" }],
+    "vi-VN": [{ key: "paymentMethod", label: "Phương thức thanh toán" }, { key: "feeRate", label: "Phí dịch vụ (%)", type: "number" }, { key: "fixedFee", label: "Phí cố định (VND)", type: "number" }, { key: "processingTime", label: "Thời gian xử lý" }, { key: "supportedBanks", label: "Ngân hàng / ví hỗ trợ" }],
+    "en-US": [{ key: "paymentMethod", label: "Payment method" }, { key: "feeRate", label: "Service fee (%)", type: "number" }, { key: "fixedFee", label: "Fixed fee (VND)", type: "number" }, { key: "processingTime", label: "Processing time" }, { key: "supportedBanks", label: "Supported banks / wallets" }],
   },
+
   community: {
-    "zh-CN": [{ key: "eventDate", label: "活动日期" }, { key: "eventLocation", label: "活动地点" }],
-    "zh-TW": [{ key: "eventDate", label: "活動日期" }, { key: "eventLocation", label: "活動地點" }],
-    "vi-VN": [{ key: "eventDate", label: "Ngày sự kiện" }, { key: "eventLocation", label: "Địa điểm" }],
-    "en-US": [{ key: "eventDate", label: "Event date" }, { key: "eventLocation", label: "Event location" }],
+    "zh-CN": [{ key: "eventDate", label: "活动日期", type: "date" }, { key: "eventTime", label: "活动时间" }, { key: "eventLocation", label: "活动地点" }, { key: "capacity", label: "名额", type: "number" }, { key: "language", label: "活动语言" }, { key: "organizer", label: "主办方" }],
+    "zh-TW": [{ key: "eventDate", label: "活動日期", type: "date" }, { key: "eventTime", label: "活動時間" }, { key: "eventLocation", label: "活動地點" }, { key: "capacity", label: "名額", type: "number" }, { key: "language", label: "活動語言" }, { key: "organizer", label: "主辦方" }],
+    "vi-VN": [{ key: "eventDate", label: "Ngày diễn ra", type: "date" }, { key: "eventTime", label: "Giờ diễn ra" }, { key: "eventLocation", label: "Địa điểm" }, { key: "capacity", label: "Số chỗ", type: "number" }, { key: "language", label: "Ngôn ngữ" }, { key: "organizer", label: "Đơn vị tổ chức" }],
+    "en-US": [{ key: "eventDate", label: "Date", type: "date" }, { key: "eventTime", label: "Time" }, { key: "eventLocation", label: "Location" }, { key: "capacity", label: "Places", type: "number" }, { key: "language", label: "Language" }, { key: "organizer", label: "Organizer" }],
   },
+
   market: {
     "zh-CN": [{ key: "sku", label: "商品编号" }, { key: "productCategory", label: "商品分类" }, { key: "unit", label: "销售单位（件、盒、公斤…）" }, { key: "stock", label: "库存", type: "number" }, { key: "origin", label: "产地" }],
     "zh-TW": [{ key: "sku", label: "商品編號" }, { key: "productCategory", label: "商品分類" }, { key: "unit", label: "銷售單位（件、盒、公斤…）" }, { key: "stock", label: "庫存", type: "number" }, { key: "origin", label: "產地" }],
@@ -139,11 +141,12 @@ const moduleFields: Record<string, Record<ZhaoXiLocale, DynamicField[]>> = {
   },
 
   emergency: {
-    "zh-CN": [{ key: "hotline", label: "紧急电话" }, { key: "availability", label: "服务时间" }],
-    "zh-TW": [{ key: "hotline", label: "緊急電話" }, { key: "availability", label: "服務時間" }],
-    "vi-VN": [{ key: "hotline", label: "Số điện thoại khẩn cấp" }, { key: "availability", label: "Thời gian phục vụ" }],
-    "en-US": [{ key: "hotline", label: "Emergency hotline" }, { key: "availability", label: "Availability" }],
+    "zh-CN": [{ key: "hotline", label: "紧急电话" }, { key: "availability", label: "服务时间" }, { key: "responseTime", label: "预计响应时间" }, { key: "serviceArea", label: "服务范围" }, { key: "languages", label: "服务语言" }],
+    "zh-TW": [{ key: "hotline", label: "緊急電話" }, { key: "availability", label: "服務時間" }, { key: "responseTime", label: "預計回應時間" }, { key: "serviceArea", label: "服務範圍" }, { key: "languages", label: "服務語言" }],
+    "vi-VN": [{ key: "hotline", label: "Số điện thoại khẩn cấp" }, { key: "availability", label: "Thời gian phục vụ" }, { key: "responseTime", label: "Thời gian phản hồi dự kiến" }, { key: "serviceArea", label: "Khu vực hỗ trợ" }, { key: "languages", label: "Ngôn ngữ hỗ trợ" }],
+    "en-US": [{ key: "hotline", label: "Emergency hotline" }, { key: "availability", label: "Availability" }, { key: "responseTime", label: "Expected response time" }, { key: "serviceArea", label: "Service area" }, { key: "languages", label: "Languages" }],
   },
+
 };
 
 function localizedOption(fieldKey:string,option:string,locale:ZhaoXiLocale){
@@ -256,7 +259,9 @@ export default function StoreManager() {
   // Opens on the kind of store this is (set at sign-up); the picker is for stores that sell in more than one category.
   const storeModule = useStoreModule();
   const [picked, setPicked] = useState<{ orgId: string; code: string } | null>(null);
-  const moduleCode = picked && picked.orgId === orgId ? picked.code : storeModule || "food";
+  // Follows the store switcher: each store opens on its own category. "" while the kind is still being
+  // resolved, so a translation office never flashes the restaurant screens; unknown kinds open on Shop.
+  const moduleCode = picked && picked.orgId === orgId ? picked.code : storeModule === null ? "" : storeModule === "general" ? "market" : storeModule;
   const setModuleCode = (code: string) => setPicked({ orgId, code });
   const cacheKey = `partner_store_${orgId}_${moduleCode}_${locale}`;
   const cachedData = typeof window !== "undefined" ? getCached<{ items: Item[]; org: any }>(cacheKey) : null;
@@ -307,7 +312,7 @@ export default function StoreManager() {
   }, [orgId]);
 
   const load = useCallback(async () => {
-    if (!orgId) return;
+    if (!orgId || !moduleCode) return;
     setIsLoadingStore(true);
     try {
       const [serviceResponse, orgResponse] = await Promise.all([
@@ -889,7 +894,7 @@ export default function StoreManager() {
     {isLoadingStore && <div className="zx-store-loading" role="status" aria-live="polite"><span className="zx-store-loading-spinner" /><div><b>{t.loadingStore}</b><small>{t.loadingStoreHint}</small></div></div>}
 
     <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
-      <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 11px", border: "1px dashed #cbd5e1", borderRadius: 12, background: "rgba(255,255,255,.55)" }}><small>{t.category}</small><select value={moduleCode} onChange={(e) => setModuleCode(e.target.value)}>{STORE_MODULES.map((code) => <option key={code} value={code}>{t.categories[code]}{code === storeModule ? " ★" : ""}</option>)}</select></label>
+      <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 11px", border: "1px dashed #cbd5e1", borderRadius: 12, background: "rgba(255,255,255,.55)" }}><small>{t.category}</small><select value={moduleCode} disabled={!moduleCode} onChange={(e) => setModuleCode(e.target.value)}>{SERVICE_MODULES.map((code) => <option key={code} value={code}>{t.categories[code]}{code === storeModule ? " ★" : ""}</option>)}</select></label>
     </div>
 
     {msg && <div role="status" style={{ marginTop: 14, padding: 12, borderRadius: 12, background: msg.startsWith("✓") ? "#ecfdf3" : "#fff1f2", color: msg.startsWith("✓") ? "#087a3e" : "#b42318", fontWeight: 700 }}>{msg}</div>}
@@ -950,7 +955,7 @@ export default function StoreManager() {
         <input required aria-label={`${t.name} (${requiredText})`} placeholder={`${t.name} *`} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <input aria-label={`${t.summary} (${optionalText})`} placeholder={`${t.summary} (${optionalText})`} value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} />
         <input required aria-label={`${t.price} (${requiredText})`} type="number" min="0" placeholder={`${t.price} *`} value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
-        {activeFields.map((field) => field.type === "select" ? <select key={field.key} value={form.extra[field.key] || ""} onChange={(e) => setForm({ ...form, extra: { ...form.extra, [field.key]: e.target.value } })}><option value="">{field.label}</option>{field.options?.map((option) => <option key={option} value={option}>{localizedOption(field.key,option,locale)}</option>)}</select> : <input key={field.key} type={field.type || "text"} placeholder={field.label} value={form.extra[field.key] || ""} onChange={(e) => setForm({ ...form, extra: { ...form.extra, [field.key]: e.target.value } })} />)}
+        {activeFields.map((field) => field.type === "select" ? <select key={field.key} value={form.extra[field.key] || ""} onChange={(e) => setForm({ ...form, extra: { ...form.extra, [field.key]: e.target.value } })}><option value="">{field.label}</option>{field.options?.map((option) => <option key={option} value={option}>{localizedOption(field.key,option,locale)}</option>)}</select> : field.type === "date" ? <label key={field.key} style={{ display: "grid", gap: 4 }}><small style={{ color: "#64748b", fontWeight: 700 }}>{field.label}</small><input type="date" aria-label={field.label} value={form.extra[field.key] || ""} onChange={(e) => setForm({ ...form, extra: { ...form.extra, [field.key]: e.target.value } })} /></label> : <input key={field.key} type={field.type || "text"} placeholder={field.label} aria-label={field.label} value={form.extra[field.key] || ""} onChange={(e) => setForm({ ...form, extra: { ...form.extra, [field.key]: e.target.value } })} />)}
       </div>
       <section style={{ display: "grid", gap: 8, marginTop: 14 }}><b>{presentation.image} <span style={{ color: "#dc2626" }}>* {requiredText}</span> <small>({t.chooseOrPasteImage})</small></b><ImagePreview url={visibleItemImage} alt={form.name || presentation.image} height={180} /><input ref={itemInput} type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={chooseItemImage} /><div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><ActionButton tone="neutral" onClick={() => itemInput.current?.click()}>{t.chooseImage}</ActionButton>{(form.image || form.imageFile) && <ActionButton tone="neutral" onClick={() => { if (form.imagePreview) URL.revokeObjectURL(form.imagePreview); setForm({ ...form, image: "", imageFile: undefined, imagePreview: undefined }); setItemPreview(""); setItemNotice(t.imageRemoved); }}>{t.remove}</ActionButton>}</div><input aria-label={`${t.urlFallback} (${optionalText})`} placeholder={`${t.urlFallback} (${optionalText})`} value={form.image} onChange={(e) => { if (form.imagePreview) URL.revokeObjectURL(form.imagePreview); setItemPreview(""); setForm({ ...form, image: e.target.value, imageFile: undefined, imagePreview: undefined }); setItemNotice(e.target.value.trim() ? `✓ ${t.imageUrlWillUse}` : ""); }} /></section>
       <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}><ActionButton onClick={queueItem}>{queueText}</ActionButton><ActionButton disabled={savingItems || !queuedItems.length} onClick={() => void saveQueuedItems()}>{savingItems ? t.uploading : `${saveQueuedText}${queuedItems.length ? ` (${queuedItems.length})` : ""}`}</ActionButton></div>

@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { composeNotes, emptyForm, formFromApplication, submitPayload, validateStep } from "../app/onboarding/form";
-import { SIGNUP_QUESTIONS, STORE_MODULES, storeModuleOf } from "../app/_lib/store-modules";
+import { SIGNUP_QUESTIONS, STORE_MODULES, dominantModule, storeModuleOf } from "../app/_lib/store-modules";
 
 const carRental = {
   ...emptyForm(),
@@ -47,8 +47,28 @@ test("switching service keeps only the chosen service's answers", () => {
 });
 
 test("store types from older data map to a service", () => {
-  assert.equal(storeModuleOf("restaurant"), "food");
-  assert.equal(storeModuleOf("car-rental"), "car-rental");
-  assert.equal(storeModuleOf("service"), null);
+  // Every type found on production stores (2026-11-17), with the module their catalogue uses.
+  const production: [string, string][] = [
+    ["food", "food"], ["restaurant", "food"], ["car-rental", "car-rental"], ["grocery-store", "market"],
+    ["community-hub", "community"], ["translation-interpreting", "translation"], ["real-estate", "housing"],
+    ["emergency-assistance", "emergency"], ["payment-assistance", "payment"], ["tour-operator", "travel"],
+    ["travel", "travel"], ["visa-service", "visa"], ["life-service", "community"],
+  ];
+  for (const [type, module] of production) assert.equal(storeModuleOf(type), module, type);
+  // Free text in Vietnamese / Chinese, and casing.
+  assert.equal(storeModuleOf("Nhà hàng"), "food");
+  assert.equal(storeModuleOf("Thuê xe tự lái"), "car-rental");
+  assert.equal(storeModuleOf("Dịch thuật"), "translation");
+  assert.equal(storeModuleOf("租房"), "housing");
+  assert.equal(storeModuleOf("Real Estate"), "housing");
+  assert.equal(storeModuleOf("money transfer"), "general");
+  // Nothing to go on: the workspace reads the catalogue instead.
+  assert.equal(storeModuleOf("Tech"), "general");
   assert.equal(storeModuleOf(undefined), null);
+});
+
+test("an unknown store type falls back to the module most of its catalogue uses", () => {
+  assert.equal(dominantModule(["food", "food", "market", null]), "food");
+  assert.equal(dominantModule(["bogus", undefined]), null);
+  assert.equal(dominantModule([]), null);
 });

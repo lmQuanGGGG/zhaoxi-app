@@ -24,7 +24,7 @@ import PartnerVerificationBadges from "./PartnerVerificationBadges";
 import PartnerPublicStorefrontSettings from "./PartnerPublicStorefrontSettings";
 import PartnerPaymentTransactionPanel from "./PartnerPaymentTransactionPanel";
 import KitchenQueue from "./KitchenQueue";
-import {STORE_FEATURES,STORE_WORDS,type StoreModule} from "./_lib/store-modules";
+import {STORE_FEATURES,STORE_WORDS,type WorkspaceModule} from "./_lib/store-modules";
 import {useStoreModule} from "./_lib/use-store-module";
 import {ServiceOrderActions,ServiceOrderFacts,orderKindLabel,orderKindOf,runServiceOrderAction} from "./PartnerServiceOrder";
 import {OrderChatButton} from "./OrderChat";
@@ -50,7 +50,7 @@ export default function OperationsBoard(){
  useVisiblePolling(load,{enabled:Boolean(orgId),intervalMs:30_000});
  useEffect(()=>{const refresh=()=>void load();window.addEventListener("zhaoxi:fulfillment-updated",refresh);return()=>window.removeEventListener("zhaoxi:fulfillment-updated",refresh)},[load]);
  // Restaurants count kitchen stages; other stores count by request status (they have no kitchen stage).
- const storeModule=useStoreModule();const kitchen=!storeModule||STORE_FEATURES[storeModule].kitchen;const words=storeModule?STORE_WORDS[storeModule]:null;
+ const storeModule=useStoreModule();const kitchen=storeModule?STORE_FEATURES[storeModule].kitchen:false;const words=storeModule?STORE_WORDS[storeModule]:null;
  const metrics=useMemo(()=>kitchen?{waiting:rows.filter(r=>r.status==="assigned").length,preparing:rows.filter(r=>String(r.details?.fulfillmentStage||"")==="preparing").length,ready:rows.filter(r=>["ready_for_pickup","courier_booked"].includes(String(r.details?.fulfillmentStage||""))).length}:{waiting:rows.filter(r=>r.status==="assigned"||r.status==="new").length,preparing:rows.filter(r=>["accepted","in_progress","waiting_customer"].includes(r.status)).length,ready:rows.filter(r=>r.status==="completed").length},[rows,kitchen]);
  function optimisticFulfillment(row:ServiceRequestRow,action:string,extra:Record<string,unknown>={}){
   const details={...(row.details||{})} as Record<string,unknown>;
@@ -100,13 +100,13 @@ export default function OperationsBoard(){
 }
 
 /** Home shortcuts for the kind of store: its catalogue, its inventory screen (if any), money and tools. */
-function shortcuts(module:StoreModule|null,locale:ZhaoXiLocale){
+function shortcuts(module:WorkspaceModule|null,locale:ZhaoXiLocale){
  const L=(vi:string,en:string,zh:string,tw=zh)=>({"vi-VN":vi,"en-US":en,"zh-CN":zh,"zh-TW":tw}[locale]);
  const inventory=module?STORE_FEATURES[module].inventory:null;
  return [
   {href:"/catalog",label:module?STORE_WORDS[module].catalog[locale]:L("Dịch vụ","Services","服务","服務")},
-  ...(!module||inventory==="housing"?[{href:"/housing-inventory",label:L("Kho nhà/phòng","Housing inventory","房源库存","房源庫存")}]:[]),
-  ...(!module||inventory==="travel"?[{href:"/travel-inventory",label:L("Kho tour","Tour inventory","旅游产品","旅遊產品")}]:[]),
+  ...(inventory==="housing"?[{href:"/housing-inventory",label:L("Kho nhà/phòng","Housing inventory","房源库存","房源庫存")}]:[]),
+  ...(inventory==="travel"?[{href:"/travel-inventory",label:L("Kho tour","Tour inventory","旅游产品","旅遊產品")}]:[]),
   {href:"/settlements",label:L("Đối soát","Settlement","财务对账","財務對帳")},
   {href:"/tools",label:L("Công cụ","Tools","工具")},
  ];

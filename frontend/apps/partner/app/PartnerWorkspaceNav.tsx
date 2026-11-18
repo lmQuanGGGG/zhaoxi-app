@@ -81,10 +81,10 @@ function FrameNav() {
   const moreOpen = openOn === path;
   const setMoreOpen = (open: boolean) => setOpenOn(open ? path : null);
   const active = activeKey(path);
-  // Inventory screens belong to one kind of store; unknown (older) store types keep every entry.
+  // Inventory screens belong to one kind of store; hidden while the kind is still loading.
   const storeModule = useStoreModule();
   const inventory = storeModule ? STORE_FEATURES[storeModule].inventory : null;
-  const shown = (key: Key) => (key === "housing" ? !storeModule || inventory === "housing" : key === "travel" ? !storeModule || inventory === "travel" : true);
+  const shown = (key: Key) => (key === "housing" ? inventory === "housing" : key === "travel" ? inventory === "travel" : true);
   const tabs = tabOrder.filter(shown);
   const more = moreOrder.filter(shown);
 
