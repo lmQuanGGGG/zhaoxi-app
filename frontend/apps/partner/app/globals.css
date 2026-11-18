@@ -999,4 +999,14 @@ input:-webkit-autofill:active {
   border: 0 !important;
   transition: background-color 5000s ease-in-out 0s;
 }
-.zx-enable-order-notifications{position:fixed;right:16px;bottom:max(84px,calc(env(safe-area-inset-bottom) + 16px));z-index:90;border:0;border-radius:999px;background:#087f5b;color:#fff;padding:11px 15px;font:800 13px/1 system-ui;box-shadow:0 10px 24px rgba(6,95,70,.26);cursor:pointer}
+/* "Enable new order alerts": a petrol glass tab docked on the right edge, vertically centred.
+   Collapsed it shows the bell (with a pulsing dot); hover / keyboard focus slides the label out. */
+.zx-notify-tab{position:fixed;right:env(safe-area-inset-right,0px);top:50%;transform:translateY(-50%);z-index:90;display:flex;align-items:center;gap:10px;max-width:50px;overflow:hidden;white-space:nowrap;padding:14px 16px 14px 15px;border:0;border-radius:20px 0 0 20px;background:linear-gradient(160deg,var(--zx-petrol-2,#0a4a50),var(--zx-petrol,#00323a));color:#fff;font:800 13px/1 system-ui,-apple-system,sans-serif;box-shadow:-8px 12px 30px rgba(0,50,58,.28),inset 1px 1px 0 rgba(255,255,255,.16);cursor:pointer;transition:max-width .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s ease}
+.zx-notify-tab:hover,.zx-notify-tab:focus-visible{max-width:320px;box-shadow:-10px 14px 34px rgba(0,50,58,.34),inset 1px 1px 0 rgba(255,255,255,.2);outline:none}
+.zx-notify-tab:focus-visible{box-shadow:0 0 0 3px rgba(7,193,96,.45),-10px 14px 34px rgba(0,50,58,.34)}
+.zx-notify-tab__bell{position:relative;flex:0 0 auto;font-size:18px;line-height:1}
+.zx-notify-tab__bell::after{content:"";position:absolute;top:-2px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--zx-green,#07c160);box-shadow:0 0 0 2px var(--zx-petrol,#00323a);animation:zx-notify-pulse 1.8s ease-out infinite}
+.zx-notify-tab__text{opacity:0;transition:opacity .2s ease}
+.zx-notify-tab:hover .zx-notify-tab__text,.zx-notify-tab:focus-visible .zx-notify-tab__text{opacity:1}
+@keyframes zx-notify-pulse{0%{box-shadow:0 0 0 2px var(--zx-petrol,#00323a),0 0 0 2px rgba(7,193,96,.55)}100%{box-shadow:0 0 0 2px var(--zx-petrol,#00323a),0 0 0 10px rgba(7,193,96,0)}}
+@media (prefers-reduced-motion:reduce){.zx-notify-tab,.zx-notify-tab__text{transition:none}.zx-notify-tab__bell::after{animation:none}}
